@@ -55,7 +55,7 @@ case class WalletStateDescriptorDAO()(implicit
     Seq] =
     findByPrimaryKeys(ts.map(_.tpe))
 
-  def getSyncDescriptorOpt(): Future[Option[SyncHeightDescriptor]] = {
+  def getSyncDescriptorOpt: Future[Option[SyncHeightDescriptor]] = {
     read(SyncHeight).map {
       case Some(db) =>
         val desc = SyncHeightDescriptor.fromString(db.descriptor.toString)
@@ -64,10 +64,8 @@ case class WalletStateDescriptorDAO()(implicit
     }
   }
 
-  def updateSyncHeight(
-      hash: DoubleSha256DigestBE,
-      height: Int): Future[WalletStateDescriptorDb] = {
-    getSyncDescriptorOpt().flatMap {
+  def updateSyncHeight(hash: DoubleSha256DigestBE, height: Int): Future[WalletStateDescriptorDb] =
+    getSyncDescriptorOpt.flatMap {
       case Some(old) =>
         if (old.height > height) {
           Future.successful(WalletStateDescriptorDb(SyncHeight, old))
@@ -81,20 +79,19 @@ case class WalletStateDescriptorDAO()(implicit
         val db = WalletStateDescriptorDb(SyncHeight, descriptor)
         create(db)
     }
-  }
 
-  class WalletStateDescriptorTable(t: Tag)
-      extends Table[WalletStateDescriptorDb](t,
-                                             schemaName,
-                                             "state_descriptors") {
+  class WalletStateDescriptorTable(t: Tag) extends Table[WalletStateDescriptorDb](
+    _tableTag   = t,
+    _schemaName = schemaName,
+    _tableName  = "state_descriptors"
+  ) {
 
     def tpe: Rep[WalletStateDescriptorType] = column("type", O.PrimaryKey)
 
     def descriptor: Rep[WalletStateDescriptor] = column("descriptor")
 
     override def * : ProvenShape[WalletStateDescriptorDb] =
-      (tpe, descriptor).<>(WalletStateDescriptorDb.tupled,
-                           WalletStateDescriptorDb.unapply)
+      (tpe, descriptor).<>(WalletStateDescriptorDb.tupled, WalletStateDescriptorDb.unapply)
 
   }
 }

@@ -15,6 +15,7 @@ import org.bitcoins.core.wallet.utxo.TxoState._
 import org.bitcoins.core.wallet.utxo.{AddressTag, ReceivedState, TxoState}
 import org.bitcoins.crypto.{DoubleSha256Digest, DoubleSha256DigestBE}
 import org.bitcoins.wallet._
+import zio.Task
 
 import scala.concurrent.{Future, Promise}
 import scala.util.{Failure, Success, Try}
@@ -35,12 +36,15 @@ private[bitcoins] trait TransactionProcessing extends WalletLogger {
       transaction: Transaction,
       blockHashOpt: Option[DoubleSha256DigestBE]
   ): Future[Wallet] = {
+
     for {
-      result <- processTransactionImpl(transaction = transaction,
-                                       blockHashOpt = blockHashOpt,
-                                       newTags = Vector.empty,
-                                       receivedSpendingInfoDbsOpt = None,
-                                       spentSpendingInfoDbsOpt = None)
+      result <- processTransactionImpl(
+        transaction = transaction,
+        blockHashOpt = blockHashOpt,
+        newTags = Vector.empty,
+        receivedSpendingInfoDbsOpt = None,
+        spentSpendingInfoDbsOpt = None
+      )
     } yield {
       logger.debug(
         s"Finished processing of transaction=${transaction.txIdBE.hex}. Relevant incomingTXOs=${result.updatedIncoming.length}, outgoingTXOs=${result.updatedOutgoing.length}")
@@ -312,23 +316,23 @@ private[bitcoins] trait TransactionProcessing extends WalletLogger {
     * output fittingly.
     */
   private def processTransactionImpl(
-      transaction: Transaction,
-      blockHashOpt: Option[DoubleSha256DigestBE],
-      newTags: Vector[AddressTag],
-      receivedSpendingInfoDbsOpt: Option[Vector[SpendingInfoDb]],
-      spentSpendingInfoDbsOpt: Option[Vector[SpendingInfoDb]]): Future[
-    ProcessTxResult] = {
+    transaction: Transaction,
+    blockHashOpt: Option[DoubleSha256DigestBE],
+    newTags: Vector[AddressTag],
+    receivedSpendingInfoDbsOpt: Option[Vector[SpendingInfoDb]],
+    spentSpendingInfoDbsOpt: Option[Vector[SpendingInfoDb]]
+  ): Task[ProcessTxResult] = {
 
     logger.debug(
       s"Processing transaction=${transaction.txIdBE.hex} with blockHash=${blockHashOpt
         .map(_.hex)}")
 
-    val receivedSpendingInfoDbsF: Future[Vector[SpendingInfoDb]] = {
+    val receivedSpendingInfoDbsF: Task[Vector[SpendingInfoDb]] = {
       receivedSpendingInfoDbsOpt match {
         case Some(received) =>
           //spending info dbs are cached, so fetch the one relevant for this tx
           val filtered = received.filter(_.txid == transaction.txIdBE)
-          Future.successful(filtered)
+          Task.succeed(filtered)
         case None =>
           //no caching, just fetch from the database
           spendingInfoDAO.findTx(transaction)

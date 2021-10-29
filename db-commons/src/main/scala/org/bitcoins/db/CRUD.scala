@@ -4,7 +4,8 @@ import grizzled.slf4j.Logging
 import org.bitcoins.core.util.FutureUtil
 import slick.dbio.{DBIOAction, NoStream}
 import slick.lifted.AbstractTable
-
+import zio.Task
+import zio.blocking._
 import java.sql.SQLException
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -219,14 +220,15 @@ case class SafeDatabase(jdbcProfile: JdbcProfileComponent[DbAppConfig])
   /** Runs the given DB sequence-returning DB action
     * and converts the result to a vector
     */
-  def runVec[R](action: DBIOAction[Seq[R], NoStream, _])(implicit
-      ec: ExecutionContext): Future[Vector[R]] = {
-    val result = scala.concurrent.blocking {
-      if (sqlite) database.run[Seq[R]](foreignKeysPragma >> action)
-      else database.run[Seq[R]](action)
+  def runVec[R](action: DBIOAction[Seq[R], NoStream, _]): Task[Vector[R]] =
+    Task.fromFuture { implicit ec =>
+      lazy val result = scala.concurrent.blocking {
+        if (sqlite) database.run[Seq[R]](foreignKeysPragma >> action)
+        else database.run[Seq[R]](action)
+      }
+
+      result.map(_.toVector).recoverWith { logAndThrowError(action) }
     }
-    result.map(_.toVector).recoverWith { logAndThrowError(action) }
-  }
 }
 
 case class UpdateFailedException(message: String)

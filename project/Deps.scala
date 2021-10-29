@@ -66,6 +66,9 @@ object Deps {
     val zxingV = "3.4.1"
 
     val monixV = "3.4.0"
+
+    val zioV = "1.0.12"
+    val zioInteropCatsV = "3.1.1.0"
   }
 
   object Compile {
@@ -236,6 +239,12 @@ object Deps {
     val monixExecution =
       Def.setting(
         "io.monix" %%% "monix-execution" % V.monixV withSources () withJavadoc ())
+
+    val zioInteropCats =
+      "dev.zio" %% "zio-interop-cats" % V.zioInteropCatsV withSources() withJavadoc()
+
+    val zio =
+      "dev.zio" %% "zio" % V.zioV withSources() withJavadoc()
   }
 
   object Test {
@@ -276,6 +285,12 @@ object Deps {
 
     val akkaTestkit =
       "com.typesafe.akka" %% "akka-testkit" % V.akkaActorV withSources () withJavadoc ()
+
+    val zioInteropCats =
+      "dev.zio" %% "zio-interop-cats" % V.zioInteropCatsV withSources() withJavadoc()
+
+    val zio =
+      "dev.zio" %% "zio" % V.zioV withSources() withJavadoc()
   }
 
   def asyncUtils = Def.setting {
@@ -428,6 +443,8 @@ object Deps {
       Compile.slickHikari,
       Compile.slf4j,
       Compile.grizzledSlf4j,
+      Compile.zio,
+      Compile.zioInteropCats,
       Test.scalaTest.value,
       Test.pgEmbedded
     )
@@ -593,11 +610,15 @@ object Deps {
       Compile.newMicroJson,
       Compile.logback,
       Compile.slf4j,
-      Compile.grizzledSlf4j
+      Compile.grizzledSlf4j,
+      Compile.zio,
+      Compile.zioInteropCats
     )
 
   val walletTest = List(
-    Test.pgEmbedded
+    Test.pgEmbedded,
+    Test.zio,
+    Test.zioInteropCats
   )
 
   def docs = Def.setting {

@@ -10,6 +10,7 @@ import org.bitcoins.core.wallet.utxo._
 import org.bitcoins.crypto.DoubleSha256DigestBE
 import org.bitcoins.db.CRUDAutoInc
 import org.bitcoins.wallet.config._
+import zio.Task
 
 import java.sql.SQLException
 import scala.concurrent.{ExecutionContext, Future}
@@ -268,16 +269,13 @@ case class SpendingInfoDAO()(implicit
   /** Fetches all the incoming TXOs in our DB that are in
     * the transaction with the given TXID
     */
-  def findOutputsReceived(
-      txids: Vector[DoubleSha256DigestBE]): Future[Vector[SpendingInfoDb]] = {
-    val filtered = spkJoinQuery.filter(_._1.txid.inSet(txids))
+  def findOutputsReceived(txids: Vector[DoubleSha256DigestBE]): Task[Vector[SpendingInfoDb]] =
     safeDatabase
-      .runVec(filtered.result)
+      .runVec(spkJoinQuery.filter(_._1.txid.inSet(txids)).result)
       .map(res =>
         res.map { case (utxoRec, spkRec) =>
           utxoRec.toSpendingInfoDb(spkRec.scriptPubKey)
         })
-  }
 
   def findByScriptPubKey(
       scriptPubKey: ScriptPubKey): Future[Vector[SpendingInfoDb]] = {

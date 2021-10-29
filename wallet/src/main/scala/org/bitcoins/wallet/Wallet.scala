@@ -158,7 +158,7 @@ abstract class Wallet
   override def stop(): Future[Wallet] = Future.successful(this)
 
   def getSyncDescriptorOpt(): Future[Option[SyncHeightDescriptor]] = {
-    stateDescriptorDAO.getSyncDescriptorOpt()
+    stateDescriptorDAO.getSyncDescriptorOpt
   }
 
   override def getSyncState(): Future[BlockSyncState] = {

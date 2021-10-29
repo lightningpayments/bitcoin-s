@@ -263,8 +263,7 @@ trait Node extends NodeApi with ChainQueryApi with P2PLogger {
     * @return
     */
   def sync(): Future[Unit] = {
-    val blockchainsF =
-      BlockHeaderDAO()(executionContext, chainAppConfig).getBlockchains()
+    val blockchainsF = BlockHeaderDAO()(executionContext, chainAppConfig).getBlockchains
     for {
       chainApi <- chainApiFromDb()
       header <- chainApi.getBestBlockHeader()
