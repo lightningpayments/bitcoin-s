@@ -1,13 +1,13 @@
 package org.bitcoins.db
 
 import grizzled.slf4j.Logging
-import org.bitcoins.core.util.FutureUtil
 import slick.dbio.{DBIOAction, NoStream}
 import slick.lifted.AbstractTable
-import zio.Task
-import zio.blocking._
+import zio.{Task, ZIO}
+
 import java.sql.SQLException
 import scala.concurrent.{ExecutionContext, Future}
+import scala.language.postfixOps
 
 /** Created by chris on 9/8/16.
   * This is an abstract actor that can be used to implement any sort of
@@ -76,27 +76,27 @@ abstract class CRUD[T, PrimaryKeyType](implicit
   }
 
   /** Update the corresponding record in the database */
-  def update(t: T): Future[T] = {
+  def update(t: T): Task[T] = {
     updateAll(Vector(t)).map { ts =>
       ts.headOption match {
-        case Some(updated) => updated
         case None          => throw UpdateFailedException("Update failed for: " + t)
+        case Some(updated) => updated
       }
     }
   }
 
-  def updateAll(ts: Vector[T]): Future[Vector[T]] = {
+  def updateAll(ts: Vector[T]): Task[Vector[T]] = {
     if (ts.isEmpty) {
-      Future.successful(ts)
+      Task.succeed(ts)
     } else {
       val actions = ts.map(t => find(t).update(t))
       for {
         numUpdated <- safeDatabase.runVec(
           DBIO.sequence(actions).transactionally)
         tsUpdated <- {
-          if (numUpdated.sum == ts.length) Future.successful(ts)
+          if (numUpdated.sum == ts.length) Task.succeed(ts)
           else
-            Future.failed(new RuntimeException(
+            Task.fail(new RuntimeException(
               s"Unexpected number of updates completed ${numUpdated.sum} of ${ts.length}"))
         }
       } yield tsUpdated
@@ -129,29 +129,26 @@ abstract class CRUD[T, PrimaryKeyType](implicit
     * @param t - the record to inserted / updated
     * @return t - the record that has been inserted / updated
     */
-  def upsert(t: T): Future[T] = {
+  def upsert(t: T): Task[T] = {
     upsertAll(Vector(t)).flatMap { ts =>
       ts.headOption match {
-        case Some(updated) => Future.successful(updated)
-        case None =>
-          Future.failed(UpsertFailedException("Upsert failed for: " + t))
+        case None => Task.fail(UpsertFailedException("Upsert failed for: " + t))
+        case Some(updated) => Task.succeed(updated)
       }
     }
   }
 
   /** Upserts all of the given ts in the database, then returns the upserted values */
-  def upsertAll(ts: Vector[T]): Future[Vector[T]] = {
-    def oldUpsertAll(ts: Vector[T]): Future[Vector[T]] = {
+  def upsertAll(ts: Vector[T]): Task[Vector[T]] = {
+    def oldUpsertAll(ts: Vector[T]): Task[Vector[T]] = {
       val actions = ts.map(t => table.insertOrUpdate(t))
-      for {
-        _ <- safeDatabase.run(DBIO.sequence(actions).transactionally)
-        result <- safeDatabase.runVec(findAll(ts).result)
-      } yield result
 
+      Task.fromFuture(_ => safeDatabase.run(DBIO.sequence(actions).transactionally)) *>
+      safeDatabase.runVec(findAll(ts).result)
     }
 
-    FutureUtil.foldLeftAsync(Vector.empty[T], ts) { (accum, t) =>
-      oldUpsertAll(Vector(t)).map(accum ++ _)
+    ts.foldLeft(ZIO(Vector.empty[T])) { (acc, t) =>
+      oldUpsertAll(t :: Nil toVector).flatMap(v => acc.map(_ ++ v))
     }
   }
 

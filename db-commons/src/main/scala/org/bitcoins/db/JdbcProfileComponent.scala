@@ -13,9 +13,7 @@ trait JdbcProfileComponent[+ConfigType <: DbAppConfig] extends Logging {
   /** The configuration details for connecting/using the database for our projects
     * that require database connections
     */
-  lazy val dbConfig: DatabaseConfig[JdbcProfile] = {
-    appConfig.slickDbConfig
-  }
+  lazy val dbConfig: DatabaseConfig[JdbcProfile] = appConfig.slickDbConfig
 
   lazy val profile: JdbcProfile = dbConfig.profile
   import profile.api._
@@ -27,9 +25,7 @@ trait JdbcProfileComponent[+ConfigType <: DbAppConfig] extends Logging {
   lazy val numThreads: Int = dbConfig.config.getInt("db.numThreads")
 
   /** The database we are connecting to */
-  lazy val database: Database = {
-    dbConfig.db
-  }
+  lazy val database: Database = dbConfig.db
 
   private[this] var hikariLoggerOpt: Option[HikariLogging] = None
 
@@ -55,8 +51,6 @@ trait JdbcProfileComponent[+ConfigType <: DbAppConfig] extends Logging {
 
   }
 
-  protected def stopHikariLogger(): Unit = {
-    hikariLoggerOpt.foreach(_.stop())
-    ()
-  }
+  protected def stopHikariLogger(): Unit = hikariLoggerOpt.foreach(_.stop())
+
 }

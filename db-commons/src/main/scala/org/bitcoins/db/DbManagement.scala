@@ -5,6 +5,7 @@ import org.bitcoins.core.util.FutureUtil
 import org.bitcoins.db.DatabaseDriver._
 import org.flywaydb.core.Flyway
 import org.flywaydb.core.api.{FlywayException, MigrationInfoService}
+import zio.Task
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -100,22 +101,21 @@ trait DbManagement extends Logging {
 
   def dropTable(
       table: TableQuery[Table[_]]
-  ): Future[Unit] = {
+  ): Task[Unit] = {
     val query = table.schema.dropIfExists
-    val result = database.run(query)
-    result
+    Task.fromFuture(_ => database.run(query))
   }
 
   def dropTable(tableName: String)(implicit
-      ec: ExecutionContext): Future[Int] = {
-    val fullTableName =
-      appConfig.schemaName.map(_ + ".").getOrElse("") + tableName
+      ec: ExecutionContext): Task[Int] = {
+    val fullTableName = appConfig.schemaName.map(_ + ".").getOrElse("") + tableName
     val sql = sqlu"""DROP TABLE IF EXISTS #$fullTableName"""
-    val result = database.run(sql)
-    result.failed.foreach { ex =>
-      ex.printStackTrace()
+
+    Task.fromFuture { _ =>
+      lazy val future = database.run(sql)
+      future.failed.foreach(_.printStackTrace())
+      future
     }
-    result
   }
 
   def createSchema(createIfNotExists: Boolean = true)(implicit
