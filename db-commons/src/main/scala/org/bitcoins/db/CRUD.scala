@@ -1,9 +1,10 @@
 package org.bitcoins.db
 
 import grizzled.slf4j.Logging
+import org.bitcoins.core.util.TaskUtil
 import slick.dbio.{DBIOAction, NoStream}
 import slick.lifted.AbstractTable
-import zio.{Task, ZIO}
+import zio.Task
 
 import java.sql.SQLException
 import scala.concurrent.{ExecutionContext, Future}
@@ -56,36 +57,35 @@ abstract class CRUD[T, PrimaryKeyType](implicit
     * @param t - the record to be inserted
     * @return the inserted record
     */
-  def create(t: T): Future[T] = {
+  def create(t: T): Task[T] = {
     logger.trace(s"Writing $t to DB with config: $appConfig")
     createAll(Vector(t)).map(_.head)
   }
 
-  def createAll(ts: Vector[T]): Future[Vector[T]]
+  def createAll(ts: Vector[T]): Task[Vector[T]]
 
   /** read a record from the database
     *
     * @param id - the id of the record to be read
     * @return Option[T] - the record if found, else none
     */
-  def read(id: PrimaryKeyType): Future[Option[T]] = {
+  def read(id: PrimaryKeyType): Task[Option[T]] = {
     logger.trace(s"Reading from DB with config: ${appConfig}")
     val query = findByPrimaryKey(id)
-    val rows: Future[Seq[T]] = safeDatabase.run(query.result)
+    val rows: Task[Seq[T]] = Task.fromFuture(_ => safeDatabase.run(query.result))
     rows.map(_.headOption)
   }
 
   /** Update the corresponding record in the database */
-  def update(t: T): Task[T] = {
+  def update(t: T): Task[T] =
     updateAll(Vector(t)).map { ts =>
       ts.headOption match {
         case None          => throw UpdateFailedException("Update failed for: " + t)
         case Some(updated) => updated
       }
     }
-  }
 
-  def updateAll(ts: Vector[T]): Task[Vector[T]] = {
+  def updateAll(ts: Vector[T]): Task[Vector[T]] =
     if (ts.isEmpty) {
       Task.succeed(ts)
     } else {
@@ -101,28 +101,26 @@ abstract class CRUD[T, PrimaryKeyType](implicit
         }
       } yield tsUpdated
     }
-  }
 
   /** delete the corresponding record in the database
     *
     * @param t - the record to be deleted
     * @return int - the number of rows affected by the deletion
     */
-  def delete(t: T): Future[Int] = {
+  def delete(t: T): Task[Int] = {
     logger.debug("Deleting record: " + t)
     val query: Query[Table[_], T, Seq] = find(t)
-    safeDatabase.run(query.delete)
+    Task.fromFuture(_ => safeDatabase.run(query.delete))
   }
 
-  def deleteAll(ts: Vector[T]): Future[Int] = {
+  def deleteAll(ts: Vector[T]): Task[Int] = {
     val query: Query[Table[_], T, Seq] = findAll(ts)
-    safeDatabase.run(query.delete)
+    Task.fromFuture(_ => safeDatabase.run(query.delete))
   }
 
   /** delete all records from the table
     */
-  def deleteAll(): Future[Int] =
-    safeDatabase.run(table.delete.transactionally)
+  def deleteAll(): Task[Int] = Task.fromFuture(_ => safeDatabase.run(table.delete.transactionally))
 
   /** insert the record if it does not exist, update it if it does
     *
@@ -140,15 +138,15 @@ abstract class CRUD[T, PrimaryKeyType](implicit
 
   /** Upserts all of the given ts in the database, then returns the upserted values */
   def upsertAll(ts: Vector[T]): Task[Vector[T]] = {
-    def oldUpsertAll(ts: Vector[T]): Task[Vector[T]] = {
+    val oldUpsertAll: Vector[T] => Task[Vector[T]] = ts => {
       val actions = ts.map(t => table.insertOrUpdate(t))
+      lazy val transaction = DBIO.sequence(actions).transactionally
 
-      Task.fromFuture(_ => safeDatabase.run(DBIO.sequence(actions).transactionally)) *>
-      safeDatabase.runVec(findAll(ts).result)
+      Task.fromFuture(_ => safeDatabase.run(transaction)) *> safeDatabase.runVec(findAll(ts).result)
     }
 
-    ts.foldLeft(ZIO(Vector.empty[T])) { (acc, t) =>
-      oldUpsertAll(t :: Nil toVector).flatMap(v => acc.map(_ ++ v))
+    TaskUtil.foldLeftAsync(Vector.empty[T], ts) { (accum, t) =>
+      oldUpsertAll(Vector(t)).map(accum ++ _)
     }
   }
 
@@ -161,8 +159,7 @@ abstract class CRUD[T, PrimaryKeyType](implicit
     findByPrimaryKeys(Vector(id))
 
   /** Finds the rows that correlate to the given primary keys */
-  protected def findByPrimaryKeys(
-      ids: Vector[PrimaryKeyType]): Query[Table[T], T, Seq]
+  protected def findByPrimaryKeys(ids: Vector[PrimaryKeyType]): Query[Table[T], T, Seq]
 
   /** return the row that corresponds with this record
     *
@@ -181,7 +178,7 @@ abstract class CRUD[T, PrimaryKeyType](implicit
   def count(): Future[Int] = safeDatabase.run(table.length.result)
 }
 
-case class SafeDatabase(jdbcProfile: JdbcProfileComponent[DbAppConfig])
+final case class SafeDatabase(jdbcProfile: JdbcProfileComponent[DbAppConfig])
     extends Logging {
 
   import jdbcProfile.database
@@ -195,12 +192,11 @@ case class SafeDatabase(jdbcProfile: JdbcProfileComponent[DbAppConfig])
   private val sqlite = jdbcProfile.appConfig.driver == DatabaseDriver.SQLite
 
   /** Logs the given action and error, if we are not on mainnet */
-  private def logAndThrowError(
-      action: DBIOAction[_, NoStream, _]): PartialFunction[
+  private def logAndThrowError(action: DBIOAction[_, NoStream, _]): PartialFunction[
     Throwable,
-    Nothing] = { case err: SQLException =>
-    logger.error(
-      s"Error when executing query ${action.getDumpInfo.getNamePlusMainInfo}")
+    Nothing
+  ] = { case err: SQLException =>
+    logger.error(s"Error when executing query ${action.getDumpInfo.getNamePlusMainInfo}")
     logger.error(s"$err")
     throw err
   }
@@ -228,8 +224,8 @@ case class SafeDatabase(jdbcProfile: JdbcProfileComponent[DbAppConfig])
     }
 }
 
-case class UpdateFailedException(message: String)
+final case class UpdateFailedException(message: String)
     extends RuntimeException(message)
 
-case class UpsertFailedException(message: String)
+final case class UpsertFailedException(message: String)
     extends RuntimeException(message)

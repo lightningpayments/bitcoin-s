@@ -1,6 +1,7 @@
 package org.bitcoins.db
 
 import org.bitcoins.core.api.db.DbRowAutoInc
+import zio.Task
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -14,7 +15,7 @@ abstract class CRUDAutoInc[T <: DbRowAutoInc[T]](implicit
   /** The table inside our database we are inserting into */
   override val table: profile.api.TableQuery[_ <: TableAutoInc[T]]
 
-  override def createAll(ts: Vector[T]): Future[Vector[T]] = {
+  override def createAll(ts: Vector[T]): Task[Vector[T]] = {
     val idQuery = table.map(_.id)
     val idAutoInc = table.returning(idQuery)
     val query = {
@@ -24,8 +25,7 @@ abstract class CRUDAutoInc[T <: DbRowAutoInc[T]](implicit
     safeDatabase.runVec(actions.transactionally)
   }
 
-  override def findByPrimaryKeys(
-      ids: Vector[Long]): Query[TableAutoInc[T], T, Seq] = {
+  override def findByPrimaryKeys(ids: Vector[Long]): Query[TableAutoInc[T], T, Seq] = {
     table.filter { t =>
       t.id.inSet(ids)
     }

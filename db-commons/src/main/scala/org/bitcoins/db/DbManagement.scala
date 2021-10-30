@@ -64,7 +64,7 @@ trait DbManagement extends Logging {
 
   def allTables: List[TableQuery[Table[_]]]
 
-  def dropAll()(implicit ec: ExecutionContext): Future[Unit] = {
+  def dropAll()(implicit ec: ExecutionContext): Task[Unit] = {
     val result =
       FutureUtil
         .foldLeftAsync((), allTables.reverse) { (_, table) =>

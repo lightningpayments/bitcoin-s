@@ -318,6 +318,8 @@ object Deps {
   def core = Def.setting {
     List(
       Compile.bouncycastle,
+      Compile.zio,
+      Compile.zioInteropCats,
       Compile.scodec.value
     )
   }
