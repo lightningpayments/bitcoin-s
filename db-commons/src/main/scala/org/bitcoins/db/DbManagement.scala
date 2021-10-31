@@ -1,7 +1,7 @@
 package org.bitcoins.db
 
 import grizzled.slf4j.Logging
-import org.bitcoins.core.util.FutureUtil
+import org.bitcoins.core.util.{FutureUtil, TaskUtil}
 import org.bitcoins.db.DatabaseDriver._
 import org.flywaydb.core.Flyway
 import org.flywaydb.core.api.{FlywayException, MigrationInfoService}
@@ -64,17 +64,10 @@ trait DbManagement extends Logging {
 
   def allTables: List[TableQuery[Table[_]]]
 
-  def dropAll()(implicit ec: ExecutionContext): Task[Unit] = {
-    val result =
-      FutureUtil
-        .foldLeftAsync((), allTables.reverse) { (_, table) =>
-          dropTable(table)
-        }
-    result.failed.foreach { e =>
-      e.printStackTrace()
-    }
-    result
-  }
+  def dropAll()(implicit ec: ExecutionContext): Task[Unit] =
+    TaskUtil
+      .foldLeftAsync((), allTables.reverse)((_, table) => dropTable(table))
+      .foldM(e => Task(e.printStackTrace()) *> Task.unit, _ => Task.unit)
 
   /** The query needed to create the given table */
   private def createTableQuery(

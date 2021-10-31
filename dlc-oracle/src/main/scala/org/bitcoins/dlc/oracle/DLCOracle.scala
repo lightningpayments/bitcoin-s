@@ -24,6 +24,7 @@ import org.bitcoins.dlc.oracle.storage._
 import org.bitcoins.dlc.oracle.util.EventDbUtil
 import org.bitcoins.keymanager.WalletStorage
 import scodec.bits.ByteVector
+import zio.Task
 
 import java.nio.file.Path
 import java.time.Instant
@@ -475,11 +476,11 @@ case class DLCOracle()(implicit val conf: DLCOracleAppConfig)
           "Backup is supported only for SQLite database backend"))
   }
 
-  override def oracleName(): Future[Option[String]] = {
+  override def oracleName(): Task[Option[String]] = {
     masterXpubDAO.findXPub().map(_.name)
   }
 
-  override def setOracleName(name: String): Future[Unit] = {
+  override def setOracleName(name: String): Task[Unit] = {
     masterXpubDAO.updateName(name)
   }
 }

@@ -4,7 +4,7 @@ import grizzled.slf4j.Logging
 import org.bitcoins.core.util.TaskUtil
 import slick.dbio.{DBIOAction, NoStream}
 import slick.lifted.AbstractTable
-import zio.Task
+import zio.{Task, ZIO}
 
 import java.sql.SQLException
 import scala.concurrent.{ExecutionContext, Future}
@@ -22,11 +22,10 @@ abstract class CRUD[T, PrimaryKeyType](implicit
     override val appConfig: DbAppConfig)
     extends JdbcProfileComponent[DbAppConfig] {
 
-  val schemaName: Option[String] = appConfig.schemaName
-
   import profile.api._
-
   import scala.language.implicitConversions
+
+  val schemaName: Option[String] = appConfig.schemaName
 
   /** We need to cast from TableQuery's of internal types (e.g. AddressDAO#AddressTable) to external
     * versions of them (e.g. AddressDAO().table). You'll notice that although the latter is a subtype
@@ -72,35 +71,29 @@ abstract class CRUD[T, PrimaryKeyType](implicit
   def read(id: PrimaryKeyType): Task[Option[T]] = {
     logger.trace(s"Reading from DB with config: ${appConfig}")
     val query = findByPrimaryKey(id)
-    val rows: Task[Seq[T]] = Task.fromFuture(_ => safeDatabase.run(query.result))
-    rows.map(_.headOption)
+    safeDatabase.run(query.result).map(_.headOption)
   }
 
   /** Update the corresponding record in the database */
-  def update(t: T): Task[T] =
-    updateAll(Vector(t)).map { ts =>
-      ts.headOption match {
-        case None          => throw UpdateFailedException("Update failed for: " + t)
-        case Some(updated) => updated
-      }
+  def update(t: T): Task[T] = updateAll(Vector(t)).map {
+    _.headOption match {
+      case None          => throw UpdateFailedException("Update failed for: " + t)
+      case Some(updated) => updated
     }
+  }
 
   def updateAll(ts: Vector[T]): Task[Vector[T]] =
-    if (ts.isEmpty) {
-      Task.succeed(ts)
-    } else {
-      val actions = ts.map(t => find(t).update(t))
-      for {
-        numUpdated <- safeDatabase.runVec(
-          DBIO.sequence(actions).transactionally)
-        tsUpdated <- {
-          if (numUpdated.sum == ts.length) Task.succeed(ts)
-          else
-            Task.fail(new RuntimeException(
-              s"Unexpected number of updates completed ${numUpdated.sum} of ${ts.length}"))
+    ZIO.ifM(ZIO.succeed(ts.isEmpty))(
+      onTrue  = Task.succeed(ts),
+      onFalse = for {
+        actions    <- Task.succeed(ts.map(t => find(t).update(t)))
+        numUpdated <- safeDatabase.runVec(DBIO.sequence(actions).transactionally)
+        _          <- ZIO.unless(numUpdated.sum == ts.length) {
+          Task.fail(new RuntimeException(s"Unexpected number of updates completed ${numUpdated.sum} of ${ts.length}"))
         }
+        tsUpdated  <- Task.succeed(ts)
       } yield tsUpdated
-    }
+    )
 
   /** delete the corresponding record in the database
     *
@@ -109,54 +102,40 @@ abstract class CRUD[T, PrimaryKeyType](implicit
     */
   def delete(t: T): Task[Int] = {
     logger.debug("Deleting record: " + t)
-    val query: Query[Table[_], T, Seq] = find(t)
-    Task.fromFuture(_ => safeDatabase.run(query.delete))
+    safeDatabase.run(find(t).delete)
   }
 
-  def deleteAll(ts: Vector[T]): Task[Int] = {
-    val query: Query[Table[_], T, Seq] = findAll(ts)
-    Task.fromFuture(_ => safeDatabase.run(query.delete))
-  }
+  def deleteAll(ts: Vector[T]): Task[Int] = safeDatabase.run(findAll(ts).delete)
 
   /** delete all records from the table
     */
-  def deleteAll(): Task[Int] = Task.fromFuture(_ => safeDatabase.run(table.delete.transactionally))
+  def deleteAll(): Task[Int] = safeDatabase.run(table.delete.transactionally)
 
   /** insert the record if it does not exist, update it if it does
     *
     * @param t - the record to inserted / updated
     * @return t - the record that has been inserted / updated
     */
-  def upsert(t: T): Task[T] = {
-    upsertAll(Vector(t)).flatMap { ts =>
-      ts.headOption match {
-        case None => Task.fail(UpsertFailedException("Upsert failed for: " + t))
-        case Some(updated) => Task.succeed(updated)
-      }
+  def upsert(t: T): Task[T] = upsertAll(Vector(t)).flatMap {
+    _.headOption match {
+      case None => Task.fail(UpsertFailedException("Upsert failed for: " + t))
+      case Some(updated) => Task.succeed(updated)
     }
   }
 
   /** Upserts all of the given ts in the database, then returns the upserted values */
-  def upsertAll(ts: Vector[T]): Task[Vector[T]] = {
-    val oldUpsertAll: Vector[T] => Task[Vector[T]] = ts => {
-      val actions = ts.map(t => table.insertOrUpdate(t))
-      lazy val transaction = DBIO.sequence(actions).transactionally
-
-      Task.fromFuture(_ => safeDatabase.run(transaction)) *> safeDatabase.runVec(findAll(ts).result)
-    }
-
+  def upsertAll(ts: Vector[T]): Task[Vector[T]] =
     TaskUtil.foldLeftAsync(Vector.empty[T], ts) { (accum, t) =>
-      oldUpsertAll(Vector(t)).map(accum ++ _)
+      lazy val transaction = DBIO.sequence(Vector(t).map(table.insertOrUpdate)).transactionally
+      safeDatabase.run(transaction) *> safeDatabase.runVec(findAll(accum).result).map(accum ++ _)
     }
-  }
 
   /** return all rows that have a certain primary key
     *
     * @param id
     * @return Query object corresponding to the selected rows
     */
-  protected def findByPrimaryKey(id: PrimaryKeyType): Query[Table[_], T, Seq] =
-    findByPrimaryKeys(Vector(id))
+  protected def findByPrimaryKey(id: PrimaryKeyType): Query[Table[_], T, Seq] = findByPrimaryKeys(Vector(id))
 
   /** Finds the rows that correlate to the given primary keys */
   protected def findByPrimaryKeys(ids: Vector[PrimaryKeyType]): Query[Table[T], T, Seq]
@@ -171,11 +150,10 @@ abstract class CRUD[T, PrimaryKeyType](implicit
   protected def findAll(ts: Vector[T]): Query[Table[_], T, Seq]
 
   /** Finds all elements in the table */
-  def findAll(): Future[Vector[T]] =
-    safeDatabase.run(table.result).map(_.toVector)
+  def findAll(): Task[Vector[T]] = safeDatabase.run(table.result).map(_.toVector)
 
   /** Returns number of rows in the table */
-  def count(): Future[Int] = safeDatabase.run(table.length.result)
+  def count(): Task[Int] = safeDatabase.run(table.length.result)
 }
 
 final case class SafeDatabase(jdbcProfile: JdbcProfileComponent[DbAppConfig])
@@ -202,25 +180,23 @@ final case class SafeDatabase(jdbcProfile: JdbcProfileComponent[DbAppConfig])
   }
 
   /** Runs the given DB action */
-  def run[R](action: DBIOAction[R, NoStream, _])(implicit
-      ec: ExecutionContext): Future[R] = {
-    val result =
-      if (sqlite) database.run[R](foreignKeysPragma >> action)
-      else database.run[R](action)
-    result.recoverWith { logAndThrowError(action) }
-  }
+  def run[R](action: DBIOAction[R, NoStream, _]): Task[R] =
+    ZIO.ifM(ZIO.succeed(sqlite))(
+      Task.fromFuture(implicit ec =>
+        database.run[R](foreignKeysPragma >> action).recoverWith { logAndThrowError(action) }),
+      Task.fromFuture(implicit ec =>
+        database.run[R](action).recoverWith { logAndThrowError(action) })
+    )
 
   /** Runs the given DB sequence-returning DB action
     * and converts the result to a vector
     */
   def runVec[R](action: DBIOAction[Seq[R], NoStream, _]): Task[Vector[R]] =
     Task.fromFuture { implicit ec =>
-      lazy val result = scala.concurrent.blocking {
+      scala.concurrent.blocking {
         if (sqlite) database.run[Seq[R]](foreignKeysPragma >> action)
         else database.run[Seq[R]](action)
-      }
-
-      result.map(_.toVector).recoverWith { logAndThrowError(action) }
+      }.map(_.toVector).recoverWith { logAndThrowError(action) }
     }
 }
 

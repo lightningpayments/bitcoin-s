@@ -13,7 +13,7 @@ import java.util.concurrent.{Executors, ScheduledFuture, TimeUnit}
 import javax.management.{JMX, ObjectName}
 import scala.concurrent.duration._
 
-case class HikariLogging(
+final case class HikariLogging(
     hikariDataSource: HikariDataSource,
     moduleName: String,
     interval: Duration
