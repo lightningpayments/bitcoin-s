@@ -84,14 +84,16 @@ abstract class CRUD[T, PrimaryKeyType](implicit
 
   def updateAll(ts: Vector[T]): Task[Vector[T]] =
     ZIO.ifM(ZIO.succeed(ts.isEmpty))(
-      onTrue  = Task.succeed(ts),
+      onTrue = Task.succeed(ts),
       onFalse = for {
-        actions    <- Task.succeed(ts.map(t => find(t).update(t)))
-        numUpdated <- safeDatabase.runVec(DBIO.sequence(actions).transactionally)
-        _          <- ZIO.unless(numUpdated.sum == ts.length) {
-          Task.fail(new RuntimeException(s"Unexpected number of updates completed ${numUpdated.sum} of ${ts.length}"))
+        actions <- Task.succeed(ts.map(t => find(t).update(t)))
+        numUpdated <- safeDatabase.runVec(
+          DBIO.sequence(actions).transactionally)
+        _ <- ZIO.unless(numUpdated.sum == ts.length) {
+          Task.fail(new RuntimeException(
+            s"Unexpected number of updates completed ${numUpdated.sum} of ${ts.length}"))
         }
-        tsUpdated  <- Task.succeed(ts)
+        tsUpdated <- Task.succeed(ts)
       } yield tsUpdated
     )
 
@@ -118,7 +120,7 @@ abstract class CRUD[T, PrimaryKeyType](implicit
     */
   def upsert(t: T): Task[T] = upsertAll(Vector(t)).flatMap {
     _.headOption match {
-      case None => Task.fail(UpsertFailedException("Upsert failed for: " + t))
+      case None          => Task.fail(UpsertFailedException("Upsert failed for: " + t))
       case Some(updated) => Task.succeed(updated)
     }
   }
@@ -126,8 +128,11 @@ abstract class CRUD[T, PrimaryKeyType](implicit
   /** Upserts all of the given ts in the database, then returns the upserted values */
   def upsertAll(ts: Vector[T]): Task[Vector[T]] =
     TaskUtil.foldLeftAsync(Vector.empty[T], ts) { (accum, t) =>
-      lazy val transaction = DBIO.sequence(Vector(t).map(table.insertOrUpdate)).transactionally
-      safeDatabase.run(transaction) *> safeDatabase.runVec(findAll(accum).result).map(accum ++ _)
+      lazy val transaction =
+        DBIO.sequence(Vector(t).map(table.insertOrUpdate)).transactionally
+      safeDatabase.run(transaction) *> safeDatabase
+        .runVec(findAll(accum).result)
+        .map(accum ++ _)
     }
 
   /** return all rows that have a certain primary key
@@ -135,10 +140,12 @@ abstract class CRUD[T, PrimaryKeyType](implicit
     * @param id
     * @return Query object corresponding to the selected rows
     */
-  protected def findByPrimaryKey(id: PrimaryKeyType): Query[Table[_], T, Seq] = findByPrimaryKeys(Vector(id))
+  protected def findByPrimaryKey(id: PrimaryKeyType): Query[Table[_], T, Seq] =
+    findByPrimaryKeys(Vector(id))
 
   /** Finds the rows that correlate to the given primary keys */
-  protected def findByPrimaryKeys(ids: Vector[PrimaryKeyType]): Query[Table[T], T, Seq]
+  protected def findByPrimaryKeys(
+      ids: Vector[PrimaryKeyType]): Query[Table[T], T, Seq]
 
   /** return the row that corresponds with this record
     *
@@ -150,7 +157,8 @@ abstract class CRUD[T, PrimaryKeyType](implicit
   protected def findAll(ts: Vector[T]): Query[Table[_], T, Seq]
 
   /** Finds all elements in the table */
-  def findAll(): Task[Vector[T]] = safeDatabase.run(table.result).map(_.toVector)
+  def findAll(): Task[Vector[T]] =
+    safeDatabase.run(table.result).map(_.toVector)
 
   /** Returns number of rows in the table */
   def count(): Task[Int] = safeDatabase.run(table.length.result)
@@ -170,11 +178,13 @@ final case class SafeDatabase(jdbcProfile: JdbcProfileComponent[DbAppConfig])
   private val sqlite = jdbcProfile.appConfig.driver == DatabaseDriver.SQLite
 
   /** Logs the given action and error, if we are not on mainnet */
-  private def logAndThrowError(action: DBIOAction[_, NoStream, _]): PartialFunction[
+  private def logAndThrowError(
+      action: DBIOAction[_, NoStream, _]): PartialFunction[
     Throwable,
     Nothing
   ] = { case err: SQLException =>
-    logger.error(s"Error when executing query ${action.getDumpInfo.getNamePlusMainInfo}")
+    logger.error(
+      s"Error when executing query ${action.getDumpInfo.getNamePlusMainInfo}")
     logger.error(s"$err")
     throw err
   }
@@ -183,7 +193,9 @@ final case class SafeDatabase(jdbcProfile: JdbcProfileComponent[DbAppConfig])
   def run[R](action: DBIOAction[R, NoStream, _]): Task[R] =
     ZIO.ifM(ZIO.succeed(sqlite))(
       Task.fromFuture(implicit ec =>
-        database.run[R](foreignKeysPragma >> action).recoverWith { logAndThrowError(action) }),
+        database.run[R](foreignKeysPragma >> action).recoverWith {
+          logAndThrowError(action)
+        }),
       Task.fromFuture(implicit ec =>
         database.run[R](action).recoverWith { logAndThrowError(action) })
     )
@@ -193,10 +205,13 @@ final case class SafeDatabase(jdbcProfile: JdbcProfileComponent[DbAppConfig])
     */
   def runVec[R](action: DBIOAction[Seq[R], NoStream, _]): Task[Vector[R]] =
     Task.fromFuture { implicit ec =>
-      scala.concurrent.blocking {
-        if (sqlite) database.run[Seq[R]](foreignKeysPragma >> action)
-        else database.run[Seq[R]](action)
-      }.map(_.toVector).recoverWith { logAndThrowError(action) }
+      scala.concurrent
+        .blocking {
+          if (sqlite) database.run[Seq[R]](foreignKeysPragma >> action)
+          else database.run[Seq[R]](action)
+        }
+        .map(_.toVector)
+        .recoverWith { logAndThrowError(action) }
     }
 }
 

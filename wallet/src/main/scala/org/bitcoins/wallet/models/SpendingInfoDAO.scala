@@ -269,7 +269,8 @@ case class SpendingInfoDAO()(implicit
   /** Fetches all the incoming TXOs in our DB that are in
     * the transaction with the given TXID
     */
-  def findOutputsReceived(txids: Vector[DoubleSha256DigestBE]): Task[Vector[SpendingInfoDb]] =
+  def findOutputsReceived(
+      txids: Vector[DoubleSha256DigestBE]): Task[Vector[SpendingInfoDb]] =
     safeDatabase
       .runVec(spkJoinQuery.filter(_._1.txid.inSet(txids)).result)
       .map(res =>

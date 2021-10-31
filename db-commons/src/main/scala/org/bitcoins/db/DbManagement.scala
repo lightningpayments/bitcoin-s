@@ -99,9 +99,9 @@ trait DbManagement extends Logging {
     Task.fromFuture(_ => database.run(query))
   }
 
-  def dropTable(tableName: String)(implicit
-      ec: ExecutionContext): Task[Int] = {
-    val fullTableName = appConfig.schemaName.map(_ + ".").getOrElse("") + tableName
+  def dropTable(tableName: String)(implicit ec: ExecutionContext): Task[Int] = {
+    val fullTableName =
+      appConfig.schemaName.map(_ + ".").getOrElse("") + tableName
     val sql = sqlu"""DROP TABLE IF EXISTS #$fullTableName"""
 
     Task.fromFuture { _ =>

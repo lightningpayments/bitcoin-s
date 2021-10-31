@@ -316,11 +316,11 @@ private[bitcoins] trait TransactionProcessing extends WalletLogger {
     * output fittingly.
     */
   private def processTransactionImpl(
-    transaction: Transaction,
-    blockHashOpt: Option[DoubleSha256DigestBE],
-    newTags: Vector[AddressTag],
-    receivedSpendingInfoDbsOpt: Option[Vector[SpendingInfoDb]],
-    spentSpendingInfoDbsOpt: Option[Vector[SpendingInfoDb]]
+      transaction: Transaction,
+      blockHashOpt: Option[DoubleSha256DigestBE],
+      newTags: Vector[AddressTag],
+      receivedSpendingInfoDbsOpt: Option[Vector[SpendingInfoDb]],
+      spentSpendingInfoDbsOpt: Option[Vector[SpendingInfoDb]]
   ): Task[ProcessTxResult] = {
 
     logger.debug(

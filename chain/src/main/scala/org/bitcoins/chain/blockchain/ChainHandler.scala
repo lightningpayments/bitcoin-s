@@ -372,7 +372,8 @@ class ChainHandler(
   }
 
   /** @inheritdoc */
-  override def processFilters(messages: Vector[CompactFilterMessage]): Future[ChainApi] = {
+  override def processFilters(
+      messages: Vector[CompactFilterMessage]): Future[ChainApi] = {
 
     logger.debug(s"processFilters: messages=${messages}")
     val filterHeadersF = filterHeaderDAO

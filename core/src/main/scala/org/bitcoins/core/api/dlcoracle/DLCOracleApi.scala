@@ -43,13 +43,12 @@ trait DLCOracleApi {
       unit: String,
       precision: Int32): Task[OracleAnnouncementTLV] =
     createNewDigitDecompAnnouncement(eventName = eventName,
-      maturationTime = maturationTime,
-      base = base,
-      isSigned = isSigned,
-      numDigits = numDigits,
-      unit = unit,
-      precision = precision
-    )
+                                     maturationTime = maturationTime,
+                                     base = base,
+                                     isSigned = isSigned,
+                                     numDigits = numDigits,
+                                     unit = unit,
+                                     precision = precision)
 
   def createNewDigitDecompAnnouncement(
       eventName: String,
@@ -78,7 +77,8 @@ trait DLCOracleApi {
       eventName: String,
       maturationTime: Instant,
       descriptor: EventDescriptorTLV,
-      signingVersion: SigningVersion = SigningVersion.latest): Task[OracleAnnouncementTLV] = {
+      signingVersion: SigningVersion = SigningVersion.latest): Task[
+    OracleAnnouncementTLV] = {
     createNewAnnouncement(eventName, maturationTime, descriptor, signingVersion)
   }
 
@@ -86,7 +86,8 @@ trait DLCOracleApi {
       eventName: String,
       maturationTime: Instant,
       descriptor: EventDescriptorTLV,
-      signingVersion: SigningVersion = SigningVersion.latest): Task[OracleAnnouncementTLV]
+      signingVersion: SigningVersion = SigningVersion.latest): Task[
+    OracleAnnouncementTLV]
 
   @deprecated("Call signEnum", "2021-09-30")
   def signEnumEvent(

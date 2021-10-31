@@ -64,7 +64,9 @@ case class WalletStateDescriptorDAO()(implicit
     }
   }
 
-  def updateSyncHeight(hash: DoubleSha256DigestBE, height: Int): Future[WalletStateDescriptorDb] =
+  def updateSyncHeight(
+      hash: DoubleSha256DigestBE,
+      height: Int): Future[WalletStateDescriptorDb] =
     getSyncDescriptorOpt.flatMap {
       case Some(old) =>
         if (old.height > height) {
@@ -80,18 +82,20 @@ case class WalletStateDescriptorDAO()(implicit
         create(db)
     }
 
-  class WalletStateDescriptorTable(t: Tag) extends Table[WalletStateDescriptorDb](
-    _tableTag   = t,
-    _schemaName = schemaName,
-    _tableName  = "state_descriptors"
-  ) {
+  class WalletStateDescriptorTable(t: Tag)
+      extends Table[WalletStateDescriptorDb](
+        _tableTag = t,
+        _schemaName = schemaName,
+        _tableName = "state_descriptors"
+      ) {
 
     def tpe: Rep[WalletStateDescriptorType] = column("type", O.PrimaryKey)
 
     def descriptor: Rep[WalletStateDescriptor] = column("descriptor")
 
     override def * : ProvenShape[WalletStateDescriptorDb] =
-      (tpe, descriptor).<>(WalletStateDescriptorDb.tupled, WalletStateDescriptorDb.unapply)
+      (tpe, descriptor).<>(WalletStateDescriptorDb.tupled,
+                           WalletStateDescriptorDb.unapply)
 
   }
 }

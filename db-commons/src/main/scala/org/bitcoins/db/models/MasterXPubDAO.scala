@@ -58,17 +58,23 @@ case class MasterXPubDAO()(implicit
     Task.fromFuture(_ => database.run(action.transactionally).map(_ => t))
   }
 
-  override def createAll(extKeys: Vector[ExtPublicKeyDTO]): Task[Vector[ExtPublicKeyDTO]] =
-    if (extKeys.size != 1) Task.fail(new SQLException(s"Only 1 master xpub should be stored, got=${extKeys.size}"))
+  override def createAll(
+      extKeys: Vector[ExtPublicKeyDTO]): Task[Vector[ExtPublicKeyDTO]] =
+    if (extKeys.size != 1)
+      Task.fail(
+        new SQLException(
+          s"Only 1 master xpub should be stored, got=${extKeys.size}"))
     else create(extKeys.head).map(Vector(_))
 
-  override protected def findByPrimaryKeys(pubkeys: Vector[ECPublicKey]): profile.api.Query[
+  override protected def findByPrimaryKeys(
+      pubkeys: Vector[ECPublicKey]): profile.api.Query[
     profile.api.Table[ExtPublicKeyDTO],
     ExtPublicKeyDTO,
     Seq
   ] = table.filter(_.key.inSet(pubkeys))
 
-  override protected def findAll(ts: Vector[ExtPublicKeyDTO]): profile.api.Query[
+  override protected def findAll(
+      ts: Vector[ExtPublicKeyDTO]): profile.api.Query[
     profile.api.Table[_],
     ExtPublicKeyDTO,
     Seq

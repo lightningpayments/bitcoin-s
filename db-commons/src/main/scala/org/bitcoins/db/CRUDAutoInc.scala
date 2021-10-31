@@ -25,7 +25,8 @@ abstract class CRUDAutoInc[T <: DbRowAutoInc[T]](implicit
     safeDatabase.runVec(actions.transactionally)
   }
 
-  override def findByPrimaryKeys(ids: Vector[Long]): Query[TableAutoInc[T], T, Seq] = {
+  override def findByPrimaryKeys(
+      ids: Vector[Long]): Query[TableAutoInc[T], T, Seq] = {
     table.filter { t =>
       t.id.inSet(ids)
     }
