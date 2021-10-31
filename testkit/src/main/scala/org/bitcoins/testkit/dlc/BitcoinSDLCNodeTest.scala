@@ -14,8 +14,7 @@ trait BitcoinSDLCNodeTest extends BitcoinSWalletTest with CachedTor {
 
   /** Wallet config with data directory set to user temp directory */
   override protected def getFreshConfig: BitcoinSAppConfig = {
-    val dlcListen = ConfigFactory.parseString(
-      s"""bitcoin-s.dlcnode.listen = "127.0.0.1:${RpcUtil.randomPort}" """)
+    val dlcListen = ConfigFactory.parseString(s"""bitcoin-s.dlcnode.listen = "127.0.0.1:${RpcUtil.randomPort}" """)
     BaseWalletTest.getFreshConfig(pgUrl, Vector(dlcListen))
   }
 
@@ -25,34 +24,33 @@ trait BitcoinSDLCNodeTest extends BitcoinSWalletTest with CachedTor {
     */
   def witTwoFundedDLCNodes(test: OneArgAsyncTest): FutureOutcome = {
     makeDependentFixture(
-      build = () => {
-        val configA = getFreshConfig
-        val configB = getFreshConfig
+      build =
+        () => {
+          val configA = getFreshConfig
+          val configB = getFreshConfig
 
-        // start initializing tor
-        val torClientF = torF
+          // start initializing tor
+          val torClientF = torF
 
-        for {
-          walletA <-
-            FundWalletUtil.createFundedDLCWallet(
-              nodeApi,
-              chainQueryApi,
-              getBIP39PasswordOpt(),
-              Some(segwitWalletConf))(configA, system)
-          walletB <- FundWalletUtil.createFundedDLCWallet(
-            nodeApi,
-            chainQueryApi,
-            getBIP39PasswordOpt(),
-            Some(segwitWalletConf))(configB, system)
+          for {
+            walletA <-
+              FundWalletUtil.createFundedDLCWallet(nodeApi,
+                                                   chainQueryApi,
+                                                   getBIP39PasswordOpt(),
+                                                   Some(segwitWalletConf))(configA, system)
+            walletB <- FundWalletUtil.createFundedDLCWallet(nodeApi,
+                                                            chainQueryApi,
+                                                            getBIP39PasswordOpt(),
+                                                            Some(segwitWalletConf))(configB, system)
 
-          nodeA = configA.dlcNodeConf.createDLCNode(walletA.wallet)
-          nodeB = configB.dlcNodeConf.createDLCNode(walletB.wallet)
+            nodeA = configA.dlcNodeConf.createDLCNode(walletA.wallet)
+            nodeB = configB.dlcNodeConf.createDLCNode(walletB.wallet)
 
-          _ <- torClientF
-          _ <- nodeA.start()
-          _ <- nodeB.start()
-        } yield (nodeA, nodeB)
-      },
+            _ <- torClientF
+            _ <- nodeA.start()
+            _ <- nodeB.start()
+          } yield (nodeA, nodeB)
+        },
       destroy = { nodes: (DLCNode, DLCNode) =>
         for {
           _ <- destroyDLCWallet(nodes._1.wallet.asInstanceOf[DLCWallet])

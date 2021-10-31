@@ -2,12 +2,7 @@ package org.bitcoins.dlc.wallet
 
 import org.bitcoins.core.currency.Satoshis
 import org.bitcoins.core.protocol.BlockStamp.BlockHash
-import org.bitcoins.core.protocol.dlc.models.{
-  ContractInfo,
-  DLCState,
-  EnumContractDescriptor,
-  NumericContractDescriptor
-}
+import org.bitcoins.core.protocol.dlc.models.{ContractInfo, DLCState, EnumContractDescriptor, NumericContractDescriptor}
 import org.bitcoins.core.protocol.tlv._
 import org.bitcoins.crypto.CryptoUtil
 import org.bitcoins.rpc.client.common.BitcoindRpcClient
@@ -38,15 +33,11 @@ class RescanDLCTest extends DualWalletTestCachedBitcoind {
       (sig, _) = getSigs(status.contractInfo)
       func = (wallet: DLCWallet) => wallet.executeDLC(contractId, sig)
 
-      result <- dlcExecutionTest(wallets = (walletA, walletB),
-                                 asInitiator = true,
-                                 func = func,
-                                 expectedOutputs = 1)
+      result <- dlcExecutionTest(wallets = (walletA, walletB), asInitiator = true, func = func, expectedOutputs = 1)
 
       _ = assert(result)
 
-      Vector(hash) <- bitcoind.getNewAddress.flatMap(
-        bitcoind.generateToAddress(1, _))
+      Vector(hash) <- bitcoind.getNewAddress.flatMap(bitcoind.generateToAddress(1, _))
 
       _ <- wallet.rescanNeutrinoWallet(startOpt = None,
                                        endOpt = Some(BlockHash(hash)),
@@ -69,15 +60,11 @@ class RescanDLCTest extends DualWalletTestCachedBitcoind {
       (sig, _) = getSigs(status.contractInfo)
       func = (wallet: DLCWallet) => wallet.executeDLC(contractId, sig)
 
-      result <- dlcExecutionTest(wallets = (walletA, walletB),
-                                 asInitiator = true,
-                                 func = func,
-                                 expectedOutputs = 1)
+      result <- dlcExecutionTest(wallets = (walletA, walletB), asInitiator = true, func = func, expectedOutputs = 1)
 
       _ = assert(result)
 
-      Vector(hash) <- bitcoind.getNewAddress.flatMap(
-        bitcoind.generateToAddress(1, _))
+      Vector(hash) <- bitcoind.getNewAddress.flatMap(bitcoind.generateToAddress(1, _))
 
       _ <- wallet.rescanNeutrinoWallet(startOpt = None,
                                        endOpt = Some(BlockHash(hash)),
@@ -88,9 +75,7 @@ class RescanDLCTest extends DualWalletTestCachedBitcoind {
     } yield assert(postStatus.state == DLCState.RemoteClaimed)
   }
 
-  private def getSigs(contractInfo: ContractInfo): (
-      OracleAttestmentTLV,
-      OracleAttestmentTLV) = {
+  private def getSigs(contractInfo: ContractInfo): (OracleAttestmentTLV, OracleAttestmentTLV) = {
     val desc: EnumContractDescriptor = contractInfo.contractDescriptor match {
       case desc: EnumContractDescriptor => desc
       case _: NumericContractDescriptor =>
@@ -123,13 +108,7 @@ class RescanDLCTest extends DualWalletTestCachedBitcoind {
       case v0: OracleEventV0TLV => v0.eventId
     }
 
-    (OracleAttestmentV0TLV(eventId,
-                           publicKey,
-                           Vector(initiatorWinSig),
-                           Vector(initiatorWinStr)),
-     OracleAttestmentV0TLV(eventId,
-                           publicKey,
-                           Vector(recipientWinSig),
-                           Vector(recipientWinStr)))
+    (OracleAttestmentV0TLV(eventId, publicKey, Vector(initiatorWinSig), Vector(initiatorWinStr)),
+     OracleAttestmentV0TLV(eventId, publicKey, Vector(recipientWinSig), Vector(recipientWinStr)))
   }
 }

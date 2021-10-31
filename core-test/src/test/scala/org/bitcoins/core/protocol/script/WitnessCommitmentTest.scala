@@ -16,7 +16,6 @@ class WitnessCommitmentTest extends BitcoinSUnitTest {
 
   it must "find the correct witness root hash in a witness commitment" in {
     val commitment = WitnessCommitment(hex)
-    commitment.witnessRootHash.hex must be(
-      "309cfb38d1015c266667d5b7888c83def872a531b8ac277fe8df623c32b562b5")
+    commitment.witnessRootHash.hex must be("309cfb38d1015c266667d5b7888c83def872a531b8ac277fe8df623c32b562b5")
   }
 }

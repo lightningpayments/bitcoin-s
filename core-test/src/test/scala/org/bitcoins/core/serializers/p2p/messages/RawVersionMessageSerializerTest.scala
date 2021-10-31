@@ -52,8 +52,7 @@ class RawVersionMessageSerializerTest extends BitcoinSUnitTest {
       .toHex must be(transNodeIpAddress)
     versionMessage.addressTransPort must be(8333)
 
-    versionMessage.nonce.toBigInt must be(
-      BigInt(BytesUtil.decodeHex(nonce).toArray))
+    versionMessage.nonce.toBigInt must be(BigInt(BytesUtil.decodeHex(nonce).toArray))
 
     versionMessage.userAgentSize must be(CompactSizeUInt(UInt64(15), 1))
     versionMessage.userAgent must be("/Satoshi:0.9.3/")
@@ -99,13 +98,11 @@ class RawVersionMessageSerializerTest extends BitcoinSUnitTest {
     versionMessage.version must be(ProtocolVersion70002)
     assert(versionMessage.services.nodeNetwork)
     versionMessage.timestamp must be(Int64(-4420735367386806222L))
-    versionMessage.addressReceiveIpAddress must be(
-      InetAddress(hex"00000000000000000000ffff00000000"))
+    versionMessage.addressReceiveIpAddress must be(InetAddress(hex"00000000000000000000ffff00000000"))
     assert(versionMessage.addressReceiveServices.nodeNone)
     versionMessage.addressReceivePort must be(17057)
     assert(versionMessage.addressTransServices.nodeNone)
-    versionMessage.addressTransIpAddress must be(
-      InetAddress(hex"00000000000000000000ffff00000000"))
+    versionMessage.addressTransIpAddress must be(InetAddress(hex"00000000000000000000ffff00000000"))
     versionMessage.addressTransPort must be(41963)
     versionMessage.nonce must be(UInt64(BigInt("9223372036854775809")))
     versionMessage.userAgentSize must be(CompactSizeUInt(UInt64(86), 1))

@@ -2,11 +2,7 @@ package org.bitcoins.core.bloom
 
 import org.bitcoins.core.number.{UInt32, UInt64}
 import org.bitcoins.core.protocol.CompactSizeUInt
-import org.bitcoins.core.protocol.script.{
-  MultiSignatureScriptPubKey,
-  P2PKScriptPubKey,
-  ScriptPubKey
-}
+import org.bitcoins.core.protocol.script.{MultiSignatureScriptPubKey, P2PKScriptPubKey, ScriptPubKey}
 import org.bitcoins.core.protocol.transaction.{Transaction, TransactionOutPoint}
 import org.bitcoins.core.script.constant.{ScriptConstant, ScriptToken}
 import org.bitcoins.core.serializers.bloom.RawBloomFilterSerializer
@@ -139,11 +135,10 @@ sealed abstract class BloomFilter extends NetworkElement {
   def isRelevant(transaction: Transaction): Boolean = {
     val scriptPubKeys = transaction.outputs.map(_.scriptPubKey)
     //pull out all of the constants in the scriptPubKey's
-    val constantsWithOutputIndex = scriptPubKeys.zipWithIndex.flatMap {
-      case (scriptPubKey, index) =>
-        scriptPubKey.asm.collect { case c: ScriptConstant =>
-          (c, index)
-        }
+    val constantsWithOutputIndex = scriptPubKeys.zipWithIndex.flatMap { case (scriptPubKey, index) =>
+      scriptPubKey.asm.collect { case c: ScriptConstant =>
+        (c, index)
+      }
     }
 
     //check if the bloom filter contains any of the script constants in our outputs
@@ -152,11 +147,10 @@ sealed abstract class BloomFilter extends NetworkElement {
     }
 
     val scriptSigs = transaction.inputs.map(_.scriptSignature)
-    val constantsWithInputIndex = scriptSigs.zipWithIndex.flatMap {
-      case (scriptSig, index) =>
-        scriptSig.asm.collect { case c: ScriptConstant =>
-          (c, index)
-        }
+    val constantsWithInputIndex = scriptSigs.zipWithIndex.flatMap { case (scriptSig, index) =>
+      scriptSig.asm.collect { case c: ScriptConstant =>
+        (c, index)
+      }
     }
     //check if the filter contains any of the prevouts in this tx
     val containsOutPoint =
@@ -212,13 +206,9 @@ sealed abstract class BloomFilter extends NetworkElement {
     * @see [[https://github.com/bitcoin/bips/blob/master/bip-0037.mediawiki#filter-matching-algorithm BIP37]]
     * for the exact rules on updating a bloom filter with this flag set
     */
-  def updateP2PKOnly(
-      scriptPubKeysWithIndex: Seq[(ScriptPubKey, Int)],
-      txId: DoubleSha256Digest): BloomFilter = {
+  def updateP2PKOnly(scriptPubKeysWithIndex: Seq[(ScriptPubKey, Int)], txId: DoubleSha256Digest): BloomFilter = {
     @tailrec
-    def loop(
-        constantsWithIndex: Seq[(ScriptToken, Int)],
-        accumFilter: BloomFilter): BloomFilter =
+    def loop(constantsWithIndex: Seq[(ScriptToken, Int)], accumFilter: BloomFilter): BloomFilter =
       constantsWithIndex match {
         case h +: t if accumFilter.contains(h._1.bytes) =>
           val filter =
@@ -235,8 +225,8 @@ sealed abstract class BloomFilter extends NetworkElement {
     //gets rid of all asm operations in the scriptPubKey except for the constants
     val scriptConstantsWithOutputIndex: Seq[(ScriptToken, Int)] =
       p2pkOrMultiSigScriptPubKeys.flatMap { case (scriptPubKey, index) =>
-        (scriptPubKey.asm.map(token => (token, index))).filter {
-          case (token, _) => token.isInstanceOf[ScriptConstant]
+        (scriptPubKey.asm.map(token => (token, index))).filter { case (token, _) =>
+          token.isInstanceOf[ScriptConstant]
         }
       }
     loop(scriptConstantsWithOutputIndex, this)
@@ -265,16 +255,12 @@ sealed abstract class BloomFilter extends NetworkElement {
   private def murmurConstant = UInt32("fba4c795")
 
   /** Adds a sequence of byte vectors to our bloom filter then returns that new filter */
-  def insertByteVectors(
-      bytes: scala.collection.Seq[ByteVector]): BloomFilter = {
+  def insertByteVectors(bytes: scala.collection.Seq[ByteVector]): BloomFilter = {
     @tailrec
-    def loop(
-        remainingByteVectors: scala.collection.Seq[ByteVector],
-        accumBloomFilter: BloomFilter): BloomFilter = {
+    def loop(remainingByteVectors: scala.collection.Seq[ByteVector], accumBloomFilter: BloomFilter): BloomFilter = {
       if (remainingByteVectors.isEmpty) accumBloomFilter
       else
-        loop(remainingByteVectors.tail,
-             accumBloomFilter.insert(remainingByteVectors.head))
+        loop(remainingByteVectors.tail, accumBloomFilter.insert(remainingByteVectors.head))
     }
     loop(bytes, this)
   }
@@ -298,11 +284,8 @@ object BloomFilter extends Factory[BloomFilter] {
   /** Max hashFunc size as per [[https://bitcoin.org/en/developer-reference#filterload]] */
   val maxHashFuncs = UInt32(50)
 
-  val empty: BloomFilter = BloomFilterImpl(CompactSizeUInt.zero,
-                                           ByteVector.empty,
-                                           UInt32.zero,
-                                           UInt32.zero,
-                                           BloomUpdateAll)
+  val empty: BloomFilter =
+    BloomFilterImpl(CompactSizeUInt.zero, ByteVector.empty, UInt32.zero, UInt32.zero, BloomUpdateAll)
 
   /** Creates a bloom filter based on the number of elements to be inserted into the filter
     * and the desired false positive rate.
@@ -310,10 +293,7 @@ object BloomFilter extends Factory[BloomFilter] {
     * @see [[https://github.com/bitcoin/bips/blob/master/bip-0037.mediawiki#bloom-filter-format BIP37]]
     */
   // todo provide default flag?
-  def apply(
-      numElements: Int,
-      falsePositiveRate: Double,
-      flags: BloomFlag): BloomFilter = {
+  def apply(numElements: Int, falsePositiveRate: Double, flags: BloomFlag): BloomFilter = {
     val random = Math.floor(Math.random() * UInt32.max.toLong).toLong
     val tweak = UInt32(random)
     apply(numElements, falsePositiveRate, tweak, flags)
@@ -329,11 +309,7 @@ object BloomFilter extends Factory[BloomFilter] {
     *
     * @param tweak A random value that only acts to randomize the filter and increase privacy
     */
-  def apply(
-      numElements: Int,
-      falsePositiveRate: Double,
-      tweak: UInt32,
-      flags: BloomFlag): BloomFilter = {
+  def apply(numElements: Int, falsePositiveRate: Double, tweak: UInt32, flags: BloomFlag): BloomFilter = {
     if (numElements == 0) {
       BloomFilter.empty
     } else {

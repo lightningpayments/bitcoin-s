@@ -13,9 +13,7 @@ case class BitcoindChainHandlerViaZmq(
 
 object BitcoindChainHandlerViaZmq {
 
-  def apply(
-      bitcoindRpc: BitcoindRpcClient,
-      pair: (ChainHandler, ZMQSubscriber)): BitcoindChainHandlerViaZmq = {
+  def apply(bitcoindRpc: BitcoindRpcClient, pair: (ChainHandler, ZMQSubscriber)): BitcoindChainHandlerViaZmq = {
     val (chainHandler, zmqSubscriber) = pair
 
     fixture.BitcoindChainHandlerViaZmq(bitcoindRpc, chainHandler, zmqSubscriber)

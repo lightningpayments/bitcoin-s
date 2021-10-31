@@ -1,9 +1,9 @@
 package org.bitcoins.core.api.keymanager
 
-import scala.concurrent.{ExecutionContext, Future}
+import zio.Task
 
 trait MasterXPubApi {
 
   /** Determines if the seed exists */
-  def seedExists()(implicit ec: ExecutionContext): Future[Boolean]
+  def seedExists(): Task[Boolean]
 }

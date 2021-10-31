@@ -8,6 +8,4 @@ sealed trait WalletAppConfigWithBitcoind {
   def walletAppConfig: WalletAppConfig
 }
 
-case class WalletAppConfigWithBitcoindRpc(
-    walletAppConfig: WalletAppConfig,
-    bitcoind: BitcoindRpcClient)
+case class WalletAppConfigWithBitcoindRpc(walletAppConfig: WalletAppConfig, bitcoind: BitcoindRpcClient)

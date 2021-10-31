@@ -21,15 +21,11 @@ import scala.util.Properties
   * expose those that are of relevance when making RPC
   * requests.
   */
-case class CLightningConfig(
-    private[bitcoins] val lines: Seq[String],
-    datadir: File)
-    extends Logging {
+case class CLightningConfig(private[bitcoins] val lines: Seq[String], datadir: File) extends Logging {
 
   //create datadir and config if it DNE on disk
   if (!datadir.exists()) {
-    logger.debug(
-      s"datadir=${datadir.getAbsolutePath} does not exist, creating now")
+    logger.debug(s"datadir=${datadir.getAbsolutePath} does not exist, creating now")
     datadir.mkdirs()
     CLightningConfig.writeConfigToFile(this, datadir)
   }
@@ -38,8 +34,7 @@ case class CLightningConfig(
 
   //create config file in datadir if it does not exist
   if (!Files.exists(confFile)) {
-    logger.debug(
-      s"config in datadir=${datadir.getAbsolutePath} does not exist, creating now")
+    logger.debug(s"config in datadir=${datadir.getAbsolutePath} does not exist, creating now")
     CLightningConfig.writeConfigToFile(this, datadir)
   }
 
@@ -52,8 +47,7 @@ case class CLightningConfig(
     * based on `=`, and then applies the provided
     * `collect` function on those pairs
     */
-  private def collectFrom(lines: Seq[String])(
-      collect: PartialFunction[(String, String), String]): Seq[String] = {
+  private def collectFrom(lines: Seq[String])(collect: PartialFunction[(String, String), String]): Seq[String] = {
 
     val splittedPairs = {
       val splitLines = lines.map(
@@ -120,8 +114,7 @@ case class CLightningConfig(
     val newLine = s"$key=$value"
     val lines = newLine +: ourLines
     val newConfig = CLightningConfig(lines, datadir)
-    logger.debug(
-      s"Appending new config with $key=$value to datadir=${datadir.getAbsolutePath}")
+    logger.debug(s"Appending new config with $key=$value to datadir=${datadir.getAbsolutePath}")
     CLightningConfig.writeConfigToFile(newConfig, datadir)
 
     newConfig
@@ -159,9 +152,7 @@ object CLightningConfig extends ConfigFactory[CLightningConfig] with Logging {
     apply(config.toFile, config.getParent.toFile)
 
   /** Reads the given file and construct a `lightning` config from it */
-  override def apply(
-      config: File,
-      datadir: File = DEFAULT_DATADIR): CLightningConfig = {
+  override def apply(config: File, datadir: File = DEFAULT_DATADIR): CLightningConfig = {
     import org.bitcoins.core.compat.JavaConverters._
     val lines = Files
       .readAllLines(config.toPath)
@@ -194,17 +185,9 @@ object CLightningConfig extends ConfigFactory[CLightningConfig] with Logging {
 
   override val DEFAULT_DATADIR: File = {
     val path = if (Properties.isMac) {
-      Paths.get(Properties.userHome,
-                "Library",
-                "Application Support",
-                "lightning")
+      Paths.get(Properties.userHome, "Library", "Application Support", "lightning")
     } else if (Properties.isWin) {
-      Paths.get("C:",
-                "Users",
-                Properties.userName,
-                "Appdata",
-                "Local",
-                "lightning")
+      Paths.get("C:", "Users", Properties.userName, "Appdata", "Local", "lightning")
     } else {
       Paths.get(Properties.userHome, ".lightning")
     }
@@ -224,9 +207,7 @@ object CLightningConfig extends ConfigFactory[CLightningConfig] with Logging {
   /** Writes the config to the data directory within it, if it doesn't
     * exist. Returns the written file.
     */
-  override def writeConfigToFile(
-      config: CLightningConfig,
-      datadir: File): Path = {
+  override def writeConfigToFile(config: CLightningConfig, datadir: File): Path = {
 
     val confStr = config.lines.mkString("\n")
 
@@ -234,8 +215,7 @@ object CLightningConfig extends ConfigFactory[CLightningConfig] with Logging {
     val confFile = datadir.toPath.resolve("config")
 
     if (datadir == DEFAULT_DATADIR && confFile == DEFAULT_CONF_FILE.toPath) {
-      logger.warn(
-        s"We will not overwrite the existing config in default datadir")
+      logger.warn(s"We will not overwrite the existing config in default datadir")
     } else {
       Files.write(confFile, confStr.getBytes)
     }

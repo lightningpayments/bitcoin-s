@@ -27,7 +27,5 @@ trait ScriptSignatureCoreTestCase {
 
 }
 
-case class ScriptSignatureCoreTestCaseImpl(
-    asm: Seq[ScriptToken],
-    scriptSignature: ScriptSignature)
+case class ScriptSignatureCoreTestCaseImpl(asm: Seq[ScriptToken], scriptSignature: ScriptSignature)
     extends ScriptSignatureCoreTestCase

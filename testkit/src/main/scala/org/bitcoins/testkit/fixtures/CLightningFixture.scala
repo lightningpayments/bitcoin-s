@@ -3,10 +3,7 @@ package org.bitcoins.testkit.fixtures
 import com.bitcoins.clightning.rpc.CLightningRpcClient
 import org.bitcoins.rpc.client.common.BitcoindRpcClient
 import org.bitcoins.testkit.async.TestAsyncUtil
-import org.bitcoins.testkit.clightning.{
-  CLightningRpcTestClient,
-  CLightningRpcTestUtil
-}
+import org.bitcoins.testkit.clightning.{CLightningRpcTestClient, CLightningRpcTestUtil}
 import org.bitcoins.testkit.rpc._
 import org.scalatest.FutureOutcome
 
@@ -70,9 +67,7 @@ trait DualCLightningFixture extends BitcoinSFixture with CachedBitcoindV21 {
 }
 
 /** Creates two clightnings with no channels opened */
-trait CLightningChannelOpenerFixture
-    extends BitcoinSFixture
-    with CachedBitcoindV21 {
+trait CLightningChannelOpenerFixture extends BitcoinSFixture with CachedBitcoindV21 {
 
   override type FixtureParam =
     (BitcoindRpcClient, CLightningRpcClient, CLightningRpcClient)

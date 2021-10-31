@@ -11,11 +11,7 @@ import scodec.bits.ByteVector
 
 sealed abstract class LndModel
 
-case class AddInvoiceResult(
-    rHash: PaymentHashTag,
-    invoice: LnInvoice,
-    addIndex: Long,
-    paymentAddr: ByteVector)
+case class AddInvoiceResult(rHash: PaymentHashTag, invoice: LnInvoice, addIndex: Long, paymentAddr: ByteVector)
     extends LndModel
 
 case class UTXOResult(

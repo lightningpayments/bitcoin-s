@@ -115,28 +115,24 @@ class ScriptNumberUtilTest extends BitcoinSUnitTest {
     //-32767
     val hex1 = "ffff"
     val expectedHex1 = "7fff"
-    BytesUtil.encodeHex(ScriptNumberUtil.changeSignBitToPositive(hex1)) must be(
-      expectedHex1)
+    BytesUtil.encodeHex(ScriptNumberUtil.changeSignBitToPositive(hex1)) must be(expectedHex1)
   }
 
   it must "change a sign bit from positive to negative" in {
 
     val hex = "01"
     val expectedHex = "81"
-    BytesUtil.encodeHex(ScriptNumberUtil.changeSignBitToNegative(hex)) must be(
-      expectedHex)
+    BytesUtil.encodeHex(ScriptNumberUtil.changeSignBitToNegative(hex)) must be(expectedHex)
 
     //32767
     val hex1 = "7fff"
     val expectedHex1 = "ffff"
-    BytesUtil.encodeHex(ScriptNumberUtil.changeSignBitToNegative(hex1)) must be(
-      expectedHex1)
+    BytesUtil.encodeHex(ScriptNumberUtil.changeSignBitToNegative(hex1)) must be(expectedHex1)
 
     //128
     val hex2 = "8000"
     val expectedHex2 = "8000"
-    BytesUtil.encodeHex(ScriptNumberUtil.changeSignBitToNegative(hex2)) must be(
-      expectedHex2)
+    BytesUtil.encodeHex(ScriptNumberUtil.changeSignBitToNegative(hex2)) must be(expectedHex2)
   }
 
   it must "detect if the last two bytes are all zeros" in {

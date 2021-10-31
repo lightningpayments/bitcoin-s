@@ -8,10 +8,9 @@ import org.scalacheck.{Prop, Properties}
   */
 class NumberUtilSpec extends Properties("NumberUtilSpec") {
 
-  property("Serialization symmetry for BigInt") =
-    Prop.forAll(NumberGenerator.bigInts) { bigInt: BigInt =>
-      NumberUtil.toBigInt(BytesUtil.encodeHex(bigInt)) == bigInt
-    }
+  property("Serialization symmetry for BigInt") = Prop.forAll(NumberGenerator.bigInts) { bigInt: BigInt =>
+    NumberUtil.toBigInt(BytesUtil.encodeHex(bigInt)) == bigInt
+  }
 
   property("serialization symmetry for ints") = Prop.forAll { int: Int =>
     NumberUtil.toInt(BytesUtil.encodeHex(int)) == int

@@ -9,8 +9,7 @@ class ECPublicKeyTest extends BitcoinSCryptoTest {
       ECPublicKey(
         hex"044f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa385b6b1b8ead809ca67454d9683fcf2ba03456d6fe2c4abe2b07f0fbdbb2f1c1")
     val compressed =
-      ECPublicKey(
-        hex"034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa")
+      ECPublicKey(hex"034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa")
 
     assert(uncompressed.isFullyValid)
     assert(compressed.isFullyValid)
@@ -48,12 +47,8 @@ class ECPublicKeyTest extends BitcoinSCryptoTest {
     val badHex =
       "02020202020202020202020202020202020202020202020202020202020202"
     assertThrows[RuntimeException](ECPublicKey(badHex))
-    assertThrows[RuntimeException](
-      ECPublicKey(
-        "02FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC30"))
-    assertThrows[RuntimeException](
-      ECPublicKey(
-        "03FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC30"))
+    assertThrows[RuntimeException](ECPublicKey("02FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC30"))
+    assertThrows[RuntimeException](ECPublicKey("03FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC30"))
   }
 
   it must "be able to compress/decompress public keys" in {
@@ -91,10 +86,8 @@ class ECPublicKeyTest extends BitcoinSCryptoTest {
       ECPublicKey.fromBytes(ByteVector(firstByte) ++ pubkey1.bytes.tail)
 
     assertThrows[Exception](CryptoUtil.add(pubkey1, pubkey2))
-    assertThrows[Exception](
-      CryptoUtil.add(pubkey1.compressed, pubkey2.compressed))
-    assertThrows[Exception](
-      CryptoUtil.add(pubkey1.decompressed, pubkey2.decompressed))
+    assertThrows[Exception](CryptoUtil.add(pubkey1.compressed, pubkey2.compressed))
+    assertThrows[Exception](CryptoUtil.add(pubkey1.decompressed, pubkey2.decompressed))
   }
 
   it must "be able to add multiple public keys together with sub-sums of 0x00" in {
@@ -113,14 +106,10 @@ class ECPublicKeyTest extends BitcoinSCryptoTest {
     val pubkey4 =
       ECPublicKey.fromBytes(ByteVector(firstByte2) ++ pubkey3.bytes.tail)
 
-    assert(
-      CryptoUtil.combinePubKeys(Vector(pubkey1, pubkey2, pubkey3)) == pubkey3)
-    assert(
-      CryptoUtil.combinePubKeys(Vector(pubkey3, pubkey1, pubkey2)) == pubkey3)
-    assertThrows[Exception](
-      CryptoUtil.combinePubKeys(Vector(pubkey1, pubkey2, pubkey3, pubkey4)))
-    assertThrows[Exception](
-      CryptoUtil.combinePubKeys(Vector(pubkey1, pubkey3, pubkey2, pubkey4)))
+    assert(CryptoUtil.combinePubKeys(Vector(pubkey1, pubkey2, pubkey3)) == pubkey3)
+    assert(CryptoUtil.combinePubKeys(Vector(pubkey3, pubkey1, pubkey2)) == pubkey3)
+    assertThrows[Exception](CryptoUtil.combinePubKeys(Vector(pubkey1, pubkey2, pubkey3, pubkey4)))
+    assertThrows[Exception](CryptoUtil.combinePubKeys(Vector(pubkey1, pubkey3, pubkey2, pubkey4)))
   }
 
   it must "correctly compress keys" in {
@@ -150,10 +139,8 @@ class ECPublicKeyTest extends BitcoinSCryptoTest {
 
   it must "succeed with valid coordinates above the curve order" in {
     val _ = {
-      ECPublicKey(
-        "02fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2c").toPoint
-      ECPublicKey(
-        "03fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2c").toPoint
+      ECPublicKey("02fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2c").toPoint
+      ECPublicKey("03fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2c").toPoint
     }
     succeed
   }

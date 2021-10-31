@@ -73,16 +73,14 @@ trait BaseAsyncTest
     customGenDrivenConfig(BitcoinSUnitTest.NEW_CODE_EXECUTIONS)
   }
 
-  def sequenceTestRuns(
-      testRunFs: Vector[Future[Assertion]]): Future[Assertion] = {
+  def sequenceTestRuns(testRunFs: Vector[Future[Assertion]]): Future[Assertion] = {
     val testRunsF: Future[Vector[Assertion]] =
       Future.sequence(testRunFs)
 
     testRunsF.map(_.reduce((_, testRun) => testRun))
   }
 
-  def forAllAsync[A](gen: Gen[A])(
-      func: A => Future[Assertion]): Future[Assertion] = {
+  def forAllAsync[A](gen: Gen[A])(func: A => Future[Assertion]): Future[Assertion] = {
     val testRunFs =
       new java.util.concurrent.CopyOnWriteArrayList[Future[Assertion]]
 
@@ -94,8 +92,7 @@ trait BaseAsyncTest
     forAllHelper(testRunFs)
   }
 
-  def forAllAsync[A, B](genA: Gen[A], genB: Gen[B])(
-      func: (A, B) => Future[Assertion]): Future[Assertion] = {
+  def forAllAsync[A, B](genA: Gen[A], genB: Gen[B])(func: (A, B) => Future[Assertion]): Future[Assertion] = {
     val testRunFs =
       new java.util.concurrent.CopyOnWriteArrayList[Future[Assertion]]
 
@@ -120,11 +117,7 @@ trait BaseAsyncTest
     forAllHelper(testRunFs)
   }
 
-  def forAllAsync[A, B, C, D](
-      genA: Gen[A],
-      genB: Gen[B],
-      genC: Gen[C],
-      genD: Gen[D])(
+  def forAllAsync[A, B, C, D](genA: Gen[A], genB: Gen[B], genC: Gen[C], genD: Gen[D])(
       func: (A, B, C, D) => Future[Assertion]): Future[Assertion] = {
     val testRunFs =
       new java.util.concurrent.CopyOnWriteArrayList[Future[Assertion]]
@@ -137,40 +130,27 @@ trait BaseAsyncTest
     forAllHelper(testRunFs)
   }
 
-  def forAllAsync[A, B, C, D, E](
-      genA: Gen[A],
-      genB: Gen[B],
-      genC: Gen[C],
-      genD: Gen[D],
-      genE: Gen[E])(
+  def forAllAsync[A, B, C, D, E](genA: Gen[A], genB: Gen[B], genC: Gen[C], genD: Gen[D], genE: Gen[E])(
       func: (A, B, C, D, E) => Future[Assertion]): Future[Assertion] = {
     val testRunFs =
       new java.util.concurrent.CopyOnWriteArrayList[Future[Assertion]]
 
-    forAll(genA, genB, genC, genD, genE) {
-      case (inputA, inputB, inputC, inputD, inputE) =>
-        testRunFs.add(func(inputA, inputB, inputC, inputD, inputE))
-        succeed
+    forAll(genA, genB, genC, genD, genE) { case (inputA, inputB, inputC, inputD, inputE) =>
+      testRunFs.add(func(inputA, inputB, inputC, inputD, inputE))
+      succeed
     }
 
     forAllHelper(testRunFs)
   }
 
-  def forAllAsync[A, B, C, D, E, F](
-      genA: Gen[A],
-      genB: Gen[B],
-      genC: Gen[C],
-      genD: Gen[D],
-      genE: Gen[E],
-      genF: Gen[F])(
+  def forAllAsync[A, B, C, D, E, F](genA: Gen[A], genB: Gen[B], genC: Gen[C], genD: Gen[D], genE: Gen[E], genF: Gen[F])(
       func: (A, B, C, D, E, F) => Future[Assertion]): Future[Assertion] = {
     val testRunFs =
       new java.util.concurrent.CopyOnWriteArrayList[Future[Assertion]]
 
-    forAll(genA, genB, genC, genD, genE, genF) {
-      case (inputA, inputB, inputC, inputD, inputE, inputF) =>
-        testRunFs.add(func(inputA, inputB, inputC, inputD, inputE, inputF))
-        succeed
+    forAll(genA, genB, genC, genD, genE, genF) { case (inputA, inputB, inputC, inputD, inputE, inputF) =>
+      testRunFs.add(func(inputA, inputB, inputC, inputD, inputE, inputF))
+      succeed
     }
 
     forAllHelper(testRunFs)
@@ -179,8 +159,7 @@ trait BaseAsyncTest
   /** Runs all property based tests in parallel. This is a convenient optimization
     * for synchronous property based tests
     */
-  def forAllParallel[A](gen: Gen[A])(
-      func: A => Assertion): Future[Assertion] = {
+  def forAllParallel[A](gen: Gen[A])(func: A => Assertion): Future[Assertion] = {
     forAllAsync(gen) { a: A =>
       Future {
         func(a)
@@ -191,8 +170,7 @@ trait BaseAsyncTest
   /** Runs all property based tests in parallel. This is a convenient optimization
     * for synchronous property based tests
     */
-  def forAllParallel[A, B, C](genA: Gen[A], genB: Gen[B])(
-      func: (A, B) => Assertion): Future[Assertion] = {
+  def forAllParallel[A, B, C](genA: Gen[A], genB: Gen[B])(func: (A, B) => Assertion): Future[Assertion] = {
     forAllAsync(genA, genB) { case (inputA, inputB) =>
       Future {
         func(inputA, inputB)
@@ -215,33 +193,24 @@ trait BaseAsyncTest
   /** Runs all property based tests in parallel. This is a convenient optimization
     * for synchronous property based tests
     */
-  def forAllParallel[A, B, C, D, E](
-      genA: Gen[A],
-      genB: Gen[B],
-      genC: Gen[C],
-      genD: Gen[D])(func: (A, B, C, D) => Assertion): Future[Assertion] = {
-    forAllAsync(genA, genB, genC, genD) {
-      case (inputA, inputB, inputC, inputD) =>
-        Future {
-          func(inputA, inputB, inputC, inputD)
-        }
+  def forAllParallel[A, B, C, D, E](genA: Gen[A], genB: Gen[B], genC: Gen[C], genD: Gen[D])(
+      func: (A, B, C, D) => Assertion): Future[Assertion] = {
+    forAllAsync(genA, genB, genC, genD) { case (inputA, inputB, inputC, inputD) =>
+      Future {
+        func(inputA, inputB, inputC, inputD)
+      }
     }
   }
 
   /** Runs all property based tests in parallel. This is a convenient optimization
     * for synchronous property based tests
     */
-  def forAllParallel[A, B, C, D, E](
-      genA: Gen[A],
-      genB: Gen[B],
-      genC: Gen[C],
-      genD: Gen[D],
-      genE: Gen[E])(func: (A, B, C, D, E) => Assertion): Future[Assertion] = {
-    forAllAsync(genA, genB, genC, genD, genE) {
-      case (inputA, inputB, inputC, inputD, inputE) =>
-        Future {
-          func(inputA, inputB, inputC, inputD, inputE)
-        }
+  def forAllParallel[A, B, C, D, E](genA: Gen[A], genB: Gen[B], genC: Gen[C], genD: Gen[D], genE: Gen[E])(
+      func: (A, B, C, D, E) => Assertion): Future[Assertion] = {
+    forAllAsync(genA, genB, genC, genD, genE) { case (inputA, inputB, inputC, inputD, inputE) =>
+      Future {
+        func(inputA, inputB, inputC, inputD, inputE)
+      }
     }
   }
 
@@ -254,20 +223,17 @@ trait BaseAsyncTest
       genC: Gen[C],
       genD: Gen[D],
       genE: Gen[E],
-      genF: Gen[F])(
-      func: (A, B, C, D, E, F) => Assertion): Future[Assertion] = {
-    forAllAsync(genA, genB, genC, genD, genE, genF) {
-      case (inputA, inputB, inputC, inputD, inputE, inputF) =>
-        Future {
-          func(inputA, inputB, inputC, inputD, inputE, inputF)
-        }
+      genF: Gen[F])(func: (A, B, C, D, E, F) => Assertion): Future[Assertion] = {
+    forAllAsync(genA, genB, genC, genD, genE, genF) { case (inputA, inputB, inputC, inputD, inputE, inputF) =>
+      Future {
+        func(inputA, inputB, inputC, inputD, inputE, inputF)
+      }
     }
   }
 
   /** Makes sure we have aggregated all of our test runs */
   @nowarn private def forAllHelper(
-      testRunsF: java.util.concurrent.CopyOnWriteArrayList[
-        Future[Assertion]]): Future[Assertion] = {
+      testRunsF: java.util.concurrent.CopyOnWriteArrayList[Future[Assertion]]): Future[Assertion] = {
     def helper(): Boolean = {
       testRunsF.size() == generatorDrivenConfig.minSize.value
     }

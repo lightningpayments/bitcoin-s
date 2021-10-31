@@ -5,11 +5,7 @@ import org.bitcoins.core.api.wallet.db.TransactionDbHelper
 import org.bitcoins.core.currency.Satoshis
 import org.bitcoins.core.number.{UInt32, UInt64}
 import org.bitcoins.core.protocol.script.EmptyScriptPubKey
-import org.bitcoins.core.protocol.transaction.{
-  TransactionConstants,
-  TransactionOutPoint,
-  TransactionOutput
-}
+import org.bitcoins.core.protocol.transaction.{TransactionConstants, TransactionOutPoint, TransactionOutput}
 import org.bitcoins.crypto.{ECAdaptorSignature, ECPublicKey, Sha256Digest}
 import org.bitcoins.db.CRUD
 import org.bitcoins.dlc.wallet.models._
@@ -87,94 +83,85 @@ class DLCDAOTest extends BitcoinSWalletTest with DLCDAOFixture {
     verifyDatabaseInsertion(input, input.outPoint, inputsDAO, dlcDAO)
   }
 
-  it should "correctly find funding inputs by dlcId and isInitiator" in {
-    daos =>
-      val inputsDAO = daos.dlcInputsDAO
-      val dlcDAO = daos.dlcDAO
+  it should "correctly find funding inputs by dlcId and isInitiator" in { daos =>
+    val inputsDAO = daos.dlcInputsDAO
+    val dlcDAO = daos.dlcDAO
 
-      val inputs = Vector(
-        DLCFundingInputDb(
-          dlcId = dlcId,
-          isInitiator = true,
-          index = 0,
-          inputSerialId = UInt64.zero,
-          outPoint = TransactionOutPoint(testBlockHash, UInt32.zero),
-          output = TransactionOutput(Satoshis.one, EmptyScriptPubKey),
-          nSequence = TransactionConstants.enableRBFSequence,
-          maxWitnessLength = 107,
-          redeemScriptOpt = None,
-          witnessScriptOpt = Some(DLCWalletUtil.dummyScriptWitness)
-        ),
-        DLCFundingInputDb(
-          dlcId = dlcId,
-          isInitiator = false,
-          index = 0,
-          inputSerialId = UInt64.one,
-          outPoint = TransactionOutPoint(testBlockHash, UInt32.one),
-          output = TransactionOutput(Satoshis.one, EmptyScriptPubKey),
-          nSequence = TransactionConstants.enableRBFSequence,
-          maxWitnessLength = 107,
-          redeemScriptOpt = None,
-          witnessScriptOpt = Some(DLCWalletUtil.dummyScriptWitness)
-        ),
-        DLCFundingInputDb(
-          dlcId = dlcId,
-          isInitiator = true,
-          index = 1,
-          inputSerialId = UInt64(2),
-          outPoint = TransactionOutPoint(testBlockHash, UInt32(3)),
-          output = TransactionOutput(Satoshis.one, EmptyScriptPubKey),
-          nSequence = TransactionConstants.enableRBFSequence,
-          maxWitnessLength = 107,
-          redeemScriptOpt = None,
-          witnessScriptOpt = Some(DLCWalletUtil.dummyScriptWitness)
-        )
-      )
-
-      for {
-        _ <- dlcDAO.create(dlcDb)
-        _ <- inputsDAO.createAll(inputs)
-
-        readInput <- inputsDAO.findByDLCId(dlcId, isInitiator = true)
-      } yield assert(readInput.size == 2)
-  }
-
-  it should "correctly insert enum outcome CET signatures into the database" in {
-    daos =>
-      val dlcDAO = daos.dlcDAO
-      val sigsDAO = daos.dlcSigsDAO
-
-      val sig = DLCCETSignaturesDb(
+    val inputs = Vector(
+      DLCFundingInputDb(
         dlcId = dlcId,
-        sigPoint = ECPublicKey.freshPublicKey,
+        isInitiator = true,
         index = 0,
-        accepterSig = ECAdaptorSignature.dummy,
-        initiatorSig = None
+        inputSerialId = UInt64.zero,
+        outPoint = TransactionOutPoint(testBlockHash, UInt32.zero),
+        output = TransactionOutput(Satoshis.one, EmptyScriptPubKey),
+        nSequence = TransactionConstants.enableRBFSequence,
+        maxWitnessLength = 107,
+        redeemScriptOpt = None,
+        witnessScriptOpt = Some(DLCWalletUtil.dummyScriptWitness)
+      ),
+      DLCFundingInputDb(
+        dlcId = dlcId,
+        isInitiator = false,
+        index = 0,
+        inputSerialId = UInt64.one,
+        outPoint = TransactionOutPoint(testBlockHash, UInt32.one),
+        output = TransactionOutput(Satoshis.one, EmptyScriptPubKey),
+        nSequence = TransactionConstants.enableRBFSequence,
+        maxWitnessLength = 107,
+        redeemScriptOpt = None,
+        witnessScriptOpt = Some(DLCWalletUtil.dummyScriptWitness)
+      ),
+      DLCFundingInputDb(
+        dlcId = dlcId,
+        isInitiator = true,
+        index = 1,
+        inputSerialId = UInt64(2),
+        outPoint = TransactionOutPoint(testBlockHash, UInt32(3)),
+        output = TransactionOutput(Satoshis.one, EmptyScriptPubKey),
+        nSequence = TransactionConstants.enableRBFSequence,
+        maxWitnessLength = 107,
+        redeemScriptOpt = None,
+        witnessScriptOpt = Some(DLCWalletUtil.dummyScriptWitness)
       )
+    )
 
-      verifyDatabaseInsertion(sig,
-                              DLCCETSignaturesPrimaryKey(sig.dlcId, sig.index),
-                              sigsDAO,
-                              dlcDAO)
+    for {
+      _ <- dlcDAO.create(dlcDb)
+      _ <- inputsDAO.createAll(inputs)
+
+      readInput <- inputsDAO.findByDLCId(dlcId, isInitiator = true)
+    } yield assert(readInput.size == 2)
   }
 
-  it should "correctly insert unsigned numeric outcome CET signatures into the database" in {
-    daos =>
-      val dlcDAO = daos.dlcDAO
-      val sigsDAO = daos.dlcSigsDAO
+  it should "correctly insert enum outcome CET signatures into the database" in { daos =>
+    val dlcDAO = daos.dlcDAO
+    val sigsDAO = daos.dlcSigsDAO
 
-      val sig = DLCCETSignaturesDb(
-        dlcId = dlcId,
-        sigPoint = ECPublicKey.freshPublicKey,
-        index = 1,
-        accepterSig = ECAdaptorSignature.dummy,
-        initiatorSig = None
-      )
+    val sig = DLCCETSignaturesDb(
+      dlcId = dlcId,
+      sigPoint = ECPublicKey.freshPublicKey,
+      index = 0,
+      accepterSig = ECAdaptorSignature.dummy,
+      initiatorSig = None
+    )
 
-      verifyDatabaseInsertion(sig,
-                              DLCCETSignaturesPrimaryKey(sig.dlcId, sig.index),
-                              sigsDAO,
-                              dlcDAO)
+    verifyDatabaseInsertion(sig, DLCCETSignaturesPrimaryKey(sig.dlcId, sig.index), sigsDAO, dlcDAO)
+  }
+
+  it should "correctly insert unsigned numeric outcome CET signatures into the database" in { daos =>
+    val dlcDAO = daos.dlcDAO
+    val sigsDAO = daos.dlcSigsDAO
+
+    val sig = DLCCETSignaturesDb(
+      dlcId = dlcId,
+      sigPoint = ECPublicKey.freshPublicKey,
+      index = 1,
+      accepterSig = ECAdaptorSignature.dummy,
+      initiatorSig = None
+    )
+
+    verifyDatabaseInsertion(sig, DLCCETSignaturesPrimaryKey(sig.dlcId, sig.index), sigsDAO, dlcDAO)
   }
 
   it should "correctly find CET signatures by dlcId" in { daos =>

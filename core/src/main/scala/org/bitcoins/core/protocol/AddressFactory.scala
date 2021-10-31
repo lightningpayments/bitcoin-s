@@ -24,9 +24,7 @@ abstract class AddressFactory[T <: Address] extends StringFactory[T] {
     */
   def fromScriptPubKeyT(spk: ScriptPubKey, np: NetworkParameters): Try[T]
 
-  def fromScriptPubKeyOpt(
-      spk: ScriptPubKey,
-      np: NetworkParameters): Option[T] = {
+  def fromScriptPubKeyOpt(spk: ScriptPubKey, np: NetworkParameters): Option[T] = {
     fromScriptPubKeyT(spk, np).toOption
   }
 

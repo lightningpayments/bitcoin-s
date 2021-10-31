@@ -9,11 +9,7 @@ import org.bitcoins.crypto.ECPublicKey
 import org.bitcoins.server.BitcoinSAppConfig
 import org.bitcoins.testkit.BitcoinSTestAppConfig
 import org.bitcoins.testkit.async.TestAsyncUtil
-import org.bitcoins.testkit.node.{
-  NeutrinoNodeFundedWalletBitcoind,
-  NodeTestUtil,
-  NodeTestWithCachedBitcoindNewest
-}
+import org.bitcoins.testkit.node.{NeutrinoNodeFundedWalletBitcoind, NodeTestUtil, NodeTestWithCachedBitcoindNewest}
 import org.bitcoins.testkit.wallet.BitcoinSWalletTest
 import org.scalatest.{FutureOutcome, Outcome}
 
@@ -48,10 +44,7 @@ class NeutrinoNodeWithWalletTest extends NodeTestWithCachedBitcoindNewest {
   it must "receive information about received payments" in { param =>
     val NeutrinoNodeFundedWalletBitcoind(node, wallet, bitcoind, _) = param
 
-    def condition(
-        expectedBalance: CurrencyUnit,
-        expectedUtxos: Int,
-        expectedAddresses: Int): Future[Boolean] = {
+    def condition(expectedBalance: CurrencyUnit, expectedUtxos: Int, expectedAddresses: Int): Future[Boolean] = {
       for {
         balance <- wallet.getBalance()
         addresses <- wallet.listAddresses()

@@ -15,9 +15,7 @@ class ScriptPubKeyDAOTest extends WalletDAOFixture {
   it must "be able to store and load spks" in { daos =>
     val scriptPubKeyDAO = daos.scriptPubKeyDAO
 
-    val multisig = MultiSignatureScriptPubKey(
-      2,
-      Vector(ECPublicKey.freshPublicKey, ECPublicKey.freshPublicKey))
+    val multisig = MultiSignatureScriptPubKey(2, Vector(ECPublicKey.freshPublicKey, ECPublicKey.freshPublicKey))
 
     val pkh = P2PKHScriptPubKey(ECPublicKey.freshPublicKey)
 
@@ -38,15 +36,11 @@ class ScriptPubKeyDAOTest extends WalletDAOFixture {
       NonStandardIfConditionalScriptPubKey(raw1, raw2),
       MultiSignatureWithTimeoutScriptPubKey(multisig, cltv),
       NonStandardNotIfConditionalScriptPubKey(raw1, raw2),
-      P2PKWithTimeoutScriptPubKey(ECPublicKey.freshPublicKey,
-                                  ScriptNumber.one,
-                                  ECPublicKey.freshPublicKey),
+      P2PKWithTimeoutScriptPubKey(ECPublicKey.freshPublicKey, ScriptNumber.one, ECPublicKey.freshPublicKey),
       NonStandardScriptPubKey(Seq(OP_NOP)),
       P2WPKHWitnessSPKV0(ECPublicKey.freshPublicKey),
       P2WSHWitnessSPKV0(pkh),
-      WitnessCommitment(
-        DoubleSha256Digest(
-          "0000000000000000000000000000000000000000000000000000000000000000"))
+      WitnessCommitment(DoubleSha256Digest("0000000000000000000000000000000000000000000000000000000000000000"))
     ).map(spk => ScriptPubKeyDb(spk))
 
     for {

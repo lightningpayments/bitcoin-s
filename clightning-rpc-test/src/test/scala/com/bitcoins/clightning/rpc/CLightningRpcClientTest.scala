@@ -32,8 +32,7 @@ class CLightningRpcClientTest extends CLightningFixture {
       addr1 <- client.getNewAddress
       addr2 <- client.getNewAddress(AddressType.SegWit)
       addr3 <- client.getNewAddress(AddressType.NestedSegWit)
-      _ <- recoverToSucceededIf[IllegalArgumentException](
-        client.getNewAddress(AddressType.Legacy))
+      _ <- recoverToSucceededIf[IllegalArgumentException](client.getNewAddress(AddressType.Legacy))
     } yield {
       assert(addr1.isInstanceOf[Bech32Address])
       assert(addr2.isInstanceOf[Bech32Address])

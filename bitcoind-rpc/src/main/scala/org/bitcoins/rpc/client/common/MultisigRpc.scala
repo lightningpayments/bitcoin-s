@@ -1,11 +1,7 @@
 package org.bitcoins.rpc.client.common
 
 import org.bitcoins.commons.jsonmodels.bitcoind.RpcOpts.AddressType
-import org.bitcoins.commons.jsonmodels.bitcoind.{
-  MultiSigResult,
-  MultiSigResultPostV20,
-  MultiSigResultPreV20
-}
+import org.bitcoins.commons.jsonmodels.bitcoind.{MultiSigResult, MultiSigResultPostV20, MultiSigResultPreV20}
 import org.bitcoins.commons.serializers.JsonSerializers._
 import org.bitcoins.commons.serializers.JsonWriters._
 import org.bitcoins.core.protocol.P2PKHAddress
@@ -36,27 +32,23 @@ trait MultisigRpc { self: Client =>
       }
 
     val params =
-      List(JsNumber(minSignatures),
-           JsArray(keys.map(keyToString)),
-           JsString(account)) ++ addressType.map(Json.toJson(_)).toList
+      List(JsNumber(minSignatures), JsArray(keys.map(keyToString)), JsString(account)) ++ addressType
+        .map(Json.toJson(_))
+        .toList
 
     self.version.flatMap {
       case V21 | V20 | Unknown =>
-        bitcoindCall[MultiSigResultPostV20](
-          "addmultisigaddress",
-          params,
-          uriExtensionOpt = walletNameOpt.map(walletExtension))
+        bitcoindCall[MultiSigResultPostV20]("addmultisigaddress",
+                                            params,
+                                            uriExtensionOpt = walletNameOpt.map(walletExtension))
       case V16 | V17 | V18 | V19 | Experimental =>
         bitcoindCall[MultiSigResultPreV20]("addmultisigaddress",
                                            params,
-                                           uriExtensionOpt =
-                                             walletNameOpt.map(walletExtension))
+                                           uriExtensionOpt = walletNameOpt.map(walletExtension))
     }
   }
 
-  def addMultiSigAddress(
-      minSignatures: Int,
-      keys: Vector[Either[ECPublicKey, P2PKHAddress]]): Future[MultiSigResult] =
+  def addMultiSigAddress(minSignatures: Int, keys: Vector[Either[ECPublicKey, P2PKHAddress]]): Future[MultiSigResult] =
     addMultiSigAddress(minSignatures, keys, addressType = None)
 
   def addMultiSigAddress(
@@ -84,15 +76,13 @@ trait MultisigRpc { self: Client =>
       walletNameOpt: Option[String] = None): Future[MultiSigResult] = {
     self.version.flatMap {
       case V21 | V20 | Unknown =>
-        bitcoindCall[MultiSigResultPostV20](
-          "createmultisig",
-          List(JsNumber(minSignatures), Json.toJson(keys.map(_.hex))),
-          uriExtensionOpt = walletNameOpt.map(walletExtension))
+        bitcoindCall[MultiSigResultPostV20]("createmultisig",
+                                            List(JsNumber(minSignatures), Json.toJson(keys.map(_.hex))),
+                                            uriExtensionOpt = walletNameOpt.map(walletExtension))
       case V16 | V17 | V18 | V19 | Experimental =>
-        bitcoindCall[MultiSigResultPreV20](
-          "createmultisig",
-          List(JsNumber(minSignatures), Json.toJson(keys.map(_.hex))),
-          uriExtensionOpt = walletNameOpt.map(walletExtension))
+        bitcoindCall[MultiSigResultPreV20]("createmultisig",
+                                           List(JsNumber(minSignatures), Json.toJson(keys.map(_.hex))),
+                                           uriExtensionOpt = walletNameOpt.map(walletExtension))
     }
   }
 }

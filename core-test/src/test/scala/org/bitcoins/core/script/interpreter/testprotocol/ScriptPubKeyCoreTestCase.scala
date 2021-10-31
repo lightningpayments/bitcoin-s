@@ -26,7 +26,5 @@ trait ScriptPubKeyCoreTestCase {
   def scriptPubKey: ScriptPubKey
 }
 
-case class ScriptPubKeyCoreTestCaseImpl(
-    asm: Seq[ScriptToken],
-    scriptPubKey: ScriptPubKey)
+case class ScriptPubKeyCoreTestCaseImpl(asm: Seq[ScriptToken], scriptPubKey: ScriptPubKey)
     extends ScriptPubKeyCoreTestCase

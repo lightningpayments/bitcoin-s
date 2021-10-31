@@ -16,11 +16,7 @@ object GCS {
   /** Given parameters and data, golomb-encodes the data
     * @see [[https://github.com/bitcoin/bips/blob/master/bip-0158.mediawiki#set-construction]]
     */
-  def buildGCS(
-      data: Vector[ByteVector],
-      key: SipHashKey,
-      p: UInt8,
-      m: UInt64): BitVector = {
+  def buildGCS(data: Vector[ByteVector], key: SipHashKey, p: UInt8, m: UInt64): BitVector = {
     val hashedValues = hashedSetConstruct(data, key, m)
     val sortedHashedValues = hashedValues.sortWith(_ < _)
     encodeSortedSet(sortedHashedValues, p)
@@ -28,11 +24,7 @@ object GCS {
 
   /** Given parameters and data, constructs a GolombFilter for that data
     */
-  def buildGolombFilter(
-      data: Vector[ByteVector],
-      key: SipHashKey,
-      p: UInt8,
-      m: UInt64): GolombFilter = {
+  def buildGolombFilter(data: Vector[ByteVector], key: SipHashKey, p: UInt8, m: UInt64): GolombFilter = {
     val encodedData = buildGCS(data, key, p, m)
 
     GolombFilter(key, m, p, CompactSizeUInt(UInt64(data.length)), encodedData)
@@ -41,9 +33,7 @@ object GCS {
   /** Given data, constructs a GolombFilter for that data using Basic Block Filter parameters
     * @see [[https://github.com/bitcoin/bips/blob/master/bip-0158.mediawiki#block-filters]]
     */
-  def buildBasicBlockFilter(
-      data: Vector[ByteVector],
-      key: SipHashKey): GolombFilter = {
+  def buildBasicBlockFilter(data: Vector[ByteVector], key: SipHashKey): GolombFilter = {
     buildGolombFilter(data, key, FilterType.Basic.P, FilterType.Basic.M)
   }
 
@@ -67,10 +57,7 @@ object GCS {
   /** Hashes the items of a set of items
     * @see [[https://github.com/bitcoin/bips/blob/master/bip-0158.mediawiki#hashing-data-objects]]
     */
-  def hashedSetConstruct(
-      rawItems: Vector[ByteVector],
-      key: SipHashKey,
-      m: UInt64): Vector[UInt64] = {
+  def hashedSetConstruct(rawItems: Vector[ByteVector], key: SipHashKey, m: UInt64): Vector[UInt64] = {
     val n = rawItems.length
     val f = m * n
 
@@ -153,9 +140,7 @@ object GCS {
   }
 
   /** Returns the first hash gcs-encoded at the front of a BitVector, as well as the remaining BitVector */
-  private def golombDecodeItemFromSet(
-      encodedData: BitVector,
-      p: UInt8): (UInt64, BitVector) = {
+  private def golombDecodeItemFromSet(encodedData: BitVector, p: UInt8): (UInt64, BitVector) = {
     val head = golombDecode(encodedData, p)
 
     val prefixSize = (head >> p.toInt).toInt + 1
@@ -174,13 +159,9 @@ object GCS {
   /** Decodes all hashes while the given predicate returns true
     * @see [[https://github.com/bitcoin/bips/blob/master/bip-0158.mediawiki#set-queryingdecompression]]
     */
-  def golombDecodeSetsWithPredicate(encodedData: BitVector, p: UInt8)(
-      predicate: UInt64 => Boolean): Vector[UInt64] = {
+  def golombDecodeSetsWithPredicate(encodedData: BitVector, p: UInt8)(predicate: UInt64 => Boolean): Vector[UInt64] = {
     @tailrec
-    def loop(
-        encoded: BitVector,
-        lastHash: UInt64,
-        decoded: Vector[UInt64]): Vector[UInt64] = {
+    def loop(encoded: BitVector, lastHash: UInt64, decoded: Vector[UInt64]): Vector[UInt64] = {
       if (encoded.length < p.toInt + 1) { // Only padding left
         decoded
       } else {
@@ -201,11 +182,10 @@ object GCS {
     * @see [[https://github.com/bitcoin/bips/blob/master/bip-0158.mediawiki#set-construction]]
     */
   def encodeSortedSet(hashes: Vector[UInt64], p: UInt8): BitVector = {
-    val (golombStream, _) = hashes.foldLeft((BitVector.empty, UInt64.zero)) {
-      case ((accum, lastHash), hash) =>
-        val delta = hash - lastHash
-        val encoded = golombEncode(delta, p)
-        (accum ++ encoded, hash)
+    val (golombStream, _) = hashes.foldLeft((BitVector.empty, UInt64.zero)) { case ((accum, lastHash), hash) =>
+      val delta = hash - lastHash
+      val encoded = golombEncode(delta, p)
+      (accum ++ encoded, hash)
     }
 
     golombStream

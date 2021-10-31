@@ -9,12 +9,7 @@ import org.bitcoins.core.script.crypto._
 import org.bitcoins.core.script.flag.{ScriptFlag, ScriptFlagUtil}
 import org.bitcoins.core.script.result.ScriptErrorWitnessPubKeyType
 import org.bitcoins.core.util.BitcoinScriptUtil
-import org.bitcoins.crypto.{
-  DERSignatureUtil,
-  ECDigitalSignature,
-  ECPublicKey,
-  ECPublicKeyBytes
-}
+import org.bitcoins.crypto.{DERSignatureUtil, ECDigitalSignature, ECPublicKey, ECPublicKeyBytes}
 import scodec.bits.ByteVector
 
 import scala.annotation.tailrec
@@ -29,8 +24,7 @@ trait TransactionSignatureChecker {
       txSignatureComponent: TxSigComponent,
       pubKeyBytes: ECPublicKeyBytes,
       signature: ECDigitalSignature): TransactionSignatureCheckerResult =
-    checkSignature(txSignatureComponent,
-                   PartialSignature(pubKeyBytes, signature))
+    checkSignature(txSignatureComponent, PartialSignature(pubKeyBytes, signature))
 
   def checkSignature(
       txSignatureComponent: TxSigComponent,
@@ -51,10 +45,7 @@ trait TransactionSignatureChecker {
       txSignatureComponent: TxSigComponent,
       script: Seq[ScriptToken],
       partialSignature: PartialSignature): TransactionSignatureCheckerResult =
-    checkSignature(txSignatureComponent,
-                   script,
-                   partialSignature.pubKey,
-                   partialSignature.signature)
+    checkSignature(txSignatureComponent, script, partialSignature.pubKey, partialSignature.signature)
 
   /** Checks the signature of a scriptSig in the spending transaction against the
     * given scriptPubKey & explicitly given public key
@@ -72,12 +63,8 @@ trait TransactionSignatureChecker {
       script: Seq[ScriptToken],
       pubKey: ECPublicKeyBytes,
       signature: ECDigitalSignature,
-      flags: Seq[ScriptFlag] =
-        Policy.standardFlags): TransactionSignatureCheckerResult = {
-    val pubKeyEncodedCorrectly = BitcoinScriptUtil.isValidPubKeyEncoding(
-      pubKey,
-      txSignatureComponent.sigVersion,
-      flags)
+      flags: Seq[ScriptFlag] = Policy.standardFlags): TransactionSignatureCheckerResult = {
+    val pubKeyEncodedCorrectly = BitcoinScriptUtil.isValidPubKeyEncoding(pubKey, txSignatureComponent.sigVersion, flags)
     if (
       ScriptFlagUtil.requiresStrictDerEncoding(flags) && !DERSignatureUtil
         .isValidSignatureEncoding(signature)
@@ -101,46 +88,32 @@ trait TransactionSignatureChecker {
         else SignatureValidationErrorPubKeyEncoding
       result
     } else {
-      val sigsRemovedScript = BitcoinScriptUtil.calculateScriptForChecking(
-        txSignatureComponent,
-        signature,
-        script)
+      val sigsRemovedScript = BitcoinScriptUtil.calculateScriptForChecking(txSignatureComponent, signature, script)
       val hashTypeByte =
         if (signature.bytes.nonEmpty) signature.bytes.last else 0x00.toByte
-      val hashType = HashType(
-        ByteVector(0.toByte, 0.toByte, 0.toByte, hashTypeByte))
+      val hashType = HashType(ByteVector(0.toByte, 0.toByte, 0.toByte, hashTypeByte))
       val spk = ScriptPubKey.fromAsm(sigsRemovedScript)
       val hashForSignature = txSignatureComponent match {
         case w: WitnessTxSigComponent =>
           TransactionSignatureSerializer.hashForSignature(w, hashType)
         case b: BaseTxSigComponent =>
-          val sigsRemovedTxSigComponent = BaseTxSigComponent(
-            b.transaction,
-            b.inputIndex,
-            TransactionOutput(b.output.value, spk),
-            b.flags)
-          TransactionSignatureSerializer.hashForSignature(
-            sigsRemovedTxSigComponent,
-            hashType)
+          val sigsRemovedTxSigComponent =
+            BaseTxSigComponent(b.transaction, b.inputIndex, TransactionOutput(b.output.value, spk), b.flags)
+          TransactionSignatureSerializer.hashForSignature(sigsRemovedTxSigComponent, hashType)
         case r: WitnessTxSigComponentRebuilt =>
-          val sigsRemovedTxSigComponent = WitnessTxSigComponentRebuilt(
-            wtx = r.transaction,
-            inputIndex = r.inputIndex,
-            output = TransactionOutput(r.output.value, spk),
-            witScriptPubKey = r.witnessScriptPubKey,
-            flags = r.flags)
-          TransactionSignatureSerializer.hashForSignature(
-            sigsRemovedTxSigComponent,
-            hashType)
+          val sigsRemovedTxSigComponent = WitnessTxSigComponentRebuilt(wtx = r.transaction,
+                                                                       inputIndex = r.inputIndex,
+                                                                       output = TransactionOutput(r.output.value, spk),
+                                                                       witScriptPubKey = r.witnessScriptPubKey,
+                                                                       flags = r.flags)
+          TransactionSignatureSerializer.hashForSignature(sigsRemovedTxSigComponent, hashType)
       }
 
       val sigWithoutHashType = stripHashType(signature)
       val isValid = pubKey.verify(hashForSignature, sigWithoutHashType)
       if (isValid) SignatureValidationSuccess
       else
-        nullFailCheck(Seq(signature),
-                      SignatureValidationErrorIncorrectSignatures,
-                      flags)
+        nullFailCheck(Seq(signature), SignatureValidationErrorIncorrectSignatures, flags)
     }
   }
 
@@ -162,8 +135,7 @@ trait TransactionSignatureChecker {
       pubKeys: List[ECPublicKeyBytes],
       flags: Seq[ScriptFlag],
       requiredSigs: Long): TransactionSignatureCheckerResult = {
-    require(requiredSigs >= 0,
-            s"requiredSigs cannot be negative, got $requiredSigs")
+    require(requiredSigs >= 0, s"requiredSigs cannot be negative, got $requiredSigs")
     if (sigs.size > pubKeys.size) {
       //this is how bitcoin core treats this. If there are ever any more
       //signatures than public keys remaining we immediately return
@@ -180,29 +152,15 @@ trait TransactionSignatureChecker {
         checkSignature(txSignatureComponent, script, pubKey, sig, flags)
       result match {
         case SignatureValidationSuccess =>
-          multiSignatureEvaluator(txSignatureComponent,
-                                  script,
-                                  sigs.tail,
-                                  pubKeys.tail,
-                                  flags,
-                                  requiredSigs - 1)
-        case SignatureValidationErrorIncorrectSignatures |
-            SignatureValidationErrorNullFail =>
+          multiSignatureEvaluator(txSignatureComponent, script, sigs.tail, pubKeys.tail, flags, requiredSigs - 1)
+        case SignatureValidationErrorIncorrectSignatures | SignatureValidationErrorNullFail =>
           //notice we pattern match on 'SignatureValidationErrorNullFail' here, this is because
           //'checkSignature' may return that result, but we need to continue evaluating the signatures
           //in the multisig script, we don't check for nullfail until evaluation the OP_CHECKMULTSIG is completely done
-          multiSignatureEvaluator(txSignatureComponent,
-                                  script,
-                                  sigs,
-                                  pubKeys.tail,
-                                  flags,
-                                  requiredSigs)
-        case x @ (SignatureValidationErrorNotStrictDerEncoding |
-            SignatureValidationErrorSignatureCount |
-            SignatureValidationErrorPubKeyEncoding |
-            SignatureValidationErrorHighSValue |
-            SignatureValidationErrorHashType |
-            SignatureValidationErrorWitnessPubKeyType) =>
+          multiSignatureEvaluator(txSignatureComponent, script, sigs, pubKeys.tail, flags, requiredSigs)
+        case x @ (SignatureValidationErrorNotStrictDerEncoding | SignatureValidationErrorSignatureCount |
+            SignatureValidationErrorPubKeyEncoding | SignatureValidationErrorHighSValue |
+            SignatureValidationErrorHashType | SignatureValidationErrorWitnessPubKeyType) =>
           nullFailCheck(sigs, x, flags)
       }
     } else if (sigs.isEmpty) {

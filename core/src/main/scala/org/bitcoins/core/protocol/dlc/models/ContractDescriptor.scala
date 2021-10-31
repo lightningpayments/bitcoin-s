@@ -29,12 +29,9 @@ sealed trait ContractDescriptor extends TLVSerializable[ContractDescriptorTLV] {
   def flip(totalCollateral: Satoshis): ContractDescriptor
 }
 
-object ContractDescriptor
-    extends TLVDeserializable[ContractDescriptorTLV, ContractDescriptor](
-      ContractDescriptorTLV) {
+object ContractDescriptor extends TLVDeserializable[ContractDescriptorTLV, ContractDescriptor](ContractDescriptorTLV) {
 
-  val empty: ContractDescriptor = EnumContractDescriptor(
-    Vector(EnumOutcome("") -> Satoshis.zero))
+  val empty: ContractDescriptor = EnumContractDescriptor(Vector(EnumOutcome("") -> Satoshis.zero))
 
   override def fromTLV(tlv: ContractDescriptorTLV): ContractDescriptor = {
     tlv match {
@@ -46,8 +43,7 @@ object ContractDescriptor
 }
 
 /** The ContractDescriptor for enumerated outcome DLCs */
-case class EnumContractDescriptor(
-    outcomeValueMap: Vector[(EnumOutcome, Satoshis)])
+case class EnumContractDescriptor(outcomeValueMap: Vector[(EnumOutcome, Satoshis)])
     extends ContractDescriptor
     with TLVSerializable[ContractDescriptorV0TLV]
     with SeqWrapper[(EnumOutcome, Satoshis)] {
@@ -73,8 +69,7 @@ case class EnumContractDescriptor(
 }
 
 object EnumContractDescriptor
-    extends TLVDeserializable[ContractDescriptorV0TLV, EnumContractDescriptor](
-      ContractDescriptorV0TLV) {
+    extends TLVDeserializable[ContractDescriptorV0TLV, EnumContractDescriptor](ContractDescriptorV0TLV) {
 
   def fromStringVec(vec: Vector[(String, Satoshis)]): EnumContractDescriptor = {
     EnumContractDescriptor(vec.map { case (str, amt) =>
@@ -102,16 +97,14 @@ case class NumericContractDescriptor(
   private val minValue: Long = 0L
   private val maxValue: Long = (Math.pow(2, numDigits) - 1).toLong
 
-  require(outcomeValueFunc.points.head.isEndpoint,
-          "Payout curve must start with an end point")
+  require(outcomeValueFunc.points.head.isEndpoint, "Payout curve must start with an end point")
   require(
     outcomeValueFunc.points.head.outcome == 0,
     s"Payout curve must start with its minimum value, $minValue, got ${outcomeValueFunc.points.head.outcome}. " +
       s"You must define the payout curve from $minValue - $maxValue"
   )
 
-  require(outcomeValueFunc.points.last.isEndpoint,
-          "Payout curve must end with an end point")
+  require(outcomeValueFunc.points.last.isEndpoint, "Payout curve must end with an end point")
 
   require(
     outcomeValueFunc.points.last.outcome == maxValue,
@@ -133,19 +126,14 @@ case class NumericContractDescriptor(
   }
 
   override def toTLV: ContractDescriptorV1TLV = {
-    ContractDescriptorV1TLV(numDigits,
-                            outcomeValueFunc.toTLV,
-                            roundingIntervals.toTLV)
+    ContractDescriptorV1TLV(numDigits, outcomeValueFunc.toTLV, roundingIntervals.toTLV)
   }
 }
 
 object NumericContractDescriptor
-    extends TLVDeserializable[
-      ContractDescriptorV1TLV,
-      NumericContractDescriptor](ContractDescriptorV1TLV) {
+    extends TLVDeserializable[ContractDescriptorV1TLV, NumericContractDescriptor](ContractDescriptorV1TLV) {
 
-  override def fromTLV(
-      tlv: ContractDescriptorV1TLV): NumericContractDescriptor = {
+  override def fromTLV(tlv: ContractDescriptorV1TLV): NumericContractDescriptor = {
     NumericContractDescriptor(
       DLCPayoutCurve.fromTLV(tlv.payoutFunction),
       tlv.numDigits,

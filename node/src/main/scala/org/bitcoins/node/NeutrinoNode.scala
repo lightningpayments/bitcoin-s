@@ -5,19 +5,12 @@ import org.bitcoins.chain.config.ChainAppConfig
 import org.bitcoins.chain.models.BlockHeaderDAO
 import org.bitcoins.core.api.chain.ChainApi
 import org.bitcoins.core.api.chain.ChainQueryApi.FilterResponse
-import org.bitcoins.core.api.chain.db.{
-  BlockHeaderDb,
-  CompactFilterDb,
-  CompactFilterHeaderDb
-}
+import org.bitcoins.core.api.chain.db.{BlockHeaderDb, CompactFilterDb, CompactFilterHeaderDb}
 import org.bitcoins.core.api.node.NodeType
 import org.bitcoins.core.protocol.BlockStamp
 import org.bitcoins.node.config.NodeAppConfig
 import org.bitcoins.node.models.Peer
-import org.bitcoins.node.networking.peer.{
-  ControlMessageHandler,
-  DataMessageHandler
-}
+import org.bitcoins.node.networking.peer.{ControlMessageHandler, DataMessageHandler}
 
 import scala.concurrent.Future
 
@@ -28,9 +21,8 @@ case class NeutrinoNode(
     chainConfig: ChainAppConfig,
     actorSystem: ActorSystem)
     extends Node {
-  require(
-    nodeConfig.nodeType == NodeType.NeutrinoNode,
-    s"We need our Neutrino mode enabled to be able to construct a Neutrino node!")
+  require(nodeConfig.nodeType == NodeType.NeutrinoNode,
+          s"We need our Neutrino mode enabled to be able to construct a Neutrino node!")
 
   implicit override def system: ActorSystem = actorSystem
 
@@ -44,8 +36,7 @@ case class NeutrinoNode(
 
   override def getDataMessageHandler: DataMessageHandler = dataMessageHandler
 
-  override def updateDataMessageHandler(
-      dataMessageHandler: DataMessageHandler): NeutrinoNode = {
+  override def updateDataMessageHandler(dataMessageHandler: DataMessageHandler): NeutrinoNode = {
     this.dataMessageHandler = dataMessageHandler
     this
   }
@@ -90,8 +81,7 @@ case class NeutrinoNode(
                        bestBlockHeader = header,
                        chainApi = chainApi)
     } yield {
-      logger.info(
-        s"Starting sync node, height=${header.height} hash=${header.hashBE.hex}")
+      logger.info(s"Starting sync node, height=${header.height} hash=${header.hashBE.hex}")
     }
   }
 
@@ -138,10 +128,9 @@ case class NeutrinoNode(
       bestFilterOpt: Option[CompactFilterDb]): Future[Unit] = {
     val sendCompactFilterHeaderMsgF = {
       randomPeerMsgSenderWithCompactFilters
-        .sendNextGetCompactFilterHeadersCommand(
-          chainApi = chainApi,
-          filterHeaderBatchSize = chainConfig.filterHeaderBatchSize,
-          prevStopHash = bestFilterHeader.blockHashBE)
+        .sendNextGetCompactFilterHeadersCommand(chainApi = chainApi,
+                                                filterHeaderBatchSize = chainConfig.filterHeaderBatchSize,
+                                                prevStopHash = bestFilterHeader.blockHashBE)
     }
     sendCompactFilterHeaderMsgF.flatMap { isSyncFilterHeaders =>
       // If we have started syncing filters
@@ -154,10 +143,9 @@ case class NeutrinoNode(
         //in sync with our compact filter headers
         logger.info(s"Starting sync filters in NeutrinoNode.sync()")
         randomPeerMsgSenderWithCompactFilters
-          .sendNextGetCompactFilterCommand(
-            chainApi = chainApi,
-            filterBatchSize = chainConfig.filterBatchSize,
-            startHeight = bestFilterOpt.get.height)
+          .sendNextGetCompactFilterCommand(chainApi = chainApi,
+                                           filterBatchSize = chainConfig.filterBatchSize,
+                                           startHeight = bestFilterOpt.get.height)
           .map(_ => ())
       } else {
         Future.unit
@@ -173,8 +161,6 @@ case class NeutrinoNode(
   override def getHeightByBlockStamp(blockStamp: BlockStamp): Future[Int] =
     chainApiFromDb().flatMap(_.getHeightByBlockStamp(blockStamp))
 
-  override def getFiltersBetweenHeights(
-      startHeight: Int,
-      endHeight: Int): Future[Vector[FilterResponse]] =
+  override def getFiltersBetweenHeights(startHeight: Int, endHeight: Int): Future[Vector[FilterResponse]] =
     chainApiFromDb().flatMap(_.getFiltersBetweenHeights(startHeight, endHeight))
 }

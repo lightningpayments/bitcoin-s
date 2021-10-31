@@ -5,9 +5,7 @@ import zio.Task
 
 import scala.concurrent.{ExecutionContext, Future}
 
-abstract class CRUDAutoInc[T <: DbRowAutoInc[T]](implicit
-    ec: ExecutionContext,
-    override val appConfig: DbAppConfig)
+abstract class CRUDAutoInc[T <: DbRowAutoInc[T]](implicit ec: ExecutionContext, override val appConfig: DbAppConfig)
     extends CRUD[T, Long]()(ec, appConfig)
     with TableAutoIncComponent[T] {
   import profile.api._
@@ -25,8 +23,7 @@ abstract class CRUDAutoInc[T <: DbRowAutoInc[T]](implicit
     safeDatabase.runVec(actions.transactionally)
   }
 
-  override def findByPrimaryKeys(
-      ids: Vector[Long]): Query[TableAutoInc[T], T, Seq] = {
+  override def findByPrimaryKeys(ids: Vector[Long]): Query[TableAutoInc[T], T, Seq] = {
     table.filter { t =>
       t.id.inSet(ids)
     }
@@ -48,10 +45,7 @@ abstract class CRUDAutoInc[T <: DbRowAutoInc[T]](implicit
 trait TableAutoIncComponent[T <: DbRowAutoInc[T]] { self: CRUDAutoInc[T] =>
   import profile.api._
 
-  abstract class TableAutoInc[T](
-      tag: profile.api.Tag,
-      schemaName: Option[String],
-      tableName: String)
+  abstract class TableAutoInc[T](tag: profile.api.Tag, schemaName: Option[String], tableName: String)
       extends profile.api.Table[T](tag, schemaName, tableName) {
     def id: Rep[Long] = column[Long]("id", O.PrimaryKey, O.AutoInc)
   }

@@ -27,8 +27,7 @@ sealed trait NumericDLCOutcomeType extends DLCOutcomeType
   *
   * I.e. the Vector[Int] is always the most significant digits.
   */
-case class UnsignedNumericOutcome(digits: Vector[Int])
-    extends NumericDLCOutcomeType {
+case class UnsignedNumericOutcome(digits: Vector[Int]) extends NumericDLCOutcomeType {
 
   override lazy val serialized: Vector[ByteVector] =
     digits.map(digit => CryptoUtil.serializeForHash(digit.toString))
@@ -42,8 +41,7 @@ case class UnsignedNumericOutcome(digits: Vector[Int])
   *
   * I.e. the Vector[Int] is always the most significant digits.
   */
-case class SignedNumericOutcome(positive: Boolean, digits: Vector[Int])
-    extends NumericDLCOutcomeType {
+case class SignedNumericOutcome(positive: Boolean, digits: Vector[Int]) extends NumericDLCOutcomeType {
 
   private val signOutcomeStr = if (positive) "+" else "-"
 

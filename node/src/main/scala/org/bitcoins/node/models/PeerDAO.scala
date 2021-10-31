@@ -30,13 +30,11 @@ case class PeerDAO()(implicit ec: ExecutionContext, appConfig: NodeAppConfig)
   override def createAll(ts: Vector[PeerDb]): Future[Vector[PeerDb]] =
     createAllNoAutoInc(ts, safeDatabase)
 
-  override protected def findByPrimaryKeys(
-      ids: Vector[ByteVector]): Query[PeerTable, PeerDb, Seq] = {
+  override protected def findByPrimaryKeys(ids: Vector[ByteVector]): Query[PeerTable, PeerDb, Seq] = {
     table.filter(_.address.inSet(ids))
   }
 
-  override protected def findAll(
-      ts: Vector[PeerDb]): Query[Table[_], PeerDb, Seq] = findByPrimaryKeys(
+  override protected def findAll(ts: Vector[PeerDb]): Query[Table[_], PeerDb, Seq] = findByPrimaryKeys(
     ts.map(_.address))
 
   def deleteByKey(address: String): Future[Int] = {
@@ -45,27 +43,14 @@ case class PeerDAO()(implicit ec: ExecutionContext, appConfig: NodeAppConfig)
     safeDatabase.run(q.delete)
   }
 
-  def upsertPeer(
-      address: ByteVector,
-      port: Int,
-      networkId: Byte): Future[PeerDb] = {
+  def upsertPeer(address: ByteVector, port: Int, networkId: Byte): Future[PeerDb] = {
     val lastSeen: Instant = Instant.now
     val existingF = read(address)
     existingF.flatMap {
       case Some(value) =>
-        upsert(
-          PeerDb(address,
-                 port,
-                 firstSeen = value.firstSeen,
-                 lastSeen = lastSeen,
-                 networkId = networkId))
+        upsert(PeerDb(address, port, firstSeen = value.firstSeen, lastSeen = lastSeen, networkId = networkId))
       case None =>
-        upsert(
-          PeerDb(address,
-                 port,
-                 firstSeen = Instant.now,
-                 lastSeen = lastSeen,
-                 networkId = networkId))
+        upsert(PeerDb(address, port, firstSeen = Instant.now, lastSeen = lastSeen, networkId = networkId))
     }
   }
 
@@ -82,7 +67,6 @@ case class PeerDAO()(implicit ec: ExecutionContext, appConfig: NodeAppConfig)
     def networkId: Rep[Byte] = column("network_id")
 
     def * : ProvenShape[PeerDb] =
-      (address, port, lastSeen, firstSeen, networkId).<>(PeerDb.tupled,
-                                                         PeerDb.unapply)
+      (address, port, lastSeen, firstSeen, networkId).<>(PeerDb.tupled, PeerDb.unapply)
   }
 }

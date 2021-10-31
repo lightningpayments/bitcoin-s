@@ -40,17 +40,9 @@ object SECP256k1 extends js.Object {
 
   def verifyDER(msg: Buffer, sig: Buffer, key: Buffer): Boolean = js.native
 
-  def recover(
-      msg: Buffer,
-      sig: Buffer,
-      param: Byte,
-      compress: Boolean): Buffer = js.native
+  def recover(msg: Buffer, sig: Buffer, param: Byte, compress: Boolean): Buffer = js.native
 
-  def recoverDER(
-      msg: Buffer,
-      sig: Buffer,
-      param: Byte,
-      compress: Boolean): Buffer = js.native
+  def recoverDER(msg: Buffer, sig: Buffer, param: Byte, compress: Boolean): Buffer = js.native
 
   val curve: js.Dynamic = js.native
 }

@@ -96,9 +96,7 @@ object ECPrivateKeyUtil {
           case Some(network) =>
             Success(Networks.bytesToNetwork(network))
           case None =>
-            Failure(
-              new IllegalArgumentException(
-                "Failed to match network bytes for WIF"))
+            Failure(new IllegalArgumentException("Failed to match network bytes for WIF"))
         }
       case Failure(exn) => Failure(exn)
     }

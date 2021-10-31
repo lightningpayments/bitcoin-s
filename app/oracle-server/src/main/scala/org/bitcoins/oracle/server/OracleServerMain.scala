@@ -29,15 +29,9 @@ class OracleServerMain(override val serverArgParser: ServerArgParser)(implicit
       routes = Seq(OracleRoutes(oracle), commonRoutes)
       server = serverArgParser.rpcPortOpt match {
         case Some(rpcport) =>
-          Server(conf = conf,
-                 handlers = routes,
-                 rpcbindOpt = bindConfOpt,
-                 rpcport = rpcport)
+          Server(conf = conf, handlers = routes, rpcbindOpt = bindConfOpt, rpcport = rpcport)
         case None =>
-          Server(conf = conf,
-                 handlers = routes,
-                 rpcbindOpt = bindConfOpt,
-                 rpcport = conf.rpcPort)
+          Server(conf = conf, handlers = routes, rpcbindOpt = bindConfOpt, rpcport = conf.rpcPort)
       }
 
       _ <- server.start()
@@ -76,8 +70,7 @@ object OracleServerMain extends BitcoinSAppScalaDaemon {
   System.setProperty("bitcoins.log.location", datadirParser.networkDir.toString)
 
   implicit lazy val conf: DLCOracleAppConfig =
-    DLCOracleAppConfig(datadirParser.datadir, datadirParser.baseConfig)(
-      system.dispatcher)
+    DLCOracleAppConfig(datadirParser.datadir, datadirParser.baseConfig)(system.dispatcher)
 
   new OracleServerMain(serverCmdLineArgs).run()
 }

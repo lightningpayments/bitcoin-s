@@ -68,36 +68,23 @@ object DLCFundingInput {
           case Some(redeemScript) =>
             redeemScript match {
               case _: P2WPKHWitnessSPKV0 =>
-                require(
-                  maxWitnessLen == UInt16(107) || maxWitnessLen == UInt16(108),
-                  s"P2WPKH max witness length must be 107 or 108, got $maxWitnessLen")
+                require(maxWitnessLen == UInt16(107) || maxWitnessLen == UInt16(108),
+                        s"P2WPKH max witness length must be 107 or 108, got $maxWitnessLen")
               case _: P2WSHWitnessSPKV0 => ()
               case spk: UnassignedWitnessScriptPubKey =>
-                throw new IllegalArgumentException(
-                  s"Unknown segwit version: $spk")
+                throw new IllegalArgumentException(s"Unknown segwit version: $spk")
             }
 
-            DLCFundingInputP2SHSegwit(inputSerialId,
-                                      prevTx,
-                                      prevTxVout,
-                                      sequence,
-                                      maxWitnessLen,
-                                      redeemScript)
+            DLCFundingInputP2SHSegwit(inputSerialId, prevTx, prevTxVout, sequence, maxWitnessLen, redeemScript)
           case None =>
-            throw new IllegalArgumentException(
-              "P2SH input requires a redeem script")
+            throw new IllegalArgumentException("P2SH input requires a redeem script")
         }
       case _: P2WPKHWitnessSPKV0 =>
-        require(
-          maxWitnessLen == UInt16(107) || maxWitnessLen == UInt16(108),
-          s"P2WPKH max witness length must be 107 or 108, got $maxWitnessLen")
+        require(maxWitnessLen == UInt16(107) || maxWitnessLen == UInt16(108),
+                s"P2WPKH max witness length must be 107 or 108, got $maxWitnessLen")
         DLCFundingInputP2WPKHV0(inputSerialId, prevTx, prevTxVout, sequence)
       case _: P2WSHWitnessSPKV0 =>
-        DLCFundingInputP2WSHV0(inputSerialId,
-                               prevTx,
-                               prevTxVout,
-                               sequence,
-                               maxWitnessLen)
+        DLCFundingInputP2WSHV0(inputSerialId, prevTx, prevTxVout, sequence, maxWitnessLen)
       case spk: UnassignedWitnessScriptPubKey =>
         throw new IllegalArgumentException(s"Unknown segwit version: $spk")
       case spk: RawScriptPubKey =>
@@ -133,14 +120,9 @@ object DLCFundingInput {
   }
 }
 
-case class DLCFundingInputP2WPKHV0(
-    inputSerialId: UInt64,
-    prevTx: Transaction,
-    prevTxVout: UInt32,
-    sequence: UInt32)
+case class DLCFundingInputP2WPKHV0(inputSerialId: UInt64, prevTx: Transaction, prevTxVout: UInt32, sequence: UInt32)
     extends DLCFundingInput {
-  require(output.scriptPubKey.isInstanceOf[P2WPKHWitnessSPKV0],
-          s"Funding input not P2WPKH: ${output.scriptPubKey}")
+  require(output.scriptPubKey.isInstanceOf[P2WPKHWitnessSPKV0], s"Funding input not P2WPKH: ${output.scriptPubKey}")
 
   override val maxWitnessLen: UInt16 = UInt16(107)
   override val redeemScriptOpt: Option[WitnessScriptPubKey] = None
@@ -153,8 +135,7 @@ case class DLCFundingInputP2WSHV0(
     sequence: UInt32,
     maxWitnessLen: UInt16)
     extends DLCFundingInput {
-  require(output.scriptPubKey.isInstanceOf[P2WSHWitnessSPKV0],
-          s"Funding input not P2WSH: ${output.scriptPubKey}")
+  require(output.scriptPubKey.isInstanceOf[P2WSHWitnessSPKV0], s"Funding input not P2WSH: ${output.scriptPubKey}")
 
   override val redeemScriptOpt: Option[WitnessScriptPubKey] = None
 }
@@ -175,9 +156,7 @@ case class DLCFundingInputP2SHSegwit(
   override val redeemScriptOpt: Option[WitnessScriptPubKey] = Some(redeemScript)
 }
 
-case class SpendingInfoWithSerialId(
-    spendingInfo: ScriptSignatureParams[InputInfo],
-    serialId: UInt64) {
+case class SpendingInfoWithSerialId(spendingInfo: ScriptSignatureParams[InputInfo], serialId: UInt64) {
 
   def toDLCFundingInput(sequence: UInt32): DLCFundingInput =
     DLCFundingInput.fromInputSigningInfo(spendingInfo, serialId, sequence)

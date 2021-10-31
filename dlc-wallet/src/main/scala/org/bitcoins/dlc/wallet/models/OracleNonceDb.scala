@@ -14,17 +14,13 @@ case class OracleNonceDb(
 
 object OracleNonceDbHelper {
 
-  def fromAnnouncement(
-      id: Long,
-      tlv: OracleAnnouncementTLV): Vector[OracleNonceDb] = {
+  def fromAnnouncement(id: Long, tlv: OracleAnnouncementTLV): Vector[OracleNonceDb] = {
     tlv.eventTLV.nonces.vec.zipWithIndex.map { case (nonce, index) =>
       OracleNonceDb(id, index, SchnorrDigitalSignature.dummy, nonce, None, None)
     }
   }
 
-  def fromAnnouncements(
-      announcementsWithId: Vector[(OracleAnnouncementTLV, Long)]): Vector[
-    OracleNonceDb] = {
+  def fromAnnouncements(announcementsWithId: Vector[(OracleAnnouncementTLV, Long)]): Vector[OracleNonceDb] = {
     announcementsWithId.flatMap { case (announcement, id) =>
       fromAnnouncement(id, announcement)
     }

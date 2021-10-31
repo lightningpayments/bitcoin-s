@@ -9,12 +9,7 @@ import org.bitcoins.core.protocol.script.{ScriptPubKey, WitnessVersion}
 import org.bitcoins.core.protocol.transaction.Transaction
 import org.bitcoins.core.script.ScriptType
 import org.bitcoins.core.wallet.fee.BitcoinFeeUnit
-import org.bitcoins.crypto.{
-  DoubleSha256DigestBE,
-  ECPublicKey,
-  RipeMd160Digest,
-  Sha256Hash160Digest
-}
+import org.bitcoins.crypto.{DoubleSha256DigestBE, ECPublicKey, RipeMd160Digest, Sha256Hash160Digest}
 
 import java.io.File
 import java.time.ZonedDateTime
@@ -26,15 +21,9 @@ trait MultiSigResult extends WalletResult {
   def redeemScript: ScriptPubKey
 }
 
-case class MultiSigResultPreV20(
-    address: BitcoinAddress,
-    redeemScript: ScriptPubKey)
-    extends MultiSigResult
+case class MultiSigResultPreV20(address: BitcoinAddress, redeemScript: ScriptPubKey) extends MultiSigResult
 
-case class MultiSigResultPostV20(
-    address: BitcoinAddress,
-    redeemScript: ScriptPubKey,
-    descriptor: String)
+case class MultiSigResultPostV20(address: BitcoinAddress, redeemScript: ScriptPubKey, descriptor: String)
     extends MultiSigResult
 
 case class BumpFeeResult(
@@ -63,19 +52,11 @@ case class GetTransactionResult(
     hex: Transaction)
     extends WalletResult
 
-case class SetWalletFlagResult(
-    flag_name: String,
-    flag_state: Boolean,
-    warnings: Option[String])
-    extends WalletResult
+case class SetWalletFlagResult(flag_name: String, flag_state: Boolean, warnings: Option[String]) extends WalletResult
 
-case class GetBalancesResult(mine: BalanceInfo, watchonly: Option[BalanceInfo])
-    extends WalletResult
+case class GetBalancesResult(mine: BalanceInfo, watchonly: Option[BalanceInfo]) extends WalletResult
 
-case class BalanceInfo(
-    trusted: Bitcoins,
-    untrusted_pending: Bitcoins,
-    immature: Bitcoins)
+case class BalanceInfo(trusted: Bitcoins, untrusted_pending: Bitcoins, immature: Bitcoins)
 
 case class TransactionDetails(
     involvesWatchonly: Option[Boolean],
@@ -103,30 +84,20 @@ case class GetWalletInfoResult(
     unlocked_until: Option[Int])
     extends WalletResult
 
-case class ImportMultiResult(success: Boolean, error: Option[ImportMultiError])
-    extends WalletResult
+case class ImportMultiResult(success: Boolean, error: Option[ImportMultiError]) extends WalletResult
 
 case class ImportMultiError(code: Int, message: String) extends WalletResult
 
-case class RpcAddress(
-    address: BitcoinAddress,
-    balance: Bitcoins,
-    account: Option[String])
-    extends WalletResult
+case class RpcAddress(address: BitcoinAddress, balance: Bitcoins, account: Option[String]) extends WalletResult
 
-case class RpcAccount(
-    involvesWatchonly: Boolean,
-    account: String,
-    amount: Bitcoins,
-    confirmations: Int)
+case class RpcAccount(involvesWatchonly: Boolean, account: String, amount: Bitcoins, confirmations: Int)
     extends WalletResult
 
 case class DumpWalletResult(filename: File)
 
 case class LoadWalletResult(name: String, warning: String) extends WalletResult
 
-case class RescanBlockChainResult(start_height: Int, stop_height: Int)
-    extends WalletResult
+case class RescanBlockChainResult(start_height: Int, stop_height: Int) extends WalletResult
 
 case class ReceivedAddress(
     involvesWatchonly: Option[Boolean],
@@ -146,17 +117,10 @@ case class ReceivedAccount(
     lable: Option[String])
     extends WalletResult
 
-case class ReceivedLabel(
-    involvesWatchonly: Option[Boolean],
-    amount: Bitcoins,
-    confirmations: Int,
-    label: String)
+case class ReceivedLabel(involvesWatchonly: Option[Boolean], amount: Bitcoins, confirmations: Int, label: String)
     extends WalletResult
 
-case class ListSinceBlockResult(
-    transactions: Vector[Payment],
-    lastblock: DoubleSha256DigestBE)
-    extends WalletResult
+case class ListSinceBlockResult(transactions: Vector[Payment], lastblock: DoubleSha256DigestBE) extends WalletResult
 
 case class Payment(
     involvesWatchonly: Option[Boolean],
@@ -325,9 +289,7 @@ object AddressInfoResultPostV18 {
       hdmasterfingerprint: Option[String],
       labels: Vector[LabelResult])
 
-  def apply(
-      info: AddressInfoResultPostV18WithoutIsProps,
-      isProps: AddressInfoIsProps): AddressInfoResultPostV18 = {
+  def apply(info: AddressInfoResultPostV18WithoutIsProps, isProps: AddressInfoIsProps): AddressInfoResultPostV18 = {
     AddressInfoResultPostV18(
       address = info.address,
       scriptPubKey = info.scriptPubKey,
@@ -410,9 +372,7 @@ object AddressInfoResultPostV21 {
       hdmasterfingerprint: Option[String],
       labels: Vector[String])
 
-  def apply(
-      info: AddressInfoResultPostV21WithoutIsProps,
-      isProps: AddressInfoIsProps): AddressInfoResultPostV21 = {
+  def apply(info: AddressInfoResultPostV21WithoutIsProps, isProps: AddressInfoIsProps): AddressInfoResultPostV21 = {
     AddressInfoResultPostV21(
       address = info.address,
       scriptPubKey = info.scriptPubKey,

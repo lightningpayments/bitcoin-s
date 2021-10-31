@@ -1,9 +1,6 @@
 package org.bitcoins.wallet.internal
 
-import org.bitcoins.core.api.chain.ChainQueryApi.{
-  FilterResponse,
-  InvalidBlockRange
-}
+import org.bitcoins.core.api.chain.ChainQueryApi.{FilterResponse, InvalidBlockRange}
 import org.bitcoins.core.api.wallet.NeutrinoWalletApi.BlockMatchingResponse
 import org.bitcoins.core.gcs.SimpleFilterMatcher
 import org.bitcoins.core.hd.{HDAccount, HDChainType}
@@ -30,11 +27,7 @@ private[wallet] trait RescanHandling extends WalletLogger {
       useCreationTime: Boolean)(implicit ec: ExecutionContext): Future[Unit] = {
     for {
       account <- getDefaultAccount()
-      _ <- rescanNeutrinoWallet(account.hdAccount,
-                                startOpt,
-                                endOpt,
-                                addressBatchSize,
-                                useCreationTime)
+      _ <- rescanNeutrinoWallet(account.hdAccount, startOpt, endOpt, addressBatchSize, useCreationTime)
     } yield ()
   }
 
@@ -52,8 +45,7 @@ private[wallet] trait RescanHandling extends WalletLogger {
     val res = for {
       start <- (startOpt, useCreationTime) match {
         case (Some(_), true) =>
-          Future.failed(new IllegalArgumentException(
-            "Cannot define a starting block and use the wallet creation time"))
+          Future.failed(new IllegalArgumentException("Cannot define a starting block and use the wallet creation time"))
         case (Some(value), false) =>
           Future.successful(Some(value))
         case (None, true) =>
@@ -66,8 +58,7 @@ private[wallet] trait RescanHandling extends WalletLogger {
     } yield ()
 
     res.onComplete { _ =>
-      logger.info(
-        s"Finished rescanning the wallet. It took ${System.currentTimeMillis() - start}ms")
+      logger.info(s"Finished rescanning the wallet. It took ${System.currentTimeMillis() - start}ms")
     }
 
     res
@@ -97,22 +88,18 @@ private[wallet] trait RescanHandling extends WalletLogger {
     } else {
 
       for {
-        startHeight <- startOpt.fold(Future.successful(0))(
-          chainQueryApi.getHeightByBlockStamp)
+        startHeight <- startOpt.fold(Future.successful(0))(chainQueryApi.getHeightByBlockStamp)
         _ = if (startHeight < 0)
           throw InvalidBlockRange(s"Start position cannot negative")
-        endHeight <- endOpt.fold(chainQueryApi.getFilterCount())(
-          chainQueryApi.getHeightByBlockStamp)
+        endHeight <- endOpt.fold(chainQueryApi.getFilterCount())(chainQueryApi.getHeightByBlockStamp)
         _ = if (startHeight > endHeight)
-          throw InvalidBlockRange(
-            s"End position cannot precede start: $startHeight:$endHeight")
+          throw InvalidBlockRange(s"End position cannot precede start: $startHeight:$endHeight")
         _ = logger.info(
           s"Beginning to search for matches between ${startHeight}:${endHeight} against ${scripts.length} spks")
         range = startHeight.to(endHeight)
-        matched <- FutureUtil.batchAndSyncExecute(
-          elements = range.toVector,
-          f = fetchFiltersInRange(scripts, parallelismLevel),
-          batchSize = batchSize)
+        matched <- FutureUtil.batchAndSyncExecute(elements = range.toVector,
+                                                  f = fetchFiltersInRange(scripts, parallelismLevel),
+                                                  batchSize = batchSize)
       } yield {
         logger.info(s"Matched ${matched.length} blocks on rescan")
         matched
@@ -130,15 +117,11 @@ private[wallet] trait RescanHandling extends WalletLogger {
       addressBatchSize: Int): Future[Unit] = {
     for {
       scriptPubKeys <- generateScriptPubKeys(account, addressBatchSize)
-      _ <- matchBlocks(scriptPubKeys = scriptPubKeys,
-                       endOpt = endOpt,
-                       startOpt = startOpt)
+      _ <- matchBlocks(scriptPubKeys = scriptPubKeys, endOpt = endOpt, startOpt = startOpt)
       externalGap <- calcAddressGap(HDChainType.External, account)
       changeGap <- calcAddressGap(HDChainType.Change, account)
       res <-
-        if (
-          externalGap >= walletConfig.addressGapLimit && changeGap >= walletConfig.addressGapLimit
-        ) {
+        if (externalGap >= walletConfig.addressGapLimit && changeGap >= walletConfig.addressGapLimit) {
           pruneUnusedAddresses()
         } else {
           logger.info(
@@ -165,9 +148,7 @@ private[wallet] trait RescanHandling extends WalletLogger {
     } yield ()
   }
 
-  private def calcAddressGap(
-      chainType: HDChainType,
-      account: HDAccount): Future[Int] = {
+  private def calcAddressGap(chainType: HDChainType, account: HDAccount): Future[Int] = {
     for {
       addressDbs <- addressDAO.findAllForAccount(account)
       addressGap <-
@@ -192,8 +173,7 @@ private[wallet] trait RescanHandling extends WalletLogger {
     }
   }
 
-  private def downloadAndProcessBlocks(
-      blocks: Vector[DoubleSha256Digest]): Future[Unit] = {
+  private def downloadAndProcessBlocks(blocks: Vector[DoubleSha256Digest]): Future[Unit] = {
     logger.info(s"Requesting ${blocks.size} block(s)")
     blocks.foldLeft(Future.unit) { (prevF, blockHash) =>
       val completedF = subscribeForBlockProcessingCompletionSignal(blockHash)
@@ -211,9 +191,7 @@ private[wallet] trait RescanHandling extends WalletLogger {
       startOpt: Option[BlockStamp]): Future[Vector[DoubleSha256Digest]] = {
 
     val blocksF = for {
-      blocks <- getMatchingBlocks(scripts = scriptPubKeys,
-                                  startOpt = startOpt,
-                                  endOpt = endOpt)(
+      blocks <- getMatchingBlocks(scripts = scriptPubKeys, startOpt = startOpt, endOpt = endOpt)(
         ExecutionContext.fromExecutor(walletConfig.rescanThreadPool))
     } yield {
       blocks.sortBy(_.blockHeight).map(_.blockHash.flip)
@@ -222,29 +200,25 @@ private[wallet] trait RescanHandling extends WalletLogger {
     blocksF
   }
 
-  private def generateScriptPubKeys(
-      account: HDAccount,
-      count: Int): Future[Vector[ScriptPubKey]] = {
+  private def generateScriptPubKeys(account: HDAccount, count: Int): Future[Vector[ScriptPubKey]] = {
     for {
       addresses <-
         1
           .to(count)
-          .foldLeft(Future.successful(Vector.empty[BitcoinAddress])) {
-            (prevFuture, _) =>
-              for {
-                prev <- prevFuture
-                address <- getNewAddress(account)
-              } yield prev :+ address
+          .foldLeft(Future.successful(Vector.empty[BitcoinAddress])) { (prevFuture, _) =>
+            for {
+              prev <- prevFuture
+              address <- getNewAddress(account)
+            } yield prev :+ address
           }
       changeAddresses <-
         1
           .to(count)
-          .foldLeft(Future.successful(Vector.empty[BitcoinAddress])) {
-            (prevFuture, _) =>
-              for {
-                prev <- prevFuture
-                address <- getNewChangeAddress(account)
-              } yield prev :+ address
+          .foldLeft(Future.successful(Vector.empty[BitcoinAddress])) { (prevFuture, _) =>
+            for {
+              prev <- prevFuture
+              address <- getNewChangeAddress(account)
+            } yield prev :+ address
           }
       spksDb <- scriptPubKeyDAO.findAll()
     } yield {
@@ -256,21 +230,16 @@ private[wallet] trait RescanHandling extends WalletLogger {
     }
   }
 
-  private def fetchFiltersInRange(
-      scripts: Vector[ScriptPubKey],
-      parallelismLevel: Int)(heightRange: Vector[Int])(implicit
-      ec: ExecutionContext): Future[Vector[BlockMatchingResponse]] = {
+  private def fetchFiltersInRange(scripts: Vector[ScriptPubKey], parallelismLevel: Int)(heightRange: Vector[Int])(
+      implicit ec: ExecutionContext): Future[Vector[BlockMatchingResponse]] = {
     val startHeight = heightRange.head
     val endHeight = heightRange.last
     for {
-      filtersResponse <- chainQueryApi.getFiltersBetweenHeights(
-        startHeight = startHeight,
-        endHeight = endHeight)
+      filtersResponse <- chainQueryApi.getFiltersBetweenHeights(startHeight = startHeight, endHeight = endHeight)
       filtered <- findMatches(filtersResponse, scripts, parallelismLevel)
       _ <- downloadAndProcessBlocks(filtered.map(_.blockHash.flip))
     } yield {
-      logger.info(
-        s"Found ${filtered.length} matches from start=$startHeight to end=$endHeight")
+      logger.info(s"Found ${filtered.length} matches from start=$startHeight to end=$endHeight")
       filtered
     }
   }
@@ -278,8 +247,7 @@ private[wallet] trait RescanHandling extends WalletLogger {
   private[wallet] def findMatches(
       filters: Vector[FilterResponse],
       scripts: Vector[ScriptPubKey],
-      parallelismLevel: Int)(implicit
-      ec: ExecutionContext): Future[Vector[BlockMatchingResponse]] = {
+      parallelismLevel: Int)(implicit ec: ExecutionContext): Future[Vector[BlockMatchingResponse]] = {
     if (filters.isEmpty) {
       logger.info("No Filters to check against")
       Future.successful(Vector.empty)
@@ -299,16 +267,14 @@ private[wallet] trait RescanHandling extends WalletLogger {
           Future {
             // Find any matches in the group and add the corresponding block hashes into the result
             filterGroup
-              .foldLeft(Vector.empty[BlockMatchingResponse]) {
-                (blocks, filter) =>
-                  val matcher = SimpleFilterMatcher(filter.compactFilter)
-                  if (matcher.matchesAny(bytes)) {
-                    logger.info(s"Found a match in block ${filter.blockHeight}")
-                    blocks :+ BlockMatchingResponse(filter.blockHash,
-                                                    filter.blockHeight)
-                  } else {
-                    blocks
-                  }
+              .foldLeft(Vector.empty[BlockMatchingResponse]) { (blocks, filter) =>
+                val matcher = SimpleFilterMatcher(filter.compactFilter)
+                if (matcher.matchesAny(bytes)) {
+                  logger.info(s"Found a match in block ${filter.blockHeight}")
+                  blocks :+ BlockMatchingResponse(filter.blockHash, filter.blockHeight)
+                } else {
+                  blocks
+                }
               }
           }
         })

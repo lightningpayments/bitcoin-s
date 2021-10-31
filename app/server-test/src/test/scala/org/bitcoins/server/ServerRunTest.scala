@@ -27,10 +27,7 @@ class ServerRunTest extends BitcoinSAsyncTest {
     val datadir = config.chainConf.datadir
 
     val invalidPort = -1
-    val args = Vector("--datadir",
-                      datadir.toAbsolutePath.toString,
-                      "--rpcport",
-                      invalidPort.toString)
+    val args = Vector("--datadir", datadir.toAbsolutePath.toString, "--rpcport", invalidPort.toString)
 
     val serverArgParser = ServerArgParser(args)
     val main = new BitcoinSServerMain(serverArgParser)

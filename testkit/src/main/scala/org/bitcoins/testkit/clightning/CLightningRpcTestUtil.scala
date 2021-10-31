@@ -34,8 +34,7 @@ trait CLightningRpcTestUtil extends Logging {
 
   /** Makes a best effort to get a 0.21 bitcoind instance
     */
-  def startedBitcoindRpcClient(
-      instanceOpt: Option[BitcoindInstanceLocal] = None)(implicit
+  def startedBitcoindRpcClient(instanceOpt: Option[BitcoindInstanceLocal] = None)(implicit
       actorSystem: ActorSystem): Future[BitcoindRpcClient] = {
     BitcoindRpcTestUtil.startedBitcoindRpcClient(instanceOpt, Vector.newBuilder)
   }
@@ -44,23 +43,16 @@ trait CLightningRpcTestUtil extends Logging {
   def bitcoindInstance(
       port: Int = RpcUtil.randomPort,
       rpcPort: Int = RpcUtil.randomPort,
-      bitcoindV: BitcoindVersion = BitcoindVersion.V21)(implicit
-      system: ActorSystem): BitcoindInstanceLocal = {
-    BitcoindRpcTestUtil.getInstance(bitcoindVersion = bitcoindV,
-                                    port = port,
-                                    rpcPort = rpcPort)
+      bitcoindV: BitcoindVersion = BitcoindVersion.V21)(implicit system: ActorSystem): BitcoindInstanceLocal = {
+    BitcoindRpcTestUtil.getInstance(bitcoindVersion = bitcoindV, port = port, rpcPort = rpcPort)
   }
 
-  def commonConfig(
-      datadir: Path,
-      bitcoindInstance: BitcoindInstance,
-      port: Int = RpcUtil.randomPort): String = {
+  def commonConfig(datadir: Path, bitcoindInstance: BitcoindInstance, port: Int = RpcUtil.randomPort): String = {
     val bitcoinCliPath: Path = bitcoindInstance match {
       case local: BitcoindInstanceLocal =>
         local.binary.toPath.getParent.resolve("bitcoin-cli")
       case _: BitcoindInstanceRemote =>
-        throw new RuntimeException(
-          "Local bitcoind instance required for clightning")
+        throw new RuntimeException("Local bitcoind instance required for clightning")
     }
     s"""
        |network=regtest
@@ -78,9 +70,7 @@ trait CLightningRpcTestUtil extends Logging {
        |""".stripMargin
   }
 
-  def cLightningDataDir(
-      bitcoindRpcClient: BitcoindRpcClient,
-      isCanonical: Boolean): File = {
+  def cLightningDataDir(bitcoindRpcClient: BitcoindRpcClient, isCanonical: Boolean): File = {
     val bitcoindInstance = bitcoindRpcClient.instance
     if (isCanonical) {
       canonicalDatadir
@@ -100,31 +90,25 @@ trait CLightningRpcTestUtil extends Logging {
     }
   }
 
-  def cLightingInstance(bitcoindRpc: BitcoindRpcClient)(implicit
-      system: ActorSystem): CLightningInstanceLocal = {
+  def cLightingInstance(bitcoindRpc: BitcoindRpcClient)(implicit system: ActorSystem): CLightningInstanceLocal = {
     val datadir = cLightningDataDir(bitcoindRpc, isCanonical = false)
     cLightingInstance(datadir)
   }
 
-  def cLightingInstance(datadir: File)(implicit
-      system: ActorSystem): CLightningInstanceLocal = {
+  def cLightingInstance(datadir: File)(implicit system: ActorSystem): CLightningInstanceLocal = {
     CLightningInstanceLocal.fromDataDir(datadir)
   }
 
   /** Returns a `Future` that is completed when both clightning and bitcoind have the same block height
     * Fails the future if they are not synchronized within the given timeout.
     */
-  def awaitInSync(clightning: CLightningRpcClient, bitcoind: BitcoindRpcClient)(
-      implicit system: ActorSystem): Future[Unit] = {
+  def awaitInSync(clightning: CLightningRpcClient, bitcoind: BitcoindRpcClient)(implicit
+      system: ActorSystem): Future[Unit] = {
     import system.dispatcher
-    TestAsyncUtil.retryUntilSatisfiedF(
-      conditionF = () => clientInSync(clightning, bitcoind),
-      interval = 1.seconds)
+    TestAsyncUtil.retryUntilSatisfiedF(conditionF = () => clientInSync(clightning, bitcoind), interval = 1.seconds)
   }
 
-  private def clientInSync(
-      client: CLightningRpcClient,
-      bitcoind: BitcoindRpcClient)(implicit
+  private def clientInSync(client: CLightningRpcClient, bitcoind: BitcoindRpcClient)(implicit
       ec: ExecutionContext): Future[Boolean] =
     for {
       blockCount <- bitcoind.getBlockCount
@@ -133,28 +117,23 @@ trait CLightningRpcTestUtil extends Logging {
 
   /** Shuts down an clightning daemon and the bitcoind daemon it is associated with
     */
-  def shutdown(CLightningRpcClient: CLightningRpcClient)(implicit
-      system: ActorSystem): Future[Unit] = {
+  def shutdown(CLightningRpcClient: CLightningRpcClient)(implicit system: ActorSystem): Future[Unit] = {
     import system.dispatcher
     val shutdownF = for {
       bitcoindRpc <- startedBitcoindRpcClient()
       _ <- BitcoindRpcTestUtil.stopServer(bitcoindRpc)
       _ <- CLightningRpcClient.stop()
     } yield {
-      logger.debug(
-        "Successfully shutdown clightning and it's corresponding bitcoind")
+      logger.debug("Successfully shutdown clightning and it's corresponding bitcoind")
     }
     shutdownF.failed.foreach { err: Throwable =>
-      logger.info(
-        s"Killed a bitcoind instance, but could not find an clightning process to kill")
+      logger.info(s"Killed a bitcoind instance, but could not find an clightning process to kill")
       throw err
     }
     shutdownF
   }
 
-  def connectLNNodes(
-      client: CLightningRpcClient,
-      otherClient: CLightningRpcClient)(implicit
+  def connectLNNodes(client: CLightningRpcClient, otherClient: CLightningRpcClient)(implicit
       ec: ExecutionContext): Future[Unit] = {
     val infoF = otherClient.getInfo
     val nodeIdF = client.getInfo.map(_.id)
@@ -172,19 +151,14 @@ trait CLightningRpcTestUtil extends Logging {
     }
 
     logger.debug(s"Awaiting connection between clients")
-    val connected = TestAsyncUtil.retryUntilSatisfiedF(conditionF =
-                                                         () => isConnected,
-                                                       interval = 1.second)
+    val connected = TestAsyncUtil.retryUntilSatisfiedF(conditionF = () => isConnected, interval = 1.second)
 
     connected.map(_ => logger.debug(s"Successfully connected two clients"))
 
     connected
   }
 
-  def fundLNNodes(
-      bitcoind: BitcoindRpcClient,
-      client: CLightningRpcClient,
-      otherClient: CLightningRpcClient)(implicit
+  def fundLNNodes(bitcoind: BitcoindRpcClient, client: CLightningRpcClient, otherClient: CLightningRpcClient)(implicit
       ec: ExecutionContext): Future[Unit] = {
     for {
       addrA <- client.getNewAddress
@@ -199,7 +173,7 @@ trait CLightningRpcTestUtil extends Logging {
     * respective [[com.bitcoins.clightning.rpc.CLightningRpcClient CLightningRpcClient]]s
     */
   def createNodePair(bitcoind: BitcoindRpcClient)(implicit
-  system: ActorSystem): Future[(CLightningRpcClient, CLightningRpcClient)] = {
+      system: ActorSystem): Future[(CLightningRpcClient, CLightningRpcClient)] = {
     import system.dispatcher
     val clientA = CLightningRpcTestClient.fromSbtDownload(Some(bitcoind))
     val clientB = CLightningRpcTestClient.fromSbtDownload(Some(bitcoind))
@@ -260,8 +234,7 @@ trait CLightningRpcTestUtil extends Logging {
 
     val fundedChannelIdF =
       nodeIdsF.flatMap { case (nodeId1, nodeId2) =>
-        logger.debug(
-          s"Opening a channel from $nodeId1 -> $nodeId2 with amount $amt")
+        logger.debug(s"Opening a channel from $nodeId1 -> $nodeId2 with amount $amt")
         n1.openChannel(nodeId = nodeId2,
                        fundingAmount = amt,
                        pushAmt = pushAmt,
@@ -289,23 +262,20 @@ trait CLightningRpcTestUtil extends Logging {
 
     openedF.flatMap { _ =>
       nodeIdsF.map { case (nodeId1, nodeId2) =>
-        logger.debug(
-          s"Channel successfully opened $nodeId1 -> $nodeId2 with amount $amt")
+        logger.debug(s"Channel successfully opened $nodeId1 -> $nodeId2 with amount $amt")
       }
     }
 
     openedF
   }
 
-  private def awaitUntilChannelActive(
-      client: CLightningRpcClient,
-      destination: NodeId)(implicit ec: ExecutionContext): Future[Unit] = {
+  private def awaitUntilChannelActive(client: CLightningRpcClient, destination: NodeId)(implicit
+      ec: ExecutionContext): Future[Unit] = {
     def isActive: Future[Boolean] = {
       client.listChannels().map(_.exists(_.destination == destination))
     }
 
-    TestAsyncUtil.retryUntilSatisfiedF(conditionF = () => isActive,
-                                       interval = 1.seconds)
+    TestAsyncUtil.retryUntilSatisfiedF(conditionF = () => isActive, interval = 1.seconds)
   }
 }
 

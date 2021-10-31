@@ -8,12 +8,7 @@ import org.bitcoins.core.protocol.script.ScriptPubKey
 import org.bitcoins.core.protocol.transaction.Transaction
 import org.bitcoins.core.util.SeqWrapper
 import org.bitcoins.core.wallet.fee.BitcoinFeeUnit
-import org.bitcoins.crypto.{
-  DoubleSha256Digest,
-  DoubleSha256DigestBE,
-  ECPublicKey,
-  Sha256Hash160Digest
-}
+import org.bitcoins.crypto.{DoubleSha256Digest, DoubleSha256DigestBE, ECPublicKey, Sha256Hash160Digest}
 import play.api.libs.json.JsObject
 
 sealed abstract class OtherResult
@@ -66,13 +61,7 @@ case class GetMiningInfoResult(
 
 case class GetMemoryInfoResult(locked: MemoryManager) extends OtherResult
 
-case class MemoryManager(
-    used: Int,
-    free: Int,
-    total: Int,
-    locked: Int,
-    chunks_used: Int,
-    chunks_free: Int)
+case class MemoryManager(used: Int, free: Int, total: Int, locked: Int, chunks_used: Int, chunks_free: Int)
     extends OtherResult
 
 /** @note This is defined as a trait
@@ -147,10 +136,7 @@ case class ValidateAddressResultImpl(
     desc: Option[String])
     extends ValidateAddressResult
 
-case class EstimateSmartFeeResult(
-    feerate: Option[BitcoinFeeUnit],
-    errors: Option[Vector[String]],
-    blocks: Int)
+case class EstimateSmartFeeResult(feerate: Option[BitcoinFeeUnit], errors: Option[Vector[String]], blocks: Int)
     extends OtherResult
 
 case class TestMempoolAcceptResult(
@@ -175,5 +161,4 @@ final case class GetDescriptorInfoResult(
 
 final case class SubmitHeaderResult(header: BlockHeader) extends OtherResult
 
-case class IndexInfoResult(synced: Boolean, best_block_height: Int)
-    extends OtherResult
+case class IndexInfoResult(synced: Boolean, best_block_height: Int) extends OtherResult

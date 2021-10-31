@@ -57,15 +57,10 @@ class CLightningClientPairTest extends DualCLightningFixture {
       utxo <- clightning.listFunds.map(_.outputs.head)
       prevOut = TransactionOutput(utxo.value, utxo.scriptpubkey)
 
-      input = TransactionInput(utxo.outPoint,
-                               EmptyScriptSignature,
-                               TransactionConstants.sequence)
+      input = TransactionInput(utxo.outPoint, EmptyScriptSignature, TransactionConstants.sequence)
       output = TransactionOutput(Bitcoins(0.5), bitcoindAddr.scriptPubKey)
 
-      tx = BaseTransaction(Int32.two,
-                           Vector(input),
-                           Vector(output),
-                           UInt32.zero)
+      tx = BaseTransaction(Int32.two, Vector(input), Vector(output), UInt32.zero)
 
       unsigned = PSBT
         .fromUnsignedTx(tx)

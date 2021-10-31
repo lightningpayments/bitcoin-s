@@ -182,8 +182,8 @@ abstract class WalletGUI extends Logging {
     padding = Insets(4, 0, 0, 0)
     hgap = 5
     vgap = 5
-    columnConstraints = Seq(new ColumnConstraints { hgrow = Priority.Always },
-                            new ColumnConstraints { hgrow = Priority.Always })
+    columnConstraints =
+      Seq(new ColumnConstraints { hgrow = Priority.Always }, new ColumnConstraints { hgrow = Priority.Always })
 
     val hbox = new HBox {
       alignment = Pos.Center

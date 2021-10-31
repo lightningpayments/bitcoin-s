@@ -14,9 +14,7 @@ import scala.annotation.tailrec
   * can be the root of a [[https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki  BIP32]]
   * HD wallet.
   */
-sealed abstract class MnemonicCode
-    extends SeqWrapper[String]
-    with MaskedToString {
+sealed abstract class MnemonicCode extends SeqWrapper[String] with MaskedToString {
   require(
     MnemonicCode.VALID_LENGTHS.contains(words.length), {
       val validLengths = MnemonicCode.VALID_LENGTHS.mkString(", ")
@@ -33,8 +31,7 @@ sealed abstract class MnemonicCode
   /** Checks that the provided entropy has a valid checksum
     * attached at the end
     */
-  private[crypto] def isEntropyWithChecksumValid(
-      entropyWithChecksum: BitVector): Boolean = {
+  private[crypto] def isEntropyWithChecksumValid(entropyWithChecksum: BitVector): Boolean = {
 
     val codeInfo = MnemonicCode.getMnemonicCodeInfo(words)
     val entropyNoChecksum = entropyWithChecksum.take(codeInfo.entropyBits)
@@ -125,8 +122,7 @@ object MnemonicCode {
     */
   private[crypto] val BIT_GROUP_LENGTH = 11
 
-  private case class MnemonicCodeImpl(words: Vector[String])
-      extends MnemonicCode
+  private case class MnemonicCodeImpl(words: Vector[String]) extends MnemonicCode
 
   /** Creates a mnemonic code from the provided words
     */
@@ -178,8 +174,7 @@ object MnemonicCode {
     fromEntropyWithCheck(entropyWithChecksum)
   }
 
-  private[crypto] def fromEntropyWithCheck(
-      entropyWithChecksum: BitVector): MnemonicCode = {
+  private[crypto] def fromEntropyWithCheck(entropyWithChecksum: BitVector): MnemonicCode = {
     val bitGroups = entropyWithChecksum.grouped(BIT_GROUP_LENGTH)
     val words = bitGroups.map { group =>
       val index = group.toInt(signed = false)
@@ -192,8 +187,7 @@ object MnemonicCode {
   /** Generates the specified bits of entropy
     */
   private def getEntropy(bits: Int): BitVector = {
-    require(bits % 8 == 0,
-            s"Given amount if bits ($bits) must be a multiple of 8!")
+    require(bits % 8 == 0, s"Given amount if bits ($bits) must be a multiple of 8!")
 
     val bytes = CryptoUtil.randomBytes(bits / 8)
     val bitVector = BitVector(bytes)
@@ -233,8 +227,7 @@ object MnemonicCode {
   /** Taken from
     * [[https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki#generating-the-mnemonic BIP39]]
     */
-  private[crypto] def getMnemonicCodeInfo(
-      words: Vector[String]): MnemonicCodeInfo =
+  private[crypto] def getMnemonicCodeInfo(words: Vector[String]): MnemonicCodeInfo =
     words.length match {
       case 12 => MnemonicCodeInfo(128, 4, 132, 12)
       case 15 => MnemonicCodeInfo(160, 5, 165, 15)

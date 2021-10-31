@@ -31,8 +31,7 @@ case class GetNewAddress(labelOpt: Option[AddressLabelTag])
 object GetNewAddress extends ServerJsonModels {
 
   def fromJsArr(jsArr: ujson.Arr): Try[GetNewAddress] = {
-    require(jsArr.arr.size == 1,
-            s"Bad number of arguments: ${jsArr.arr.size}. Expected: 1")
+    require(jsArr.arr.size == 1, s"Bad number of arguments: ${jsArr.arr.size}. Expected: 1")
 
     val labelOpt = nullToOpt(jsArr.arr.head).map {
       case Str(str) =>
@@ -45,9 +44,7 @@ object GetNewAddress extends ServerJsonModels {
   }
 }
 
-case class LockUnspent(
-    unlock: Boolean,
-    outputParam: Vector[LockUnspentOutputParameter])
+case class LockUnspent(unlock: Boolean, outputParam: Vector[LockUnspentOutputParameter])
 
 object LockUnspent extends ServerJsonModels {
 
@@ -61,9 +58,7 @@ object LockUnspent extends ServerJsonModels {
           LockUnspent(unlock, outPoints)
         }
       case other =>
-        Failure(
-          new IllegalArgumentException(
-            s"Bad number of arguments: ${other.length}. Expected: 2"))
+        Failure(new IllegalArgumentException(s"Bad number of arguments: ${other.length}. Expected: 2"))
     }
   }
 }
@@ -82,9 +77,7 @@ object LabelAddress extends ServerJsonModels {
           LabelAddress(addr, label)
         }
       case other =>
-        Failure(
-          new IllegalArgumentException(
-            s"Bad number of arguments: ${other.length}. Expected: 2"))
+        Failure(new IllegalArgumentException(s"Bad number of arguments: ${other.length}. Expected: 2"))
     }
   }
 }
@@ -102,9 +95,7 @@ object GetAddressTags extends ServerJsonModels {
           GetAddressTags(addr)
         }
       case other =>
-        Failure(
-          new IllegalArgumentException(
-            s"Bad number of arguments: ${other.length}. Expected: 1"))
+        Failure(new IllegalArgumentException(s"Bad number of arguments: ${other.length}. Expected: 1"))
     }
   }
 }
@@ -122,9 +113,7 @@ object GetAddressLabels extends ServerJsonModels {
           GetAddressLabels(addr)
         }
       case other =>
-        Failure(
-          new IllegalArgumentException(
-            s"Bad number of arguments: ${other.length}. Expected: 1"))
+        Failure(new IllegalArgumentException(s"Bad number of arguments: ${other.length}. Expected: 1"))
     }
   }
 }
@@ -142,9 +131,7 @@ object DropAddressLabels extends ServerJsonModels {
           DropAddressLabels(addr)
         }
       case other =>
-        Failure(
-          new IllegalArgumentException(
-            s"Bad number of arguments: ${other.length}. Expected: 1"))
+        Failure(new IllegalArgumentException(s"Bad number of arguments: ${other.length}. Expected: 1"))
     }
   }
 }
@@ -154,8 +141,7 @@ case class GetBalance(isSats: Boolean)
 object GetBalance extends ServerJsonModels {
 
   def fromJsArr(jsArr: ujson.Arr): Try[GetBalance] = {
-    require(jsArr.arr.size == 1,
-            s"Bad number of arguments: ${jsArr.arr.size}. Expected: 1")
+    require(jsArr.arr.size == 1, s"Bad number of arguments: ${jsArr.arr.size}. Expected: 1")
 
     Try(GetBalance(jsArr.arr.head.bool))
   }
@@ -166,8 +152,7 @@ case class GetConfirmedBalance(isSats: Boolean)
 object GetConfirmedBalance extends ServerJsonModels {
 
   def fromJsArr(jsArr: ujson.Arr): Try[GetConfirmedBalance] = {
-    require(jsArr.arr.size == 1,
-            s"Bad number of arguments: ${jsArr.arr.size}. Expected: 1")
+    require(jsArr.arr.size == 1, s"Bad number of arguments: ${jsArr.arr.size}. Expected: 1")
 
     Try(GetConfirmedBalance(jsArr.arr.head.bool))
   }
@@ -178,8 +163,7 @@ case class GetUnconfirmedBalance(isSats: Boolean)
 object GetUnconfirmedBalance extends ServerJsonModels {
 
   def fromJsArr(jsArr: ujson.Arr): Try[GetUnconfirmedBalance] = {
-    require(jsArr.arr.size == 1,
-            s"Bad number of arguments: ${jsArr.arr.size}. Expected: 1")
+    require(jsArr.arr.size == 1, s"Bad number of arguments: ${jsArr.arr.size}. Expected: 1")
 
     Try(GetUnconfirmedBalance(jsArr.arr.head.bool))
   }
@@ -190,8 +174,7 @@ case class GetAddressInfo(address: BitcoinAddress)
 object GetAddressInfo extends ServerJsonModels {
 
   def fromJsArr(jsArr: ujson.Arr): Try[GetAddressInfo] = {
-    require(jsArr.arr.size == 1,
-            s"Bad number of arguments: ${jsArr.arr.size}. Expected: 1")
+    require(jsArr.arr.size == 1, s"Bad number of arguments: ${jsArr.arr.size}. Expected: 1")
 
     val address = jsToBitcoinAddress(jsArr.arr.head)
 
@@ -204,16 +187,13 @@ case class SendRawTransaction(tx: Transaction)
 object SendRawTransaction extends ServerJsonModels {
 
   def fromJsArr(jsArr: ujson.Arr): Try[SendRawTransaction] = {
-    require(jsArr.arr.size == 1,
-            s"Bad number of arguments: ${jsArr.arr.size}. Expected: 1")
+    require(jsArr.arr.size == 1, s"Bad number of arguments: ${jsArr.arr.size}. Expected: 1")
 
     Try(SendRawTransaction(jsToTx(jsArr.arr.head)))
   }
 }
 
-case class KeyManagerPassphraseChange(
-    oldPassword: AesPassword,
-    newPassword: AesPassword)
+case class KeyManagerPassphraseChange(oldPassword: AesPassword, newPassword: AesPassword)
 
 object KeyManagerPassphraseChange extends ServerJsonModels {
 
@@ -227,13 +207,9 @@ object KeyManagerPassphraseChange extends ServerJsonModels {
           KeyManagerPassphraseChange(oldPass, newPass)
         }
       case Nil =>
-        Failure(
-          new IllegalArgumentException(
-            "Missing old password and new password arguments"))
+        Failure(new IllegalArgumentException("Missing old password and new password arguments"))
       case other =>
-        Failure(
-          new IllegalArgumentException(
-            s"Bad number of arguments: ${other.length}. Expected: 2"))
+        Failure(new IllegalArgumentException(s"Bad number of arguments: ${other.length}. Expected: 2"))
     }
   }
 }
@@ -253,17 +229,12 @@ object KeyManagerPassphraseSet extends ServerJsonModels {
       case Nil =>
         Failure(new IllegalArgumentException("Missing password argument"))
       case other =>
-        Failure(
-          new IllegalArgumentException(
-            s"Bad number of arguments: ${other.length}. Expected: 1"))
+        Failure(new IllegalArgumentException(s"Bad number of arguments: ${other.length}. Expected: 1"))
     }
   }
 }
 
-case class ImportSeed(
-    walletName: String,
-    mnemonic: MnemonicCode,
-    passwordOpt: Option[AesPassword])
+case class ImportSeed(walletName: String, mnemonic: MnemonicCode, passwordOpt: Option[AesPassword])
 
 object ImportSeed extends ServerJsonModels {
 
@@ -277,8 +248,7 @@ object ImportSeed extends ServerJsonModels {
             case Str(str) => str.split(' ').toVector
             case Arr(arr) => arr.map(_.str).toVector
             case Null | False | True | Num(_) | Obj(_) =>
-              throw new IllegalArgumentException(
-                "mnemonic must be a string or array of strings")
+              throw new IllegalArgumentException("mnemonic must be a string or array of strings")
           }
           val mnemonic = MnemonicCode.fromWords(mnemonicWords)
 
@@ -288,28 +258,20 @@ object ImportSeed extends ServerJsonModels {
             case Null =>
               None
             case Arr(_) | False | True | Num(_) | Obj(_) =>
-              throw new IllegalArgumentException(
-                "password must be a string or null")
+              throw new IllegalArgumentException("password must be a string or null")
           }
 
           ImportSeed(walletName, mnemonic, pass)
         }
       case Nil =>
-        Failure(
-          new IllegalArgumentException(
-            "Missing walletName, mnemonic, and password argument"))
+        Failure(new IllegalArgumentException("Missing walletName, mnemonic, and password argument"))
       case other =>
-        Failure(
-          new IllegalArgumentException(
-            s"Bad number of arguments: ${other.length}. Expected: 3"))
+        Failure(new IllegalArgumentException(s"Bad number of arguments: ${other.length}. Expected: 3"))
     }
   }
 }
 
-case class ImportXprv(
-    walletName: String,
-    xprv: ExtPrivateKey,
-    passwordOpt: Option[AesPassword])
+case class ImportXprv(walletName: String, xprv: ExtPrivateKey, passwordOpt: Option[AesPassword])
 
 object ImportXprv extends ServerJsonModels {
 
@@ -327,28 +289,20 @@ object ImportXprv extends ServerJsonModels {
             case Null =>
               None
             case Arr(_) | False | True | Bool(_) | Num(_) | Obj(_) =>
-              throw new IllegalArgumentException(
-                "password must be a string or null")
+              throw new IllegalArgumentException("password must be a string or null")
           }
 
           ImportXprv(walletName, xprv, pass)
         }
       case Nil =>
-        Failure(
-          new IllegalArgumentException(
-            "Missing walletName, xprv, and password argument"))
+        Failure(new IllegalArgumentException("Missing walletName, xprv, and password argument"))
       case other =>
-        Failure(
-          new IllegalArgumentException(
-            s"Bad number of arguments: ${other.length}. Expected: 3"))
+        Failure(new IllegalArgumentException(s"Bad number of arguments: ${other.length}. Expected: 3"))
     }
   }
 }
 
-case class CreateMultisig(
-    requiredKeys: Int,
-    keys: Vector[ECPublicKey],
-    addressType: AddressType)
+case class CreateMultisig(requiredKeys: Int, keys: Vector[ECPublicKey], addressType: AddressType)
 
 object CreateMultisig extends ServerJsonModels {
 
@@ -372,13 +326,9 @@ object CreateMultisig extends ServerJsonModels {
           CreateMultisig(requiredKeys, keys.toVector, SegWit)
         }
       case Nil =>
-        Failure(
-          new IllegalArgumentException(
-            "Missing requiredKeys, keys, and addressType argument"))
+        Failure(new IllegalArgumentException("Missing requiredKeys, keys, and addressType argument"))
       case other =>
-        Failure(
-          new IllegalArgumentException(
-            s"Bad number of arguments: ${other.length}. Expected: 3"))
+        Failure(new IllegalArgumentException(s"Bad number of arguments: ${other.length}. Expected: 3"))
     }
   }
 }
@@ -388,8 +338,7 @@ case class CombinePSBTs(psbts: Seq[PSBT])
 object CombinePSBTs extends ServerJsonModels {
 
   def fromJsArr(jsArr: ujson.Arr): Try[CombinePSBTs] = {
-    require(jsArr.arr.size == 1,
-            s"Bad number of arguments: ${jsArr.arr.size}. Expected: 1")
+    require(jsArr.arr.size == 1, s"Bad number of arguments: ${jsArr.arr.size}. Expected: 1")
 
     Try(CombinePSBTs(jsToPSBTSeq(jsArr.arr.head)))
   }
@@ -411,8 +360,7 @@ case class FinalizePSBT(psbt: PSBT)
 object FinalizePSBT extends ServerJsonModels {
 
   def fromJsArr(jsArr: ujson.Arr): Try[FinalizePSBT] = {
-    require(jsArr.arr.size == 1,
-            s"Bad number of arguments: ${jsArr.arr.size}. Expected: 1")
+    require(jsArr.arr.size == 1, s"Bad number of arguments: ${jsArr.arr.size}. Expected: 1")
 
     Try(FinalizePSBT(jsToPSBT(jsArr.arr.head)))
   }
@@ -423,8 +371,7 @@ case class ExtractFromPSBT(psbt: PSBT)
 object ExtractFromPSBT extends ServerJsonModels {
 
   def fromJsArr(jsArr: ujson.Arr): Try[ExtractFromPSBT] = {
-    require(jsArr.arr.size == 1,
-            s"Bad number of arguments: ${jsArr.arr.size}. Expected: 1")
+    require(jsArr.arr.size == 1, s"Bad number of arguments: ${jsArr.arr.size}. Expected: 1")
 
     Try(ExtractFromPSBT(jsToPSBT(jsArr.arr.head)))
   }
@@ -435,8 +382,7 @@ case class ConvertToPSBT(tx: Transaction)
 object ConvertToPSBT extends ServerJsonModels {
 
   def fromJsArr(jsArr: ujson.Arr): Try[ConvertToPSBT] = {
-    require(jsArr.arr.size == 1,
-            s"Bad number of arguments: ${jsArr.arr.size}. Expected: 1")
+    require(jsArr.arr.size == 1, s"Bad number of arguments: ${jsArr.arr.size}. Expected: 1")
 
     Try(ConvertToPSBT(jsToTx(jsArr.arr.head)))
   }
@@ -448,8 +394,7 @@ object GetBlockHeader extends ServerJsonModels {
 
   def fromJsArr(jsArr: ujson.Arr): Try[GetBlockHeader] =
     Try {
-      require(jsArr.arr.size == 1,
-              s"Bad number of arguments: ${jsArr.arr.size}. Expected: 1")
+      require(jsArr.arr.size == 1, s"Bad number of arguments: ${jsArr.arr.size}. Expected: 1")
 
       GetBlockHeader(DoubleSha256DigestBE(jsArr.arr.head.str))
     }
@@ -466,9 +411,7 @@ object DecodeRawTransaction extends ServerJsonModels {
           DecodeRawTransaction(Transaction.fromHex(tx.str))
         }
       case other =>
-        Failure(
-          new IllegalArgumentException(
-            s"Bad number of arguments: ${other.length}. Expected: 1"))
+        Failure(new IllegalArgumentException(s"Bad number of arguments: ${other.length}. Expected: 1"))
     }
   }
 }
@@ -485,9 +428,7 @@ object DecodePSBT extends ServerJsonModels {
           DecodePSBT(psbt)
         }
       case other =>
-        Failure(
-          new IllegalArgumentException(
-            s"Bad number of arguments: ${other.length}. Expected: 1"))
+        Failure(new IllegalArgumentException(s"Bad number of arguments: ${other.length}. Expected: 1"))
     }
   }
 }
@@ -503,9 +444,7 @@ object AnalyzePSBT extends ServerJsonModels {
           AnalyzePSBT(jsToPSBT(psbtJs))
         }
       case other =>
-        Failure(
-          new IllegalArgumentException(
-            s"Bad number of arguments: ${other.length}. Expected: 1"))
+        Failure(new IllegalArgumentException(s"Bad number of arguments: ${other.length}. Expected: 1"))
     }
   }
 }
@@ -565,9 +504,7 @@ object Rescan extends ServerJsonModels {
         Failure(new IllegalArgumentException("Missing addresses"))
 
       case other =>
-        Failure(
-          new IllegalArgumentException(
-            s"Bad number of arguments: ${other.length}. Expected: 4"))
+        Failure(new IllegalArgumentException(s"Bad number of arguments: ${other.length}. Expected: 4"))
     }
   }
 
@@ -578,8 +515,7 @@ case class GetTransaction(txId: DoubleSha256DigestBE)
 object GetTransaction extends ServerJsonModels {
 
   def fromJsArr(jsArr: ujson.Arr): Try[GetTransaction] = {
-    require(jsArr.arr.size == 1,
-            s"Bad number of arguments: ${jsArr.arr.size}. Expected: 1")
+    require(jsArr.arr.size == 1, s"Bad number of arguments: ${jsArr.arr.size}. Expected: 1")
 
     Try(GetTransaction(DoubleSha256DigestBE(jsArr.arr.head.str)))
   }
@@ -607,20 +543,15 @@ object SendToAddress extends ServerJsonModels {
           val address = jsToBitcoinAddress(addrJs)
           val bitcoins = Bitcoins(bitcoinsJs.num)
           val satoshisPerVirtualByte =
-            nullToOpt(satsPerVBytesJs).map(satsPerVBytes =>
-              SatoshisPerVirtualByte(Satoshis(satsPerVBytes.num.toLong)))
+            nullToOpt(satsPerVBytesJs).map(satsPerVBytes => SatoshisPerVirtualByte(Satoshis(satsPerVBytes.num.toLong)))
           val noBroadcast = noBroadcastJs.bool
           SendToAddress(address, bitcoins, satoshisPerVirtualByte, noBroadcast)
         }
       case Nil =>
-        Failure(
-          new IllegalArgumentException(
-            "Missing address, amount, and fee rate arguments"))
+        Failure(new IllegalArgumentException("Missing address, amount, and fee rate arguments"))
 
       case other =>
-        Failure(
-          new IllegalArgumentException(
-            s"Bad number of arguments: ${other.length}. Expected: 4"))
+        Failure(new IllegalArgumentException(s"Bad number of arguments: ${other.length}. Expected: 4"))
     }
   }
 
@@ -640,9 +571,7 @@ object GetDLC extends ServerJsonModels {
       case Nil =>
         Failure(new IllegalArgumentException("Missing paramHash argument"))
       case other =>
-        Failure(
-          new IllegalArgumentException(
-            s"Bad number of arguments: ${other.length}. Expected: 1"))
+        Failure(new IllegalArgumentException(s"Bad number of arguments: ${other.length}. Expected: 1"))
     }
   }
 }
@@ -666,16 +595,10 @@ object CreateDLCOffer extends ServerJsonModels {
           val feeRate = jsToSatoshisPerVirtualByteOpt(feeRateOptJs)
           val locktime = jsToUInt32(locktimeJs)
           val refundLT = jsToUInt32(refundLTJs)
-          CreateDLCOffer(contractInfoTLV,
-                         collateral,
-                         feeRate,
-                         locktime,
-                         refundLT)
+          CreateDLCOffer(contractInfoTLV, collateral, feeRate, locktime, refundLT)
         }
       case other =>
-        Failure(
-          new IllegalArgumentException(
-            s"Bad number of arguments: ${other.length}. Expected: 6"))
+        Failure(new IllegalArgumentException(s"Bad number of arguments: ${other.length}. Expected: 6"))
     }
   }
 }
@@ -695,9 +618,7 @@ object DecodeContractInfo extends ServerJsonModels {
         Failure(new IllegalArgumentException("Missing contractInfo argument"))
 
       case other =>
-        Failure(
-          new IllegalArgumentException(
-            s"Bad number of arguments: ${other.length}. Expected: 1"))
+        Failure(new IllegalArgumentException(s"Bad number of arguments: ${other.length}. Expected: 1"))
     }
   }
 }
@@ -725,9 +646,7 @@ object DecodeOffer extends ServerJsonModels {
         Failure(new IllegalArgumentException("Missing offer argument"))
 
       case other =>
-        Failure(
-          new IllegalArgumentException(
-            s"Bad number of arguments: ${other.length}. Expected: 1"))
+        Failure(new IllegalArgumentException(s"Bad number of arguments: ${other.length}. Expected: 1"))
     }
   }
 }
@@ -747,9 +666,7 @@ object DecodeAnnouncement extends ServerJsonModels {
         Failure(new IllegalArgumentException("Missing announcement argument"))
 
       case other =>
-        Failure(
-          new IllegalArgumentException(
-            s"Bad number of arguments: ${other.length}. Expected: 1"))
+        Failure(new IllegalArgumentException(s"Bad number of arguments: ${other.length}. Expected: 1"))
     }
   }
 }
@@ -769,9 +686,7 @@ object DecodeAttestations extends ServerJsonModels {
         Failure(new IllegalArgumentException("Missing attestment argument"))
 
       case other =>
-        Failure(
-          new IllegalArgumentException(
-            s"Bad number of arguments: ${other.length}. Expected: 1"))
+        Failure(new IllegalArgumentException(s"Bad number of arguments: ${other.length}. Expected: 1"))
     }
   }
 }
@@ -791,9 +706,7 @@ object AcceptDLCOffer extends ServerJsonModels {
         Failure(new IllegalArgumentException("Missing offer argument"))
 
       case other =>
-        Failure(
-          new IllegalArgumentException(
-            s"Bad number of arguments: ${other.length}. Expected: 1"))
+        Failure(new IllegalArgumentException(s"Bad number of arguments: ${other.length}. Expected: 1"))
     }
   }
 }
@@ -814,13 +727,10 @@ object AcceptDLC extends ServerJsonModels {
           AcceptDLC(offer, peerAddr)
         }
       case Nil =>
-        Failure(
-          new IllegalArgumentException("Missing offer and peerAddr argument"))
+        Failure(new IllegalArgumentException("Missing offer and peerAddr argument"))
 
       case other =>
-        Failure(
-          new IllegalArgumentException(
-            s"Bad number of arguments: ${other.length}. Expected: 2"))
+        Failure(new IllegalArgumentException(s"Bad number of arguments: ${other.length}. Expected: 2"))
     }
   }
 }
@@ -839,9 +749,7 @@ object SignDLC extends ServerJsonModels {
       case Nil =>
         Failure(new IllegalArgumentException("Missing accept argument"))
       case other =>
-        Failure(
-          new IllegalArgumentException(
-            s"Bad number of arguments: ${other.length}. Expected: 1"))
+        Failure(new IllegalArgumentException(s"Bad number of arguments: ${other.length}. Expected: 1"))
     }
   }
 }
@@ -860,9 +768,7 @@ object AddDLCSigs extends ServerJsonModels {
       case Nil =>
         Failure(new IllegalArgumentException("Missing sigs argument"))
       case other =>
-        Failure(
-          new IllegalArgumentException(
-            s"Bad number of arguments: ${other.length}. Expected: 1"))
+        Failure(new IllegalArgumentException(s"Bad number of arguments: ${other.length}. Expected: 1"))
     }
   }
 }
@@ -888,9 +794,7 @@ object DLCDataFromFile extends ServerJsonModels {
       case Nil =>
         Failure(new IllegalArgumentException("Missing path argument"))
       case other =>
-        Failure(
-          new IllegalArgumentException(
-            s"Bad number of arguments: ${other.length}. Expected: 1"))
+        Failure(new IllegalArgumentException(s"Bad number of arguments: ${other.length}. Expected: 1"))
     }
   }
 }
@@ -909,9 +813,7 @@ object GetDLCFundingTx extends ServerJsonModels {
       case Nil =>
         Failure(new IllegalArgumentException("Missing contractId argument"))
       case other =>
-        Failure(
-          new IllegalArgumentException(
-            s"Bad number of arguments: ${other.length}. Expected: 1"))
+        Failure(new IllegalArgumentException(s"Bad number of arguments: ${other.length}. Expected: 1"))
     }
   }
 }
@@ -930,17 +832,12 @@ object BroadcastDLCFundingTx extends ServerJsonModels {
       case Nil =>
         Failure(new IllegalArgumentException("Missing contractId argument"))
       case other =>
-        Failure(
-          new IllegalArgumentException(
-            s"Bad number of arguments: ${other.length}. Expected: 1"))
+        Failure(new IllegalArgumentException(s"Bad number of arguments: ${other.length}. Expected: 1"))
     }
   }
 }
 
-case class ExecuteDLC(
-    contractId: ByteVector,
-    oracleSigs: Vector[OracleAttestmentTLV],
-    noBroadcast: Boolean)
+case class ExecuteDLC(contractId: ByteVector, oracleSigs: Vector[OracleAttestmentTLV], noBroadcast: Boolean)
     extends Broadcastable
 
 object ExecuteDLC extends ServerJsonModels {
@@ -956,19 +853,14 @@ object ExecuteDLC extends ServerJsonModels {
           ExecuteDLC(contractId, oracleSigs, noBroadcast)
         }
       case Nil =>
-        Failure(
-          new IllegalArgumentException(
-            "Missing contractId, oracleSigs, and noBroadcast arguments"))
+        Failure(new IllegalArgumentException("Missing contractId, oracleSigs, and noBroadcast arguments"))
       case other =>
-        Failure(
-          new IllegalArgumentException(
-            s"Bad number of arguments: ${other.length}. Expected: 3"))
+        Failure(new IllegalArgumentException(s"Bad number of arguments: ${other.length}. Expected: 3"))
     }
   }
 }
 
-case class ExecuteDLCRefund(contractId: ByteVector, noBroadcast: Boolean)
-    extends Broadcastable
+case class ExecuteDLCRefund(contractId: ByteVector, noBroadcast: Boolean) extends Broadcastable
 
 object ExecuteDLCRefund extends ServerJsonModels {
 
@@ -984,9 +876,7 @@ object ExecuteDLCRefund extends ServerJsonModels {
       case Nil =>
         Failure(new IllegalArgumentException("Missing contractId argument"))
       case other =>
-        Failure(
-          new IllegalArgumentException(
-            s"Bad number of arguments: ${other.length}. Expected: 2"))
+        Failure(new IllegalArgumentException(s"Bad number of arguments: ${other.length}. Expected: 2"))
     }
   }
 }
@@ -1007,29 +897,19 @@ object SendFromOutpoints extends ServerJsonModels {
           val address = jsToBitcoinAddress(addrJs)
           val bitcoins = Bitcoins(bitcoinsJs.num)
           val satoshisPerVirtualByte =
-            nullToOpt(satsPerVBytesJs).map(satsPerVBytes =>
-              SatoshisPerVirtualByte(Satoshis(satsPerVBytes.num.toLong)))
-          SendFromOutpoints(outPoints,
-                            address,
-                            bitcoins,
-                            satoshisPerVirtualByte)
+            nullToOpt(satsPerVBytesJs).map(satsPerVBytes => SatoshisPerVirtualByte(Satoshis(satsPerVBytes.num.toLong)))
+          SendFromOutpoints(outPoints, address, bitcoins, satoshisPerVirtualByte)
         }
       case Nil =>
-        Failure(
-          new IllegalArgumentException(
-            "Missing outPoints, address, amount, and fee rate arguments"))
+        Failure(new IllegalArgumentException("Missing outPoints, address, amount, and fee rate arguments"))
 
       case other =>
-        Failure(
-          new IllegalArgumentException(
-            s"Bad number of arguments: ${other.length}. Expected: 4"))
+        Failure(new IllegalArgumentException(s"Bad number of arguments: ${other.length}. Expected: 4"))
     }
   }
 }
 
-case class SweepWallet(
-    address: BitcoinAddress,
-    satoshisPerVirtualByteOpt: Option[SatoshisPerVirtualByte])
+case class SweepWallet(address: BitcoinAddress, satoshisPerVirtualByteOpt: Option[SatoshisPerVirtualByte])
 
 object SweepWallet extends ServerJsonModels {
 
@@ -1039,8 +919,7 @@ object SweepWallet extends ServerJsonModels {
         Try {
           val address = jsToBitcoinAddress(addrJs)
           val satoshisPerVirtualByte =
-            nullToOpt(satsPerVBytesJs).map(satsPerVBytes =>
-              SatoshisPerVirtualByte(Satoshis(satsPerVBytes.num.toLong)))
+            nullToOpt(satsPerVBytesJs).map(satsPerVBytes => SatoshisPerVirtualByte(Satoshis(satsPerVBytes.num.toLong)))
           SweepWallet(address, satoshisPerVirtualByte)
         }
       case addrJs :: Nil =>
@@ -1049,14 +928,10 @@ object SweepWallet extends ServerJsonModels {
           SweepWallet(address, None)
         }
       case Nil =>
-        Failure(
-          new IllegalArgumentException(
-            "Missing address and fee rate arguments"))
+        Failure(new IllegalArgumentException("Missing address and fee rate arguments"))
 
       case other =>
-        Failure(
-          new IllegalArgumentException(
-            s"Bad number of arguments: ${other.length}. Expected: 2"))
+        Failure(new IllegalArgumentException(s"Bad number of arguments: ${other.length}. Expected: 2"))
     }
   }
 }
@@ -1076,21 +951,16 @@ object SendWithAlgo extends ServerJsonModels {
           val address = jsToBitcoinAddress(addrJs)
           val bitcoins = Bitcoins(bitcoinsJs.num)
           val satoshisPerVirtualByte =
-            nullToOpt(satsPerVBytesJs).map(satsPerVBytes =>
-              SatoshisPerVirtualByte(Satoshis(satsPerVBytes.num.toLong)))
+            nullToOpt(satsPerVBytesJs).map(satsPerVBytes => SatoshisPerVirtualByte(Satoshis(satsPerVBytes.num.toLong)))
           val algo = jsToCoinSelectionAlgo(algoJs)
 
           SendWithAlgo(address, bitcoins, satoshisPerVirtualByte, algo)
         }
       case Nil =>
-        Failure(
-          new IllegalArgumentException(
-            "Missing address, amount, fee rate, and algo arguments"))
+        Failure(new IllegalArgumentException("Missing address, amount, fee rate, and algo arguments"))
 
       case other =>
-        Failure(
-          new IllegalArgumentException(
-            s"Bad number of arguments: ${other.length}. Expected: 4"))
+        Failure(new IllegalArgumentException(s"Bad number of arguments: ${other.length}. Expected: 4"))
     }
   }
 
@@ -1101,17 +971,13 @@ case class SignPSBT(psbt: PSBT)
 object SignPSBT extends ServerJsonModels {
 
   def fromJsArr(jsArr: ujson.Arr): Try[SignPSBT] = {
-    require(jsArr.arr.size == 1,
-            s"Bad number of arguments: ${jsArr.arr.size}. Expected: 1")
+    require(jsArr.arr.size == 1, s"Bad number of arguments: ${jsArr.arr.size}. Expected: 1")
 
     Try(SignPSBT(jsToPSBT(jsArr.arr.head)))
   }
 }
 
-case class OpReturnCommit(
-    message: String,
-    hashMessage: Boolean,
-    feeRateOpt: Option[SatoshisPerVirtualByte])
+case class OpReturnCommit(message: String, hashMessage: Boolean, feeRateOpt: Option[SatoshisPerVirtualByte])
 
 object OpReturnCommit extends ServerJsonModels {
 
@@ -1122,19 +988,14 @@ object OpReturnCommit extends ServerJsonModels {
           val message = messageJs.str
           val hashMessage = hashMessageJs.bool
           val feeRateOpt =
-            nullToOpt(feeRateOptJs).map(satsPerVBytes =>
-              SatoshisPerVirtualByte(Satoshis(satsPerVBytes.num.toLong)))
+            nullToOpt(feeRateOptJs).map(satsPerVBytes => SatoshisPerVirtualByte(Satoshis(satsPerVBytes.num.toLong)))
           OpReturnCommit(message, hashMessage, feeRateOpt)
         }
       case Nil =>
-        Failure(
-          new IllegalArgumentException(
-            "Missing message, hashMessage, and fee rate arguments"))
+        Failure(new IllegalArgumentException("Missing message, hashMessage, and fee rate arguments"))
 
       case other =>
-        Failure(
-          new IllegalArgumentException(
-            s"Bad number of arguments: ${other.length}. Expected: 3"))
+        Failure(new IllegalArgumentException(s"Bad number of arguments: ${other.length}. Expected: 3"))
     }
   }
 }
@@ -1152,13 +1013,10 @@ object BumpFee extends ServerJsonModels {
           BumpFee(txId, feeRate)
         }
       case Nil =>
-        Failure(
-          new IllegalArgumentException("Missing txId and fee rate arguments"))
+        Failure(new IllegalArgumentException("Missing txId and fee rate arguments"))
 
       case other =>
-        Failure(
-          new IllegalArgumentException(
-            s"Bad number of arguments: ${other.length}. Expected: 2"))
+        Failure(new IllegalArgumentException(s"Bad number of arguments: ${other.length}. Expected: 2"))
     }
   }
 }
@@ -1178,9 +1036,7 @@ object ZipDataDir extends ServerJsonModels {
         Failure(new IllegalArgumentException("Missing path argument"))
 
       case other =>
-        Failure(
-          new IllegalArgumentException(
-            s"Bad number of arguments: ${other.length}. Expected: 1"))
+        Failure(new IllegalArgumentException(s"Bad number of arguments: ${other.length}. Expected: 1"))
     }
   }
 }
@@ -1208,9 +1064,7 @@ object CreateContractInfo extends ServerJsonModels {
           val contractDescriptor =
             ContractDescriptorParser.parseCmdLine(payoutsVal, announcementTLV)
 
-          CreateContractInfo(announcementTLV,
-                             totalCollateral,
-                             contractDescriptor)
+          CreateContractInfo(announcementTLV, totalCollateral, contractDescriptor)
         }
       case other =>
         val exn = new IllegalArgumentException(
@@ -1227,9 +1081,7 @@ trait ServerJsonModels {
       case str: Str =>
         OracleAnnouncementTLV(str.value)
       case _: Value =>
-        throw Value.InvalidData(
-          js,
-          "Expected an OracleAnnouncementTLV as a hex string")
+        throw Value.InvalidData(js, "Expected an OracleAnnouncementTLV as a hex string")
     }
 
   def jsToContractInfoTLV(js: Value): ContractInfoV0TLV =
@@ -1278,8 +1130,7 @@ trait ServerJsonModels {
   def jsToPSBT(js: Value): PSBT = PSBT.fromString(js.str)
 
   def jsToTransactionOutPointSeq(js: Value): Seq[TransactionOutPoint] = {
-    js.arr.foldLeft(Seq.empty[TransactionOutPoint])((seq, outPoint) =>
-      seq :+ jsToTransactionOutPoint(outPoint))
+    js.arr.foldLeft(Seq.empty[TransactionOutPoint])((seq, outPoint) => seq :+ jsToTransactionOutPoint(outPoint))
   }
 
   def jsToTransactionOutPoint(js: Value): TransactionOutPoint =
@@ -1288,8 +1139,7 @@ trait ServerJsonModels {
   def jsToLockUnspentOutputParameter(js: Value): LockUnspentOutputParameter =
     LockUnspentOutputParameter.fromJson(js)
 
-  def jsToLockUnspentOutputParameters(
-      js: Value): Seq[LockUnspentOutputParameter] = {
+  def jsToLockUnspentOutputParameters(js: Value): Seq[LockUnspentOutputParameter] = {
     js.arr.foldLeft(Seq.empty[LockUnspentOutputParameter])((seq, outPoint) =>
       seq :+ jsToLockUnspentOutputParameter(outPoint))
   }
@@ -1313,15 +1163,11 @@ trait ServerJsonModels {
       case str: Str =>
         SchnorrDigitalSignature(str.value)
       case _: Value =>
-        throw Value.InvalidData(
-          js,
-          "Expected a SchnorrDigitalSignature as a hex string")
+        throw Value.InvalidData(js, "Expected a SchnorrDigitalSignature as a hex string")
     }
 
-  def jsToSchnorrDigitalSignatureVec(
-      js: Value): Vector[SchnorrDigitalSignature] = {
-    js.arr.foldLeft(Vector.empty[SchnorrDigitalSignature])((vec, sig) =>
-      vec :+ jsToSchnorrDigitalSignature(sig))
+  def jsToSchnorrDigitalSignatureVec(js: Value): Vector[SchnorrDigitalSignature] = {
+    js.arr.foldLeft(Vector.empty[SchnorrDigitalSignature])((vec, sig) => vec :+ jsToSchnorrDigitalSignature(sig))
   }
 
   def jsToOracleAttestmentTLV(js: Value): OracleAttestmentTLV =
@@ -1329,13 +1175,10 @@ trait ServerJsonModels {
       case str: Str =>
         OracleAttestmentTLV(str.value)
       case _: Value =>
-        throw Value.InvalidData(
-          js,
-          "Expected a OracleAttestmentTLV as a hex string")
+        throw Value.InvalidData(js, "Expected a OracleAttestmentTLV as a hex string")
     }
 
   def jsToOracleAttestmentTLVVec(js: Value): Vector[OracleAttestmentTLV] = {
-    js.arr.foldLeft(Vector.empty[OracleAttestmentTLV])((vec, tlv) =>
-      vec :+ jsToOracleAttestmentTLV(tlv))
+    js.arr.foldLeft(Vector.empty[OracleAttestmentTLV])((vec, tlv) => vec :+ jsToOracleAttestmentTLV(tlv))
   }
 }

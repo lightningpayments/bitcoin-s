@@ -17,9 +17,7 @@ object AppMenuBar {
 
   def menuBar(model: WalletGUIModel, dlcPane: DLCPane): MenuBar = {
     val menuBar = new MenuBar {
-      menus = List(new FileMenu().fileMenu,
-                   new ViewMenu(model, dlcPane).viewMenu,
-                   new HelpMenu(model).helpMenu)
+      menus = List(new FileMenu().fileMenu, new ViewMenu(model, dlcPane).viewMenu, new HelpMenu(model).helpMenu)
     }
     // Use MacOS native menuing
     if (Properties.isMac)
@@ -44,8 +42,7 @@ private class FileMenu() {
       val chosenFileOpt = Option(fileChooser.showSaveDialog(null))
       chosenFileOpt match {
         case Some(chosenFile) =>
-          ConsoleCli.exec(ZipDataDir(chosenFile.toPath),
-                          GlobalData.consoleCliConfig)
+          ConsoleCli.exec(ZipDataDir(chosenFile.toPath), GlobalData.consoleCliConfig)
           ()
         case None => // User canceled in dialog
       }
@@ -72,15 +69,13 @@ private class ViewMenu(model: WalletGUIModel, dlcPane: DLCPane) {
   private val themes: Menu = new Menu("_Themes") {
     mnemonicParsing = true
 
-    private val darkThemeToggle: RadioMenuItem = new RadioMenuItem(
-      "_Dark Theme") {
+    private val darkThemeToggle: RadioMenuItem = new RadioMenuItem("_Dark Theme") {
       toggleGroup = themeToggle
       selected = GlobalData.darkThemeEnabled
       id = "dark"
     }
 
-    private val lightThemeToggle: RadioMenuItem = new RadioMenuItem(
-      "_Light Theme") {
+    private val lightThemeToggle: RadioMenuItem = new RadioMenuItem("_Light Theme") {
       toggleGroup = themeToggle
       selected = !GlobalData.darkThemeEnabled
       id = "light"
@@ -108,14 +103,12 @@ private class ViewMenu(model: WalletGUIModel, dlcPane: DLCPane) {
   }
 
   private val dlcWindow = new MenuItem("DLC Operations") {
-    accelerator =
-      new KeyCodeCombination(KeyCode.Digit1, KeyCombination.ShortcutDown)
+    accelerator = new KeyCodeCombination(KeyCode.Digit1, KeyCombination.ShortcutDown)
     onAction = _ => dlcPane.showWindow()
   }
 
   private val debugWindow = new MenuItem("Debug Operations") {
-    accelerator =
-      new KeyCodeCombination(KeyCode.Digit2, KeyCombination.ShortcutDown)
+    accelerator = new KeyCodeCombination(KeyCode.Digit2, KeyCombination.ShortcutDown)
     onAction = _ => model.onDebug()
   }
 

@@ -44,8 +44,7 @@ class RawBlockSerializerTest extends BitcoinSUnitTest {
     block.txCount must be(uInt)
     block.blockHeader must be(RawBlockHeaderSerializer.read(header))
     block.transactions must be(txSeq)
-    block.blockHeader.hash.hex must be(
-      "6fe28c0ab6f1b372c1a6a246ae63f74f931e8365e15a089c68d6190000000000")
+    block.blockHeader.hash.hex must be("6fe28c0ab6f1b372c1a6a246ae63f74f931e8365e15a089c68d6190000000000")
     block.hex must be(hex)
   }
 
@@ -81,8 +80,7 @@ class RawBlockSerializerTest extends BitcoinSUnitTest {
     val block = RawBlockSerializer.read(hex)
     block.blockHeader.hex must be(header)
     block.transactions must be(txSeq)
-    block.blockHeader.hash.hex must be(
-      "c5a764eb61db336edb17be9c49dc07dcae0219bc51a2efe681df9f0000000000")
+    block.blockHeader.hash.hex must be("c5a764eb61db336edb17be9c49dc07dcae0219bc51a2efe681df9f0000000000")
     block.hex must be(hex)
     block.txCount must be(uInt)
     block.txCount.num must be(UInt64(1))
@@ -121,11 +119,9 @@ class RawBlockSerializerTest extends BitcoinSUnitTest {
     val hex = header + uInt.hex + rawTx1 + rawTx2
 
     val block = RawBlockSerializer.read(hex)
-    block.blockHeader.hash.hex must be(
-      "5f3d49113e7bf838a061a1661c672053deb90891edf3ecfa9e18000000000000")
+    block.blockHeader.hash.hex must be("5f3d49113e7bf838a061a1661c672053deb90891edf3ecfa9e18000000000000")
     block.blockHeader.version must be(Int32(536870912))
-    block.blockHeader.previousBlockHash must be(
-      DoubleSha256Digest(prevBlockHash))
+    block.blockHeader.previousBlockHash must be(DoubleSha256Digest(prevBlockHash))
     block.blockHeader.merkleRootHash must be(DoubleSha256Digest(merkleRoot))
     block.blockHeader.time must be(UInt32(1465354640))
     block.blockHeader.nBits must be(UInt32(437875042))

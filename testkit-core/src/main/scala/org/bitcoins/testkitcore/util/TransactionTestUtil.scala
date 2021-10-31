@@ -50,10 +50,7 @@ trait TransactionTestUtil {
     val output =
       TransactionOutput(amount.getOrElse(CurrencyUnits.zero), scriptPubKey)
 
-    val tx = BaseTransaction(TransactionConstants.version,
-                             Seq(input),
-                             Seq(output),
-                             TransactionConstants.lockTime)
+    val tx = BaseTransaction(TransactionConstants.version, Seq(input), Seq(output), TransactionConstants.lockTime)
     (tx, UInt32.zero)
   }
 
@@ -67,9 +64,7 @@ trait TransactionTestUtil {
       creditingTx: Transaction,
       scriptSignature: ScriptSignature,
       outputIndex: UInt32,
-      witness: Option[(ScriptWitness, CurrencyUnit)] = None): (
-      Transaction,
-      UInt32) = {
+      witness: Option[(ScriptWitness, CurrencyUnit)] = None): (Transaction, UInt32) = {
     /*
     CMutableTransaction txSpend;
     txSpend.nVersion = 1;
@@ -101,10 +96,7 @@ trait TransactionTestUtil {
                            txWitness)
       case None =>
         val output = TransactionOutput(CurrencyUnits.zero, EmptyScriptPubKey)
-        BaseTransaction(TransactionConstants.version,
-                        Seq(input),
-                        Seq(output),
-                        TransactionConstants.lockTime)
+        BaseTransaction(TransactionConstants.version, Seq(input), Seq(output), TransactionConstants.lockTime)
 
     }
 
@@ -116,15 +108,10 @@ trait TransactionTestUtil {
   /** Returns a transaction, the input that is spending the output, and the inputIndex inside of the tx
     * @return
     */
-  def transactionWithSpendingInputAndCreditingOutput: (
-      Transaction,
-      TransactionInput,
-      UInt32,
-      TransactionOutput) = {
+  def transactionWithSpendingInputAndCreditingOutput: (Transaction, TransactionInput, UInt32, TransactionOutput) = {
     val spendingTx = TestUtil.simpleTransaction
     val creditingTx = TestUtil.parentSimpleTransaction
-    val creditingOutput = TestUtil.parentSimpleTransaction.outputs(
-      spendingTx.inputs.head.previousOutput.vout.toInt)
+    val creditingOutput = TestUtil.parentSimpleTransaction.outputs(spendingTx.inputs.head.previousOutput.vout.toInt)
     //make sure the outpoint index and the outpoint txid are correct
     require(spendingTx.inputs.head.previousOutput.txId == creditingTx.txId)
     require(spendingTx.inputs.head.previousOutput.vout == UInt32.zero)
@@ -132,17 +119,10 @@ trait TransactionTestUtil {
     (spendingTx, spendingTx.inputs.head, UInt32.zero, creditingOutput)
   }
 
-  def signedMultiSignatureTransaction: (
-      Transaction,
-      Int,
-      ScriptPubKey,
-      Seq[ECPublicKeyBytes]) = {
-    val key1 = ECPrivateKeyUtil.fromWIFToPrivateKey(
-      "cVLwRLTvz3BxDAWkvS3yzT9pUcTCup7kQnfT2smRjvmmm1wAP6QT")
-    val key2 = ECPrivateKeyUtil.fromWIFToPrivateKey(
-      "cTine92s8GLpVqvebi8rYce3FrUYq78ZGQffBYCS1HmDPJdSTxUo")
-    val key3 = ECPrivateKeyUtil.fromWIFToPrivateKey(
-      "cVHwXSPRZmL9adctwBwmn4oTZdZMbaCsR5XF6VznqMgcvt1FDDxg")
+  def signedMultiSignatureTransaction: (Transaction, Int, ScriptPubKey, Seq[ECPublicKeyBytes]) = {
+    val key1 = ECPrivateKeyUtil.fromWIFToPrivateKey("cVLwRLTvz3BxDAWkvS3yzT9pUcTCup7kQnfT2smRjvmmm1wAP6QT")
+    val key2 = ECPrivateKeyUtil.fromWIFToPrivateKey("cTine92s8GLpVqvebi8rYce3FrUYq78ZGQffBYCS1HmDPJdSTxUo")
+    val key3 = ECPrivateKeyUtil.fromWIFToPrivateKey("cVHwXSPRZmL9adctwBwmn4oTZdZMbaCsR5XF6VznqMgcvt1FDDxg")
     (signedMultiSignatureTx,
      0,
      multiSignatureScriptPubKey,
@@ -150,19 +130,12 @@ trait TransactionTestUtil {
   }
 
   /** Returns a p2sh transaction with its corresponding crediting output */
-  def p2shTransactionWithSpendingInputAndCreditingOutput: (
-      Transaction,
-      TransactionInput,
-      UInt32,
-      TransactionOutput) = {
+  def p2shTransactionWithSpendingInputAndCreditingOutput: (Transaction, TransactionInput, UInt32, TransactionOutput) = {
     val creditingTx = TestUtil.p2sh2Of2CreditingTx
     val spendingTx = TestUtil.p2sh2Of2Tx
     val inputIndex = UInt32.zero
     val input = spendingTx.inputs(inputIndex.toInt)
-    (spendingTx,
-     input,
-     inputIndex,
-     creditingTx.outputs(input.previousOutput.vout.toInt))
+    (spendingTx, input, inputIndex, creditingTx.outputs(input.previousOutput.vout.toInt))
   }
 
   //https://tbtc.blockr.io/api/v1/tx/raw/d77d905fc29f86bc3db39fdb68cfcab4e35f677d4f2ec33ed749912e0fa5f385
@@ -197,26 +170,18 @@ trait TransactionTestUtil {
     * @return the transaction and the inputIndex of the non strict der encoded signature
     */
   def transactionWithNonStrictDerSignature: (Transaction, UInt32) = {
-    val (creditingTx, outputIndex) = buildCreditingTransaction(
-      TestUtil.scriptPubKey)
-    val (spendingTx, inputIndex) = buildSpendingTransaction(
-      creditingTx,
-      TestUtil.scriptSigNotStrictDerEncoded,
-      outputIndex)
+    val (creditingTx, outputIndex) = buildCreditingTransaction(TestUtil.scriptPubKey)
+    val (spendingTx, inputIndex) =
+      buildSpendingTransaction(creditingTx, TestUtil.scriptSigNotStrictDerEncoded, outputIndex)
     (spendingTx, inputIndex)
   }
 
   /** Returns a valid transaction that spends a p2pkh output at the inputIndex
     * @return
     */
-  def p2pkhTransactionWithCreditingScriptPubKey: (
-      Transaction,
-      UInt32,
-      ScriptPubKey) = {
+  def p2pkhTransactionWithCreditingScriptPubKey: (Transaction, UInt32, ScriptPubKey) = {
     val outputIndex = TestUtil.simpleTransaction.inputs.head.previousOutput.vout
-    (TestUtil.simpleTransaction,
-     UInt32.zero,
-     TestUtil.parentSimpleTransaction.outputs(outputIndex.toInt).scriptPubKey)
+    (TestUtil.simpleTransaction, UInt32.zero, TestUtil.parentSimpleTransaction.outputs(outputIndex.toInt).scriptPubKey)
   }
 
   /** This transaction has one input which is set to EmptyTransactionInput
@@ -225,10 +190,7 @@ trait TransactionTestUtil {
     * @return
     */
   def testTransaction: Transaction =
-    BaseTransaction(EmptyTransaction.version,
-                    Seq(EmptyTransactionInput),
-                    Nil,
-                    EmptyTransaction.lockTime)
+    BaseTransaction(EmptyTransaction.version, Seq(EmptyTransactionInput), Nil, EmptyTransaction.lockTime)
 
   /** Builds a dummy transaction that sends money to the given output */
   def buildTransactionTo(output: TransactionOutput): Transaction = {
@@ -245,8 +207,7 @@ trait TransactionTestUtil {
     BaseTransaction(
       version = Int32.zero,
       inputs = Vector(
-        TransactionInput(outPoint = TransactionOutPoint(txId = prevTxId,
-                                                        vout = UInt32.zero),
+        TransactionInput(outPoint = TransactionOutPoint(txId = prevTxId, vout = UInt32.zero),
                          scriptSignature = scriptSig,
                          sequenceNumber = UInt32.zero)),
       outputs = Vector(TransactionOutput(CurrencyUnits.oneBTC, spk)),

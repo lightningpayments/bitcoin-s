@@ -13,24 +13,15 @@ import scala.concurrent.Future
 trait MessageRpc { self: Client =>
 
   def signMessage(address: P2PKHAddress, message: String): Future[String] = {
-    bitcoindCall[String]("signmessage",
-                         List(JsString(address.value), JsString(message)))
+    bitcoindCall[String]("signmessage", List(JsString(address.value), JsString(message)))
   }
 
-  def signMessageWithPrivKey(
-      key: ECPrivateKeyBytes,
-      message: String): Future[String] = {
-    bitcoindCall[String](
-      "signmessagewithprivkey",
-      List(JsString(ECPrivateKeyUtil.toWIF(key, network)), JsString(message)))
+  def signMessageWithPrivKey(key: ECPrivateKeyBytes, message: String): Future[String] = {
+    bitcoindCall[String]("signmessagewithprivkey",
+                         List(JsString(ECPrivateKeyUtil.toWIF(key, network)), JsString(message)))
   }
 
-  def verifyMessage(
-      address: P2PKHAddress,
-      signature: String,
-      message: String): Future[Boolean] = {
-    bitcoindCall[Boolean](
-      "verifymessage",
-      List(JsString(address.value), JsString(signature), JsString(message)))
+  def verifyMessage(address: P2PKHAddress, signature: String, message: String): Future[Boolean] = {
+    bitcoindCall[Boolean]("verifymessage", List(JsString(address.value), JsString(signature), JsString(message)))
   }
 }

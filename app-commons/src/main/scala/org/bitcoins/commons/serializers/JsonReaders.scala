@@ -16,23 +16,10 @@ import org.bitcoins.core.protocol.ln.channel._
 import org.bitcoins.core.protocol.ln.currency._
 import org.bitcoins.core.protocol.ln.fee.FeeProportionalMillionths
 import org.bitcoins.core.protocol.ln.node.{Feature, FeatureSupport, NodeId}
-import org.bitcoins.core.protocol.script.{
-  ScriptPubKey,
-  ScriptSignature,
-  WitnessVersion,
-  WitnessVersion0
-}
-import org.bitcoins.core.protocol.tlv.{
-  OracleAnnouncementV0TLV,
-  OracleAttestmentV0TLV
-}
+import org.bitcoins.core.protocol.script.{ScriptPubKey, ScriptSignature, WitnessVersion, WitnessVersion0}
+import org.bitcoins.core.protocol.tlv.{OracleAnnouncementV0TLV, OracleAttestmentV0TLV}
 import org.bitcoins.core.protocol.transaction._
-import org.bitcoins.core.protocol.{
-  Address,
-  BitcoinAddress,
-  P2PKHAddress,
-  P2SHAddress
-}
+import org.bitcoins.core.protocol.{Address, BitcoinAddress, P2PKHAddress, P2SHAddress}
 import org.bitcoins.core.psbt.PSBT
 import org.bitcoins.core.script.ScriptType
 import org.bitcoins.core.script.crypto.HashType
@@ -55,18 +42,14 @@ object JsonReaders {
   /** Tries to prase the provided JSON into a map with keys of
     * type `K` and values of type `V`
     */
-  def mapReads[K, V](js: JsValue)(implicit
-      readsK: Reads[K],
-      readsV: Reads[V]): JsResult[Map[K, V]] = {
+  def mapReads[K, V](js: JsValue)(implicit readsK: Reads[K], readsV: Reads[V]): JsResult[Map[K, V]] = {
     js.validate[JsObject].flatMap { jsObj =>
       val jsResults: scala.collection.Seq[(JsResult[K], JsResult[V])] =
         jsObj.fields.map { case (key, value) =>
           JsString(key).validate[K] -> value.validate[V]
         }
 
-      val allErrors: scala.collection.Seq[(
-          JsPath,
-          scala.collection.Seq[JsonValidationError])] =
+      val allErrors: scala.collection.Seq[(JsPath, scala.collection.Seq[JsonValidationError])] =
         jsResults.collect {
           case (JsError(keyErrors), _)   => keyErrors
           case (_, JsError(valueErrors)) => valueErrors
@@ -86,16 +69,14 @@ object JsonReaders {
 
     override def reads(json: JsValue): JsResult[ZonedDateTime] =
       SerializerUtil.processJsNumberBigInt[ZonedDateTime](bigInt =>
-        ZonedDateTime.ofInstant(Instant.ofEpochSecond(bigInt.toLong),
-                                ZoneOffset.UTC))(json)
+        ZonedDateTime.ofInstant(Instant.ofEpochSecond(bigInt.toLong), ZoneOffset.UTC))(json)
   }
 
   implicit object LocalDateTimeReads extends Reads[LocalDateTime] {
 
     override def reads(json: JsValue): JsResult[LocalDateTime] =
       SerializerUtil.processJsNumberBigInt[LocalDateTime](bigInt =>
-        LocalDateTime.ofInstant(Instant.ofEpochSecond(bigInt.toLong),
-                                ZoneId.systemDefault()))(json)
+        LocalDateTime.ofInstant(Instant.ofEpochSecond(bigInt.toLong), ZoneId.systemDefault()))(json)
   }
 
   implicit object BigIntReads extends Reads[BigInt] {
@@ -113,30 +94,25 @@ object JsonReaders {
   implicit object RipeMd160DigestReads extends Reads[RipeMd160Digest] {
 
     override def reads(json: JsValue): JsResult[RipeMd160Digest] =
-      SerializerUtil.processJsString[RipeMd160Digest](RipeMd160Digest.fromHex)(
-        json)
+      SerializerUtil.processJsString[RipeMd160Digest](RipeMd160Digest.fromHex)(json)
   }
 
   implicit object RipeMd160DigestBEReads extends Reads[RipeMd160DigestBE] {
 
     override def reads(json: JsValue): JsResult[RipeMd160DigestBE] =
-      SerializerUtil.processJsString[RipeMd160DigestBE](
-        RipeMd160DigestBE.fromHex)(json)
+      SerializerUtil.processJsString[RipeMd160DigestBE](RipeMd160DigestBE.fromHex)(json)
   }
 
   implicit object DoubleSha256DigestReads extends Reads[DoubleSha256Digest] {
 
     override def reads(json: JsValue): JsResult[DoubleSha256Digest] =
-      SerializerUtil.processJsString[DoubleSha256Digest](
-        DoubleSha256Digest.fromHex)(json)
+      SerializerUtil.processJsString[DoubleSha256Digest](DoubleSha256Digest.fromHex)(json)
   }
 
-  implicit object DoubleSha256DigestBEReads
-      extends Reads[DoubleSha256DigestBE] {
+  implicit object DoubleSha256DigestBEReads extends Reads[DoubleSha256DigestBE] {
 
     override def reads(json: JsValue): JsResult[DoubleSha256DigestBE] =
-      SerializerUtil.processJsString[DoubleSha256DigestBE](
-        DoubleSha256DigestBE.fromHex)(json)
+      SerializerUtil.processJsString[DoubleSha256DigestBE](DoubleSha256DigestBE.fromHex)(json)
   }
 
   implicit object BitcoinsReads extends Reads[Bitcoins] {
@@ -148,8 +124,7 @@ object JsonReaders {
   implicit object SatoshisReads extends Reads[Satoshis] {
 
     override def reads(json: JsValue): JsResult[Satoshis] =
-      SerializerUtil.processJsNumber[Satoshis](num => Satoshis(num.toBigInt))(
-        json)
+      SerializerUtil.processJsNumber[Satoshis](num => Satoshis(num.toBigInt))(json)
   }
 
   implicit object BlockHeaderReads extends Reads[BlockHeader] {
@@ -233,8 +208,7 @@ object JsonReaders {
         case JsNumber(num) if num != 0 =>
           SerializerUtil.buildErrorMsg("Expected witness_version 0", num)
         case err =>
-          SerializerUtil.buildErrorMsg("Expected numerical witness_version",
-                                       err)
+          SerializerUtil.buildErrorMsg("Expected numerical witness_version", err)
       }
   }
 
@@ -248,8 +222,7 @@ object JsonReaders {
             case Failure(err) =>
               SerializerUtil.buildErrorMsg("address", err)
           }
-        case err @ (JsNull | _: JsBoolean | _: JsNumber | _: JsArray |
-            _: JsObject) =>
+        case err @ (JsNull | _: JsBoolean | _: JsNumber | _: JsArray | _: JsObject) =>
           SerializerUtil.buildJsErrorMsg("jsstring", err)
       }
   }
@@ -282,8 +255,7 @@ object JsonReaders {
   implicit object ScriptPubKeyReads extends Reads[ScriptPubKey] {
 
     override def reads(json: JsValue): JsResult[ScriptPubKey] =
-      SerializerUtil.processJsString[ScriptPubKey](ScriptPubKey.fromAsmHex)(
-        json)
+      SerializerUtil.processJsString[ScriptPubKey](ScriptPubKey.fromAsmHex)(json)
   }
 
   implicit object BlockReads extends Reads[Block] {
@@ -295,8 +267,7 @@ object JsonReaders {
   implicit object Sha256Hash160DigestReads extends Reads[Sha256Hash160Digest] {
 
     override def reads(json: JsValue): JsResult[Sha256Hash160Digest] =
-      SerializerUtil.processJsString[Sha256Hash160Digest](
-        Sha256Hash160Digest.fromHex)(json)
+      SerializerUtil.processJsString[Sha256Hash160Digest](Sha256Hash160Digest.fromHex)(json)
   }
 
   implicit object ECPublicKeyReads extends Reads[ECPublicKey] {
@@ -308,15 +279,13 @@ object JsonReaders {
   implicit object ECPublicKeyBytesReads extends Reads[ECPublicKeyBytes] {
 
     override def reads(json: JsValue): JsResult[ECPublicKeyBytes] =
-      SerializerUtil.processJsString[ECPublicKeyBytes](
-        ECPublicKeyBytes.fromHex)(json)
+      SerializerUtil.processJsString[ECPublicKeyBytes](ECPublicKeyBytes.fromHex)(json)
   }
 
   implicit object SchnorrPublicKeyReads extends Reads[SchnorrPublicKey] {
 
     override def reads(json: JsValue): JsResult[SchnorrPublicKey] =
-      SerializerUtil.processJsString[SchnorrPublicKey](
-        SchnorrPublicKey.fromHex)(json)
+      SerializerUtil.processJsString[SchnorrPublicKey](SchnorrPublicKey.fromHex)(json)
   }
 
   implicit object P2PKHAddressReads extends Reads[P2PKHAddress] {
@@ -329,8 +298,7 @@ object JsonReaders {
             case Failure(err) =>
               SerializerUtil.buildErrorMsg("p2pkhaddress", err)
           }
-        case err @ (JsNull | _: JsBoolean | _: JsNumber | _: JsArray |
-            _: JsObject) =>
+        case err @ (JsNull | _: JsBoolean | _: JsNumber | _: JsArray | _: JsObject) =>
           SerializerUtil.buildJsErrorMsg("jsstring", err)
       }
   }
@@ -345,8 +313,7 @@ object JsonReaders {
             case Failure(err) =>
               SerializerUtil.buildErrorMsg("p2shaddress", err)
           }
-        case err @ (JsNull | _: JsBoolean | _: JsNumber | _: JsArray |
-            _: JsObject) =>
+        case err @ (JsNull | _: JsBoolean | _: JsNumber | _: JsArray | _: JsObject) =>
           SerializerUtil.buildJsErrorMsg("jsstring", err)
       }
   }
@@ -354,8 +321,7 @@ object JsonReaders {
   implicit object ScriptSignatureReads extends Reads[ScriptSignature] {
 
     override def reads(json: JsValue): JsResult[ScriptSignature] =
-      SerializerUtil.processJsString[ScriptSignature](
-        ScriptSignature.fromAsmHex)(json)
+      SerializerUtil.processJsString[ScriptSignature](ScriptSignature.fromAsmHex)(json)
   }
 
   implicit object TransactionInputReads extends Reads[TransactionInput] {
@@ -364,18 +330,14 @@ object JsonReaders {
       (json \ "sequence").validate[UInt32].flatMap { sequence =>
         (json \ "coinbase").validate[String] match {
           case s: JsSuccess[String] =>
-            JsSuccess(
-              CoinbaseInput(ScriptSignature.fromAsmHex(s.value), sequence))
+            JsSuccess(CoinbaseInput(ScriptSignature.fromAsmHex(s.value), sequence))
           case _ =>
             (json \ "txid").validate[DoubleSha256DigestBE].flatMap { txid =>
               (json \ "vout").validate[UInt32].flatMap { vout =>
                 (json \ "scriptSig" \ "hex")
                   .validate[ScriptSignature]
                   .flatMap { scriptSig =>
-                    JsSuccess(
-                      TransactionInput(TransactionOutPoint(txid.flip, vout),
-                                       scriptSig,
-                                       sequence))
+                    JsSuccess(TransactionInput(TransactionOutPoint(txid.flip, vout), scriptSig, sequence))
                   }
               }
             }
@@ -395,8 +357,7 @@ object JsonReaders {
             case Failure(err) =>
               SerializerUtil.buildErrorMsg("address", err)
           }
-        case err @ (JsNull | _: JsBoolean | _: JsNumber | _: JsArray |
-            _: JsObject) =>
+        case err @ (JsNull | _: JsBoolean | _: JsNumber | _: JsArray | _: JsObject) =>
           SerializerUtil.buildJsErrorMsg("jsstring", err)
       }
   }
@@ -440,9 +401,7 @@ object JsonReaders {
         case array: JsArray =>
           val bitcoinResult = array.value.find(_.isInstanceOf[JsNumber]) match {
             case Some(JsNumber(n)) => JsSuccess(Bitcoins(n))
-            case Some(
-                  err @ (JsNull | _: JsBoolean | _: JsString | _: JsArray |
-                  _: JsObject)) =>
+            case Some(err @ (JsNull | _: JsBoolean | _: JsString | _: JsArray | _: JsObject)) =>
               SerializerUtil.buildJsErrorMsg("jsnumber", err)
             case None => JsError("error.expected.balance")
           }
@@ -465,8 +424,7 @@ object JsonReaders {
               JsSuccess(RpcAddress(address, bitcoins, account))
             }
           }
-        case err @ (JsNull | _: JsBoolean | _: JsNumber | _: JsString |
-            _: JsObject) =>
+        case err @ (JsNull | _: JsBoolean | _: JsNumber | _: JsString | _: JsObject) =>
           SerializerUtil.buildJsErrorMsg("jsarray", err)
       }
   }
@@ -537,9 +495,7 @@ object JsonReaders {
         pubkey <- (json \ "pubkey").validate[ECPublicKey]
         masterFingerprint <- (json \ "master_fingerprint").validate[String]
         path <- (json \ "path").validate[String]
-      } yield PsbtBIP32Deriv(pubkey = pubkey,
-                             masterFingerprint = masterFingerprint,
-                             path = path)
+      } yield PsbtBIP32Deriv(pubkey = pubkey, masterFingerprint = masterFingerprint, path = path)
   }
 
   implicit object RpcPsbtScriptReads extends Reads[RpcPsbtScript] {
@@ -550,19 +506,13 @@ object JsonReaders {
         hex <- (json \ "hex").validate[ScriptPubKey]
         scriptType <- (json \ "type").validateOpt[ScriptType]
         address <- (json \ "address").validateOpt[BitcoinAddress]
-      } yield RpcPsbtScript(asm = asm,
-                            hex = hex,
-                            scriptType = scriptType,
-                            address = address)
+      } yield RpcPsbtScript(asm = asm, hex = hex, scriptType = scriptType, address = address)
   }
 
-  implicit object MapPubKeySignatureReads
-      extends Reads[Map[ECPublicKey, ECDigitalSignature]] {
+  implicit object MapPubKeySignatureReads extends Reads[Map[ECPublicKey, ECDigitalSignature]] {
 
-    override def reads(
-        json: JsValue): JsResult[Map[ECPublicKey, ECDigitalSignature]] =
-      JsonReaders.mapReads(json)(implicitly[Reads[ECPublicKey]],
-                                 implicitly[Reads[ECDigitalSignature]])
+    override def reads(json: JsValue): JsResult[Map[ECPublicKey, ECDigitalSignature]] =
+      JsonReaders.mapReads(json)(implicitly[Reads[ECPublicKey]], implicitly[Reads[ECDigitalSignature]])
   }
 
   implicit object RpcPsbtInputReads extends Reads[RpcPsbtInput] {
@@ -608,8 +558,7 @@ object JsonReaders {
         .map(ScriptType.fromString)
   }
 
-  implicit object TestMempoolAcceptResultReads
-      extends Reads[TestMempoolAcceptResult] {
+  implicit object TestMempoolAcceptResultReads extends Reads[TestMempoolAcceptResult] {
 
     override def reads(json: JsValue): JsResult[TestMempoolAcceptResult] =
       for {
@@ -623,8 +572,7 @@ object JsonReaders {
   implicit object BitcoinFeeUnitReads extends Reads[BitcoinFeeUnit] {
 
     override def reads(json: JsValue): JsResult[BitcoinFeeUnit] =
-      SerializerUtil.processJsNumber[BitcoinFeeUnit](num =>
-        SatoshisPerByte(Satoshis((num * 100000).toBigInt)))(json)
+      SerializerUtil.processJsNumber[BitcoinFeeUnit](num => SatoshisPerByte(Satoshis((num * 100000).toBigInt)))(json)
   }
 
   implicit object FileReads extends Reads[File] {
@@ -663,18 +611,14 @@ object JsonReaders {
           Try(ServiceIdentifier.fromString(s)) match {
             case Success(serviceIdentifier) => JsSuccess(serviceIdentifier)
             case Failure(err) =>
-              SerializerUtil.buildJsErrorMsg(
-                s"Unexpected Service Identifier: $err",
-                json)
+              SerializerUtil.buildJsErrorMsg(s"Unexpected Service Identifier: $err", json)
           }
-        case err @ (JsNull | _: JsBoolean | _: JsNumber | _: JsArray |
-            _: JsObject) =>
+        case err @ (JsNull | _: JsBoolean | _: JsNumber | _: JsArray | _: JsObject) =>
           SerializerUtil.buildJsErrorMsg("jsstring", err)
       }
   }
 
-  implicit object OracleAnnouncementV0TLVReads
-      extends Reads[OracleAnnouncementV0TLV] {
+  implicit object OracleAnnouncementV0TLVReads extends Reads[OracleAnnouncementV0TLV] {
 
     override def reads(json: JsValue): JsResult[OracleAnnouncementV0TLV] =
       json match {
@@ -682,18 +626,14 @@ object JsonReaders {
           OracleAnnouncementV0TLV.fromHexT(s) match {
             case Success(ann) => JsSuccess(ann)
             case Failure(err) =>
-              SerializerUtil.buildJsErrorMsg(
-                s"Unexpected Service Identifier: $err",
-                json)
+              SerializerUtil.buildJsErrorMsg(s"Unexpected Service Identifier: $err", json)
           }
-        case err @ (JsNull | _: JsBoolean | _: JsNumber | _: JsArray |
-            _: JsObject) =>
+        case err @ (JsNull | _: JsBoolean | _: JsNumber | _: JsArray | _: JsObject) =>
           SerializerUtil.buildJsErrorMsg("jsstring", err)
       }
   }
 
-  implicit object OracleAttestmentV0TLVReads
-      extends Reads[OracleAttestmentV0TLV] {
+  implicit object OracleAttestmentV0TLVReads extends Reads[OracleAttestmentV0TLV] {
 
     override def reads(json: JsValue): JsResult[OracleAttestmentV0TLV] =
       json match {
@@ -701,20 +641,15 @@ object JsonReaders {
           OracleAttestmentV0TLV.fromHexT(s) match {
             case Success(att) => JsSuccess(att)
             case Failure(err) =>
-              SerializerUtil.buildJsErrorMsg(
-                s"Unexpected Service Identifier: $err",
-                json)
+              SerializerUtil.buildJsErrorMsg(s"Unexpected Service Identifier: $err", json)
           }
-        case err @ (JsNull | _: JsBoolean | _: JsNumber | _: JsArray |
-            _: JsObject) =>
+        case err @ (JsNull | _: JsBoolean | _: JsNumber | _: JsArray | _: JsObject) =>
           SerializerUtil.buildJsErrorMsg("jsstring", err)
       }
   }
 
-  implicit val feeProportionalMillionthsReads: Reads[
-    FeeProportionalMillionths] = Reads { js =>
-    SerializerUtil.processJsNumberBigInt(FeeProportionalMillionths.fromBigInt)(
-      js)
+  implicit val feeProportionalMillionthsReads: Reads[FeeProportionalMillionths] = Reads { js =>
+    SerializerUtil.processJsNumberBigInt(FeeProportionalMillionths.fromBigInt)(js)
   }
 
   implicit val channelStateReads: Reads[ChannelState] = {
@@ -769,8 +704,7 @@ object JsonReaders {
 
   implicit val lnHrpReads: Reads[LnHumanReadablePart] = {
     Reads { jsValue =>
-      SerializerUtil.processJsStringOpt(LnHumanReadablePart.fromStringOpt(_))(
-        jsValue)
+      SerializerUtil.processJsStringOpt(LnHumanReadablePart.fromStringOpt(_))(jsValue)
     }
   }
 
@@ -785,8 +719,7 @@ object JsonReaders {
       SerializerUtil.processJsString { addr =>
         addr.split(":") match {
           case Array(host, portStr) =>
-            val port = Try(portStr.toInt).getOrElse(
-              throw new RuntimeException(s"Invalid port number `$portStr`"))
+            val port = Try(portStr.toInt).getOrElse(throw new RuntimeException(s"Invalid port number `$portStr`"))
             InetSocketAddress.createUnresolved(host, port.toInt)
           case _ => throw new RuntimeException(s"Invalid inet address `$addr`")
         }
@@ -824,8 +757,7 @@ object JsonReaders {
           .validate[Map[String, FeatureSupport]]
         unknown <- (jsValue \ "unknown").validate[Set[UnknownFeature]]
       } yield {
-        val activated = activatedObj.toSeq.map(x =>
-          ActivatedFeature(featuresByName(x._1), x._2))
+        val activated = activatedObj.toSeq.map(x => ActivatedFeature(featuresByName(x._1), x._2))
         Features(
           activated = activated.toSet,
           unknown = unknown
@@ -844,8 +776,7 @@ object JsonReaders {
 
   implicit val shortChannelIdReads: Reads[ShortChannelId] = {
     Reads { jsValue =>
-      SerializerUtil.processJsString(ShortChannelId.fromHumanReadableString)(
-        jsValue)
+      SerializerUtil.processJsString(ShortChannelId.fromHumanReadableString)(jsValue)
     }
   }
 
@@ -860,13 +791,7 @@ object JsonReaders {
         rgbColor <- (jsValue \ "rgbColor").validate[String]
         alias <- (jsValue \ "alias").validate[String]
         addresses <- (jsValue \ "addresses").validate[Vector[InetSocketAddress]]
-      } yield NodeInfo(signature,
-                       features,
-                       timestamp,
-                       nodeId,
-                       rgbColor,
-                       alias,
-                       addresses)
+      } yield NodeInfo(signature, features, timestamp, nodeId, rgbColor, alias, addresses)
     }
   }
 
@@ -903,13 +828,7 @@ object JsonReaders {
         description <- (jsValue \ "description").validate[String]
         paymentHash <- (jsValue \ "paymentHash").validate[Sha256Digest]
         expiry <- (jsValue \ "expiry").validate[Long]
-      } yield InvoiceResult(prefix,
-                            timestamp,
-                            nodeId,
-                            serialized,
-                            description,
-                            paymentHash,
-                            expiry.seconds)
+      } yield InvoiceResult(prefix, timestamp, nodeId, serialized, description, paymentHash, expiry.seconds)
     }
   }
 
@@ -978,8 +897,7 @@ object JsonReaders {
         }
         (channelId, x._2.validate[State].get)
       }))
-    case err @ (JsNull | _: JsBoolean | _: JsString | _: JsArray |
-        _: JsNumber) =>
+    case err @ (JsNull | _: JsBoolean | _: JsString | _: JsArray | _: JsNumber) =>
       SerializerUtil.buildJsErrorMsg("jsobject", err)
   }
 
@@ -994,12 +912,9 @@ object JsonReaders {
           }
           val result = Try(
             UpdateRelayFee.OK(
-              channelId = FundedChannelId.fromHex(
-                (x._2 \ "channelId").validate[String].get),
-              feeBaseMsat =
-                (x._2 \ "cmd" \ "feeBase").validate[MilliSatoshis].get,
-              feeProportionalMillionths =
-                (x._2 \ "cmd" \ "feeProportionalMillionths").validate[Long].get
+              channelId = FundedChannelId.fromHex((x._2 \ "channelId").validate[String].get),
+              feeBaseMsat = (x._2 \ "cmd" \ "feeBase").validate[MilliSatoshis].get,
+              feeProportionalMillionths = (x._2 \ "cmd" \ "feeProportionalMillionths").validate[Long].get
             )) match {
             case Success(ok) => ok
             case Failure(_)  => UpdateRelayFee.Error(x._2.toString())
@@ -1007,8 +922,7 @@ object JsonReaders {
           (channelId, result)
         }.toMap))
 
-      case err @ (JsNull | _: JsBoolean | _: JsString | _: JsArray |
-          _: JsNumber) =>
+      case err @ (JsNull | _: JsBoolean | _: JsString | _: JsArray | _: JsNumber) =>
         SerializerUtil.buildJsErrorMsg("jsobject", err)
     }
 
@@ -1066,13 +980,11 @@ object JsonReaders {
 
   val instantReadsMilliseconds: Reads[Instant] =
     Reads { js =>
-      SerializerUtil.processJsNumberBigInt(x =>
-        Instant.ofEpochMilli(x.longValue))(js)
+      SerializerUtil.processJsNumberBigInt(x => Instant.ofEpochMilli(x.longValue))(js)
     }
 
   val instantReadsSeconds: Reads[Instant] = Reads { js =>
-    SerializerUtil.processJsNumberBigInt(x =>
-      Instant.ofEpochSecond(x.longValue))(js)
+    SerializerUtil.processJsNumberBigInt(x => Instant.ofEpochSecond(x.longValue))(js)
   }
 
   implicit val paymentTypeReads: Reads[PaymentType] = Reads { jsValue =>
@@ -1099,20 +1011,19 @@ object JsonReaders {
                                               completedAt = completed)
     }
 
-  implicit val paymentFailureTypeReads: Reads[PaymentFailure.Type] = Reads {
-    jsValue =>
-      jsValue
-        .validate[String]
-        .flatMap { s =>
-          s.toLowerCase match {
-            case "local"  => JsSuccess(PaymentFailure.Local)
-            case "remote" => JsSuccess(PaymentFailure.Remote)
-            case "unreadableremote" =>
-              JsSuccess(PaymentFailure.UnreadableRemote)
-            case _ =>
-              throw new RuntimeException(s"Unknown payment failure type `$s`")
-          }
+  implicit val paymentFailureTypeReads: Reads[PaymentFailure.Type] = Reads { jsValue =>
+    jsValue
+      .validate[String]
+      .flatMap { s =>
+        s.toLowerCase match {
+          case "local"  => JsSuccess(PaymentFailure.Local)
+          case "remote" => JsSuccess(PaymentFailure.Remote)
+          case "unreadableremote" =>
+            JsSuccess(PaymentFailure.UnreadableRemote)
+          case _ =>
+            throw new RuntimeException(s"Unknown payment failure type `$s`")
         }
+      }
   }
 
   implicit val paymentFailureReads: Reads[PaymentFailure] =
@@ -1155,14 +1066,7 @@ object JsonReaders {
       expiry <- (js \ "expiry")
         .validate[FiniteDuration](finiteDurationReadsSeconds)
       amount <- (js \ "amount").validateOpt[MilliSatoshis]
-    } yield PaymentRequest(prefix,
-                           timestamp,
-                           nodeId,
-                           serialized,
-                           description,
-                           paymentHash,
-                           expiry,
-                           amount)
+    } yield PaymentRequest(prefix, timestamp, nodeId, serialized, description, paymentHash, expiry, amount)
   }
 
   implicit val paymentSucceededReads: Reads[OutgoingPayment] = Reads { js =>
@@ -1192,18 +1096,14 @@ object JsonReaders {
                             status)
   }
 
-  implicit val receivedPaymentResultReads: Reads[IncomingPayment] = Reads {
-    js =>
-      for {
-        paymentRequest <- (js \ "paymentRequest").validate[PaymentRequest]
-        paymentPreimage <- (js \ "paymentPreimage").validate[PaymentPreimage]
-        createdAt <- (js \ "createdAt")
-          .validate[Instant](instantReadsMilliseconds)
-        status <- (js \ "status").validate[IncomingPaymentStatus]
-      } yield IncomingPayment(paymentRequest,
-                              paymentPreimage,
-                              createdAt,
-                              status)
+  implicit val receivedPaymentResultReads: Reads[IncomingPayment] = Reads { js =>
+    for {
+      paymentRequest <- (js \ "paymentRequest").validate[PaymentRequest]
+      paymentPreimage <- (js \ "paymentPreimage").validate[PaymentPreimage]
+      createdAt <- (js \ "createdAt")
+        .validate[Instant](instantReadsMilliseconds)
+      status <- (js \ "status").validate[IncomingPaymentStatus]
+    } yield IncomingPayment(paymentRequest, paymentPreimage, createdAt, status)
   }
 
   implicit val channelResultReads: Reads[ChannelResult] = Reads { js =>
@@ -1233,19 +1133,17 @@ object JsonReaders {
           case Failure(err) =>
             JsError(s"Invalid refund invoice: ${err.toString}")
         }
-      case bad @ (_: JsNumber | _: JsObject | _: JsArray | _: JsBoolean |
-          JsNull) =>
+      case bad @ (_: JsNumber | _: JsObject | _: JsArray | _: JsBoolean | JsNull) =>
         JsError(s"Invalid type on refund invoice: $bad, expected JsString")
     }
 
-  implicit val receivedPaymentPartReads: Reads[ReceivedPayment.Part] = Reads {
-    js =>
-      for {
-        amount <- (js \ "amount").validate[MilliSatoshis]
-        fromChannelId <- (js \ "fromChannelId").validate[FundedChannelId]
-        timestamp <- (js \ "timestamp")
-          .validate[Instant](instantReadsMilliseconds)
-      } yield ReceivedPayment.Part(amount, fromChannelId, timestamp)
+  implicit val receivedPaymentPartReads: Reads[ReceivedPayment.Part] = Reads { js =>
+    for {
+      amount <- (js \ "amount").validate[MilliSatoshis]
+      fromChannelId <- (js \ "fromChannelId").validate[FundedChannelId]
+      timestamp <- (js \ "timestamp")
+        .validate[Instant](instantReadsMilliseconds)
+    } yield ReceivedPayment.Part(amount, fromChannelId, timestamp)
   }
 
   implicit val receivedPaymentReads: Reads[ReceivedPayment] =
@@ -1273,12 +1171,7 @@ object JsonReaders {
       toChannelId <- (js \ "toChannelId").validate[FundedChannelId]
       timestamp <- (js \ "timestamp")
         .validate[Instant](instantReadsMilliseconds)
-    } yield RelayedPayment(amountIn,
-                           amountOut,
-                           paymentHash,
-                           fromChannelId,
-                           toChannelId,
-                           timestamp)
+    } yield RelayedPayment(amountIn, amountOut, paymentHash, fromChannelId, toChannelId, timestamp)
   }
   implicit val auditResultReads: Reads[AuditResult] = Json.reads[AuditResult]
 
@@ -1291,12 +1184,7 @@ object JsonReaders {
       txType <- (js \ "txType").validate[String]
       timestamp <- (js \ "timestamp")
         .validate[Instant](instantReadsMilliseconds)
-    } yield NetworkFeesResult(remoteNodeId,
-                              channelId,
-                              txId,
-                              fee,
-                              txType,
-                              timestamp)
+    } yield NetworkFeesResult(remoteNodeId, channelId, txId, fee, txType, timestamp)
   }
 
   implicit val channelStatsDirectionReads: Reads[ChannelStats.Direction] =
@@ -1320,28 +1208,19 @@ object JsonReaders {
         toChannelId <- (js \ "toChannelId").validate[FundedChannelId]
         timestamp <- (js \ "timestamp")
           .validate[Instant](instantReadsMilliseconds)
-      } yield WebSocketEvent.PaymentRelayed(amountIn,
-                                            amountOut,
-                                            paymentHash,
-                                            fromChannelId,
-                                            toChannelId,
-                                            timestamp)
+      } yield WebSocketEvent.PaymentRelayed(amountIn, amountOut, paymentHash, fromChannelId, toChannelId, timestamp)
     }
 
-  implicit val paymentReceivedEventPartReads: Reads[
-    WebSocketEvent.PaymentReceived.Part] = Reads { js =>
+  implicit val paymentReceivedEventPartReads: Reads[WebSocketEvent.PaymentReceived.Part] = Reads { js =>
     for {
       amount <- (js \ "amount").validate[MilliSatoshis]
       fromChannelId <- (js \ "fromChannelId").validate[FundedChannelId]
       timestamp <- (js \ "timestamp")
         .validate[Instant](instantReadsMilliseconds)
-    } yield WebSocketEvent.PaymentReceived.Part(amount,
-                                                fromChannelId,
-                                                timestamp)
+    } yield WebSocketEvent.PaymentReceived.Part(amount, fromChannelId, timestamp)
   }
 
-  implicit val paymentReceivedEventReads: Reads[
-    WebSocketEvent.PaymentReceived] = Reads { js =>
+  implicit val paymentReceivedEventReads: Reads[WebSocketEvent.PaymentReceived] = Reads { js =>
     for {
       paymentHash <- (js \ "paymentHash").validate[Sha256Digest]
       parts <- (js \ "parts")
@@ -1357,14 +1236,10 @@ object JsonReaders {
         failures <- (js \ "failures").validate[Vector[JsObject]]
         timestamp <- (js \ "timestamp")
           .validate[Instant](instantReadsMilliseconds)
-      } yield WebSocketEvent.PaymentFailed(id,
-                                           paymentHash,
-                                           failures.map(_.toString()),
-                                           timestamp)
+      } yield WebSocketEvent.PaymentFailed(id, paymentHash, failures.map(_.toString()), timestamp)
     }
 
-  implicit val paymentSentEventPartReads: Reads[
-    WebSocketEvent.PaymentSent.Part] = Reads { js =>
+  implicit val paymentSentEventPartReads: Reads[WebSocketEvent.PaymentSent.Part] = Reads { js =>
     for {
       id <- (js \ "id").validate[PaymentId]
       amount <- (js \ "amount").validate[MilliSatoshis]
@@ -1372,11 +1247,7 @@ object JsonReaders {
       toChannelId <- (js \ "toChannelId").validate[FundedChannelId]
       timestamp <- (js \ "timestamp")
         .validate[Instant](instantReadsMilliseconds)
-    } yield WebSocketEvent.PaymentSent.Part(id,
-                                            amount,
-                                            feesPaid,
-                                            toChannelId,
-                                            timestamp)
+    } yield WebSocketEvent.PaymentSent.Part(id, amount, feesPaid, toChannelId, timestamp)
   }
 
   implicit val paymentSentEventReads: Reads[WebSocketEvent.PaymentSent] =
@@ -1387,22 +1258,16 @@ object JsonReaders {
         paymentPreimage <- (js \ "paymentPreimage").validate[PaymentPreimage]
         parts <- (js \ "parts")
           .validate[Vector[WebSocketEvent.PaymentSent.Part]]
-      } yield WebSocketEvent.PaymentSent(id,
-                                         paymentHash,
-                                         paymentPreimage,
-                                         parts)
+      } yield WebSocketEvent.PaymentSent(id, paymentHash, paymentPreimage, parts)
     }
 
-  implicit val paymentSettlingOnchainEventReads: Reads[
-    WebSocketEvent.PaymentSettlingOnchain] = Reads { js =>
+  implicit val paymentSettlingOnchainEventReads: Reads[WebSocketEvent.PaymentSettlingOnchain] = Reads { js =>
     for {
       amount <- (js \ "amount").validate[MilliSatoshis]
       paymentHash <- (js \ "paymentHash").validate[Sha256Digest]
       timestamp <- (js \ "timestamp")
         .validate[Instant](instantReadsMilliseconds)
-    } yield WebSocketEvent.PaymentSettlingOnchain(amount,
-                                                  paymentHash,
-                                                  timestamp)
+    } yield WebSocketEvent.PaymentSettlingOnchain(amount, paymentHash, timestamp)
   }
 
   implicit val webSocketEventReads: Reads[WebSocketEvent] =
@@ -1451,8 +1316,7 @@ object JsonReaders {
 
   implicit val connectionDirectionReads: Reads[ConnectionDirection] = {
     Reads { jsValue =>
-      SerializerUtil.processJsStringOpt(ConnectionDirection.fromStringOpt)(
-        jsValue)
+      SerializerUtil.processJsStringOpt(ConnectionDirection.fromStringOpt)(jsValue)
     }
   }
 
@@ -1470,8 +1334,7 @@ object JsonReaders {
 
   implicit val closedChannelTypeReads: Reads[ClosedChannelType] = {
     Reads { jsValue =>
-      SerializerUtil.processJsStringOpt(ClosedChannelType.fromStringOpt)(
-        jsValue)
+      SerializerUtil.processJsStringOpt(ClosedChannelType.fromStringOpt)(jsValue)
     }
   }
 

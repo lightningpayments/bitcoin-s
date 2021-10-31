@@ -9,14 +9,10 @@ import scala.concurrent.Future
 /** A signing interface for [[ExtKey]] */
 trait AsyncExtSign extends AsyncAdaptorSign {
 
-  def asyncDeriveAndSign(
-      bytes: ByteVector,
-      path: BIP32Path): Future[ECDigitalSignature]
+  def asyncDeriveAndSign(bytes: ByteVector, path: BIP32Path): Future[ECDigitalSignature]
 
   /** First derives the child key that corresponds to [[BIP32Path path]] and then signs */
-  def asyncSign(
-      bytes: ByteVector,
-      path: BIP32Path): Future[ECDigitalSignature] = {
+  def asyncSign(bytes: ByteVector, path: BIP32Path): Future[ECDigitalSignature] = {
     asyncDeriveAndSign(bytes, path)
   }
 }
@@ -25,9 +21,7 @@ trait ExtSign extends AsyncExtSign with AdaptorSign {
 
   def deriveAndSign(bytes: ByteVector, path: BIP32Path): ECDigitalSignature
 
-  override def asyncDeriveAndSign(
-      bytes: ByteVector,
-      path: BIP32Path): Future[ECDigitalSignature] = {
+  override def asyncDeriveAndSign(bytes: ByteVector, path: BIP32Path): Future[ECDigitalSignature] = {
     Future.successful(deriveAndSign(bytes, path))
   }
 

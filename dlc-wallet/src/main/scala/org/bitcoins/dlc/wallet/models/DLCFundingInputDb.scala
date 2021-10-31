@@ -1,10 +1,7 @@
 package org.bitcoins.dlc.wallet.models
 
 import org.bitcoins.core.number._
-import org.bitcoins.core.protocol.dlc.models.{
-  DLCFundingInput,
-  DLCFundingInputP2WPKHV0
-}
+import org.bitcoins.core.protocol.dlc.models.{DLCFundingInput, DLCFundingInputP2WPKHV0}
 import org.bitcoins.core.protocol.script.{ScriptPubKey, ScriptWitness}
 import org.bitcoins.core.protocol.transaction._
 import org.bitcoins.crypto.Sha256Digest

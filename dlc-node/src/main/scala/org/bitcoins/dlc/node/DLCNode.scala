@@ -11,17 +11,14 @@ import org.bitcoins.dlc.node.peer.Peer
 import java.net.InetSocketAddress
 import scala.concurrent._
 
-case class DLCNode(wallet: DLCWalletApi)(implicit
-    system: ActorSystem,
-    val config: DLCNodeAppConfig)
+case class DLCNode(wallet: DLCWalletApi)(implicit system: ActorSystem, val config: DLCNodeAppConfig)
     extends DLCNodeApi
     with Logging {
 
   implicit val ec: ExecutionContextExecutor = system.dispatcher
 
   private[node] lazy val serverBindF: Future[(InetSocketAddress, ActorRef)] = {
-    logger.info(
-      s"Binding server to ${config.listenAddress}, with tor hidden service: ${config.torParams.isDefined}")
+    logger.info(s"Binding server to ${config.listenAddress}, with tor hidden service: ${config.torParams.isDefined}")
 
     DLCServer
       .bind(
@@ -52,9 +49,7 @@ case class DLCNode(wallet: DLCWalletApi)(implicit
     }
   }
 
-  private[node] def connectAndSendToPeer(
-      peerAddress: InetSocketAddress,
-      message: LnMessage[TLV]): Future[Unit] = {
+  private[node] def connectAndSendToPeer(peerAddress: InetSocketAddress, message: LnMessage[TLV]): Future[Unit] = {
     val peer =
       Peer(socket = peerAddress, socks5ProxyParams = config.socks5ProxyParams)
 
@@ -66,9 +61,7 @@ case class DLCNode(wallet: DLCWalletApi)(implicit
     } yield handler ! message
   }
 
-  def acceptDLCOffer(
-      peerAddress: InetSocketAddress,
-      dlcOffer: LnMessage[DLCOfferTLV]): Future[Unit] = {
+  def acceptDLCOffer(peerAddress: InetSocketAddress, dlcOffer: LnMessage[DLCOfferTLV]): Future[Unit] = {
     connectAndSendToPeer(peerAddress, dlcOffer)
   }
 }

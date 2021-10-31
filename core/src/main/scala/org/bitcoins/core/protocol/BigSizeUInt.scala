@@ -22,8 +22,7 @@ case class BigSizeUInt(num: UInt64) extends NetworkElement {
 
   def toInt: Int = {
     val l = toLong
-    require(Int.MinValue <= l && l <= Int.MaxValue,
-            "Cannot convert BigSizeUInt toInt, got: " + this)
+    require(Int.MinValue <= l && l <= Int.MaxValue, "Cannot convert BigSizeUInt toInt, got: " + this)
     l.toInt
   }
 
@@ -67,9 +66,8 @@ object BigSizeUInt extends Factory[BigSizeUInt] {
       (BigSizeUInt(UInt64(bytes.slice(1, 9))), 9)
     }
 
-    require(
-      bigSizeUInt.byteSize == expectedSize,
-      s"Length prefix $prefixNum did not match bytes ${bigSizeUInt.bytes.tail}")
+    require(bigSizeUInt.byteSize == expectedSize,
+            s"Length prefix $prefixNum did not match bytes ${bigSizeUInt.bytes.tail}")
 
     bigSizeUInt
   }

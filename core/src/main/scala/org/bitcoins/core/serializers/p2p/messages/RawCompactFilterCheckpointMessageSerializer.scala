@@ -9,8 +9,7 @@ import scodec.bits.ByteVector
 
 /** @see [[https://github.com/bitcoin/bips/blob/master/bip-0157.mediawiki#cfcheckpt BIP-157 ]]
   */
-object RawCompactFilterCheckpointMessageSerializer
-    extends RawBitcoinSerializer[CompactFilterCheckPointMessage] {
+object RawCompactFilterCheckpointMessageSerializer extends RawBitcoinSerializer[CompactFilterCheckPointMessage] {
 
   def read(bytes: ByteVector): CompactFilterCheckPointMessage = {
     val filterType = FilterType.fromBytes(bytes.take(1))
@@ -21,11 +20,10 @@ object RawCompactFilterCheckpointMessageSerializer
     val filterHeadersLength = CompactSizeUInt.parse(afterStopHash)
 
     val (headers, _) =
-      RawSerializerHelper.parseCmpctSizeUIntSeq(
-        afterStopHash,
-        { bytes =>
-          DoubleSha256Digest.fromBytes(bytes.take(32))
-        })
+      RawSerializerHelper.parseCmpctSizeUIntSeq(afterStopHash,
+                                                { bytes =>
+                                                  DoubleSha256Digest.fromBytes(bytes.take(32))
+                                                })
 
     require(
       headers.length == filterHeadersLength.toInt,

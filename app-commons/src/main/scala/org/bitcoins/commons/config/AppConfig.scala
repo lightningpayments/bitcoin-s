@@ -2,13 +2,13 @@ package org.bitcoins.commons.config
 
 import com.typesafe.config.{Config, ConfigFactory, ConfigParseOptions}
 import grizzled.slf4j.Logging
+import org.bitcoins.core.compat.JavaConverters._
 import org.bitcoins.core.config._
 import org.bitcoins.core.protocol.blockchain.BitcoinChainParams
 import org.bitcoins.core.util.StartStopAsync
+import zio.Task
 
 import java.nio.file._
-import scala.concurrent.Future
-import org.bitcoins.core.compat.JavaConverters._
 import scala.util.Properties
 import scala.util.matching.Regex
 
@@ -28,9 +28,7 @@ abstract class AppConfig extends StartStopAsync[Unit] with Logging {
     * making directories or files needed later or
     * something else entirely.
     */
-  override def start(): Future[Unit] = {
-    Future.unit
-  }
+  override def start(): Task[Unit] = Task.unit
 
   /** Sub members of AppConfig should override this type with
     * the type of themselves, ensuring `withOverrides` return
@@ -39,8 +37,7 @@ abstract class AppConfig extends StartStopAsync[Unit] with Logging {
   protected[bitcoins] type ConfigType <: AppConfig
 
   /** Constructor to make a new instance of this config type */
-  protected[bitcoins] def newConfigOfType(
-      configOverrides: Seq[Config]): ConfigType
+  protected[bitcoins] def newConfigOfType(configOverrides: Seq[Config]): ConfigType
 
   /** List of user-provided configs that should
     * override defaults
@@ -175,9 +172,7 @@ object AppConfig extends Logging {
       .mkString("\n")
   }
 
-  def getBaseConfig(
-      baseDatadir: Path,
-      configOverrides: List[Config] = List.empty): Config = {
+  def getBaseConfig(baseDatadir: Path, configOverrides: List[Config] = List.empty): Config = {
     val configOptions =
       ConfigParseOptions
         .defaults()
@@ -191,8 +186,7 @@ object AppConfig extends Logging {
       }
 
       val withDatadir =
-        ConfigFactory.parseString(
-          s"bitcoin-s.datadir = ${safePathToString(baseDatadir)}")
+        ConfigFactory.parseString(s"bitcoin-s.datadir = ${safePathToString(baseDatadir)}")
       withDatadir.withFallback(config)
     }
 

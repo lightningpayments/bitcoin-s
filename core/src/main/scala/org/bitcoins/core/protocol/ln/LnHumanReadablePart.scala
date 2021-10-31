@@ -11,11 +11,9 @@ import scala.util.matching.Regex
 import scala.util.{Failure, Success, Try}
 
 sealed abstract class LnHumanReadablePart extends Bech32HumanReadablePart {
-  require(amount.isEmpty || amount.get.toBigInt > 0,
-          s"Invoice amount must be greater then 0, got $amount")
-  require(
-    amount.isEmpty || amount.get.toMSat <= LnPolicy.maxAmountMSat,
-    s"Invoice amount must not exceed ${LnPolicy.maxAmountMSat}, got ${amount.get.toMSat}")
+  require(amount.isEmpty || amount.get.toBigInt > 0, s"Invoice amount must be greater then 0, got $amount")
+  require(amount.isEmpty || amount.get.toMSat <= LnPolicy.maxAmountMSat,
+          s"Invoice amount must not exceed ${LnPolicy.maxAmountMSat}, got ${amount.get.toMSat}")
 
   def network: LnParams
 
@@ -38,25 +36,21 @@ sealed abstract class LnHumanReadablePart extends Bech32HumanReadablePart {
 object LnHumanReadablePart extends StringFactory[LnHumanReadablePart] {
 
   /** Prefix for generating a LN invoice on the Bitcoin MainNet */
-  case class lnbc(override val amount: Option[LnCurrencyUnit])
-      extends LnHumanReadablePart {
+  case class lnbc(override val amount: Option[LnCurrencyUnit]) extends LnHumanReadablePart {
     override def network: LnParams = LnBitcoinMainNet
   }
 
   /** Prefix for generating a LN invoice on the Bitcoin TestNet3 */
-  case class lntb(override val amount: Option[LnCurrencyUnit])
-      extends LnHumanReadablePart {
+  case class lntb(override val amount: Option[LnCurrencyUnit]) extends LnHumanReadablePart {
     override def network: LnParams = LnBitcoinTestNet
   }
 
-  case class lntbs(override val amount: Option[LnCurrencyUnit])
-      extends LnHumanReadablePart {
+  case class lntbs(override val amount: Option[LnCurrencyUnit]) extends LnHumanReadablePart {
     override def network: LnParams = LnBitcoinSigNet
   }
 
   /** Prefix for genearting a LN invoice on the Bitcoin RegTest */
-  case class lnbcrt(override val amount: Option[LnCurrencyUnit])
-      extends LnHumanReadablePart {
+  case class lnbcrt(override val amount: Option[LnCurrencyUnit]) extends LnHumanReadablePart {
     def network: LnParams = LnBitcoinRegTest
   }
 
@@ -68,9 +62,7 @@ object LnHumanReadablePart extends StringFactory[LnHumanReadablePart] {
     LnHumanReadablePart.fromLnParams(lnNetwork)
   }
 
-  def apply(
-      network: NetworkParameters,
-      amount: LnCurrencyUnit): LnHumanReadablePart = {
+  def apply(network: NetworkParameters, amount: LnCurrencyUnit): LnHumanReadablePart = {
     val lnNetwork = LnParams.fromNetworkParameters(network)
     LnHumanReadablePart(lnNetwork, Some(amount))
   }
@@ -89,15 +81,11 @@ object LnHumanReadablePart extends StringFactory[LnHumanReadablePart] {
   /** Will return a [[org.bitcoins.core.protocol.ln.LnHumanReadablePart LnHumanReadablePart]]
     * with the provide [[org.bitcoins.core.protocol.ln.currency.LnCurrencyUnit LnCurrencyUnit]] encoded in the invoice
     */
-  def apply(
-      network: LnParams,
-      amount: Option[LnCurrencyUnit]): LnHumanReadablePart = {
+  def apply(network: LnParams, amount: Option[LnCurrencyUnit]): LnHumanReadablePart = {
     fromParamsAmount(network, amount)
   }
 
-  def fromParamsAmount(
-      network: LnParams,
-      amount: Option[LnCurrencyUnit]): LnHumanReadablePart = {
+  def fromParamsAmount(network: LnParams, amount: Option[LnCurrencyUnit]): LnHumanReadablePart = {
     network match {
       case LnParams.LnBitcoinMainNet => lnbc(amount)
       case LnParams.LnBitcoinTestNet => lntb(amount)
@@ -119,9 +107,7 @@ object LnHumanReadablePart extends StringFactory[LnHumanReadablePart] {
     val lnParamsOpt = networkStringOpt.flatMap(LnParams.fromPrefixString)
 
     if (lnParamsOpt.isEmpty) {
-      Failure(
-        new IllegalArgumentException(
-          s"Could not parse a valid network prefix, got $bech32"))
+      Failure(new IllegalArgumentException(s"Could not parse a valid network prefix, got $bech32"))
     } else {
 
       val lnParams = lnParamsOpt.get

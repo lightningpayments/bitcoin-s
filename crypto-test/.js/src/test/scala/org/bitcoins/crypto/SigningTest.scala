@@ -24,16 +24,15 @@ class SigningTest extends BitcoinSCryptoTest {
   }
 
   it must "pass the BIP 340 test-vectors with bcrypto" in {
-    BIP340TestVectors.vectors.foreach {
-      case (index, secKeyOpt, pubKey, auxRandOpt, msg, sig, result, comment) =>
-        test(index = index,
-             secKeyOpt = secKeyOpt,
-             pubKey = pubKey,
-             auxRandOpt = auxRandOpt,
-             msg = msg,
-             sig = sig,
-             result = result,
-             comment = comment)
+    BIP340TestVectors.vectors.foreach { case (index, secKeyOpt, pubKey, auxRandOpt, msg, sig, result, comment) =>
+      test(index = index,
+           secKeyOpt = secKeyOpt,
+           pubKey = pubKey,
+           auxRandOpt = auxRandOpt,
+           msg = msg,
+           sig = sig,
+           result = result,
+           comment = comment)
     }
   }
 
@@ -62,8 +61,7 @@ class SigningTest extends BitcoinSCryptoTest {
         }
 
         testVerify(index, pk, msgBytes, schnorrSig, result, comment)
-      case (Failure(_), _) |
-          (_, Failure(_)) => // Must be verify only test resulting in false
+      case (Failure(_), _) | (_, Failure(_)) => // Must be verify only test resulting in false
         assert(secKeyOpt.isEmpty)
         assert(auxRandOpt.isEmpty)
         assert(!result, s"Test $index failed to parse signature: $comment")
@@ -78,8 +76,7 @@ class SigningTest extends BitcoinSCryptoTest {
       expectedSig: SchnorrDigitalSignature): Assertion = {
     val bcryptoSig =
       BCryptoCryptoRuntime.schnorrSign(msg, secKey, auxRand)
-    assert(bcryptoSig == expectedSig,
-           s"Test $index failed signing for Bouncy Castle")
+    assert(bcryptoSig == expectedSig, s"Test $index failed signing for Bouncy Castle")
   }
 
   def testVerify(
@@ -91,8 +88,7 @@ class SigningTest extends BitcoinSCryptoTest {
       comment: String): Assertion = {
     val bcryptoResult =
       BCryptoCryptoRuntime.schnorrVerify(msg, pubKey, sig)
-    assert(bcryptoResult == expectedResult,
-           s"Test $index failed verification for Bouncy Castle: $comment")
+    assert(bcryptoResult == expectedResult, s"Test $index failed verification for Bouncy Castle: $comment")
   }
 
 }

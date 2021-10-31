@@ -91,10 +91,7 @@ object LnTag {
       Bech32Address(witSPK, np)
     }
 
-    def fromU8(
-        version: UInt8,
-        bytes: ByteVector,
-        np: NetworkParameters): FallbackAddressTag = {
+    def fromU8(version: UInt8, bytes: ByteVector, np: NetworkParameters): FallbackAddressTag = {
       val address: Address = version match {
         case P2PKH.u8 =>
           val hash = Sha256Hash160Digest(bytes)
@@ -104,8 +101,7 @@ object LnTag {
           P2SHAddress(hash, np)
         case WitSPK.u8 => witnessFromU8(bytes, np)
         case _: UInt8 =>
-          throw new IllegalArgumentException(
-            s"Illegal version to create a fallback address from, got $version")
+          throw new IllegalArgumentException(s"Illegal version to create a fallback address from, got $version")
       }
       LnTag.FallbackAddressTag(address)
     }
@@ -217,9 +213,7 @@ object LnTag {
     }
   }
 
-  case class RoutingInfo(routes: Vector[LnRoute])
-      extends SeqWrapper[LnRoute]
-      with LnTag {
+  case class RoutingInfo(routes: Vector[LnRoute]) extends SeqWrapper[LnRoute] with LnTag {
     override protected val wrapped: Vector[LnRoute] = routes
 
     override val prefix: LnTagPrefix = LnTagPrefix.RoutingInfo
@@ -243,9 +237,7 @@ object LnTag {
     def fromU5s(u5s: Vector[UInt5]): RoutingInfo = {
 
       @tailrec
-      def loop(
-          remaining: ByteVector,
-          accum: Vector[LnRoute]): Vector[LnRoute] = {
+      def loop(remaining: ByteVector, accum: Vector[LnRoute]): Vector[LnRoute] = {
         if (remaining.isEmpty) {
           accum
         } else {
@@ -328,6 +320,5 @@ object LnTag {
     }
   }
 
-  case class UnknownTag(prefix: LnTagPrefix, encoded: Vector[UInt5])
-      extends LnTag
+  case class UnknownTag(prefix: LnTagPrefix, encoded: Vector[UInt5]) extends LnTag
 }

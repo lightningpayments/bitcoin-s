@@ -4,10 +4,7 @@ import _root_.org.scalatest.compatible.Assertion
 import org.bitcoins.core.protocol.blockchain.{Block, MerkleBlock}
 import org.bitcoins.core.protocol.transaction.Transaction
 import org.bitcoins.node.{NodeCallbacks, OnMerkleBlockReceived}
-import org.bitcoins.testkitcore.gen.{
-  BlockchainElementsGenerator,
-  TransactionGenerators
-}
+import org.bitcoins.testkitcore.gen.{BlockchainElementsGenerator, TransactionGenerators}
 import org.bitcoins.testkit.node.CachedBitcoinSAppConfig
 import org.bitcoins.testkit.util.BitcoinSAsyncTest
 import org.scalacheck.Gen
@@ -31,9 +28,7 @@ class MerkleBuffersTest extends BitcoinSAsyncTest with CachedBitcoinSAppConfig {
       var receivedExpectedTXs: Option[Try[Assertion]] = None
       var callbackCount: Int = 0
       val callback: OnMerkleBlockReceived = { (_, merkleTxs) =>
-        receivedExpectedTXs = Some(
-          Try(assert(txs == merkleTxs,
-                     "Received TXs in callback was not the ones we put in")))
+        receivedExpectedTXs = Some(Try(assert(txs == merkleTxs, "Received TXs in callback was not the ones we put in")))
         callbackCount = callbackCount + 1
         Future.unit
       }
@@ -45,30 +40,22 @@ class MerkleBuffersTest extends BitcoinSAsyncTest with CachedBitcoinSAppConfig {
       val txFs = txs.map { tx =>
         MerkleBuffers
           .putTx(tx, callbacks)
-          .map(matches =>
-            assert(
-              matches,
-              s"TX ${tx.txIdBE} did not match any merkle block in MerkleBuffers"))
+          .map(matches => assert(matches, s"TX ${tx.txIdBE} did not match any merkle block in MerkleBuffers"))
       }
 
       val otherTxFs = otherTxs.map { tx =>
         MerkleBuffers
           .putTx(tx, callbacks)
-          .map(matches =>
-            assert(
-              !matches,
-              s"Unrelated TX ${tx.txIdBE} did match merkle block in MerkleBuffers"))
+          .map(matches => assert(!matches, s"Unrelated TX ${tx.txIdBE} did match merkle block in MerkleBuffers"))
       }
 
       for {
         _ <- Future.sequence(txFs)
         _ <- Future.sequence(otherTxFs)
       } yield {
-        assert(callbackCount != 0,
-               "Callback was not called after processing all TXs!")
+        assert(callbackCount != 0, "Callback was not called after processing all TXs!")
 
-        assert(callbackCount == 1,
-               s"Callback was called multiple times: $callbackCount")
+        assert(callbackCount == 1, s"Callback was called multiple times: $callbackCount")
 
         receivedExpectedTXs match {
           case None                     => fail("Callback was never called")

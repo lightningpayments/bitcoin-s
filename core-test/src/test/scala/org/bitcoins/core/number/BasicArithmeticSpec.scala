@@ -7,8 +7,7 @@ class BasicArithmeticSpec extends BitcoinSUnitTest {
 
   // We have to wrap BasicArithmetic instead of doing
   // an anonymous class, that causes overloading confusion
-  private case class NumWrapper(underlying: BigInt)
-      extends BasicArithmetic[NumWrapper] {
+  private case class NumWrapper(underlying: BigInt) extends BasicArithmetic[NumWrapper] {
 
     override def +(n: NumWrapper): NumWrapper =
       NumWrapper(underlying + n.underlying)

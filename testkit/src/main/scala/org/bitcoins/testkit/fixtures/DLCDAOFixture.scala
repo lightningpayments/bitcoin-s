@@ -81,8 +81,7 @@ trait DLCDAOFixture extends BitcoinSFixture with EmbeddedPg {
   }
 
   def withFixture(test: OneArgAsyncTest): FutureOutcome =
-    makeFixture(build = () => Future(dlcConfig.migrate()).map(_ => daos),
-                destroy = () => dropAll())(test)
+    makeFixture(build = () => Future(dlcConfig.migrate()).map(_ => daos), destroy = () => dropAll())(test)
 
   private def dropAll(): Future[Unit] = {
     val res = for {

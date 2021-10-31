@@ -1,10 +1,14 @@
 package org.bitcoins.db
 
+import cats.implicits.toFunctorOps
 import grizzled.slf4j.Logging
-import org.bitcoins.core.util.{FutureUtil, TaskUtil}
+import org.bitcoins.core.util.TaskUtil
 import org.bitcoins.db.DatabaseDriver._
 import org.flywaydb.core.Flyway
 import org.flywaydb.core.api.{FlywayException, MigrationInfoService}
+import slick.dbio.Effect
+import slick.dbio.Effect.Schema
+import slick.sql.FixedSqlAction
 import zio.Task
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -57,14 +61,13 @@ trait DbManagement extends Logging {
     * The above conditions are always the case when this is called in the current code base and will
     * stay that way so long as no one tries anything too fancy.
     */
-  implicit protected def tableQueryToWithSchema(
-      tableQuery: TableQuery[_]): TableQuery[Table[_]] = {
+  implicit protected def tableQueryToWithSchema(tableQuery: TableQuery[_]): TableQuery[Table[_]] = {
     tableQuery.asInstanceOf[TableQuery[Table[_]]]
   }
 
   def allTables: List[TableQuery[Table[_]]]
 
-  def dropAll()(implicit ec: ExecutionContext): Task[Unit] =
+  def dropAll(): Task[Unit] =
     TaskUtil
       .foldLeftAsync((), allTables.reverse)((_, table) => dropTable(table))
       .foldM(e => Task(e.printStackTrace()) *> Task.unit, _ => Task.unit)
@@ -72,18 +75,12 @@ trait DbManagement extends Logging {
   /** The query needed to create the given table */
   private def createTableQuery(
       table: TableQuery[_ <: Table[_]],
-      createIfNotExists: Boolean) = {
-    if (createIfNotExists) {
-      table.schema.createIfNotExists
-    } else {
-      table.schema.create
-    }
-  }
+      createIfNotExists: Boolean
+  ): FixedSqlAction[Unit, NoStream, Schema] =
+    if (createIfNotExists) table.schema.createIfNotExists else table.schema.create
 
   /** Creates the given table */
-  def createTable(
-      table: TableQuery[_ <: Table[_]],
-      createIfNotExists: Boolean = true)(implicit
+  def createTable(table: TableQuery[_ <: Table[_]], createIfNotExists: Boolean = true)(implicit
       ec: ExecutionContext): Future[Unit] = {
     val tableName = table.baseTableRow.tableName
     logger.debug(s"Creating table $tableName with DB config: $appConfig")
@@ -99,30 +96,26 @@ trait DbManagement extends Logging {
     Task.fromFuture(_ => database.run(query))
   }
 
-  def dropTable(tableName: String)(implicit ec: ExecutionContext): Task[Int] = {
+  def dropTable(tableName: String): Task[Int] = {
     val fullTableName =
       appConfig.schemaName.map(_ + ".").getOrElse("") + tableName
     val sql = sqlu"""DROP TABLE IF EXISTS #$fullTableName"""
 
-    Task.fromFuture { _ =>
+    Task.fromFuture { implicit ec =>
       lazy val future = database.run(sql)
       future.failed.foreach(_.printStackTrace())
       future
     }
   }
 
-  def createSchema(createIfNotExists: Boolean = true)(implicit
-      ec: ExecutionContext): Future[Unit] =
+  def createSchema(createIfNotExists: Boolean = true): Task[Unit] =
     appConfig.schemaName match {
-      case None =>
-        Future.unit
+      case None => Task.unit
       case Some(schema) =>
         val sql =
-          if (createIfNotExists)
-            sqlu"""CREATE SCHEMA IF NOT EXISTS #$schema"""
-          else
-            sqlu"""CREATE SCHEMA #$schema"""
-        database.run(sql).map(_ => ())
+          if (createIfNotExists) sqlu"""CREATE SCHEMA IF NOT EXISTS #$schema"""
+          else sqlu"""CREATE SCHEMA #$schema"""
+        Task.fromFuture(implicit ec => database.run(sql).as(()))
     }
 
   /** Returns flyway information about the state of migrations
@@ -160,9 +153,7 @@ trait DbManagement extends Logging {
       flyway.migrate()
     } catch {
       case err: FlywayException =>
-        logger.warn(
-          s"Failed to apply first round of migrations, attempting baseline and re-apply",
-          err)
+        logger.warn(s"Failed to apply first round of migrations, attempting baseline and re-apply", err)
         //maybe we have an existing database, so attempt to baseline the existing
         //database and then apply migrations again
         flyway.baseline()

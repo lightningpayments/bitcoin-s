@@ -27,8 +27,7 @@ sealed abstract class LnInvoiceGen {
   def lnHrpAmt: Gen[LnHumanReadablePart] = {
     ChainParamsGenerator.lnNetworkParams.flatMap { lnParam =>
       LnCurrencyUnitGen.realisticLnInvoice.map { lcu =>
-        LnHumanReadablePart.fromParamsAmount(network = lnParam,
-                                             amount = Some(lcu))
+        LnHumanReadablePart.fromParamsAmount(network = lnParam, amount = Some(lcu))
       }
     }
   }
@@ -65,8 +64,7 @@ sealed abstract class LnInvoiceGen {
     }
   }
 
-  def descriptionOrDescriptionHashTag: Gen[
-    Either[LnTag.DescriptionTag, LnTag.DescriptionHashTag]] = {
+  def descriptionOrDescriptionHashTag: Gen[Either[LnTag.DescriptionTag, LnTag.DescriptionHashTag]] = {
     if (scala.util.Random.nextBoolean()) {
       descriptionTag.map(Left(_))
     } else {
@@ -201,10 +199,7 @@ sealed abstract class LnInvoiceGen {
         privateKey = privateKey
       )
 
-      LnInvoice(hrp = hrp,
-                timestamp = timestamp,
-                lnTags = tags,
-                signature = signature)
+      LnInvoice(hrp = hrp, timestamp = timestamp, lnTags = tags, signature = signature)
     }
   }
 
@@ -222,10 +217,7 @@ sealed abstract class LnInvoiceGen {
         privateKey = privateKey
       )
 
-      LnInvoice(hrp = hrp,
-                timestamp = timestamp,
-                lnTags = tags,
-                signature = signature)
+      LnInvoice(hrp = hrp, timestamp = timestamp, lnTags = tags, signature = signature)
     }
   }
 

@@ -19,8 +19,7 @@ class RawTransactionOutPointParserTest extends BitcoinSUnitTest {
   "RawTransactionOutPointParser" must "read a raw outpoint into a native scala TransactionOutPoint" in {
     val outPoint = RawTransactionOutPointParser.read(rawOutPoint)
     outPoint.txId.hex must be(
-      BytesUtil.flipEndianness(
-        "e17d316006850c1764301befcf82c8c84cd1794f3f0d0382b296df2edab0d685"))
+      BytesUtil.flipEndianness("e17d316006850c1764301befcf82c8c84cd1794f3f0d0382b296df2edab0d685"))
     outPoint.vout must be(UInt32.zero)
   }
 
@@ -28,8 +27,7 @@ class RawTransactionOutPointParserTest extends BitcoinSUnitTest {
     val outPoint = RawTransactionOutPointParser.read(rawOutPointLargeVout)
     outPoint.vout must be(UInt32(52))
     outPoint.txId.hex must be(
-      BytesUtil.flipEndianness(
-        "0140d0ed6c9feeb68ea727723a82bbaf0d143fc1d3810265d4dca7ebe6e380df"))
+      BytesUtil.flipEndianness("0140d0ed6c9feeb68ea727723a82bbaf0d143fc1d3810265d4dca7ebe6e380df"))
   }
   it must "write a TransactionOutPoint to a serialized format" in {
     val outPoint = RawTransactionOutPointParser.read(rawOutPoint)
@@ -50,8 +48,7 @@ class RawTransactionOutPointParserTest extends BitcoinSUnitTest {
 
     val outPoint = RawTransactionOutPointParser.read(rawOutPoint)
     outPoint.txId.hex must be(
-      BytesUtil.flipEndianness(
-        "70309e35d67db5f2397669eac4f86f9d93704247706f4f3f1bb56f03bdad37fc"))
+      BytesUtil.flipEndianness("70309e35d67db5f2397669eac4f86f9d93704247706f4f3f1bb56f03bdad37fc"))
     val serializedOutPoint = RawTransactionOutPointParser.write(outPoint)
     encode(serializedOutPoint) must be(rawOutPoint)
   }

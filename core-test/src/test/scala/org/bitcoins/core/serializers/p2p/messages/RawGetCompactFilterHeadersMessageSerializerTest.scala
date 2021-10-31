@@ -34,13 +34,11 @@ class RawGetCompactFilterHeadersMessageSerializerTest extends BitcoinSUnitTest {
 
     val anotherMessage = GetCompactFilterHeadersMessage(
       0x0180,
-      DoubleSha256Digest.fromHex(
-        "8000000000000000000000000000000000000000000000000000000000000001"))
+      DoubleSha256Digest.fromHex("8000000000000000000000000000000000000000000000000000000000000001"))
 
     val anotherBytes = anotherMessage.bytes
 
-    assert(
-      anotherMessage == GetCompactFilterHeadersMessage.fromBytes(anotherBytes))
+    assert(anotherMessage == GetCompactFilterHeadersMessage.fromBytes(anotherBytes))
   }
 
 }

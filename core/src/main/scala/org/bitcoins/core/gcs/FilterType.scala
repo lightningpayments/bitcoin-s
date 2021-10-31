@@ -23,8 +23,7 @@ object FilterType extends Factory[FilterType] {
     bytes match {
       case Basic.bytes => Basic
       case other: ByteVector =>
-        throw new IllegalArgumentException(
-          s"'${other.toHex}' is not a known filter type")
+        throw new IllegalArgumentException(s"'${other.toHex}' is not a known filter type")
     }
 
   /** Currently the only defined filter type */
@@ -39,8 +38,7 @@ object FilterType extends Factory[FilterType] {
     knownFilterTypes.get(filterType) match {
       case Some(code) => code
       case None =>
-        throw new IllegalArgumentException(
-          s"Unknown filter type: ${filterType}")
+        throw new IllegalArgumentException(s"Unknown filter type: ${filterType}")
     }
 
   def byCode(code: Short): FilterType =

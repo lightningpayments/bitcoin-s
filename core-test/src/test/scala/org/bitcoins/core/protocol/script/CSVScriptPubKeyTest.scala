@@ -1,12 +1,7 @@
 package org.bitcoins.core.protocol.script
 
 import org.bitcoins.core.script.bitwise.OP_EQUALVERIFY
-import org.bitcoins.core.script.constant.{
-  BytesToPushOntoStack,
-  ScriptConstant,
-  ScriptNumber,
-  ScriptToken
-}
+import org.bitcoins.core.script.constant.{BytesToPushOntoStack, ScriptConstant, ScriptNumber, ScriptToken}
 import org.bitcoins.core.script.crypto.{OP_CHECKSIG, OP_HASH160}
 import org.bitcoins.core.script.locktime.OP_CHECKSEQUENCEVERIFY
 import org.bitcoins.core.script.stack.{OP_DROP, OP_DUP}
@@ -31,10 +26,7 @@ class CSVScriptPubKeyTest extends BitcoinSUnitTest {
 
   "CSVScriptPubKey" must "return the expected asm from hex" in {
     val expectedCSVAsm: Seq[ScriptToken] =
-      List(BytesToPushOntoStack(4),
-           ScriptConstant("6202b257"),
-           OP_CHECKSEQUENCEVERIFY,
-           OP_DROP) ++ expectedAsm
+      List(BytesToPushOntoStack(4), ScriptConstant("6202b257"), OP_CHECKSEQUENCEVERIFY, OP_DROP) ++ expectedAsm
     val csv = CSVScriptPubKey(ScriptNumber(1471283810), scriptPubKey)
     csv.asm must be(expectedCSVAsm)
   }

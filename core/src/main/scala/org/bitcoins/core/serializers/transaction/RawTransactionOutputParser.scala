@@ -3,17 +3,13 @@ package org.bitcoins.core.serializers.transaction
 import org.bitcoins.core.currency.{CurrencyUnits, Satoshis}
 import org.bitcoins.core.protocol.transaction.TransactionOutput
 import org.bitcoins.core.serializers.script.RawScriptPubKeyParser
-import org.bitcoins.core.serializers.{
-  RawBitcoinSerializer,
-  RawSatoshisSerializer
-}
+import org.bitcoins.core.serializers.{RawBitcoinSerializer, RawSatoshisSerializer}
 import scodec.bits.ByteVector
 
 /** Created by chris on 1/11/16.
   * [[https://bitcoin.org/en/developer-reference#txout]]
   */
-sealed abstract class RawTransactionOutputParser
-    extends RawBitcoinSerializer[TransactionOutput] {
+sealed abstract class RawTransactionOutputParser extends RawBitcoinSerializer[TransactionOutput] {
 
   /** Writes a single transaction output */
   override def write(output: TransactionOutput): ByteVector = {

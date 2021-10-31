@@ -16,10 +16,8 @@ class NetworkHeaderTest extends BitcoinSUnitTest {
     val messageHeader =
       NetworkHeader(TestNet3, P2PMessageTestUtil.versionMessage)
     messageHeader.network must be(TestNet3)
-    messageHeader.commandName must be(
-      P2PMessageTestUtil.versionMessage.commandName)
-    messageHeader.payloadSize must be(
-      UInt32(P2PMessageTestUtil.versionMessage.bytes.size))
+    messageHeader.commandName must be(P2PMessageTestUtil.versionMessage.commandName)
+    messageHeader.payloadSize must be(UInt32(P2PMessageTestUtil.versionMessage.bytes.size))
     messageHeader.checksum must be(
       CryptoUtil
         .doubleSHA256(P2PMessageTestUtil.versionMessage.bytes)
@@ -38,10 +36,7 @@ class NetworkHeaderTest extends BitcoinSUnitTest {
   it must "throw on messages of bad length" in {
     intercept[IllegalArgumentException] {
       val commandName = Random.shuffle(NetworkPayload.commandNames).head
-      NetworkHeader(MainNet,
-                    commandName,
-                    payloadSize = UInt32.one,
-                    checksum = ByteVector.empty)
+      NetworkHeader(MainNet, commandName, payloadSize = UInt32.one, checksum = ByteVector.empty)
     }
   }
 

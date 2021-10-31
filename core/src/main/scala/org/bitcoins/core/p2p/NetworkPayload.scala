@@ -130,10 +130,7 @@ object GetBlocksMessage extends Factory[GetBlocksMessage] {
   *
   * @see [[https://bitcoin.org/en/developer-reference#getdata]]
   */
-case class GetDataMessage(
-    inventoryCount: CompactSizeUInt,
-    inventories: Seq[Inventory])
-    extends DataPayload {
+case class GetDataMessage(inventoryCount: CompactSizeUInt, inventories: Seq[Inventory]) extends DataPayload {
   override def commandName = NetworkPayload.getDataCommandName
 
   override def bytes: ByteVector = RawGetDataMessageSerializer.write(this)
@@ -223,9 +220,7 @@ object GetHeadersMessage extends Factory[GetHeadersMessage] {
   }
 
   /** Creates a [[GetHeadersMessage]] with the default protocol version */
-  def apply(
-      hashes: Seq[DoubleSha256Digest],
-      hashStop: DoubleSha256Digest): GetHeadersMessage = {
+  def apply(hashes: Seq[DoubleSha256Digest], hashStop: DoubleSha256Digest): GetHeadersMessage = {
     GetHeadersMessage(ProtocolVersion.default, hashes, hashStop)
   }
 
@@ -259,8 +254,7 @@ object GetHeadersMessage extends Factory[GetHeadersMessage] {
   *                This 0x00 is called the transaction count, but because the headers message
   *                doesn’t include any transactions, the transaction count is always zero.
   */
-case class HeadersMessage(count: CompactSizeUInt, headers: Vector[BlockHeader])
-    extends DataPayload {
+case class HeadersMessage(count: CompactSizeUInt, headers: Vector[BlockHeader]) extends DataPayload {
 
   override def commandName = NetworkPayload.headersCommandName
 
@@ -332,17 +326,13 @@ trait InventoryMessage extends DataPayload {
   */
 object InventoryMessage extends Factory[InventoryMessage] {
 
-  private case class InventoryMessageImpl(
-      inventoryCount: CompactSizeUInt,
-      inventories: Seq[Inventory])
+  private case class InventoryMessageImpl(inventoryCount: CompactSizeUInt, inventories: Seq[Inventory])
       extends InventoryMessage
 
   override def fromBytes(bytes: ByteVector): InventoryMessage =
     RawInventoryMessageSerializer.read(bytes)
 
-  def apply(
-      inventoryCount: CompactSizeUInt,
-      inventories: Seq[Inventory]): InventoryMessage = {
+  def apply(inventoryCount: CompactSizeUInt, inventories: Seq[Inventory]): InventoryMessage = {
     InventoryMessageImpl(inventoryCount, inventories)
   }
 
@@ -408,9 +398,7 @@ trait NotFoundMessage extends DataPayload with InventoryMessage {
   */
 object NotFoundMessage extends Factory[NotFoundMessage] {
 
-  private case class NotFoundMessageImpl(
-      inventoryCount: CompactSizeUInt,
-      inventories: Seq[Inventory])
+  private case class NotFoundMessageImpl(inventoryCount: CompactSizeUInt, inventories: Seq[Inventory])
       extends NotFoundMessage
 
   def fromBytes(bytes: ByteVector): NotFoundMessage =
@@ -421,9 +409,7 @@ object NotFoundMessage extends Factory[NotFoundMessage] {
     apply(count, inventories)
   }
 
-  def apply(
-      inventoryCount: CompactSizeUInt,
-      inventories: Seq[Inventory]): NotFoundMessage = {
+  def apply(inventoryCount: CompactSizeUInt, inventories: Seq[Inventory]): NotFoundMessage = {
     NotFoundMessageImpl(inventoryCount, inventories)
   }
 }
@@ -477,10 +463,7 @@ trait AddrMessage extends GossipAddrMessage {
   */
 object AddrMessage extends Factory[AddrMessage] {
 
-  private case class AddrMessageImpl(
-      ipCount: CompactSizeUInt,
-      addresses: Seq[NetworkIpAddress])
-      extends AddrMessage
+  private case class AddrMessageImpl(ipCount: CompactSizeUInt, addresses: Seq[NetworkIpAddress]) extends AddrMessage
 
   def fromBytes(bytes: ByteVector): AddrMessage =
     RawAddrMessageSerializer.read(bytes)
@@ -490,9 +473,7 @@ object AddrMessage extends Factory[AddrMessage] {
     apply(count, addresses)
   }
 
-  def apply(
-      ipCount: CompactSizeUInt,
-      addresses: Seq[NetworkIpAddress]): AddrMessage =
+  def apply(ipCount: CompactSizeUInt, addresses: Seq[NetworkIpAddress]): AddrMessage =
     AddrMessageImpl(ipCount, addresses)
 
 }
@@ -512,16 +493,11 @@ sealed trait AddrV2Message extends GossipAddrMessage {
   override def commandName: String = NetworkPayload.addrV2CommandName
 
   override def bytes: ByteVector =
-    time.bytes ++ services.bytes ++ ByteVector.fromByte(
-      networkId) ++ addrBytes ++ port.bytes
+    time.bytes ++ services.bytes ++ ByteVector.fromByte(networkId) ++ addrBytes ++ port.bytes
 }
 
 /** addrv2 message that contains an IPv4 address */
-case class IPv4AddrV2Message(
-    time: UInt32,
-    services: CompactSizeUInt,
-    addr: InetAddress,
-    port: UInt16)
+case class IPv4AddrV2Message(time: UInt32, services: CompactSizeUInt, addr: InetAddress, port: UInt16)
     extends AddrV2Message {
   override val networkId: Byte = AddrV2Message.IPV4_NETWORK_BYTE
 
@@ -532,11 +508,7 @@ case class IPv4AddrV2Message(
 }
 
 /** addrv2 message that contains an IPv6 address */
-case class IPv6AddrV2Message(
-    time: UInt32,
-    services: CompactSizeUInt,
-    addr: InetAddress,
-    port: UInt16)
+case class IPv6AddrV2Message(time: UInt32, services: CompactSizeUInt, addr: InetAddress, port: UInt16)
     extends AddrV2Message {
   override val networkId: Byte = AddrV2Message.IPV6_NETWORK_BYTE
 
@@ -547,56 +519,35 @@ case class IPv6AddrV2Message(
 }
 
 /** addrv2 message that contains a TorV2 address */
-case class TorV2AddrV2Message(
-    time: UInt32,
-    services: CompactSizeUInt,
-    addrBytes: ByteVector,
-    port: UInt16)
+case class TorV2AddrV2Message(time: UInt32, services: CompactSizeUInt, addrBytes: ByteVector, port: UInt16)
     extends AddrV2Message {
-  require(
-    addrBytes.size == AddrV2Message.TOR_V2_ADDR_LENGTH,
-    s"TorV2 addresses are ${AddrV2Message.TOR_V2_ADDR_LENGTH} bytes, got ${addrBytes.size}")
+  require(addrBytes.size == AddrV2Message.TOR_V2_ADDR_LENGTH,
+          s"TorV2 addresses are ${AddrV2Message.TOR_V2_ADDR_LENGTH} bytes, got ${addrBytes.size}")
   override val networkId: Byte = AddrV2Message.TOR_V2_NETWORK_BYTE
 }
 
 /** addrv2 message that contains a TorV3 address */
-case class TorV3AddrV2Message(
-    time: UInt32,
-    services: CompactSizeUInt,
-    addrBytes: ByteVector,
-    port: UInt16)
+case class TorV3AddrV2Message(time: UInt32, services: CompactSizeUInt, addrBytes: ByteVector, port: UInt16)
     extends AddrV2Message {
-  require(
-    addrBytes.size == AddrV2Message.TOR_V3_ADDR_LENGTH,
-    s"TorV3 addresses are ${AddrV2Message.TOR_V3_ADDR_LENGTH} bytes, got ${addrBytes.size}")
+  require(addrBytes.size == AddrV2Message.TOR_V3_ADDR_LENGTH,
+          s"TorV3 addresses are ${AddrV2Message.TOR_V3_ADDR_LENGTH} bytes, got ${addrBytes.size}")
   override val networkId: Byte = AddrV2Message.TOR_V3_NETWORK_BYTE
 }
 
 /** addrv2 message that contains an I2P address */
-case class I2PAddrV2Message(
-    time: UInt32,
-    services: CompactSizeUInt,
-    addrBytes: ByteVector,
-    port: UInt16)
+case class I2PAddrV2Message(time: UInt32, services: CompactSizeUInt, addrBytes: ByteVector, port: UInt16)
     extends AddrV2Message {
-  require(
-    addrBytes.size == AddrV2Message.I2P_ADDR_LENGTH,
-    s"I2P addresses are ${AddrV2Message.I2P_ADDR_LENGTH} bytes, got ${addrBytes.size}")
+  require(addrBytes.size == AddrV2Message.I2P_ADDR_LENGTH,
+          s"I2P addresses are ${AddrV2Message.I2P_ADDR_LENGTH} bytes, got ${addrBytes.size}")
   override val networkId: Byte = AddrV2Message.I2P_NETWORK_BYTE
 }
 
 /** addrv2 message that contains an CJDNS address */
-case class CJDNSAddrV2Message(
-    time: UInt32,
-    services: CompactSizeUInt,
-    addrBytes: ByteVector,
-    port: UInt16)
+case class CJDNSAddrV2Message(time: UInt32, services: CompactSizeUInt, addrBytes: ByteVector, port: UInt16)
     extends AddrV2Message {
-  require(addrBytes.head == 0xfc.toByte,
-          s"CJDNS addresses start with 0xFC, got $addrBytes")
-  require(
-    addrBytes.size == AddrV2Message.CJDNS_ADDR_LENGTH,
-    s"CJDNS addresses are ${AddrV2Message.CJDNS_ADDR_LENGTH} bytes, got ${addrBytes.size}")
+  require(addrBytes.head == 0xfc.toByte, s"CJDNS addresses start with 0xFC, got $addrBytes")
+  require(addrBytes.size == AddrV2Message.CJDNS_ADDR_LENGTH,
+          s"CJDNS addresses are ${AddrV2Message.CJDNS_ADDR_LENGTH} bytes, got ${addrBytes.size}")
   override val networkId: Byte = AddrV2Message.CJDNS_NETWORK_BYTE
 }
 
@@ -608,8 +559,7 @@ case class UnknownNetworkAddrV2Message(
     addrBytes: ByteVector,
     port: UInt16)
     extends AddrV2Message {
-  require(!AddrV2Message.knownNetworkBytes.contains(networkId),
-          s"$networkId is a known network byte")
+  require(!AddrV2Message.knownNetworkBytes.contains(networkId), s"$networkId is a known network byte")
 }
 
 /** The companion object for an AddrV2Message
@@ -732,8 +682,7 @@ trait FeeFilterMessage extends ControlPayload {
 
 object FeeFilterMessage extends Factory[FeeFilterMessage] {
 
-  private case class FeeFilterMessageImpl(feeRate: SatoshisPerKiloByte)
-      extends FeeFilterMessage
+  private case class FeeFilterMessageImpl(feeRate: SatoshisPerKiloByte) extends FeeFilterMessage
 
   override def fromBytes(bytes: ByteVector): FeeFilterMessage = {
     RawFeeFilterMessageSerializer.read(bytes)
@@ -777,17 +726,12 @@ trait FilterAddMessage extends ControlPayload {
   */
 object FilterAddMessage extends Factory[FilterAddMessage] {
 
-  private case class FilterAddMessageImpl(
-      elementSize: CompactSizeUInt,
-      element: ByteVector)
-      extends FilterAddMessage
+  private case class FilterAddMessageImpl(elementSize: CompactSizeUInt, element: ByteVector) extends FilterAddMessage
 
   override def fromBytes(bytes: ByteVector): FilterAddMessage =
     RawFilterAddMessageSerializer.read(bytes)
 
-  def apply(
-      elementSize: CompactSizeUInt,
-      element: ByteVector): FilterAddMessage = {
+  def apply(elementSize: CompactSizeUInt, element: ByteVector): FilterAddMessage = {
     FilterAddMessageImpl(elementSize, element)
   }
 
@@ -828,14 +772,11 @@ trait FilterLoadMessage extends ControlPayload {
   */
 object FilterLoadMessage extends Factory[FilterLoadMessage] {
 
-  private case class FilterLoadMessageImpl(bloomFilter: BloomFilter)
-      extends FilterLoadMessage {
-    require(
-      bloomFilter.filterSize.num.toLong <= BloomFilter.maxSize.toLong,
-      "Can only have a maximum of 36,000 bytes in our filter, got: " + bloomFilter.data.size)
-    require(
-      bloomFilter.hashFuncs <= BloomFilter.maxHashFuncs,
-      "Can only have a maximum of 50 hashFuncs inside FilterLoadMessage, got: " + bloomFilter.hashFuncs)
+  private case class FilterLoadMessageImpl(bloomFilter: BloomFilter) extends FilterLoadMessage {
+    require(bloomFilter.filterSize.num.toLong <= BloomFilter.maxSize.toLong,
+            "Can only have a maximum of 36,000 bytes in our filter, got: " + bloomFilter.data.size)
+    require(bloomFilter.hashFuncs <= BloomFilter.maxHashFuncs,
+            "Can only have a maximum of 50 hashFuncs inside FilterLoadMessage, got: " + bloomFilter.hashFuncs)
     require(
       bloomFilter.filterSize.num.toLong == bloomFilter.data.size,
       "Filter Size compactSizeUInt and actual filter size were different, " +
@@ -856,11 +797,7 @@ object FilterLoadMessage extends Factory[FilterLoadMessage] {
     FilterLoadMessage(bloomFilter)
   }
 
-  def apply(
-      filter: ByteVector,
-      hashFuncs: UInt32,
-      tweak: UInt32,
-      flags: BloomFlag): FilterLoadMessage = {
+  def apply(filter: ByteVector, hashFuncs: UInt32, tweak: UInt32, flags: BloomFlag): FilterLoadMessage = {
     val filterSize = CompactSizeUInt(UInt64(filter.length))
     FilterLoadMessage(filterSize, filter, hashFuncs, tweak, flags)
   }
@@ -1006,11 +943,7 @@ object RejectMessage extends Factory[RejectMessage] {
   def fromBytes(bytes: ByteVector): RejectMessage =
     RawRejectMessageSerializer.read(bytes)
 
-  def apply(
-      message: String,
-      code: Char,
-      reason: String,
-      extra: ByteVector): RejectMessage = {
+  def apply(message: String, code: Char, reason: String, extra: ByteVector): RejectMessage = {
     val messageSize: CompactSizeUInt = CompactSizeUInt(UInt64(message.size))
     val reasonSize: CompactSizeUInt = CompactSizeUInt(UInt64(reason.size))
     RejectMessage(messageSize, message, code, reasonSize, reason, extra)
@@ -1041,10 +974,7 @@ case object VerAckMessage extends ControlPayload {
 
 /** @see [[https://github.com/bitcoin/bips/blob/master/bip-0157.mediawiki#getcfilters BIP157]]
   */
-case class GetCompactFiltersMessage(
-    filterType: FilterType,
-    startHeight: UInt32,
-    stopHash: DoubleSha256Digest)
+case class GetCompactFiltersMessage(filterType: FilterType, startHeight: UInt32, stopHash: DoubleSha256Digest)
     extends DataPayload {
   val commandName: String = NetworkPayload.getCompactFiltersCommandName
 
@@ -1058,9 +988,7 @@ object GetCompactFiltersMessage extends Factory[GetCompactFiltersMessage] {
 
   /** Constructs a message with the default basic filter type */
   def apply(startHeight: Int, stopHash: DoubleSha256Digest) =
-    new GetCompactFiltersMessage(FilterType.Basic,
-                                 UInt32(startHeight),
-                                 stopHash)
+    new GetCompactFiltersMessage(FilterType.Basic, UInt32(startHeight), stopHash)
 }
 
 /** @see [[https://github.com/bitcoin/bips/blob/master/bip-0157.mediawiki#cfilter BIP157]]
@@ -1072,8 +1000,7 @@ case class CompactFilterMessage(
 ) extends DataPayload {
 
   /** The number of filter bytes in this message */
-  val numFilterBytes: CompactSizeUInt = CompactSizeUInt(
-    UInt64(filterBytes.length))
+  val numFilterBytes: CompactSizeUInt = CompactSizeUInt(UInt64(filterBytes.length))
 
   val commandName: String = NetworkPayload.compactFilterCommandName
   def bytes: ByteVector = RawCompactFilterMessageSerializer.write(this)
@@ -1082,9 +1009,7 @@ case class CompactFilterMessage(
 object CompactFilterMessage extends Factory[CompactFilterMessage] {
 
   /** Constructs a message from the tiven blockhash and filter */
-  def apply(
-      blockHash: DoubleSha256Digest,
-      filter: GolombFilter): CompactFilterMessage = {
+  def apply(blockHash: DoubleSha256Digest, filter: GolombFilter): CompactFilterMessage = {
     val filterBytes = filter.bytes
     new CompactFilterMessage(FilterType.Basic, blockHash, filterBytes)
   }
@@ -1109,18 +1034,14 @@ case class GetCompactFilterHeadersMessage(
     RawGetCompactFilterHeadersMessageSerializer.write(this)
 }
 
-object GetCompactFilterHeadersMessage
-    extends Factory[GetCompactFilterHeadersMessage] {
+object GetCompactFilterHeadersMessage extends Factory[GetCompactFilterHeadersMessage] {
 
   /** Constructs a message from the given startheight and stophash */
   def apply(
       startHeight: Int,
       stopHash: DoubleSha256Digest,
-      filterType: FilterType =
-        FilterType.Basic): GetCompactFilterHeadersMessage = {
-    new GetCompactFilterHeadersMessage(filterType,
-                                       UInt32(startHeight),
-                                       stopHash)
+      filterType: FilterType = FilterType.Basic): GetCompactFilterHeadersMessage = {
+    new GetCompactFilterHeadersMessage(filterType, UInt32(startHeight), stopHash)
   }
 
   def fromBytes(bytes: ByteVector): GetCompactFilterHeadersMessage =
@@ -1145,8 +1066,7 @@ case class CompactFilterHeadersMessage(
     extends DataPayload {
 
   /** The number of hashes in this message */
-  val filterHashesLength: CompactSizeUInt = CompactSizeUInt(
-    UInt64(filterHashes.length))
+  val filterHashesLength: CompactSizeUInt = CompactSizeUInt(UInt64(filterHashes.length))
 
   val commandName: String = NetworkPayload.compactFilterHeadersCommandName
   def bytes: ByteVector = RawCompactFilterHeadersMessageSerializer.write(this)
@@ -1173,8 +1093,7 @@ case class CompactFilterHeadersMessage(
   }
 }
 
-object CompactFilterHeadersMessage
-    extends Factory[CompactFilterHeadersMessage] {
+object CompactFilterHeadersMessage extends Factory[CompactFilterHeadersMessage] {
 
   def fromBytes(bytes: ByteVector): CompactFilterHeadersMessage =
     RawCompactFilterHeadersMessageSerializer.read(bytes)
@@ -1182,18 +1101,14 @@ object CompactFilterHeadersMessage
 
 /** @see [[https://github.com/bitcoin/bips/blob/master/bip-0157.mediawiki#getcfcheckpt BIP157]]
   */
-case class GetCompactFilterCheckPointMessage(
-    filterType: FilterType,
-    stopHash: DoubleSha256Digest)
-    extends DataPayload {
+case class GetCompactFilterCheckPointMessage(filterType: FilterType, stopHash: DoubleSha256Digest) extends DataPayload {
   val commandName: String = NetworkPayload.getCompactFilterCheckpointCommandName
 
   def bytes: ByteVector =
     RawGetCompactFilterCheckpointMessageSerializer.write(this)
 }
 
-object GetCompactFilterCheckPointMessage
-    extends Factory[GetCompactFilterCheckPointMessage] {
+object GetCompactFilterCheckPointMessage extends Factory[GetCompactFilterCheckPointMessage] {
 
   def apply(stopHash: DoubleSha256Digest): GetCompactFilterCheckPointMessage = {
     new GetCompactFilterCheckPointMessage(FilterType.Basic, stopHash)
@@ -1212,8 +1127,7 @@ case class CompactFilterCheckPointMessage(
     extends DataPayload {
 
   /** The amount of filter headers in this message */
-  val filterHeadersLength: CompactSizeUInt = CompactSizeUInt(
-    UInt64(filterHeaders.length))
+  val filterHeadersLength: CompactSizeUInt = CompactSizeUInt(UInt64(filterHeaders.length))
 
   val commandName: String = NetworkPayload.compactFilterCheckpointCommandName
 
@@ -1232,8 +1146,7 @@ case class CompactFilterCheckPointMessage(
   }
 }
 
-object CompactFilterCheckPointMessage
-    extends Factory[CompactFilterCheckPointMessage] {
+object CompactFilterCheckPointMessage extends Factory[CompactFilterCheckPointMessage] {
 
   def fromBytes(bytes: ByteVector): CompactFilterCheckPointMessage =
     RawCompactFilterCheckpointMessageSerializer.read(bytes)
@@ -1396,12 +1309,7 @@ object VersionMessage extends Factory[VersionMessage] {
       receivingIpAddress: InetAddress,
       transmittingIpAddress: InetAddress,
       relay: Boolean): VersionMessage = {
-    VersionMessage(network,
-                   ProtocolVersion.userAgent,
-                   Int32.zero,
-                   receivingIpAddress,
-                   transmittingIpAddress,
-                   relay)
+    VersionMessage(network, ProtocolVersion.userAgent, Int32.zero, receivingIpAddress, transmittingIpAddress, relay)
   }
 
   def apply(
@@ -1522,12 +1430,9 @@ object NetworkPayload {
     * @param networkHeader the header for the message on the p2p network
     * @param payloadBytes the payload corresponding to the header on the p2p network
     */
-  def apply(
-      networkHeader: NetworkHeader,
-      payloadBytes: ByteVector): NetworkPayload = {
+  def apply(networkHeader: NetworkHeader, payloadBytes: ByteVector): NetworkPayload = {
     //the commandName in the network header tells us what payload type this is
-    val deserializer: ByteVector => NetworkPayload = readers(
-      networkHeader.commandName)
+    val deserializer: ByteVector => NetworkPayload = readers(networkHeader.commandName)
     deserializer(payloadBytes)
   }
 
@@ -1536,9 +1441,7 @@ object NetworkPayload {
     * @param networkHeader the header for the message on the p2p network
     * @param payloadHex the hexadecimal representation of the payload
     */
-  def apply(
-      networkHeader: NetworkHeader,
-      payloadHex: String): NetworkPayload = {
+  def apply(networkHeader: NetworkHeader, payloadHex: String): NetworkPayload = {
     NetworkPayload(networkHeader, BytesUtil.decodeHex(payloadHex))
   }
 }

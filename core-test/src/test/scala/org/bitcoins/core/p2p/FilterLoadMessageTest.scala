@@ -22,11 +22,7 @@ class FilterLoadMessageTest extends BitcoinSUnitTest {
       val hashFuncs = UInt32.one
       val tweak = UInt32.zero
       val flags = BloomUpdateAll
-      val bloom = BloomFilter(filterSize = size,
-                              data = data,
-                              hashFuncs = hashFuncs,
-                              tweak = tweak,
-                              flags = flags)
+      val bloom = BloomFilter(filterSize = size, data = data, hashFuncs = hashFuncs, tweak = tweak, flags = flags)
       FilterLoadMessage(bloom)
     }
   }
@@ -38,11 +34,7 @@ class FilterLoadMessageTest extends BitcoinSUnitTest {
       val hashFuncs = UInt32(51)
       val tweak = UInt32.zero
       val flags = BloomUpdateAll
-      val bloom = BloomFilter(filterSize = size,
-                              data = data,
-                              hashFuncs = hashFuncs,
-                              tweak = tweak,
-                              flags = flags)
+      val bloom = BloomFilter(filterSize = size, data = data, hashFuncs = hashFuncs, tweak = tweak, flags = flags)
       FilterLoadMessage(bloom)
     }
   }
@@ -54,11 +46,7 @@ class FilterLoadMessageTest extends BitcoinSUnitTest {
       val hashFuncs = UInt32.one
       val tweak = UInt32.zero
       val flags = BloomUpdateAll
-      val bloom = BloomFilter(filterSize = size,
-                              data = data,
-                              hashFuncs = hashFuncs,
-                              tweak = tweak,
-                              flags = flags)
+      val bloom = BloomFilter(filterSize = size, data = data, hashFuncs = hashFuncs, tweak = tweak, flags = flags)
       FilterLoadMessage(bloom)
     }
   }

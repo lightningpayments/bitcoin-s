@@ -13,8 +13,7 @@ class AdditionTrieNodeTest extends BitcoinSUnitTest {
   val nonces: Int = 10
 
   @tailrec
-  private def computeAllPrefixes(accum: Vector[Vector[Vector[Int]]] =
-    Vector.empty): Vector[Vector[Int]] = {
+  private def computeAllPrefixes(accum: Vector[Vector[Vector[Int]]] = Vector.empty): Vector[Vector[Int]] = {
     if (accum.length == nonces) {
       accum.flatten
     } else {
@@ -43,9 +42,8 @@ class AdditionTrieNodeTest extends BitcoinSUnitTest {
   it should "correctly compute all elements" in {
     val trie = newTrie()
     allPrefixes.foreach { prefix =>
-      val ptsToAdd = prefix.zipWithIndex.map {
-        case (outcomeIndex, nonceIndex) =>
-          preComputeTable(nonceIndex)(outcomeIndex)
+      val ptsToAdd = prefix.zipWithIndex.map { case (outcomeIndex, nonceIndex) =>
+        preComputeTable(nonceIndex)(outcomeIndex)
       }
       val expected = CryptoUtil.combinePubKeys(ptsToAdd)
 

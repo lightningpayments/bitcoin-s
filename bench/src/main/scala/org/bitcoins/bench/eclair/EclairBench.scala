@@ -69,30 +69,26 @@ object EclairBench extends App with EclairRpcTestUtil {
       }
   }
 
-  def sendPayments(
-      network: EclairNetwork,
-      amount: MilliSatoshis,
-      count: Int): Future[Vector[PaymentId]] =
+  def sendPayments(network: EclairNetwork, amount: MilliSatoshis, count: Int): Future[Vector[PaymentId]] =
     for {
       _ <- network.testEclairNode.getInfo
       paymentIds <- Future.sequence(network.networkEclairNodes.map { node =>
-        1.to(count).foldLeft(Future.successful(Vector.empty[PaymentId])) {
-          (accF, _) =>
-            for {
-              acc <- accF
-              invoice <-
-                network.testEclairNode
-                  .createInvoice("test " + System.currentTimeMillis(), amount)
-              paymentHash = invoice.lnTags.paymentHash.hash
-              _ = logPaymentHash(paymentHash)
-              p = promises.get(paymentHash)
-              id <- node.payInvoice(invoice)
-              _ = logPaymentId(paymentHash, id)
-              _ <- p.future
-            } yield {
-              Progress.inc()
-              acc :+ id
-            }
+        1.to(count).foldLeft(Future.successful(Vector.empty[PaymentId])) { (accF, _) =>
+          for {
+            acc <- accF
+            invoice <-
+              network.testEclairNode
+                .createInvoice("test " + System.currentTimeMillis(), amount)
+            paymentHash = invoice.lnTags.paymentHash.hash
+            _ = logPaymentHash(paymentHash)
+            p = promises.get(paymentHash)
+            id <- node.payInvoice(invoice)
+            _ = logPaymentId(paymentHash, id)
+            _ <- p.future
+          } yield {
+            Progress.inc()
+            acc :+ id
+          }
         }
       })
     } yield paymentIds.flatten
@@ -103,23 +99,19 @@ object EclairBench extends App with EclairRpcTestUtil {
       _ <- network.testEclairNode.connectToWebSocket { event =>
         val _ = logEvent(event)
       }
-      _ = println(
-        s"Set up $NetworkSize nodes, that will send $PaymentCount payments to the test node each")
-      _ = println(
-        s"Test node data directory: ${network.testEclairNode.instance.authCredentials.datadir
-          .getOrElse("")}")
+      _ = println(s"Set up $NetworkSize nodes, that will send $PaymentCount payments to the test node each")
+      _ = println(s"Test node data directory: ${network.testEclairNode.instance.authCredentials.datadir
+        .getOrElse("")}")
       _ = println("Testing...")
       _ <- sendPayments(network, PaymentAmount, PaymentCount)
-      _ <- TestAsyncUtil.retryUntilSatisfied(
-        condition = paymentLog.size() == NetworkSize * PaymentCount,
-        interval = 1.second,
-        maxTries = 100)
+      _ <- TestAsyncUtil.retryUntilSatisfied(condition = paymentLog.size() == NetworkSize * PaymentCount,
+                                             interval = 1.second,
+                                             maxTries = 100)
       _ <-
         TestAsyncUtil
-          .retryUntilSatisfied(
-            condition = EclairBenchUtil.paymentLogValues().forall(_.completed),
-            interval = 1.second,
-            maxTries = 100)
+          .retryUntilSatisfied(condition = EclairBenchUtil.paymentLogValues().forall(_.completed),
+                               interval = 1.second,
+                               maxTries = 100)
           .recover { case ex: Throwable => ex.printStackTrace() }
       _ = println("\nDone!")
     } yield {

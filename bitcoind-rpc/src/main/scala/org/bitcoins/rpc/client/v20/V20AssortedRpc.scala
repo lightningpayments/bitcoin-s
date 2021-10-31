@@ -15,16 +15,14 @@ import scala.concurrent.Future
 trait V20AssortedRpc { self: Client =>
 
   def dumpTxOutSet(path: Path): Future[DumpTxOutSetResult] = {
-    bitcoindCall[DumpTxOutSetResult]("dumptxoutset",
-                                     List(Json.toJson(path.toString)))
+    bitcoindCall[DumpTxOutSetResult]("dumptxoutset", List(Json.toJson(path.toString)))
   }
 
   def generateToDescriptor(
       numBlocks: Int,
       descriptor: String,
       maxTries: Long = 1000000): Future[Vector[DoubleSha256DigestBE]] = {
-    bitcoindCall[Vector[DoubleSha256DigestBE]](
-      "generatetodescriptor",
-      List(JsNumber(numBlocks), JsString(descriptor), JsNumber(maxTries)))
+    bitcoindCall[Vector[DoubleSha256DigestBE]]("generatetodescriptor",
+                                               List(JsNumber(numBlocks), JsString(descriptor), JsNumber(maxTries)))
   }
 }

@@ -10,8 +10,7 @@ class ExecuteDLCDialog
     extends DLCDialog[ExecuteDLC](
       "DLC Close",
       "Enter DLC execution info",
-      Vector(DLCDialog.dlcContractIdStr -> new TextField(),
-             DLCDialog.dlcOracleSigStr -> new TextField())) {
+      Vector(DLCDialog.dlcContractIdStr -> new TextField(), DLCDialog.dlcOracleSigStr -> new TextField())) {
   import DLCDialog._
 
   override def constructFromInput(inputs: Map[String, Node]): ExecuteDLC = {
@@ -22,8 +21,6 @@ class ExecuteDLCDialog
       OracleAttestmentTLV.fromHex(str.trim)
     }
 
-    ExecuteDLC(ByteVector.fromValidHex(contractId),
-               oracleSigs.toVector,
-               noBroadcast = false)
+    ExecuteDLC(ByteVector.fromValidHex(contractId), oracleSigs.toVector, noBroadcast = false)
   }
 }

@@ -18,15 +18,13 @@ object Base58ValidTestCase {
       val jsArray: Arr = value match {
         case array: Arr => array
         case _: Value =>
-          throw new RuntimeException(
-            "Core test case must be in the format of js array")
+          throw new RuntimeException("Core test case must be in the format of js array")
       }
       val elements: Vector[Value] = jsArray.value.toVector
       val configParams: ConfigParams =
         upickle.default.read[ConfigParams](elements(2))
 
-      def addressOrPrivateKey(
-          elements: Vector[Value]): Either[Address, String] =
+      def addressOrPrivateKey(elements: Vector[Value]): Either[Address, String] =
         if (configParams.isPrivKey) {
           Right(elements(0).str)
         } else {
@@ -34,8 +32,7 @@ object Base58ValidTestCase {
           Left(addr)
         }
 
-      def isHashOrPrivKey(
-          elements: Vector[Value]): Either[Sha256Hash160Digest, ECPrivateKey] =
+      def isHashOrPrivKey(elements: Vector[Value]): Either[Sha256Hash160Digest, ECPrivateKey] =
         configParams.addrTypeOrIsCompressed match {
           case a if a.isLeft =>
             Left(Sha256Hash160Digest(elements(1).str))
@@ -44,8 +41,6 @@ object Base58ValidTestCase {
           case _ =>
             sys.error(s"Should be left or right")
         }
-      Base58ValidTestCase(addressOrPrivateKey(elements),
-                          isHashOrPrivKey(elements),
-                          configParams)
+      Base58ValidTestCase(addressOrPrivateKey(elements), isHashOrPrivKey(elements), configParams)
     }
 }

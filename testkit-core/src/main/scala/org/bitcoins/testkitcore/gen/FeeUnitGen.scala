@@ -72,10 +72,7 @@ abstract class FeeUnitGen {
   }
 
   def feeUnit: Gen[FeeUnit] =
-    Gen.oneOf(satsPerByte,
-              satsPerKiloByte,
-              satsPerVirtualByte,
-              satsPerKiloWeight)
+    Gen.oneOf(satsPerByte, satsPerKiloByte, satsPerVirtualByte, satsPerKiloWeight)
 
   /** Generates a FeeUnit based on the maxFee allowed for a transaction */
   def feeUnit(maxFee: Long): Gen[FeeUnit] = {

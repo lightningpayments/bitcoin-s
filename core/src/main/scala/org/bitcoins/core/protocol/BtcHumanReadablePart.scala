@@ -42,8 +42,7 @@ object BtcHumanReadablePart extends StringFactory[BtcHumanReadablePart] {
       case "tb"   => tb
       case "bcrt" => bcrt // Bitcoin Core specific
       case _ =>
-        throw new IllegalArgumentException(
-          s"Could not construct BTC HRP from $str")
+        throw new IllegalArgumentException(s"Could not construct BTC HRP from $str")
     }
 
   def apply(network: NetworkParameters): BtcHumanReadablePart =

@@ -140,9 +140,7 @@ trait CryptoRuntime {
     * @return a (pub1, pub2) tuple where pub1 and pub2 are candidates public keys. If you have the recovery id  then use
     *         pub1 if the recovery id is even and pub2 if it is odd
     */
-  def recoverPublicKey(
-      signature: ECDigitalSignature,
-      message: ByteVector): (ECPublicKey, ECPublicKey)
+  def recoverPublicKey(signature: ECDigitalSignature, message: ByteVector): (ECPublicKey, ECPublicKey)
 
   // The tag "BIP0340/aux"
   private val schnorrAuxTagBytes = {
@@ -172,17 +170,11 @@ trait CryptoRuntime {
 
   def sign(privateKey: ECPrivateKey, dataToSign: ByteVector): ECDigitalSignature
 
-  def signWithEntropy(
-      privateKey: ECPrivateKey,
-      bytes: ByteVector,
-      entropy: ByteVector): ECDigitalSignature
+  def signWithEntropy(privateKey: ECPrivateKey, bytes: ByteVector, entropy: ByteVector): ECDigitalSignature
 
   def secKeyVerify(privateKeybytes: ByteVector): Boolean
 
-  def verify(
-      publicKey: PublicKey,
-      data: ByteVector,
-      signature: ECDigitalSignature): Boolean
+  def verify(publicKey: PublicKey, data: ByteVector, signature: ECDigitalSignature): Boolean
 
   def decompressed(pubKeyBytes: ByteVector): ByteVector = {
     decodePoint(pubKeyBytes) match {
@@ -194,9 +186,7 @@ trait CryptoRuntime {
     }
   }
 
-  def decompressed[PK <: PublicKey](
-      pubKeyBytes: ByteVector,
-      fromBytes: ByteVector => PK): PK = {
+  def decompressed[PK <: PublicKey](pubKeyBytes: ByteVector, fromBytes: ByteVector => PK): PK = {
     fromBytes(decompressed(pubKeyBytes))
   }
 
@@ -224,9 +214,7 @@ trait CryptoRuntime {
         val pk1 = p1.toPublicKey
         val pk2 = p2.toPublicKey
 
-        if (
-          (pk1.bytes.head ^ pk2.bytes.head) == 0x01 && pk1.bytes.tail == pk2.bytes.tail
-        ) {
+        if ((pk1.bytes.head ^ pk2.bytes.head) == 0x01 && pk1.bytes.tail == pk2.bytes.tail) {
           SecpPointInfinity
         } else {
           add(pk1, pk2).toPoint
@@ -245,8 +233,7 @@ trait CryptoRuntime {
     val sumPoint = summandPoints.reduce[SecpPoint](add(_, _))
     sumPoint match {
       case SecpPointInfinity =>
-        throw new IllegalArgumentException(
-          "Sum result was 0x00, an invalid public key.")
+        throw new IllegalArgumentException("Sum result was 0x00, an invalid public key.")
       case p: SecpPointFinite => p.toPublicKey
     }
   }
@@ -264,10 +251,7 @@ trait CryptoRuntime {
     decodePoint(pubKey.decompressedBytes)
   }
 
-  def schnorrSign(
-      dataToSign: ByteVector,
-      privateKey: ECPrivateKey,
-      auxRand: ByteVector): SchnorrDigitalSignature = {
+  def schnorrSign(dataToSign: ByteVector, privateKey: ECPrivateKey, auxRand: ByteVector): SchnorrDigitalSignature = {
     val nonceKey =
       SchnorrNonce.kFromBipSchnorr(privateKey, dataToSign, auxRand)
 
@@ -281,8 +265,7 @@ trait CryptoRuntime {
     val rx = nonceKey.schnorrNonce
     val k = nonceKey.nonceKey.fieldElement
     val x = privateKey.schnorrKey.fieldElement
-    val e = sha256SchnorrChallenge(
-      rx.bytes ++ privateKey.schnorrPublicKey.bytes ++ dataToSign).bytes
+    val e = sha256SchnorrChallenge(rx.bytes ++ privateKey.schnorrPublicKey.bytes ++ dataToSign).bytes
 
     val challenge = x.multiply(FieldElement(e))
     val sig = k.add(challenge)
@@ -290,17 +273,13 @@ trait CryptoRuntime {
     SchnorrDigitalSignature(rx, sig)
   }
 
-  def schnorrVerify(
-      data: ByteVector,
-      schnorrPubKey: SchnorrPublicKey,
-      signature: SchnorrDigitalSignature): Boolean = {
+  def schnorrVerify(data: ByteVector, schnorrPubKey: SchnorrPublicKey, signature: SchnorrDigitalSignature): Boolean = {
     val rx = signature.rx
     val sT = Try(signature.sig.toPrivateKey)
 
     sT match {
       case Success(s) =>
-        val eBytes = sha256SchnorrChallenge(
-          rx.bytes ++ schnorrPubKey.bytes ++ data).bytes
+        val eBytes = sha256SchnorrChallenge(rx.bytes ++ schnorrPubKey.bytes ++ data).bytes
 
         val e = FieldElement(eBytes)
         val negE = e.negate
@@ -311,8 +290,7 @@ trait CryptoRuntime {
         computedR match {
           case SecpPointInfinity => false
           case point: SecpPointFinite =>
-            !point.y.toBigInteger.testBit(
-              0) && point.toPublicKey.schnorrNonce == rx
+            !point.y.toBigInteger.testBit(0) && point.toPublicKey.schnorrNonce == rx
         }
       case Failure(_) => false
     }
@@ -323,8 +301,7 @@ trait CryptoRuntime {
       nonce: SchnorrNonce,
       pubKey: SchnorrPublicKey,
       compressed: Boolean): ECPublicKey = {
-    val eBytes = sha256SchnorrChallenge(
-      nonce.bytes ++ pubKey.bytes ++ data).bytes
+    val eBytes = sha256SchnorrChallenge(nonce.bytes ++ pubKey.bytes ++ data).bytes
 
     val e = FieldElement(eBytes)
 
@@ -346,9 +323,7 @@ trait CryptoRuntime {
     AdaptorUtil.adaptorSign(key, adaptorPoint, msg, auxRand)
   }
 
-  def adaptorComplete(
-      key: ECPrivateKey,
-      adaptorSignature: ECAdaptorSignature): ECDigitalSignature = {
+  def adaptorComplete(key: ECPrivateKey, adaptorSignature: ECAdaptorSignature): ECDigitalSignature = {
     AdaptorUtil.adaptorComplete(key, adaptorSignature)
   }
 
@@ -378,22 +353,11 @@ trait CryptoRuntime {
   /** https://github.com/bitcoin/bips/blob/master/bip-0158.mediawiki#hashing-data-objects */
   def sipHash(item: ByteVector, key: SipHashKey): Long
 
-  def pbkdf2WithSha512(
-      pass: String,
-      salt: String,
-      iterationCount: Int,
-      derivedKeyLength: Int): ByteVector = {
-    pbkdf2WithSha512(ByteVector(pass.getBytes),
-                     ByteVector(salt.getBytes),
-                     iterationCount,
-                     derivedKeyLength)
+  def pbkdf2WithSha512(pass: String, salt: String, iterationCount: Int, derivedKeyLength: Int): ByteVector = {
+    pbkdf2WithSha512(ByteVector(pass.getBytes), ByteVector(salt.getBytes), iterationCount, derivedKeyLength)
   }
 
-  def pbkdf2WithSha512(
-      pass: ByteVector,
-      salt: ByteVector,
-      iterationCount: Int,
-      derivedKeyLength: Int): ByteVector
+  def pbkdf2WithSha512(pass: ByteVector, salt: ByteVector, iterationCount: Int, derivedKeyLength: Int): ByteVector
 
   def randomBytes(n: Int): ByteVector
 

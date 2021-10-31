@@ -2,21 +2,9 @@ package org.bitcoins.core.api.wallet.db
 
 import org.bitcoins.core.api.db.DbRowAutoInc
 import org.bitcoins.core.currency.CurrencyUnit
-import org.bitcoins.core.hd.{
-  HDPath,
-  LegacyHDPath,
-  NestedSegWitHDPath,
-  SegWitHDPath
-}
-import org.bitcoins.core.protocol.script.{
-  ScriptPubKey,
-  ScriptWitness,
-  WitnessScriptPubKey
-}
-import org.bitcoins.core.protocol.transaction.{
-  TransactionOutPoint,
-  TransactionOutput
-}
+import org.bitcoins.core.hd.{HDPath, LegacyHDPath, NestedSegWitHDPath, SegWitHDPath}
+import org.bitcoins.core.protocol.script.{ScriptPubKey, ScriptWitness, WitnessScriptPubKey}
+import org.bitcoins.core.protocol.transaction.{TransactionOutPoint, TransactionOutput}
 import org.bitcoins.core.wallet.utxo.TxoState
 import org.bitcoins.crypto.DoubleSha256DigestBE
 
@@ -74,16 +62,13 @@ case class UTXORecord(
         )
 
       case _ =>
-        throw new IllegalArgumentException(
-          s"Could not construct SpendingInfoDb from bad record: $this.")
+        throw new IllegalArgumentException(s"Could not construct SpendingInfoDb from bad record: $this.")
     }
 }
 
 object UTXORecord {
 
-  def fromSpendingInfoDb(
-      spendingInfoDb: SpendingInfoDb,
-      scriptPubKeyId: Long): UTXORecord =
+  def fromSpendingInfoDb(spendingInfoDb: SpendingInfoDb, scriptPubKeyId: Long): UTXORecord =
     UTXORecord(
       spendingInfoDb.outPoint,
       spendingInfoDb.txid, // TXID

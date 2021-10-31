@@ -8,11 +8,7 @@ import org.scalatest.flatspec.FixtureAsyncFlatSpec
 
 import scala.concurrent.Future
 
-trait TestAppConfigFixture
-    extends FixtureAsyncFlatSpec
-    with BeforeAndAfterAll
-    with BitcoinSFixture
-    with EmbeddedPg {
+trait TestAppConfigFixture extends FixtureAsyncFlatSpec with BeforeAndAfterAll with BitcoinSFixture with EmbeddedPg {
 
   override type FixtureParam = TestAppConfig
 
@@ -25,10 +21,8 @@ trait TestAppConfigFixture
   }
 
   def getFreshTestConfig(): Future[TestAppConfig] = {
-    val config = TestAppConfig(
-      BitcoinSTestAppConfig.tmpDir(),
-      BitcoinSTestAppConfig.configWithEmbeddedDb(Some(ProjectType.Test),
-                                                 pgUrl = pgUrl))
+    val config = TestAppConfig(BitcoinSTestAppConfig.tmpDir(),
+                               BitcoinSTestAppConfig.configWithEmbeddedDb(Some(ProjectType.Test), pgUrl = pgUrl))
 
     val _ = config.migrate()
     config.start().map { _ =>

@@ -21,9 +21,8 @@ trait BitcoinSFixture extends BitcoinSAsyncFixtureTest {
     *   makeDependentFixture(createBitcoindChainHandler, destroyBitcoindChainHandler)
     * }}}
     */
-  def makeDependentFixture[T](
-      build: () => Future[T],
-      destroy: T => Future[Any])(test: OneArgAsyncTest): FutureOutcome = {
+  def makeDependentFixture[T](build: () => Future[T], destroy: T => Future[Any])(
+      test: OneArgAsyncTest): FutureOutcome = {
     val fixtureF: Future[T] = build()
 
     val outcomeF: Future[Outcome] = fixtureF
@@ -59,8 +58,7 @@ trait BitcoinSFixture extends BitcoinSAsyncFixtureTest {
     *   makeFixture(createBlockHeaderDAO, destroyBlockHeaderTable)
     * }}}
     */
-  def makeFixture[T](build: () => Future[T], destroy: () => Future[Any])(
-      test: OneArgAsyncTest): FutureOutcome = {
+  def makeFixture[T](build: () => Future[T], destroy: () => Future[Any])(test: OneArgAsyncTest): FutureOutcome = {
     val outcomeF = build().flatMap { fixture =>
       test(fixture.asInstanceOf[FixtureParam]).toFuture
     }
@@ -86,9 +84,7 @@ trait BitcoinSFixture extends BitcoinSAsyncFixtureTest {
     *   composeBuilders(createBlockHeaderDAO, createChainHandlerFromBlockHeaderDAO)
     * }}}
     */
-  def composeBuilders[T, U](
-      builder: () => Future[T],
-      dependentBuilder: T => Future[U]): () => Future[(T, U)] =
+  def composeBuilders[T, U](builder: () => Future[T], dependentBuilder: T => Future[U]): () => Future[(T, U)] =
     () => {
       builder().flatMap { first =>
         dependentBuilder(first).map { second =>
@@ -131,8 +127,8 @@ trait BitcoinSFixture extends BitcoinSAsyncFixtureTest {
       processResult: (T, U) => Future[C]
   ): () => Future[C] =
     () => {
-      composeBuilders(builder, dependentBuilder)().flatMap {
-        case (first, second) => processResult(first, second)
+      composeBuilders(builder, dependentBuilder)().flatMap { case (first, second) =>
+        processResult(first, second)
       }
     }
 
@@ -140,8 +136,8 @@ trait BitcoinSFixture extends BitcoinSAsyncFixtureTest {
 
 object BitcoinSFixture {
 
-  def createBitcoindWithFunds(versionOpt: Option[BitcoindVersion] = None)(
-      implicit system: ActorSystem): Future[BitcoindRpcClient] = {
+  def createBitcoindWithFunds(versionOpt: Option[BitcoindVersion] = None)(implicit
+      system: ActorSystem): Future[BitcoindRpcClient] = {
     import system.dispatcher
     for {
       bitcoind <- createBitcoind(versionOpt = versionOpt)

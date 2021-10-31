@@ -11,14 +11,11 @@ import play.api.libs.json.{JsError, JsSuccess, Json}
 
 import scala.util.{Failure, Success, Try}
 
-case class BitcoinerLiveFeeRateProvider(
-    minutes: Int,
-    proxyParams: Option[Socks5ProxyParams])(implicit
+case class BitcoinerLiveFeeRateProvider(minutes: Int, proxyParams: Option[Socks5ProxyParams])(implicit
     override val system: ActorSystem)
     extends CachedHttpFeeRateProvider[SatoshisPerVirtualByte] {
 
-  require(validMinutes.contains(minutes),
-          s"$minutes is not a valid selection, must be from $validMinutes")
+  require(validMinutes.contains(minutes), s"$minutes is not a valid selection, must be from $validMinutes")
 
   override val uri: Uri =
     Uri("https://bitcoiner.live/api/fees/estimates/latest")
@@ -29,25 +26,19 @@ case class BitcoinerLiveFeeRateProvider(
       case JsSuccess(response, _) =>
         Success(response.estimates(minutes).sat_per_vbyte)
       case JsError(error) =>
-        Failure(
-          new RuntimeException(
-            s"Unexpected error when parsing response: $error"))
+        Failure(new RuntimeException(s"Unexpected error when parsing response: $error"))
     }
   }
 }
 
-object BitcoinerLiveFeeRateProvider
-    extends FeeProviderFactory[BitcoinerLiveFeeRateProvider] {
+object BitcoinerLiveFeeRateProvider extends FeeProviderFactory[BitcoinerLiveFeeRateProvider] {
 
   final val validMinutes =
     Vector(30, 60, 120, 180, 360, 720, 1440)
 
-  override def fromBlockTarget(
-      blocks: Int,
-      proxyParams: Option[Socks5ProxyParams])(implicit
+  override def fromBlockTarget(blocks: Int, proxyParams: Option[Socks5ProxyParams])(implicit
       system: ActorSystem): BitcoinerLiveFeeRateProvider = {
-    require(blocks > 0,
-            s"Cannot have a negative or zero block target, got $blocks")
+    require(blocks > 0, s"Cannot have a negative or zero block target, got $blocks")
 
     val blockTargets = validMinutes.map(_ / 10)
 

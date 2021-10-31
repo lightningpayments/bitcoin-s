@@ -32,8 +32,7 @@ object ConditionalPath {
     override val condition: Boolean = true
   }
 
-  case class ConditionFalse(nextCondition: ConditionalPath)
-      extends Conditional {
+  case class ConditionFalse(nextCondition: ConditionalPath) extends Conditional {
     override val condition: Boolean = false
   }
 
@@ -43,9 +42,7 @@ object ConditionalPath {
   def toVector(conditionalPath: ConditionalPath): Vector[Boolean] = {
 
     @tailrec
-    def loop(
-        current: ConditionalPath,
-        accum: Vector[Boolean]): Vector[Boolean] = {
+    def loop(current: ConditionalPath, accum: Vector[Boolean]): Vector[Boolean] = {
       current match {
         case cond: ConditionTrue =>
           loop(cond.nextCondition, accum :+ true)

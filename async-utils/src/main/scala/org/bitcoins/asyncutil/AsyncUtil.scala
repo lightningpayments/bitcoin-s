@@ -10,9 +10,7 @@ import scala.concurrent.duration.{DurationInt, FiniteDuration}
 abstract class AsyncUtil extends AsyncUtilApi {
   import AsyncUtil.DEFAULT_MAX_TRIES
 
-  private def retryRunnable(
-      condition: => Boolean,
-      p: Promise[Boolean]): Runnable =
+  private def retryRunnable(condition: => Boolean, p: Promise[Boolean]): Runnable =
     new Runnable {
 
       override def run(): Unit = {
@@ -24,8 +22,7 @@ abstract class AsyncUtil extends AsyncUtilApi {
   def retryUntilSatisfied(
       condition: => Boolean,
       interval: FiniteDuration = AsyncUtil.DEFAULT_INTERVAL,
-      maxTries: Int = DEFAULT_MAX_TRIES)(implicit
-      ec: ExecutionContext): Future[Unit] = {
+      maxTries: Int = DEFAULT_MAX_TRIES)(implicit ec: ExecutionContext): Future[Unit] = {
     val f = () => Future(condition)
     retryUntilSatisfiedF(f, interval, maxTries)
   }
@@ -40,8 +37,7 @@ abstract class AsyncUtil extends AsyncUtilApi {
   def retryUntilSatisfiedF(
       conditionF: () => Future[Boolean],
       interval: FiniteDuration = AsyncUtil.DEFAULT_INTERVAL,
-      maxTries: Int = DEFAULT_MAX_TRIES)(implicit
-      ec: ExecutionContext): Future[Unit] = {
+      maxTries: Int = DEFAULT_MAX_TRIES)(implicit ec: ExecutionContext): Future[Unit] = {
     val stackTrace: Array[StackTraceElement] =
       Thread.currentThread().getStackTrace
 
@@ -51,10 +47,7 @@ abstract class AsyncUtil extends AsyncUtilApi {
                                    stackTrace = stackTrace)
   }
 
-  case class RpcRetryException(
-      message: String,
-      caller: Array[StackTraceElement])
-      extends Exception(message) {
+  case class RpcRetryException(message: String, caller: Array[StackTraceElement]) extends Exception(message) {
 
     /*
     Someone who calls a method in this class will be interested
@@ -64,10 +57,8 @@ abstract class AsyncUtil extends AsyncUtilApi {
      *
      * This trims the top of the stack trace to exclude these internal calls.
      */
-    val internalFiles: Vector[String] = Vector("AsyncUtil.scala",
-                                               "RpcUtil.scala",
-                                               "TestAsyncUtil.scala",
-                                               "TestRpcUtil.scala")
+    val internalFiles: Vector[String] =
+      Vector("AsyncUtil.scala", "RpcUtil.scala", "TestAsyncUtil.scala", "TestRpcUtil.scala")
 
     private val relevantStackTrace =
       caller.tail.dropWhile(elem => internalFiles.contains(elem.getFileName))
@@ -81,22 +72,19 @@ abstract class AsyncUtil extends AsyncUtilApi {
       interval: FiniteDuration,
       counter: Int = 0,
       maxTries: Int,
-      stackTrace: Array[StackTraceElement])(implicit
-      ec: ExecutionContext): Future[Unit] = {
+      stackTrace: Array[StackTraceElement])(implicit ec: ExecutionContext): Future[Unit] = {
     conditionF().flatMap { condition =>
       if (condition) {
         Future.unit
       } else if (counter == maxTries) {
-        Future.failed(RpcRetryException(
-          s"Condition timed out after $maxTries attempts with interval=$interval waiting periods",
-          stackTrace))
+        Future.failed(
+          RpcRetryException(s"Condition timed out after $maxTries attempts with interval=$interval waiting periods",
+                            stackTrace))
       } else {
         val p = Promise[Boolean]()
         val runnable = retryRunnable(condition, p)
 
-        AsyncUtil.scheduler.scheduleOnce(interval.toMillis,
-                                         TimeUnit.MILLISECONDS,
-                                         runnable)
+        AsyncUtil.scheduler.scheduleOnce(interval.toMillis, TimeUnit.MILLISECONDS, runnable)
 
         p.future.flatMap {
           case true => Future.unit
@@ -121,8 +109,7 @@ abstract class AsyncUtil extends AsyncUtilApi {
   def awaitCondition(
       condition: () => Boolean,
       interval: FiniteDuration = AsyncUtil.DEFAULT_INTERVAL,
-      maxTries: Int = DEFAULT_MAX_TRIES)(implicit
-      ec: ExecutionContext): Future[Unit] = {
+      maxTries: Int = DEFAULT_MAX_TRIES)(implicit ec: ExecutionContext): Future[Unit] = {
 
     //type hackery here to go from () => Boolean to () => Future[Boolean]
     //to make sure we re-evaluate every time retryUntilSatisfied is called
@@ -135,21 +122,16 @@ abstract class AsyncUtil extends AsyncUtilApi {
   def awaitConditionF(
       conditionF: () => Future[Boolean],
       interval: FiniteDuration = AsyncUtil.DEFAULT_INTERVAL,
-      maxTries: Int = DEFAULT_MAX_TRIES)(implicit
-      ec: ExecutionContext): Future[Unit] = {
+      maxTries: Int = DEFAULT_MAX_TRIES)(implicit ec: ExecutionContext): Future[Unit] = {
 
-    retryUntilSatisfiedF(conditionF = conditionF,
-                         interval = interval,
-                         maxTries = maxTries)
+    retryUntilSatisfiedF(conditionF = conditionF, interval = interval, maxTries = maxTries)
 
   }
 
   override def nonBlockingSleep(duration: FiniteDuration): Future[Unit] = {
     val p = Promise[Unit]()
     val r: Runnable = () => p.success(())
-    AsyncUtil.scheduler.scheduleOnce(duration.toMillis,
-                                     TimeUnit.MILLISECONDS,
-                                     r)
+    AsyncUtil.scheduler.scheduleOnce(duration.toMillis, TimeUnit.MILLISECONDS, r)
     p.future
   }
 }

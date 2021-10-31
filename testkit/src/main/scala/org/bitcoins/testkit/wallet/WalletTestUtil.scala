@@ -6,10 +6,7 @@ import org.bitcoins.core.crypto._
 import org.bitcoins.core.currency._
 import org.bitcoins.core.hd._
 import org.bitcoins.core.number.UInt32
-import org.bitcoins.core.protocol.blockchain.{
-  ChainParams,
-  RegTestNetChainParams
-}
+import org.bitcoins.core.protocol.blockchain.{ChainParams, RegTestNetChainParams}
 import org.bitcoins.core.protocol.script._
 import org.bitcoins.core.protocol.transaction._
 import org.bitcoins.core.protocol.{Bech32Address, P2SHAddress}
@@ -51,40 +48,25 @@ object WalletTestUtil {
              "car"))
 
   lazy val sampleSegwitPath =
-    SegWitHDPath(hdCoinType,
-                 accountIndex = 0,
-                 HDChainType.External,
-                 addressIndex = 0)
+    SegWitHDPath(hdCoinType, accountIndex = 0, HDChainType.External, addressIndex = 0)
 
   /** Sample legacy HD path */
-  lazy val sampleLegacyPath = LegacyHDPath(hdCoinType,
-                                           accountIndex = 0,
-                                           HDChainType.Change,
-                                           addressIndex = 0)
+  lazy val sampleLegacyPath = LegacyHDPath(hdCoinType, accountIndex = 0, HDChainType.Change, addressIndex = 0)
 
   lazy val sampleNestedSegwitPath: NestedSegWitHDPath =
-    NestedSegWitHDPath(hdCoinType,
-                       accountIndex = 0,
-                       HDChainType.External,
-                       addressIndex = 0)
+    NestedSegWitHDPath(hdCoinType, accountIndex = 0, HDChainType.External, addressIndex = 0)
 
   private def freshXpub(): ExtPublicKey =
     CryptoGenerators.extPublicKey.sampleSome
 
   /** Checks that the given values are the same-ish, save for fee-level deviations */
-  def isCloseEnough(
-      first: CurrencyUnit,
-      second: CurrencyUnit,
-      delta: CurrencyUnit = 300.sats): Boolean = {
-    Math.abs(
-      first.satoshis.toLong - second.satoshis.toLong) <= delta.satoshis.toLong
+  def isCloseEnough(first: CurrencyUnit, second: CurrencyUnit, delta: CurrencyUnit = 300.sats): Boolean = {
+    Math.abs(first.satoshis.toLong - second.satoshis.toLong) <= delta.satoshis.toLong
   }
 
   def isFeeRateCloseEnough(outgoingTx: OutgoingTransactionDb): Boolean = {
     TxUtil
-      .isValidFeeRange(outgoingTx.expectedFee,
-                       outgoingTx.actualFee,
-                       outgoingTx.feeRate)
+      .isValidFeeRange(outgoingTx.expectedFee, outgoingTx.actualFee, outgoingTx.feeRate)
       .isSuccess
   }
 
@@ -100,8 +82,7 @@ object WalletTestUtil {
     AccountDb(freshXpub(), defaultHdAccount)
 
   def nestedSegWitAccountDb: AccountDb =
-    AccountDb(freshXpub(),
-              HDAccount(HDCoin(HDPurposes.NestedSegWit, hdCoinType), 0))
+    AccountDb(freshXpub(), HDAccount(HDCoin(HDPurposes.NestedSegWit, hdCoinType), 0))
 
   private def randomScriptWitness: ScriptWitness =
     P2WPKHWitnessV0(freshXpub().key)
@@ -113,9 +94,7 @@ object WalletTestUtil {
   private def randomBlockHash =
     CryptoGenerators.doubleSha256Digest.sampleSome.flip
 
-  def sampleSegwitUTXO(
-      spk: ScriptPubKey,
-      state: TxoState): SegwitV0SpendingInfo = {
+  def sampleSegwitUTXO(spk: ScriptPubKey, state: TxoState): SegwitV0SpendingInfo = {
     val outpoint = TransactionOutPoint(randomTXID, randomVout)
     val output =
       TransactionOutput(1.bitcoin, spk)
@@ -141,9 +120,7 @@ object WalletTestUtil {
     )
   }
 
-  def sampleLegacyUTXO(
-      spk: ScriptPubKey,
-      state: TxoState): LegacySpendingInfo = {
+  def sampleLegacyUTXO(spk: ScriptPubKey, state: TxoState): LegacySpendingInfo = {
     val outpoint =
       TransactionOutPoint(randomTXID, randomVout)
     val output =
@@ -165,9 +142,7 @@ object WalletTestUtil {
                        spendingTxIdOpt = spendingTxIdOpt)
   }
 
-  def sampleNestedSegwitUTXO(
-      ecPublicKey: ECPublicKey,
-      state: TxoState): NestedSegwitV0SpendingInfo = {
+  def sampleNestedSegwitUTXO(ecPublicKey: ECPublicKey, state: TxoState): NestedSegwitV0SpendingInfo = {
     val wpkh = P2WPKHWitnessSPKV0(ecPublicKey)
     val outpoint = TransactionOutPoint(randomTXID, randomVout)
     val output =
@@ -207,18 +182,10 @@ object WalletTestUtil {
     val scriptWitness = P2WPKHWitnessV0(pubkey)
     val address = Bech32Address.apply(wspk, WalletTestUtil.networkParam)
 
-    SegWitAddressDb(path = path,
-                    ecPublicKey = pubkey,
-                    hashedPubkey,
-                    address,
-                    scriptWitness,
-                    scriptPubKey = wspk)
+    SegWitAddressDb(path = path, ecPublicKey = pubkey, hashedPubkey, address, scriptWitness, scriptPubKey = wspk)
   }
 
-  def insertDummyIncomingTransaction(
-      daos: WalletDAOs,
-      utxo: SpendingInfoDb,
-      confirmed: Boolean = true)(implicit
+  def insertDummyIncomingTransaction(daos: WalletDAOs, utxo: SpendingInfoDb, confirmed: Boolean = true)(implicit
       ec: ExecutionContext): Future[IncomingTransactionDb] = {
     val blockHashOpt = if (confirmed) Some(randomBlockHash) else None
 
@@ -254,17 +221,11 @@ object WalletTestUtil {
     val spk = P2SHScriptPubKey(wpkh)
     val address = P2SHAddress.apply(spk, WalletTestUtil.networkParam)
 
-    NestedSegWitAddressDb(path = path,
-                          ecPublicKey = pubkey,
-                          hashedPubkey,
-                          address,
-                          witness,
-                          scriptPubKey = spk)
+    NestedSegWitAddressDb(path = path, ecPublicKey = pubkey, hashedPubkey, address, witness, scriptPubKey = spk)
   }
 
   /** Inserts an account, address and finally a UTXO */
-  def insertLegacyUTXO(daos: WalletDAOs, state: TxoState)(implicit
-      ec: ExecutionContext): Future[LegacySpendingInfo] = {
+  def insertLegacyUTXO(daos: WalletDAOs, state: TxoState)(implicit ec: ExecutionContext): Future[LegacySpendingInfo] = {
     for {
       account <- daos.accountDAO.create(WalletTestUtil.firstAccountDb)
       addr <- daos.addressDAO.create(getAddressDb(account))

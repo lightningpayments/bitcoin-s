@@ -27,9 +27,8 @@ class WalletUnitTest extends BitcoinSWalletTest {
 
   behavior of "Wallet - unit test"
 
-  it must "write the mnemonic seed in the correct directory" in {
-    wallet: Wallet =>
-      assert(Files.exists(wallet.walletConfig.seedPath))
+  it must "write the mnemonic seed in the correct directory" in { wallet: Wallet =>
+    assert(Files.exists(wallet.walletConfig.seedPath))
   }
 
   it should "create a new wallet" in { wallet: Wallet =>
@@ -55,9 +54,7 @@ class WalletUnitTest extends BitcoinSWalletTest {
   }
 
   it should "know what the last address index is" in { wallet =>
-    def getMostRecent(
-        hdAccount: HDAccount,
-        chain: HDChainType): Future[AddressDb] = {
+    def getMostRecent(hdAccount: HDAccount, chain: HDChainType): Future[AddressDb] = {
       val recentOptFut: Future[Option[AddressDb]] = chain match {
         case Change =>
           wallet.addressDAO.findMostRecentChange(hdAccount)
@@ -71,10 +68,7 @@ class WalletUnitTest extends BitcoinSWalletTest {
       }
     }
 
-    def assertIndexIs(
-        hdAccount: HDAccount,
-        chain: HDChainType,
-        addrIndex: Int): Future[Assertion] = {
+    def assertIndexIs(hdAccount: HDAccount, chain: HDChainType, addrIndex: Int): Future[Assertion] = {
       getMostRecent(hdAccount, chain) map { addr =>
         assert(addr.path.address.index == addrIndex)
       }
@@ -86,9 +80,7 @@ class WalletUnitTest extends BitcoinSWalletTest {
     /** Generate some addresses, and verify that the correct address index is
       * being reported
       */
-    def testChain(
-        hdAccount: HDAccount,
-        chain: HDChainType): Future[Assertion] = {
+    def testChain(hdAccount: HDAccount, chain: HDChainType): Future[Assertion] = {
       val getAddrFunc: () => Future[BitcoinAddress] = chain match {
         case Change   => wallet.getNewChangeAddress _
         case External => wallet.getNewAddress _
@@ -103,8 +95,7 @@ class WalletUnitTest extends BitcoinSWalletTest {
           }
           addrF.map {
             case Some(addr) =>
-              fail(
-                s"Found ${addr.address} $chain address although there was no previous addreses generated")
+              fail(s"Found ${addr.address} $chain address although there was no previous addreses generated")
             case None =>
           }
         }
@@ -128,9 +119,7 @@ class WalletUnitTest extends BitcoinSWalletTest {
   it should "match block filters" in { wallet: Wallet =>
     for {
       height <- wallet.chainQueryApi.getFilterCount()
-      filtersResponse <- chainQueryApi.getFiltersBetweenHeights(startHeight = 0,
-                                                                endHeight =
-                                                                  height)
+      filtersResponse <- chainQueryApi.getFiltersBetweenHeights(startHeight = 0, endHeight = height)
       matched <- wallet.findMatches(
         filters = filtersResponse,
         scripts = Vector(
@@ -139,9 +128,7 @@ class WalletUnitTest extends BitcoinSWalletTest {
         parallelismLevel = 1
       )
     } yield {
-      assert(
-        Vector(BlockMatchingResponse(blockHash = testBlockHash,
-                                     blockHeight = 1)) == matched)
+      assert(Vector(BlockMatchingResponse(blockHash = testBlockHash, blockHeight = 1)) == matched)
     }
   }
 
@@ -157,41 +144,34 @@ class WalletUnitTest extends BitcoinSWalletTest {
 
   }
 
-  it must "be able to detect an incompatible key manager with a wallet" in {
-    wallet: Wallet =>
-      recoverToSucceededIf[RuntimeException] {
-        Wallet
-          .initialize(wallet, bip39PasswordOpt)
-          .flatMap { _ =>
-            //use a BIP39 password to make the key-managers different
-            Wallet.initialize(
-              wallet,
-              Some("random-password-to-make-key-managers-different"))
-          }
-      }
+  it must "be able to detect an incompatible key manager with a wallet" in { wallet: Wallet =>
+    recoverToSucceededIf[RuntimeException] {
+      Wallet
+        .initialize(wallet, bip39PasswordOpt)
+        .flatMap { _ =>
+          //use a BIP39 password to make the key-managers different
+          Wallet.initialize(wallet, Some("random-password-to-make-key-managers-different"))
+        }
+    }
   }
 
-  it must "be able to detect different master xpubs on wallet startup" in {
-    wallet: Wallet =>
-      //create new config with different entropy
-      //to make the keymanagers differetn
-      val config = ConfigFactory.parseString(
-        s"bitcoin-s.keymanager.entropy=${CryptoUtil.randomBytes(16).toHex}")
-      val uniqueEntropyWalletConfig = wallet.walletConfig.withOverrides(config)
-      val startedF = uniqueEntropyWalletConfig.start()
-      val walletDiffKeyManagerF: Future[Wallet] = for {
-        _ <- startedF
-      } yield {
-        Wallet(wallet.nodeApi, wallet.chainQueryApi, wallet.feeRateApi)(
-          uniqueEntropyWalletConfig,
-          wallet.ec)
-      }
+  it must "be able to detect different master xpubs on wallet startup" in { wallet: Wallet =>
+    //create new config with different entropy
+    //to make the keymanagers differetn
+    val config = ConfigFactory.parseString(s"bitcoin-s.keymanager.entropy=${CryptoUtil.randomBytes(16).toHex}")
+    val uniqueEntropyWalletConfig = wallet.walletConfig.withOverrides(config)
+    val startedF = uniqueEntropyWalletConfig.start()
+    val walletDiffKeyManagerF: Future[Wallet] = for {
+      _ <- startedF
+    } yield {
+      Wallet(wallet.nodeApi, wallet.chainQueryApi, wallet.feeRateApi)(uniqueEntropyWalletConfig, wallet.ec)
+    }
 
-      recoverToSucceededIf[IllegalArgumentException] {
-        walletDiffKeyManagerF.flatMap { walletDiffKeyManager =>
-          Wallet.initialize(walletDiffKeyManager, bip39PasswordOpt)
-        }
+    recoverToSucceededIf[IllegalArgumentException] {
+      walletDiffKeyManagerF.flatMap { walletDiffKeyManager =>
+        Wallet.initialize(walletDiffKeyManager, bip39PasswordOpt)
       }
+    }
   }
 
   it must "be able to sign a psbt with a key path" in { wallet: Wallet =>
@@ -221,74 +201,71 @@ class WalletUnitTest extends BitcoinSWalletTest {
     }
   }
 
-  it must "be able to sign a psbt with our own p2pkh utxo" in {
-    wallet: Wallet =>
-      for {
-        addr <- wallet.getNewAddress(AddressType.Legacy)
-        addrDb <- wallet.addressDAO.findAddress(addr).map(_.get)
-        walletKey = addrDb.ecPublicKey
+  it must "be able to sign a psbt with our own p2pkh utxo" in { wallet: Wallet =>
+    for {
+      addr <- wallet.getNewAddress(AddressType.Legacy)
+      addrDb <- wallet.addressDAO.findAddress(addr).map(_.get)
+      walletKey = addrDb.ecPublicKey
 
-        spk = addr.scriptPubKey
-        _ = assert(spk == P2PKHScriptPubKey(walletKey))
-        dummyPrevTx = dummyTx(spk = spk)
-        _ <- wallet.processTransaction(dummyPrevTx, blockHashOpt = None)
+      spk = addr.scriptPubKey
+      _ = assert(spk == P2PKHScriptPubKey(walletKey))
+      dummyPrevTx = dummyTx(spk = spk)
+      _ <- wallet.processTransaction(dummyPrevTx, blockHashOpt = None)
 
-        psbt = dummyPSBT(prevTxId = dummyPrevTx.txId)
+      psbt = dummyPSBT(prevTxId = dummyPrevTx.txId)
 
-        signed <- wallet.signPSBT(psbt)
-      } yield {
-        assert(signed != psbt)
-        assert(
-          signed.inputMaps.head.partialSignatures
-            .exists(_.pubKey.toPublicKey == walletKey))
-      }
+      signed <- wallet.signPSBT(psbt)
+    } yield {
+      assert(signed != psbt)
+      assert(
+        signed.inputMaps.head.partialSignatures
+          .exists(_.pubKey.toPublicKey == walletKey))
+    }
   }
 
-  it must "be able to sign a psbt with our own p2sh segwit utxo" in {
-    wallet: Wallet =>
-      for {
-        addr <- wallet.getNewAddress(AddressType.NestedSegWit)
-        addrDb <- wallet.addressDAO.findAddress(addr).map(_.get)
-        walletKey = addrDb.ecPublicKey
+  it must "be able to sign a psbt with our own p2sh segwit utxo" in { wallet: Wallet =>
+    for {
+      addr <- wallet.getNewAddress(AddressType.NestedSegWit)
+      addrDb <- wallet.addressDAO.findAddress(addr).map(_.get)
+      walletKey = addrDb.ecPublicKey
 
-        spk = addr.scriptPubKey
-        _ = assert(spk == P2SHScriptPubKey(P2WPKHWitnessSPKV0(walletKey)))
-        dummyPrevTx = dummyTx(spk = spk)
-        _ <- wallet.processTransaction(dummyPrevTx, blockHashOpt = None)
+      spk = addr.scriptPubKey
+      _ = assert(spk == P2SHScriptPubKey(P2WPKHWitnessSPKV0(walletKey)))
+      dummyPrevTx = dummyTx(spk = spk)
+      _ <- wallet.processTransaction(dummyPrevTx, blockHashOpt = None)
 
-        psbt = dummyPSBT(prevTxId = dummyPrevTx.txId)
+      psbt = dummyPSBT(prevTxId = dummyPrevTx.txId)
 
-        signed <- wallet.signPSBT(psbt)
-      } yield {
-        assert(signed != psbt)
-        assert(
-          signed.inputMaps.head.partialSignatures
-            .exists(_.pubKey.toPublicKey == walletKey))
-      }
+      signed <- wallet.signPSBT(psbt)
+    } yield {
+      assert(signed != psbt)
+      assert(
+        signed.inputMaps.head.partialSignatures
+          .exists(_.pubKey.toPublicKey == walletKey))
+    }
   }
 
-  it must "be able to sign a psbt with our own p2wpkh utxo" in {
-    wallet: Wallet =>
-      for {
-        addr <- wallet.getNewAddress(AddressType.SegWit)
-        addrDb <- wallet.addressDAO.findAddress(addr).map(_.get)
-        walletKey = addrDb.ecPublicKey
+  it must "be able to sign a psbt with our own p2wpkh utxo" in { wallet: Wallet =>
+    for {
+      addr <- wallet.getNewAddress(AddressType.SegWit)
+      addrDb <- wallet.addressDAO.findAddress(addr).map(_.get)
+      walletKey = addrDb.ecPublicKey
 
-        spk = addr.scriptPubKey
-        _ = assert(spk == P2WPKHWitnessSPKV0(walletKey))
-        dummyPrevTx = dummyTx(spk = spk)
-        _ <- wallet.processTransaction(dummyPrevTx, blockHashOpt = None)
+      spk = addr.scriptPubKey
+      _ = assert(spk == P2WPKHWitnessSPKV0(walletKey))
+      dummyPrevTx = dummyTx(spk = spk)
+      _ <- wallet.processTransaction(dummyPrevTx, blockHashOpt = None)
 
-        psbt = dummyPSBT(prevTxId = dummyPrevTx.txId)
-          .addUTXOToInput(dummyPrevTx, 0)
+      psbt = dummyPSBT(prevTxId = dummyPrevTx.txId)
+        .addUTXOToInput(dummyPrevTx, 0)
 
-        signed <- wallet.signPSBT(psbt)
-      } yield {
-        assert(signed != psbt)
-        assert(
-          signed.inputMaps.head.partialSignatures
-            .exists(_.pubKey.toPublicKey == walletKey))
-      }
+      signed <- wallet.signPSBT(psbt)
+    } yield {
+      assert(signed != psbt)
+      assert(
+        signed.inputMaps.head.partialSignatures
+          .exists(_.pubKey.toPublicKey == walletKey))
+    }
   }
 
   it must "be able to sign a psbt with no wallet utxos" in { wallet: Wallet =>
@@ -307,9 +284,7 @@ class WalletUnitTest extends BitcoinSWalletTest {
       spk = addr.scriptPubKey
       _ = assert(spk == P2WPKHWitnessSPKV0(walletKey))
       dummyPrevTx = dummyTx(spk = spk)
-      _ <- wallet.processTransaction(dummyPrevTx,
-                                     blockHashOpt =
-                                       Some(DoubleSha256DigestBE.empty))
+      _ <- wallet.processTransaction(dummyPrevTx, blockHashOpt = Some(DoubleSha256DigestBE.empty))
 
       dummyPrevTx1 = dummyTx(prevTxId = dummyPrevTx.txId, spk = spk)
       _ <- wallet.processTransaction(dummyPrevTx1, blockHashOpt = None)

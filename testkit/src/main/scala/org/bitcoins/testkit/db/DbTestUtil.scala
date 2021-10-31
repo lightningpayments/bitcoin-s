@@ -12,8 +12,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 object DbTestUtil {
 
-  def createTestDbManagement(testAppConfig: TestAppConfig)(implicit
-      system: ActorSystem): TestDbManagement = {
+  def createTestDbManagement(testAppConfig: TestAppConfig)(implicit system: ActorSystem): TestDbManagement = {
     new TestDbManagement with JdbcProfileComponent[TestAppConfig] {
       override val ec: ExecutionContext = system.dispatcher
 
@@ -41,9 +40,8 @@ trait TestDbManagement extends DbManagement {
 
 }
 
-case class TestAppConfig(
-    private val directory: Path,
-    private val conf: Config*)(implicit override val ec: ExecutionContext)
+case class TestAppConfig(private val directory: Path, private val conf: Config*)(implicit
+    override val ec: ExecutionContext)
     extends DbAppConfig
     with TestDbManagement
     with JdbcProfileComponent[TestAppConfig] {
@@ -53,8 +51,7 @@ case class TestAppConfig(
 
   override protected[bitcoins] type ConfigType = TestAppConfig
 
-  override protected[bitcoins] def newConfigOfType(
-      configs: Seq[Config]): TestAppConfig =
+  override protected[bitcoins] def newConfigOfType(configs: Seq[Config]): TestAppConfig =
     TestAppConfig(directory, configs: _*)
 
   protected[bitcoins] def baseDatadir: Path = directory
@@ -75,9 +72,7 @@ case class TestAppConfig(
 
 case class TestDb(pk: String, data: ByteVector)
 
-case class TestDAO()(implicit
-    val ec: ExecutionContext,
-    override val appConfig: TestAppConfig)
+case class TestDAO()(implicit val ec: ExecutionContext, override val appConfig: TestAppConfig)
     extends CRUD[TestDb, String]
     with SlickUtil[TestDb, String] {
 
@@ -92,8 +87,7 @@ case class TestDAO()(implicit
   override def createAll(ts: Vector[TestDb]): Future[Vector[TestDb]] =
     createAllNoAutoInc(ts, safeDatabase)
 
-  override protected def findByPrimaryKeys(
-      ts: Vector[String]): Query[TestTable, TestDb, Seq] = {
+  override protected def findByPrimaryKeys(ts: Vector[String]): Query[TestTable, TestDb, Seq] = {
     table.filter(_.pk.inSet(ts))
   }
 

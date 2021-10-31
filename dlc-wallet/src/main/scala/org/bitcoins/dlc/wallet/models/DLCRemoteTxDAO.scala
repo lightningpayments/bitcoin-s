@@ -11,9 +11,7 @@ import slick.lifted.ProvenShape
 
 import scala.concurrent.ExecutionContext
 
-case class DLCRemoteTxDAO()(implicit
-    val ec: ExecutionContext,
-    override val appConfig: DLCAppConfig)
+case class DLCRemoteTxDAO()(implicit val ec: ExecutionContext, override val appConfig: DLCAppConfig)
     extends TxDAO[TransactionDb] {
 
   import profile.api._
@@ -22,8 +20,7 @@ case class DLCRemoteTxDAO()(implicit
 
   override val table = TableQuery[DLCRemoteTxTable]
 
-  class DLCRemoteTxTable(tag: Tag)
-      extends TxTable[TransactionDb](tag, schemaName, "watch_only_tx_table") {
+  class DLCRemoteTxTable(tag: Tag) extends TxTable[TransactionDb](tag, schemaName, "watch_only_tx_table") {
     def txIdBE: Rep[DoubleSha256DigestBE] = column("txIdBE", O.PrimaryKey)
 
     def transaction: Rep[Transaction] = column("transaction")

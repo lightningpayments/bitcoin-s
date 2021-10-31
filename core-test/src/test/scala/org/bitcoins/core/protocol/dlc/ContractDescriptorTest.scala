@@ -19,8 +19,7 @@ class ContractDescriptorTest extends BitcoinSUnitTest {
         OutcomePayoutPoint(0, Satoshis(0), isEndpoint = false),
         OutcomePayoutPoint(3, Satoshis(100), isEndpoint = true)
       ))
-    assertThrows[IllegalArgumentException](
-      NumericContractDescriptor(func, 2, RoundingIntervals.noRounding))
+    assertThrows[IllegalArgumentException](NumericContractDescriptor(func, 2, RoundingIntervals.noRounding))
   }
 
   it should "fail for not ending with a endpoint" in {
@@ -29,8 +28,7 @@ class ContractDescriptorTest extends BitcoinSUnitTest {
         OutcomePayoutPoint(0, Satoshis(0), isEndpoint = true),
         OutcomePayoutPoint(3, Satoshis(100), isEndpoint = false)
       ))
-    assertThrows[IllegalArgumentException](
-      NumericContractDescriptor(func, 2, RoundingIntervals.noRounding))
+    assertThrows[IllegalArgumentException](NumericContractDescriptor(func, 2, RoundingIntervals.noRounding))
   }
 
   it should "fail for starting below the minimum" in {
@@ -39,8 +37,7 @@ class ContractDescriptorTest extends BitcoinSUnitTest {
         OutcomePayoutPoint(-1, Satoshis(0), isEndpoint = true),
         OutcomePayoutPoint(3, Satoshis(100), isEndpoint = true)
       ))
-    assertThrows[IllegalArgumentException](
-      NumericContractDescriptor(func, 2, RoundingIntervals.noRounding))
+    assertThrows[IllegalArgumentException](NumericContractDescriptor(func, 2, RoundingIntervals.noRounding))
   }
 
   it should "fail for starting above the minimum" in {
@@ -49,8 +46,7 @@ class ContractDescriptorTest extends BitcoinSUnitTest {
         OutcomePayoutPoint(1, Satoshis(0), isEndpoint = true),
         OutcomePayoutPoint(3, Satoshis(100), isEndpoint = true)
       ))
-    assertThrows[IllegalArgumentException](
-      NumericContractDescriptor(func, 2, RoundingIntervals.noRounding))
+    assertThrows[IllegalArgumentException](NumericContractDescriptor(func, 2, RoundingIntervals.noRounding))
   }
 
   it should "fail for ending below the maximum" in {
@@ -59,8 +55,7 @@ class ContractDescriptorTest extends BitcoinSUnitTest {
         OutcomePayoutPoint(0, Satoshis(0), isEndpoint = true),
         OutcomePayoutPoint(2, Satoshis(100), isEndpoint = true)
       ))
-    assertThrows[IllegalArgumentException](
-      NumericContractDescriptor(func, 2, RoundingIntervals.noRounding))
+    assertThrows[IllegalArgumentException](NumericContractDescriptor(func, 2, RoundingIntervals.noRounding))
   }
 
   it should "fail for ending above the maximum" in {
@@ -69,8 +64,7 @@ class ContractDescriptorTest extends BitcoinSUnitTest {
         OutcomePayoutPoint(0, Satoshis(0), isEndpoint = true),
         OutcomePayoutPoint(4, Satoshis(100), isEndpoint = true)
       ))
-    assertThrows[IllegalArgumentException](
-      NumericContractDescriptor(func, 2, RoundingIntervals.noRounding))
+    assertThrows[IllegalArgumentException](NumericContractDescriptor(func, 2, RoundingIntervals.noRounding))
   }
 
   it should "correctly create a NumericContractDescriptor" in {
@@ -83,7 +77,8 @@ class ContractDescriptorTest extends BitcoinSUnitTest {
     val descriptor =
       NumericContractDescriptor(func, 2, RoundingIntervals.noRounding)
 
-    assert(descriptor.toTLV == ContractDescriptorV1TLV(
-      "fda720260002fda7261a0002010000000000000000000000010300000000000000640000fda724020000"))
+    assert(
+      descriptor.toTLV == ContractDescriptorV1TLV(
+        "fda720260002fda7261a0002010000000000000000000000010300000000000000640000fda724020000"))
   }
 }

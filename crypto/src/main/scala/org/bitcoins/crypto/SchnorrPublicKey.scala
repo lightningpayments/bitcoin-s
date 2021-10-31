@@ -6,10 +6,8 @@ import scala.annotation.tailrec
 import scala.util.Try
 
 case class SchnorrPublicKey(bytes: ByteVector) extends NetworkElement {
-  require(bytes.length == 32,
-          s"Schnorr public keys must be 32 bytes, got $bytes")
-  require(Try(publicKey).isSuccess,
-          s"Schnorr public key must be a valid x coordinate, got $bytes")
+  require(bytes.length == 32, s"Schnorr public keys must be 32 bytes, got $bytes")
+  require(Try(publicKey).isSuccess, s"Schnorr public key must be a valid x coordinate, got $bytes")
 
   def verify(data: ByteVector, signature: SchnorrDigitalSignature): Boolean = {
     CryptoUtil.schnorrVerify(data, this, signature)
@@ -23,9 +21,7 @@ case class SchnorrPublicKey(bytes: ByteVector) extends NetworkElement {
     computeSigPoint(hash.bytes, nonce)
   }
 
-  def computeSigPoint(
-      bytesToHash: Vector[ByteVector],
-      nonces: Vector[SchnorrNonce]): ECPublicKey = {
+  def computeSigPoint(bytesToHash: Vector[ByteVector], nonces: Vector[SchnorrNonce]): ECPublicKey = {
     // TODO: when combine function is ported from secp, use that instead for nonces
     val bytesAndNonces = bytesToHash.zip(nonces)
 
@@ -41,18 +37,14 @@ case class SchnorrPublicKey(bytes: ByteVector) extends NetworkElement {
     }
 
     val (aggHashes, aggNonces) =
-      hashesAndNoncePoints.reduce[(ECPrivateKey, ECPublicKey)] {
-        case ((aggHash, aggPoint), (hash, nonce)) =>
-          (aggHash.add(hash), aggPoint.add(nonce))
+      hashesAndNoncePoints.reduce[(ECPrivateKey, ECPublicKey)] { case ((aggHash, aggPoint), (hash, nonce)) =>
+        (aggHash.add(hash), aggPoint.add(nonce))
       }
 
     this.publicKey.tweakMultiply(aggHashes.fieldElement).add(aggNonces)
   }
 
-  def computeSigPoint(
-      data: ByteVector,
-      nonce: SchnorrNonce,
-      compressed: Boolean): ECPublicKey = {
+  def computeSigPoint(data: ByteVector, nonce: SchnorrNonce, compressed: Boolean): ECPublicKey = {
     CryptoUtil.schnorrComputeSigPoint(data, nonce, this, compressed)
   }
 
@@ -69,8 +61,7 @@ object SchnorrPublicKey extends Factory[SchnorrPublicKey] {
 
   @tailrec
   def fromBytes(bytes: ByteVector): SchnorrPublicKey = {
-    require(bytes.length <= 33,
-            s"XOnlyPublicKey must be less than 33 bytes, got $bytes")
+    require(bytes.length <= 33, s"XOnlyPublicKey must be less than 33 bytes, got $bytes")
 
     if (bytes.length == 32)
       new SchnorrPublicKey(bytes)

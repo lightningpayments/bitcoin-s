@@ -60,9 +60,7 @@ class EventDescriptorTest extends BitcoinSUnitTest {
     assert(descriptor2.minToPrecision == 0)
     val expectedString2 = 0.until(10).toVector
     assert(expectedString2.forall(descriptor2.contains(_)))
-    assert(
-      Vector(0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9).forall(
-        descriptor2.containsPreciseOutcome(_)))
+    assert(Vector(0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9).forall(descriptor2.containsPreciseOutcome(_)))
 
     val descriptor3 =
       descriptor.copy(precision = Int32.negOne, numDigits = UInt16(2))
@@ -72,8 +70,7 @@ class EventDescriptorTest extends BitcoinSUnitTest {
     assert(descriptor3.minNum == 0)
     assert(descriptor3.minToPrecision == 0.0)
     val expected3 =
-      NumericRange[BigDecimal](start = 0.0, end = 10.0, step = 0.1)(
-        BigDecimalAsIfIntegral).toVector
+      NumericRange[BigDecimal](start = 0.0, end = 10.0, step = 0.1)(BigDecimalAsIfIntegral).toVector
     assert(expected3.forall(descriptor3.containsPreciseOutcome(_)))
 
     val expectedOutcomes3: Vector[Int] =
@@ -97,8 +94,7 @@ class EventDescriptorTest extends BitcoinSUnitTest {
     val descriptor1 = descriptor.copy(precision = Int32.negOne)
 
     val expected =
-      NumericRange[BigDecimal](start = -0.9, end = 1.0, step = 0.1)(
-        BigDecimalAsIfIntegral).toVector
+      NumericRange[BigDecimal](start = -0.9, end = 1.0, step = 0.1)(BigDecimalAsIfIntegral).toVector
 
     assert(descriptor1.maxNum == 9)
     assert(descriptor1.maxToPrecision == 0.9)
@@ -112,8 +108,7 @@ class EventDescriptorTest extends BitcoinSUnitTest {
     assert(descriptor2.minToPrecision == -0.09)
     assert(descriptor2.maxToPrecision == 0.09)
     val expected2 =
-      NumericRange[BigDecimal](start = -0.09, end = 0.1, step = 0.01)(
-        BigDecimalAsIfIntegral).toVector
+      NumericRange[BigDecimal](start = -0.09, end = 0.1, step = 0.01)(BigDecimalAsIfIntegral).toVector
 
     assert(expected2.forall(descriptor2.containsPreciseOutcome(_)))
     assert(-9.until(10).toVector.forall(descriptor2.contains(_)))
@@ -124,8 +119,7 @@ class EventDescriptorTest extends BitcoinSUnitTest {
     assert(descriptor3.maxNum == 99)
     assert(descriptor3.maxToPrecision == 0.99)
     val expected3 =
-      NumericRange[BigDecimal](start = -0.99, end = 1, step = 0.01)(
-        BigDecimalAsIfIntegral).toVector
+      NumericRange[BigDecimal](start = -0.99, end = 1, step = 0.01)(BigDecimalAsIfIntegral).toVector
 
     assert(expected3.forall(descriptor3.containsPreciseOutcome(_)))
     assert(
@@ -143,8 +137,7 @@ class EventDescriptorTest extends BitcoinSUnitTest {
     assert(descriptor4.minToPrecision == -99.9)
 
     val expected4 =
-      NumericRange[BigDecimal](start = -99.9, end = 100, step = 0.1)(
-        BigDecimalAsIfIntegral).toVector
+      NumericRange[BigDecimal](start = -99.9, end = 100, step = 0.1)(BigDecimalAsIfIntegral).toVector
 
     assert(expected4.forall(descriptor4.containsPreciseOutcome(_)))
     assert(

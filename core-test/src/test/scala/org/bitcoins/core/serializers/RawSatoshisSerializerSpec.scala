@@ -8,10 +8,9 @@ import org.scalacheck.{Prop, Properties}
   */
 class RawSatoshisSerializerSpec extends Properties("RawSatoshiSerializerSpec") {
 
-  property("Symmetrical serialization") =
-    Prop.forAll(CurrencyUnitGenerator.satoshis) { satoshis =>
-      Satoshis(satoshis.hex) == satoshis
+  property("Symmetrical serialization") = Prop.forAll(CurrencyUnitGenerator.satoshis) { satoshis =>
+    Satoshis(satoshis.hex) == satoshis
 
-    }
+  }
 
 }

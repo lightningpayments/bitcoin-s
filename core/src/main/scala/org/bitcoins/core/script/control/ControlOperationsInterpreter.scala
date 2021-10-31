@@ -4,10 +4,7 @@ import org.bitcoins.core.protocol.script.{SigVersionWitnessV0, SignatureVersion}
 import org.bitcoins.core.script.constant._
 import org.bitcoins.core.script.flag.ScriptFlagUtil
 import org.bitcoins.core.script.result._
-import org.bitcoins.core.script.{
-  ExecutionInProgressScriptProgram,
-  StartedScriptProgram
-}
+import org.bitcoins.core.script.{ExecutionInProgressScriptProgram, StartedScriptProgram}
 import org.bitcoins.core.util._
 
 /** Created by chris on 1/6/16.
@@ -17,8 +14,7 @@ sealed abstract class ControlOperationsInterpreter {
   /** Factors out the similarities between OP_IF and OP_NOTIF */
   private def opConditional(conditional: ConditionalOperation)(
       program: ExecutionInProgressScriptProgram): StartedScriptProgram = {
-    require(program.script.headOption.contains(conditional),
-            s"Script top was not $conditional")
+    require(program.script.headOption.contains(conditional), s"Script top was not $conditional")
 
     if (program.isInExecutionBranch) {
       val sigVersion = program.txSignatureComponent.sigVersion
@@ -69,25 +65,20 @@ sealed abstract class ControlOperationsInterpreter {
   }
 
   /** If the top stack value is 0, the statements are executed. The top stack value is removed. */
-  def opNotIf(
-      program: ExecutionInProgressScriptProgram): StartedScriptProgram = {
+  def opNotIf(program: ExecutionInProgressScriptProgram): StartedScriptProgram = {
     opConditional(OP_NOTIF)(program)
   }
 
   /** Evaluates the [[org.bitcoins.core.script.control.OP_ELSE OP_ELSE]] operator. */
-  def opElse(
-      program: ExecutionInProgressScriptProgram): StartedScriptProgram = {
-    require(program.script.headOption.contains(OP_ELSE),
-            "First script opt must be OP_ELSE")
+  def opElse(program: ExecutionInProgressScriptProgram): StartedScriptProgram = {
+    require(program.script.headOption.contains(OP_ELSE), "First script opt must be OP_ELSE")
 
     program.updateScript(program.script.tail).invertCondition()
   }
 
   /** Evaluates an [[org.bitcoins.core.script.control.OP_ENDIF OP_ENDIF]] operator. */
-  def opEndIf(
-      program: ExecutionInProgressScriptProgram): StartedScriptProgram = {
-    require(program.script.headOption.contains(OP_ENDIF),
-            "Script top must be OP_ENDIF")
+  def opEndIf(program: ExecutionInProgressScriptProgram): StartedScriptProgram = {
+    require(program.script.headOption.contains(OP_ENDIF), "Script top must be OP_ENDIF")
 
     program.updateScript(program.script.tail).removeCondition()
   }
@@ -101,17 +92,14 @@ sealed abstract class ControlOperationsInterpreter {
     * have more than one [[org.bitcoins.core.script.control.OP_RETURN OP_RETURN]] output or an
     * [[org.bitcoins.core.script.control.OP_RETURN OP_RETURN]] output with more than one pushdata op.
     */
-  def opReturn(
-      program: ExecutionInProgressScriptProgram): StartedScriptProgram = {
+  def opReturn(program: ExecutionInProgressScriptProgram): StartedScriptProgram = {
     require(program.script.headOption.contains(OP_RETURN))
     program.failExecution(ScriptErrorOpReturn)
   }
 
   /** Marks [[org.bitcoins.core.protocol.transaction.Transaction Transaction]] as invalid if top stack value is not true. */
-  def opVerify(
-      program: ExecutionInProgressScriptProgram): StartedScriptProgram = {
-    require(program.script.headOption.contains(OP_VERIFY),
-            "Script top must be OP_VERIFY")
+  def opVerify(program: ExecutionInProgressScriptProgram): StartedScriptProgram = {
+    require(program.script.headOption.contains(OP_VERIFY), "Script top must be OP_VERIFY")
     program.stack.nonEmpty match {
       case true =>
         if (program.stackTopIsFalse) program.failExecution(ScriptErrorVerify)

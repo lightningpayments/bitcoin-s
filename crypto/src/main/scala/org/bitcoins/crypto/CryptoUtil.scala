@@ -74,33 +74,23 @@ trait CryptoUtil extends CryptoRuntime {
     cryptoRuntime.hmac512(key, data)
   }
 
-  override def recoverPublicKey(
-      signature: ECDigitalSignature,
-      message: ByteVector): (ECPublicKey, ECPublicKey) = {
+  override def recoverPublicKey(signature: ECDigitalSignature, message: ByteVector): (ECPublicKey, ECPublicKey) = {
     cryptoRuntime.recoverPublicKey(signature, message)
   }
 
   override def publicKey(privateKey: ECPrivateKey): ECPublicKey =
     cryptoRuntime.publicKey(privateKey)
 
-  override def sign(
-      privateKey: ECPrivateKey,
-      dataToSign: ByteVector): ECDigitalSignature =
+  override def sign(privateKey: ECPrivateKey, dataToSign: ByteVector): ECDigitalSignature =
     cryptoRuntime.sign(privateKey, dataToSign)
 
-  override def signWithEntropy(
-      privateKey: ECPrivateKey,
-      bytes: ByteVector,
-      entropy: ByteVector): ECDigitalSignature =
+  override def signWithEntropy(privateKey: ECPrivateKey, bytes: ByteVector, entropy: ByteVector): ECDigitalSignature =
     cryptoRuntime.signWithEntropy(privateKey, bytes, entropy)
 
   override def secKeyVerify(privateKeybytes: ByteVector): Boolean =
     cryptoRuntime.secKeyVerify(privateKeybytes)
 
-  override def verify(
-      publicKey: PublicKey,
-      data: ByteVector,
-      signature: ECDigitalSignature): Boolean =
+  override def verify(publicKey: PublicKey, data: ByteVector, signature: ECDigitalSignature): Boolean =
     cryptoRuntime.verify(publicKey, data, signature)
 
   override def decompressed(pubKeyBytes: ByteVector): ByteVector =
@@ -109,9 +99,7 @@ trait CryptoUtil extends CryptoRuntime {
   override def decompressed[PK <: PublicKey](publicKey: PK): publicKey.type =
     cryptoRuntime.decompressed(publicKey)
 
-  override def tweakMultiply(
-      publicKey: ECPublicKey,
-      tweak: FieldElement): ECPublicKey =
+  override def tweakMultiply(publicKey: ECPublicKey, tweak: FieldElement): ECPublicKey =
     cryptoRuntime.tweakMultiply(publicKey, tweak)
 
   override def add(pk1: ECPrivateKey, pk2: ECPrivateKey): ECPrivateKey =
@@ -129,9 +117,7 @@ trait CryptoUtil extends CryptoRuntime {
   override def combinePubKeys(pubKeys: Vector[ECPublicKey]): ECPublicKey =
     cryptoRuntime.combinePubKeys(pubKeys)
 
-  override def pubKeyTweakAdd(
-      pubkey: ECPublicKey,
-      privkey: ECPrivateKey): ECPublicKey =
+  override def pubKeyTweakAdd(pubkey: ECPublicKey, privkey: ECPrivateKey): ECPublicKey =
     cryptoRuntime.pubKeyTweakAdd(pubkey, privkey)
 
   override def isValidPubKey(pubKey: PublicKey): Boolean =
@@ -169,9 +155,7 @@ trait CryptoUtil extends CryptoRuntime {
       auxRand: ByteVector): ECAdaptorSignature =
     cryptoRuntime.adaptorSign(key, adaptorPoint, msg, auxRand)
 
-  override def adaptorComplete(
-      key: ECPrivateKey,
-      adaptorSignature: ECAdaptorSignature): ECDigitalSignature =
+  override def adaptorComplete(key: ECPrivateKey, adaptorSignature: ECAdaptorSignature): ECDigitalSignature =
     cryptoRuntime.adaptorComplete(key, adaptorSignature)
 
   override def extractAdaptorSecret(
@@ -187,12 +171,10 @@ trait CryptoUtil extends CryptoRuntime {
       adaptorPoint: ECPublicKey): Boolean =
     cryptoRuntime.adaptorVerify(adaptorSignature, key, msg, adaptorPoint)
 
-  override def decodeSignature(
-      signature: ECDigitalSignature): (BigInt, BigInt) =
+  override def decodeSignature(signature: ECDigitalSignature): (BigInt, BigInt) =
     cryptoRuntime.decodeSignature(signature)
 
-  override def isValidSignatureEncoding(
-      signature: ECDigitalSignature): Boolean =
+  override def isValidSignatureEncoding(signature: ECDigitalSignature): Boolean =
     cryptoRuntime.isValidSignatureEncoding(signature)
 
   override def isDEREncoded(signature: ECDigitalSignature): Boolean =

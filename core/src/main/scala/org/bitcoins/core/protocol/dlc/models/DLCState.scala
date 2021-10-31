@@ -76,14 +76,8 @@ object DLCState extends StringFactory[DLCState] {
     val order: Int = 6
   }
 
-  val all: Vector[DLCState] = Vector(Offered,
-                                     Accepted,
-                                     Signed,
-                                     Broadcasted,
-                                     Confirmed,
-                                     Claimed,
-                                     RemoteClaimed,
-                                     Refunded)
+  val all: Vector[DLCState] =
+    Vector(Offered, Accepted, Signed, Broadcasted, Confirmed, Claimed, RemoteClaimed, Refunded)
 
   def fromString(str: String): DLCState = {
     all.find(state => str.toLowerCase() == state.toString.toLowerCase) match {

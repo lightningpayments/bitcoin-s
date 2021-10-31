@@ -1,17 +1,9 @@
 package org.bitcoins.core.api.wallet.db
 
 import org.bitcoins.core.protocol.BitcoinAddress
-import org.bitcoins.core.wallet.utxo.{
-  AddressTag,
-  AddressTagName,
-  AddressTagType,
-  InternalAddressTag
-}
+import org.bitcoins.core.wallet.utxo.{AddressTag, AddressTagName, AddressTagType, InternalAddressTag}
 
-case class AddressTagDb(
-    address: BitcoinAddress,
-    tagName: AddressTagName,
-    tagType: AddressTagType) {
+case class AddressTagDb(address: BitcoinAddress, tagName: AddressTagName, tagType: AddressTagType) {
 
   val addressTag: AddressTag = InternalAddressTag(tagName, tagType)
 

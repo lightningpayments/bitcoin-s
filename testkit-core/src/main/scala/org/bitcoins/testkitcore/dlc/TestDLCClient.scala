@@ -5,12 +5,7 @@ import org.bitcoins.core.currency.CurrencyUnit
 import org.bitcoins.core.number.UInt64
 import org.bitcoins.core.protocol.BitcoinAddress
 import org.bitcoins.core.protocol.dlc.build.DLCTxBuilder
-import org.bitcoins.core.protocol.dlc.execution.{
-  DLCExecutor,
-  ExecutedDLCOutcome,
-  RefundDLCOutcome,
-  SetupDLC
-}
+import org.bitcoins.core.protocol.dlc.execution.{DLCExecutor, ExecutedDLCOutcome, RefundDLCOutcome, SetupDLC}
 import org.bitcoins.core.protocol.dlc.models.DLCMessage.DLCAccept
 import org.bitcoins.core.protocol.dlc.models._
 import org.bitcoins.core.protocol.dlc.sign.DLCTxSigner
@@ -38,16 +33,11 @@ case class TestDLCClient(
     isInitiator: Boolean,
     fundingPrivKey: ECPrivateKey,
     payoutPrivKey: ECPrivateKey,
-    fundingUtxos: Vector[ScriptSignatureParams[InputInfo]])(implicit
-    ec: ExecutionContext) {
+    fundingUtxos: Vector[ScriptSignatureParams[InputInfo]])(implicit ec: ExecutionContext) {
   val dlcTxBuilder: DLCTxBuilder = DLCTxBuilder(offer, accept)
 
-  val dlcTxSigner: DLCTxSigner = DLCTxSigner(dlcTxBuilder,
-                                             isInitiator,
-                                             fundingPrivKey,
-                                             payoutPrivKey,
-                                             RegTest,
-                                             fundingUtxos)
+  val dlcTxSigner: DLCTxSigner =
+    DLCTxSigner(dlcTxBuilder, isInitiator, fundingPrivKey, payoutPrivKey, RegTest, fundingUtxos)
 
   private val dlcExecutor = DLCExecutor(dlcTxSigner)
 
@@ -97,8 +87,8 @@ case class TestDLCClient(
         dlcExecutor.setupDLCOffer(cetSigs)
       }
       cetSigs =
-        dlcTxSigner.createCETSigs(setupDLCWithoutFundingTxSigs.cets.map {
-          case (msg, info) => AdaptorPointCETPair(msg, info.tx)
+        dlcTxSigner.createCETSigs(setupDLCWithoutFundingTxSigs.cets.map { case (msg, info) =>
+          AdaptorPointCETPair(msg, info.tx)
         })
       localFundingSigs <- Future.fromTry {
         dlcTxSigner.signFundingTx()
@@ -110,10 +100,7 @@ case class TestDLCClient(
     }
   }
 
-  def executeDLC(
-      dlcSetup: SetupDLC,
-      oracleSigsF: Future[Vector[OracleSignatures]]): Future[
-    ExecutedDLCOutcome] = {
+  def executeDLC(dlcSetup: SetupDLC, oracleSigsF: Future[Vector[OracleSignatures]]): Future[ExecutedDLCOutcome] = {
     oracleSigsF.map { oracleSigs =>
       dlcExecutor.executeDLC(dlcSetup, oracleSigs)
     }
@@ -231,11 +218,6 @@ object TestDLCClient {
       tempContractId = offer.tempContractId
     )
 
-    TestDLCClient(offer,
-                  accept,
-                  isInitiator,
-                  fundingPrivKey,
-                  payoutPrivKey,
-                  fundingUtxos.map(_.spendingInfo))
+    TestDLCClient(offer, accept, isInitiator, fundingPrivKey, payoutPrivKey, fundingUtxos.map(_.spendingInfo))
   }
 }

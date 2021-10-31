@@ -31,30 +31,24 @@ trait RawTransactionRpc { self: Client =>
       inputs: Vector[TransactionInput],
       outputs: Map[BitcoinAddress, Bitcoins],
       locktime: Int = 0): Future[Transaction] = {
-    bitcoindCall[Transaction](
-      "createrawtransaction",
-      List(Json.toJson(inputs), Json.toJson(outputs), JsNumber(locktime)))
+    bitcoindCall[Transaction]("createrawtransaction",
+                              List(Json.toJson(inputs), Json.toJson(outputs), JsNumber(locktime)))
   }
 
   def decodeRawTransaction(transaction: Transaction): Future[RpcTransaction] = {
-    bitcoindCall[RpcTransaction]("decoderawtransaction",
-                                 List(JsString(transaction.hex)))
+    bitcoindCall[RpcTransaction]("decoderawtransaction", List(JsString(transaction.hex)))
   }
 
-  def fundRawTransaction(
-      transaction: Transaction): Future[FundRawTransactionResult] =
+  def fundRawTransaction(transaction: Transaction): Future[FundRawTransactionResult] =
     fundRawTransaction(transaction, None)
 
-  def fundRawTransaction(
-      transaction: Transaction,
-      walletName: String): Future[FundRawTransactionResult] =
+  def fundRawTransaction(transaction: Transaction, walletName: String): Future[FundRawTransactionResult] =
     fundRawTransaction(transaction, None, Some(walletName))
 
   private def fundRawTransaction(
       transaction: Transaction,
       options: Option[RpcOpts.FundRawTransactionOptions],
-      walletNameOpt: Option[String] = None): Future[
-    FundRawTransactionResult] = {
+      walletNameOpt: Option[String] = None): Future[FundRawTransactionResult] = {
     val params =
       if (options.isEmpty) {
         List(JsString(transaction.hex))
@@ -64,14 +58,13 @@ trait RawTransactionRpc { self: Client =>
 
     bitcoindCall[FundRawTransactionResult]("fundrawtransaction",
                                            params,
-                                           uriExtensionOpt =
-                                             walletNameOpt.map(walletExtension))
+                                           uriExtensionOpt = walletNameOpt.map(walletExtension))
   }
 
   def fundRawTransaction(
       transaction: Transaction,
-      options: RpcOpts.FundRawTransactionOptions): Future[
-    FundRawTransactionResult] = fundRawTransaction(transaction, Some(options))
+      options: RpcOpts.FundRawTransactionOptions): Future[FundRawTransactionResult] =
+    fundRawTransaction(transaction, Some(options))
 
   def fundRawTransaction(
       transaction: Transaction,
@@ -81,8 +74,7 @@ trait RawTransactionRpc { self: Client =>
 
   def getRawTransaction(
       txid: DoubleSha256DigestBE,
-      blockhash: Option[DoubleSha256DigestBE] = None): Future[
-    GetRawTransactionResult] = {
+      blockhash: Option[DoubleSha256DigestBE] = None): Future[GetRawTransactionResult] = {
     val lastParam: List[JsString] = blockhash match {
       case Some(hash) => JsString(hash.hex) :: Nil
       case None       => Nil
@@ -106,9 +98,7 @@ trait RawTransactionRpc { self: Client =>
 
   /** @param maxfeerate Set to 0 if you want to enable allowhighfees
     */
-  def sendRawTransaction(
-      transaction: Transaction,
-      maxfeerate: Double = 0.10): Future[DoubleSha256DigestBE] = {
+  def sendRawTransaction(transaction: Transaction, maxfeerate: Double = 0.10): Future[DoubleSha256DigestBE] = {
 
     val feeParameterF = self.version.map {
       case V21 | V20 | V19 | Experimental | Unknown =>
@@ -118,9 +108,7 @@ trait RawTransactionRpc { self: Client =>
     }
 
     feeParameterF.flatMap { feeParameter =>
-      bitcoindCall[DoubleSha256DigestBE](
-        "sendrawtransaction",
-        List(JsString(transaction.hex), feeParameter))
+      bitcoindCall[DoubleSha256DigestBE]("sendrawtransaction", List(JsString(transaction.hex), feeParameter))
     }
   }
 

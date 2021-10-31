@@ -16,8 +16,7 @@ sealed trait BlockFilterMatcher {
   def matchesAny(data: Vector[ByteVector]): Boolean
 }
 
-case class SimpleFilterMatcher(filter: GolombFilter)
-    extends BlockFilterMatcher {
+case class SimpleFilterMatcher(filter: GolombFilter) extends BlockFilterMatcher {
 
   override def matches(data: ByteVector): Boolean = {
     val hash = filter.hashToRange(data)
@@ -32,16 +31,15 @@ case class SimpleFilterMatcher(filter: GolombFilter)
 
   def matchesHash(hash: UInt64): Boolean = {
     var matches = false
-    GCS.golombDecodeSetsWithPredicate(filter.encodedData, filter.p) {
-      decodedHash =>
-        if (hash > decodedHash) {
-          true
-        } else {
-          if (hash == decodedHash) {
-            matches = true
-          }
-          false
+    GCS.golombDecodeSetsWithPredicate(filter.encodedData, filter.p) { decodedHash =>
+      if (hash > decodedHash) {
+        true
+      } else {
+        if (hash == decodedHash) {
+          matches = true
         }
+        false
+      }
     }
     matches
   }
@@ -74,8 +72,7 @@ case class SimpleFilterMatcher(filter: GolombFilter)
 
 }
 
-case class BinarySearchFilterMatcher(filter: GolombFilter)
-    extends BlockFilterMatcher {
+case class BinarySearchFilterMatcher(filter: GolombFilter) extends BlockFilterMatcher {
 
   lazy val decodedHashes: Vector[UInt64] =
     GCS.golombDecodeSet(filter.encodedData, filter.p)
@@ -94,11 +91,7 @@ case class BinarySearchFilterMatcher(filter: GolombFilter)
 
   def matchesHash(hash: UInt64): Boolean = {
     @tailrec
-    def binarySearch(
-        from: Int,
-        to: Int,
-        hash: UInt64,
-        set: Vector[UInt64]): Boolean = {
+    def binarySearch(from: Int, to: Int, hash: UInt64, set: Vector[UInt64]): Boolean = {
       if (to < from) {
         false
       } else {

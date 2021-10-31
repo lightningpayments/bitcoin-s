@@ -5,19 +5,17 @@ import org.bitcoins.commons.config._
 import org.bitcoins.db.DatabaseDriver.{PostgreSQL, SQLite}
 import slick.basic.DatabaseConfig
 import slick.jdbc.JdbcProfile
+import zio.Task
 
 import java.nio.file.{Path, Paths}
 import java.util.concurrent.TimeUnit
-import scala.concurrent.Future
 import scala.concurrent.duration.{Duration, FiniteDuration}
 import scala.util.{Failure, Success, Try}
 
 abstract class DbAppConfig extends AppConfig {
 
   /** Releases the thread pool associated with this AppConfig's DB */
-  override def stop(): Future[Unit] = {
-    Future.successful(slickDbConfig.db.close())
-  }
+  override def stop(): Task[Unit] = Task(slickDbConfig.db.close())
 
   lazy val driver: DatabaseDriver = {
     val driverStr =
@@ -107,9 +105,7 @@ abstract class DbAppConfig extends AppConfig {
 
     val usedConf = overrideConf.withFallback(config)
     Try {
-      val c = DatabaseConfig.forConfig[JdbcProfile](path =
-                                                      s"bitcoin-s.$moduleName",
-                                                    config = usedConf)
+      val c = DatabaseConfig.forConfig[JdbcProfile](path = s"bitcoin-s.$moduleName", config = usedConf)
 
       logger.trace(s"Resolved DB config: ${ConfigOps(c.config).asReadableJson}")
       c

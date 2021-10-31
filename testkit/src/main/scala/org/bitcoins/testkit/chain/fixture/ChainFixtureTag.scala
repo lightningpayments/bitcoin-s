@@ -12,28 +12,22 @@ sealed abstract class ChainFixtureTag(name: String) extends Tag(name)
 object ChainFixtureTag {
   case object Empty extends ChainFixtureTag("Empty")
 
-  case object GenisisBlockHeaderDAO
-      extends ChainFixtureTag("GenisisBlockHeaderDAO")
+  case object GenisisBlockHeaderDAO extends ChainFixtureTag("GenisisBlockHeaderDAO")
 
-  case object PopulatedBlockHeaderDAO
-      extends ChainFixtureTag("PopulatedBlockHeaderDAO")
+  case object PopulatedBlockHeaderDAO extends ChainFixtureTag("PopulatedBlockHeaderDAO")
 
   case object GenisisChainHandler extends ChainFixtureTag("GenisisChainHandler")
 
   /** Creates the genesis block header and genesis [[org.bitcoins.core.api.chain.db.CompactFilterHeaderDb]]
     * and [[org.bitcoins.core.api.chain.db.CompactFilterDb]]
     */
-  case object GenesisChainHandlerWithFilter
-      extends ChainFixtureTag("GenesisChainHandlerWithFilter")
+  case object GenesisChainHandlerWithFilter extends ChainFixtureTag("GenesisChainHandlerWithFilter")
 
-  case object GenesisChainHandlerCachedWithFilter
-      extends ChainFixtureTag("GenesisChainHandlerCachedWithFilter")
+  case object GenesisChainHandlerCachedWithFilter extends ChainFixtureTag("GenesisChainHandlerCachedWithFilter")
 
-  case object PopulatedChainHandler
-      extends ChainFixtureTag("PopulatedChainHandler")
+  case object PopulatedChainHandler extends ChainFixtureTag("PopulatedChainHandler")
 
-  case object BitcoindZmqChainHandlerWithBlock
-      extends ChainFixtureTag("BitcoindZmqChainHandlerWithBlock")
+  case object BitcoindZmqChainHandlerWithBlock extends ChainFixtureTag("BitcoindZmqChainHandlerWithBlock")
 
   val defaultTag: ChainFixtureTag = ChainFixtureTag.Empty
 

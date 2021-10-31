@@ -122,9 +122,7 @@ trait BCryptoCryptoRuntime extends CryptoRuntime {
     * @return a (pub1, pub2) tuple where pub1 and pub2 are candidates public keys. If you have the recovery id  then use
     *         pub1 if the recovery id is even and pub2 if it is odd
     */
-  override def recoverPublicKey(
-      signature: ECDigitalSignature,
-      message: ByteVector): (ECPublicKey, ECPublicKey) = {
+  override def recoverPublicKey(signature: ECDigitalSignature, message: ByteVector): (ECPublicKey, ECPublicKey) = {
     val msgBuffer = CryptoJsUtil.toNodeBuffer(message)
     val sigBuffer = CryptoJsUtil.toNodeBuffer(signature.bytes)
     val keyBytes =
@@ -155,9 +153,7 @@ trait BCryptoCryptoRuntime extends CryptoRuntime {
     ECPublicKey.fromBytes(byteVec)
   }
 
-  override def sign(
-      privateKey: ECPrivateKey,
-      dataToSign: ByteVector): ECDigitalSignature = {
+  override def sign(privateKey: ECPrivateKey, dataToSign: ByteVector): ECDigitalSignature = {
     val privBuffer = CryptoJsUtil.toNodeBuffer(privateKey.bytes)
     val dataBuffer = CryptoJsUtil.toNodeBuffer(dataToSign)
     val buffer = SECP256k1.signDER(dataBuffer, privBuffer)
@@ -165,29 +161,22 @@ trait BCryptoCryptoRuntime extends CryptoRuntime {
     ECDigitalSignature.fromFrontOfBytes(byteVec)
   }
 
-  override def signWithEntropy(
-      privateKey: ECPrivateKey,
-      bytes: ByteVector,
-      entropy: ByteVector): ECDigitalSignature = ???
+  override def signWithEntropy(privateKey: ECPrivateKey, bytes: ByteVector, entropy: ByteVector): ECDigitalSignature =
+    ???
 
   override def secKeyVerify(privateKeybytes: ByteVector): Boolean = {
     val buffer = CryptoJsUtil.toNodeBuffer(privateKeybytes)
     SECP256k1.privateKeyVerify(buffer)
   }
 
-  override def verify(
-      publicKey: PublicKey,
-      data: ByteVector,
-      signature: ECDigitalSignature): Boolean = {
+  override def verify(publicKey: PublicKey, data: ByteVector, signature: ECDigitalSignature): Boolean = {
     val dataBuffer = CryptoJsUtil.toNodeBuffer(data)
     val sigBuffer = CryptoJsUtil.toNodeBuffer(signature.bytes)
     val pubKeyBuffer = CryptoJsUtil.toNodeBuffer(publicKey.bytes)
     SECP256k1.verifyDER(dataBuffer, sigBuffer, pubKeyBuffer)
   }
 
-  override def tweakMultiply(
-      publicKey: ECPublicKey,
-      tweak: FieldElement): ECPublicKey = {
+  override def tweakMultiply(publicKey: ECPublicKey, tweak: FieldElement): ECPublicKey = {
     val pubKeyBuffer = CryptoJsUtil.toNodeBuffer(publicKey.decompressedBytes)
     val tweakBuffer = CryptoJsUtil.toNodeBuffer(tweak.bytes)
     val keyBuffer =
@@ -201,8 +190,7 @@ trait BCryptoCryptoRuntime extends CryptoRuntime {
     val pk2Buffer = CryptoJsUtil.toNodeBuffer(pk2.decompressedBytes)
     try {
       val keyBuffer =
-        SECP256k1.publicKeyCombine(js.Array(pk1Buffer, pk2Buffer),
-                                   compress = true)
+        SECP256k1.publicKeyCombine(js.Array(pk1Buffer, pk2Buffer), compress = true)
       val keyBytes = CryptoJsUtil.toByteVector(keyBuffer)
       ECPublicKey.fromBytes(keyBytes)
     } catch {
@@ -212,17 +200,14 @@ trait BCryptoCryptoRuntime extends CryptoRuntime {
 
         // check for infinity
         if ((k1.head ^ k2.head) == 0x01 && k1.tail == k2.tail) {
-          throw new IllegalArgumentException(
-            s"Invalid public key sum, got 0x00 = $pk1 + $pk2")
+          throw new IllegalArgumentException(s"Invalid public key sum, got 0x00 = $pk1 + $pk2")
         } else {
           throw ex
         }
     }
   }
 
-  override def pubKeyTweakAdd(
-      pubkey: ECPublicKey,
-      privkey: ECPrivateKey): ECPublicKey = {
+  override def pubKeyTweakAdd(pubkey: ECPublicKey, privkey: ECPrivateKey): ECPublicKey = {
     val pubKeyBuffer = CryptoJsUtil.toNodeBuffer(pubkey.decompressedBytes)
     val privKeyBuffer = CryptoJsUtil.toNodeBuffer(privkey.bytes)
     val keyBuffer =
@@ -256,8 +241,7 @@ trait BCryptoCryptoRuntime extends CryptoRuntime {
       if (decoded.isInfinity())
         SecpPointInfinity
       else
-        SecpPoint(new BigInteger(decoded.getX().toString()),
-                  new BigInteger(decoded.getY().toString()))
+        SecpPoint(new BigInteger(decoded.getX().toString()), new BigInteger(decoded.getY().toString()))
     }
   }
 

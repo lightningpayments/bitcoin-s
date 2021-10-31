@@ -1,10 +1,6 @@
 package org.bitcoins.core.api.wallet.db
 
-import org.bitcoins.core.crypto.{
-  ExtKeyPrivVersion,
-  ExtKeyPubVersion,
-  ExtPublicKey
-}
+import org.bitcoins.core.crypto.{ExtKeyPrivVersion, ExtKeyPubVersion, ExtPublicKey}
 import org.bitcoins.core.hd.HDAccount
 import org.bitcoins.core.util.HDUtil
 

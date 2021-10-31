@@ -11,11 +11,7 @@ import org.bitcoins.node.models.Peer
 import org.bitcoins.node.networking.P2PClient.ConnectCommand
 import org.bitcoins.node.networking.peer.PeerMessageReceiver
 import org.bitcoins.testkit.async.TestAsyncUtil
-import org.bitcoins.testkit.node.{
-  CachedBitcoinSAppConfig,
-  NodeTestUtil,
-  NodeUnitTest
-}
+import org.bitcoins.testkit.node.{CachedBitcoinSAppConfig, NodeTestUtil, NodeUnitTest}
 import org.bitcoins.testkit.rpc.BitcoindRpcTestUtil
 import org.bitcoins.testkit.tor.CachedTor
 import org.bitcoins.testkit.util.BitcoindRpcTest
@@ -25,10 +21,7 @@ import scodec.bits._
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt
 
-class P2PClientTest
-    extends BitcoindRpcTest
-    with CachedBitcoinSAppConfig
-    with CachedTor {
+class P2PClientTest extends BitcoindRpcTest with CachedBitcoinSAppConfig with CachedTor {
 
   lazy val bitcoindRpcF =
     BitcoindRpcTestUtil.startedBitcoindRpcClient(clientAccum = clientAccum)
@@ -52,20 +45,16 @@ class P2PClientTest
       Vector(
         BlockHeader(
           Int32(315017594),
-          DoubleSha256Digest(
-            "177e777f078d2deeaa3ad4b82e78a00ad2f4738c5217f7a36d9cf3bd11e41817"),
-          DoubleSha256Digest(
-            "1dcaebebd620823bb344bd18a18276de508910d66b4e3cbb3426a14eced66224"),
+          DoubleSha256Digest("177e777f078d2deeaa3ad4b82e78a00ad2f4738c5217f7a36d9cf3bd11e41817"),
+          DoubleSha256Digest("1dcaebebd620823bb344bd18a18276de508910d66b4e3cbb3426a14eced66224"),
           UInt32(2845833462L),
           UInt32(2626024374L),
           UInt32(2637850613L)
         ),
         BlockHeader(
           Int32(1694049746),
-          DoubleSha256Digest(
-            "07b6d61809476830bc7ef862a983a7222997df3f639e0d2aa5902a5a48018430"),
-          DoubleSha256Digest(
-            "68c65f803b70b72563e86ac3e8e20ad11fbfa2eac3f9fddf4bc624d03a14f084"),
+          DoubleSha256Digest("07b6d61809476830bc7ef862a983a7222997df3f639e0d2aa5902a5a48018430"),
+          DoubleSha256Digest("68c65f803b70b72563e86ac3e8e20ad11fbfa2eac3f9fddf4bc624d03a14f084"),
           UInt32(202993555),
           UInt32(4046619225L),
           UInt32(1231236881)
@@ -117,10 +106,7 @@ class P2PClientTest
 
   it must "parse an unknown command" in {
     val header: NetworkHeader =
-      NetworkHeader(TestNet3,
-                    "madeup",
-                    UInt32.zero,
-                    CryptoUtil.doubleSHA256(ByteVector.empty).bytes.take(4))
+      NetworkHeader(TestNet3, "madeup", UInt32.zero, CryptoUtil.doubleSHA256(ByteVector.empty).bytes.take(4))
 
     val (messages, leftover) = P2PClient.parseIndividualMessages(header.bytes)
     assert(messages.isEmpty)
@@ -181,20 +167,16 @@ class P2PClientTest
 
     val clientActorF: Future[TestActorRef[P2PClientActor]] =
       peerMessageReceiverF.map { peerMsgRecv =>
-        TestActorRef(P2PClient.props(peer, peerMsgRecv, { () => Future.unit }),
-                     probe.ref)
+        TestActorRef(P2PClient.props(peer, peerMsgRecv, { () => Future.unit }), probe.ref)
       }
-    val p2pClientF: Future[P2PClient] = clientActorF.map {
-      client: TestActorRef[P2PClientActor] =>
-        P2PClient(client, peer)
+    val p2pClientF: Future[P2PClient] = clientActorF.map { client: TestActorRef[P2PClientActor] =>
+      P2PClient(client, peer)
     }
 
     val isConnectedF = for {
       p2pClient <- p2pClientF
       _ = p2pClient.actor ! ConnectCommand
-      isConnected <- TestAsyncUtil.retryUntilSatisfiedF(p2pClient.isConnected,
-                                                        interval = 1.second,
-                                                        maxTries = 100)
+      isConnected <- TestAsyncUtil.retryUntilSatisfiedF(p2pClient.isConnected, interval = 1.second, maxTries = 100)
     } yield isConnected
 
     isConnectedF.flatMap { _ =>
@@ -202,9 +184,7 @@ class P2PClientTest
         p2pClient <- p2pClientF
         _ = p2pClient.actor ! P2PClient.CloseCommand
         isDisconnected <-
-          TestAsyncUtil.retryUntilSatisfiedF(p2pClient.isDisconnected,
-                                             interval = 1.second,
-                                             maxTries = 100)
+          TestAsyncUtil.retryUntilSatisfiedF(p2pClient.isDisconnected, interval = 1.second, maxTries = 100)
       } yield isDisconnected
 
       isDisconnectedF.map { _ =>

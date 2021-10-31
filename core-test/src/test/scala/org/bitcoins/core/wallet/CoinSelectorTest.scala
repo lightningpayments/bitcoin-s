@@ -23,116 +23,107 @@ class CoinSelectorTest extends BitcoinSUnitTest {
   val changeCost: Satoshis = Satoshis.one
 
   it must "calculate waste correctly" in {
-    forAll(FeeUnitGen.satsPerVirtualByte, FeeUnitGen.satsPerVirtualByte) {
-      case (feeRateA, feeRateB) =>
-        val (feeRate, longTermFeeRate) = correctFeeRates(feeRateA, feeRateB)
+    forAll(FeeUnitGen.satsPerVirtualByte, FeeUnitGen.satsPerVirtualByte) { case (feeRateA, feeRateB) =>
+      val (feeRate, longTermFeeRate) = correctFeeRates(feeRateA, feeRateB)
 
-        val utxosFee =
-          utxos.map(u => CoinSelector.calculateUtxoFee(u, feeRate)).sum
+      val utxosFee =
+        utxos.map(u => CoinSelector.calculateUtxoFee(u, feeRate)).sum
 
-        // difference of fee rate between feeRate and longTermFeeRate
-        val feeRateDiff =
-          SatoshisPerVirtualByte.fromLong(
-            feeRate.toLong - longTermFeeRate.toLong)
+      // difference of fee rate between feeRate and longTermFeeRate
+      val feeRateDiff =
+        SatoshisPerVirtualByte.fromLong(feeRate.toLong - longTermFeeRate.toLong)
 
-        // difference fees it costs to spend our utxos between feeRate and longTermFeeRate
-        val utxoFeeDiffs =
-          utxos.map(u => CoinSelector.calculateUtxoFee(u, feeRateDiff)).sum
+      // difference fees it costs to spend our utxos between feeRate and longTermFeeRate
+      val utxoFeeDiffs =
+        utxos.map(u => CoinSelector.calculateUtxoFee(u, feeRateDiff)).sum
 
-        // how much change we have
-        val excess = inAmt - utxosFee - target
+      // how much change we have
+      val excess = inAmt - utxosFee - target
 
-        // Waste with change is the change cost and difference between fee and long term fee
-        val waste1 =
-          CoinSelector.calculateSelectionWaste(utxos = utxos,
-                                               changeCostOpt = Some(changeCost),
-                                               target = target,
-                                               feeRate = feeRate,
-                                               longTermFeeRate =
-                                                 longTermFeeRate)
+      // Waste with change is the change cost and difference between fee and long term fee
+      val waste1 =
+        CoinSelector.calculateSelectionWaste(utxos = utxos,
+                                             changeCostOpt = Some(changeCost),
+                                             target = target,
+                                             feeRate = feeRate,
+                                             longTermFeeRate = longTermFeeRate)
 
-        assert(waste1 == utxoFeeDiffs + changeCost)
+      assert(waste1 == utxoFeeDiffs + changeCost)
 
-        // Waste without change is the excess and difference between fee and long term fee
-        val waste2 =
-          CoinSelector.calculateSelectionWaste(utxos = utxos,
-                                               changeCostOpt = None,
-                                               target = target,
-                                               feeRate = feeRate,
-                                               longTermFeeRate =
-                                                 longTermFeeRate)
+      // Waste without change is the excess and difference between fee and long term fee
+      val waste2 =
+        CoinSelector.calculateSelectionWaste(utxos = utxos,
+                                             changeCostOpt = None,
+                                             target = target,
+                                             feeRate = feeRate,
+                                             longTermFeeRate = longTermFeeRate)
 
-        assert(waste2 == utxoFeeDiffs + excess)
+      assert(waste2 == utxoFeeDiffs + excess)
 
-        // Waste with change and fee == long term fee is just cost of change
-        val waste3 =
-          CoinSelector.calculateSelectionWaste(utxos = utxos,
-                                               changeCostOpt = Some(changeCost),
-                                               target = target,
-                                               feeRate = feeRate,
-                                               longTermFeeRate = feeRate)
+      // Waste with change and fee == long term fee is just cost of change
+      val waste3 =
+        CoinSelector.calculateSelectionWaste(utxos = utxos,
+                                             changeCostOpt = Some(changeCost),
+                                             target = target,
+                                             feeRate = feeRate,
+                                             longTermFeeRate = feeRate)
 
-        assert(waste3 == changeCost)
+      assert(waste3 == changeCost)
 
-        // Waste without change and fee == long term fee is just the excess
-        val waste4 =
-          CoinSelector.calculateSelectionWaste(utxos = utxos,
-                                               changeCostOpt = None,
-                                               target = target,
-                                               feeRate = feeRate,
-                                               longTermFeeRate = feeRate)
+      // Waste without change and fee == long term fee is just the excess
+      val waste4 =
+        CoinSelector.calculateSelectionWaste(utxos = utxos,
+                                             changeCostOpt = None,
+                                             target = target,
+                                             feeRate = feeRate,
+                                             longTermFeeRate = feeRate)
 
-        assert(waste4 == excess)
+      assert(waste4 == excess)
 
-        // Waste will be greater when fee is greater, but long term fee is the same
-        val biggerFeeRate = SatoshisPerVirtualByte(feeRate.currencyUnit * 2)
-        val waste5 =
-          CoinSelector.calculateSelectionWaste(utxos = utxos,
-                                               changeCostOpt = Some(changeCost),
-                                               target = target,
-                                               feeRate = biggerFeeRate,
-                                               longTermFeeRate =
-                                                 longTermFeeRate)
+      // Waste will be greater when fee is greater, but long term fee is the same
+      val biggerFeeRate = SatoshisPerVirtualByte(feeRate.currencyUnit * 2)
+      val waste5 =
+        CoinSelector.calculateSelectionWaste(utxos = utxos,
+                                             changeCostOpt = Some(changeCost),
+                                             target = target,
+                                             feeRate = biggerFeeRate,
+                                             longTermFeeRate = longTermFeeRate)
 
-        // waste 1 is the same params but feeRate
-        assert(waste5 > waste1)
+      // waste 1 is the same params but feeRate
+      assert(waste5 > waste1)
 
-        // Waste with change is the change cost and difference between fee and long term fee
-        // With long term fee greater than fee, waste should be less than when long term fee is less than fee
-        val waste6 =
-          CoinSelector.calculateSelectionWaste(utxos = utxos,
-                                               changeCostOpt = Some(changeCost),
-                                               target = target,
-                                               feeRate = longTermFeeRate,
-                                               longTermFeeRate = feeRate)
+      // Waste with change is the change cost and difference between fee and long term fee
+      // With long term fee greater than fee, waste should be less than when long term fee is less than fee
+      val waste6 =
+        CoinSelector.calculateSelectionWaste(utxos = utxos,
+                                             changeCostOpt = Some(changeCost),
+                                             target = target,
+                                             feeRate = longTermFeeRate,
+                                             longTermFeeRate = feeRate)
 
-        assert(waste6 == -utxoFeeDiffs + changeCost)
-        // waste 1 is the same params but feeRate and longTermFeeRate swapped
-        assert(waste6 < waste1)
+      assert(waste6 == -utxoFeeDiffs + changeCost)
+      // waste 1 is the same params but feeRate and longTermFeeRate swapped
+      assert(waste6 < waste1)
 
-        // 0 Waste only when fee == long term fee, no change, and no excess
-        val waste7 =
-          CoinSelector.calculateSelectionWaste(utxos = utxos,
-                                               changeCostOpt = None,
-                                               target = inAmt - utxosFee,
-                                               feeRate = feeRate,
-                                               longTermFeeRate = feeRate)
+      // 0 Waste only when fee == long term fee, no change, and no excess
+      val waste7 =
+        CoinSelector.calculateSelectionWaste(utxos = utxos,
+                                             changeCostOpt = None,
+                                             target = inAmt - utxosFee,
+                                             feeRate = feeRate,
+                                             longTermFeeRate = feeRate)
 
-        assert(waste7 == CurrencyUnits.zero)
+      assert(waste7 == CurrencyUnits.zero)
     }
   }
 
-  def createSpendingInfoDbs(
-      amounts: Vector[CurrencyUnit]): Vector[SpendingInfoDb] = {
+  def createSpendingInfoDbs(amounts: Vector[CurrencyUnit]): Vector[SpendingInfoDb] = {
     amounts.map { amt =>
       val key = ECPublicKey.freshPublicKey
       val spk = P2WPKHWitnessSPKV0(key)
       val output = TransactionOutput(amt, spk)
       val scriptWitness = P2WPKHWitnessV0(key)
-      val path = SegWitHDPath(HDCoinType.Testnet,
-                              accountIndex = 0,
-                              HDChainType.External,
-                              addressIndex = 0)
+      val path = SegWitHDPath(HDCoinType.Testnet, accountIndex = 0, HDChainType.External, addressIndex = 0)
 
       SegwitV0SpendingInfo(
         outPoint = EmptyTransactionOutPoint,
@@ -156,9 +147,7 @@ class CoinSelectorTest extends BitcoinSUnitTest {
     */
   def correctFeeRates(
       feeRateA: SatoshisPerVirtualByte,
-      feeRateB: SatoshisPerVirtualByte): (
-      SatoshisPerVirtualByte,
-      SatoshisPerVirtualByte) = {
+      feeRateB: SatoshisPerVirtualByte): (SatoshisPerVirtualByte, SatoshisPerVirtualByte) = {
     if (feeRateA.toLong > feeRateB.toLong) {
       (feeRateA, feeRateB)
     } else if (feeRateA.toLong < feeRateB.toLong) {

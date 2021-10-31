@@ -23,11 +23,7 @@ object PBKDF2 {
     SecretKeyFactory.getInstance(PSEUDO_RANDOM_FUNCTION)
 
   /** $keyStretch */
-  def withSha512(
-      bytes: ByteVector,
-      salt: ByteVector,
-      iterationCount: Int,
-      derivedKeyLength: Int): SecretKey = {
+  def withSha512(bytes: ByteVector, salt: ByteVector, iterationCount: Int, derivedKeyLength: Int): SecretKey = {
 
     val keySpec = new PBEKeySpec(
       bytes.toArray.map(_.toChar),

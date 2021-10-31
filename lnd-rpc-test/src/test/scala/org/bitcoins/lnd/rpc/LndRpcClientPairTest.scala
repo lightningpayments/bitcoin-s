@@ -35,8 +35,7 @@ class LndRpcClientPairTest extends DualLndFixture {
       channels <- lnd.listChannels()
       channel = channels.head
 
-      (txIdStr, voutStr) = channel.channelPoint.splitAt(
-        channel.channelPoint.indexOf(":"))
+      (txIdStr, voutStr) = channel.channelPoint.splitAt(channel.channelPoint.indexOf(":"))
       txId = DoubleSha256DigestBE(txIdStr)
       vout = UInt32(voutStr.tail.toLong)
       channelPoint = TransactionOutPoint(txId, vout)
@@ -61,15 +60,10 @@ class LndRpcClientPairTest extends DualLndFixture {
       utxo <- lnd.listUnspent.map(_.head)
       prevOut = TransactionOutput(utxo.amount, utxo.spk)
 
-      input = TransactionInput(utxo.outPointOpt.get,
-                               EmptyScriptSignature,
-                               TransactionConstants.sequence)
+      input = TransactionInput(utxo.outPointOpt.get, EmptyScriptSignature, TransactionConstants.sequence)
       output = TransactionOutput(Bitcoins(0.5), bitcoindAddr.scriptPubKey)
 
-      unsigned = BaseTransaction(Int32.two,
-                                 Vector(input),
-                                 Vector(output),
-                                 UInt32.zero)
+      unsigned = BaseTransaction(Int32.two, Vector(input), Vector(output), UInt32.zero)
 
       (scriptSig, wit) <- lnd.computeInputScript(unsigned, 0, prevOut)
     } yield {
@@ -95,8 +89,7 @@ class LndRpcClientPairTest extends DualLndFixture {
       // Assert payment was successful
       _ = assert(payment.paymentError.isEmpty, payment.paymentError)
 
-      _ <- AsyncUtil.awaitConditionF(() =>
-        lndA.lookupInvoice(invoice.rHash).map(_.state.isSettled))
+      _ <- AsyncUtil.awaitConditionF(() => lndA.lookupInvoice(invoice.rHash).map(_.state.isSettled))
     } yield succeed
   }
 

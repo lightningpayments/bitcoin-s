@@ -14,22 +14,16 @@ object TorUtil extends Logging {
     .isDefined
 
   def torProxyAddress =
-    new InetSocketAddress(InetAddress.getLoopbackAddress,
-                          TorParams.DefaultProxyPort)
+    new InetSocketAddress(InetAddress.getLoopbackAddress, TorParams.DefaultProxyPort)
 
   def torControlAddress =
-    new InetSocketAddress(InetAddress.getLoopbackAddress,
-                          TorParams.DefaultControlPort)
+    new InetSocketAddress(InetAddress.getLoopbackAddress, TorParams.DefaultControlPort)
 
   def torProxyEnabled: Boolean = portIsBound(torProxyAddress)
   def torControlEnabled: Boolean = portIsBound(torControlAddress)
 
   def verifyTorEnabled(): Unit = {
-    assume(
-      torProxyEnabled,
-      s"Tor daemon is not running or listening port ${TorParams.DefaultProxyPort}")
-    assume(
-      torControlEnabled,
-      s"Tor daemon is not running or listening port ${TorParams.DefaultControlPort}")
+    assume(torProxyEnabled, s"Tor daemon is not running or listening port ${TorParams.DefaultProxyPort}")
+    assume(torControlEnabled, s"Tor daemon is not running or listening port ${TorParams.DefaultControlPort}")
   }
 }

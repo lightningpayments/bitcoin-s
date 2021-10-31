@@ -13,24 +13,14 @@ import org.bitcoins.core.currency.{Bitcoins, CurrencyUnit, Satoshis}
 import org.bitcoins.core.dlc.accounting.DLCWalletAccounting
 import org.bitcoins.core.hd._
 import org.bitcoins.core.number.{UInt32, UInt64}
-import org.bitcoins.core.protocol.BlockStamp.{
-  BlockHash,
-  BlockHeight,
-  BlockTime,
-  InvalidBlockStamp
-}
+import org.bitcoins.core.protocol.BlockStamp.{BlockHash, BlockHeight, BlockTime, InvalidBlockStamp}
 import org.bitcoins.core.protocol.blockchain.BlockHeader
 import org.bitcoins.core.protocol.dlc.models.DLCMessage._
 import org.bitcoins.core.protocol.dlc.models._
 import org.bitcoins.core.protocol.script.{EmptyScriptWitness, P2WPKHWitnessV0}
 import org.bitcoins.core.protocol.tlv._
 import org.bitcoins.core.protocol.transaction._
-import org.bitcoins.core.protocol.{
-  Bech32Address,
-  BitcoinAddress,
-  BlockStamp,
-  P2PKHAddress
-}
+import org.bitcoins.core.protocol.{Bech32Address, BitcoinAddress, BlockStamp, P2PKHAddress}
 import org.bitcoins.core.psbt.InputPSBTRecord.PartialSignature
 import org.bitcoins.core.psbt.PSBT
 import org.bitcoins.core.util.FutureUtil
@@ -93,27 +83,19 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
         "70736274ff01003f0200000001ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0000000000ffffffff010000000000000000036a0100000000000a0f0102030405060708090f0102030405060708090a0b0c0d0e0f0a0f0102030405060708100f0102030405060708090a0b0c0d0e0f000a0f0102030405060708090f0102030405060708090a0b0c0d0e0f0a0f0102030405060708100f0102030405060708090a0b0c0d0e0f000a0f0102030405060708090f0102030405060708090a0b0c0d0e0f0a0f0102030405060708100f0102030405060708090a0b0c0d0e0f00")
 
       val route =
-        coreRoutes.handleCommand(
-          ServerCommand("combinepsbts",
-                        Arr(Arr(Str(psbt1.base64), Str(psbt2.base64)))))
+        coreRoutes.handleCommand(ServerCommand("combinepsbts", Arr(Arr(Str(psbt1.base64), Str(psbt2.base64)))))
 
       Get() ~> route ~> check {
         assert(contentType == `application/json`)
-        assert(
-          responseAs[
-            String] == s"""{"result":"${expected.base64}","error":null}""")
+        assert(responseAs[String] == s"""{"result":"${expected.base64}","error":null}""")
       }
 
       val joinRoute =
-        coreRoutes.handleCommand(
-          ServerCommand("joinpsbts",
-                        Arr(Arr(Str(psbt1.base64), Str(psbt2.base64)))))
+        coreRoutes.handleCommand(ServerCommand("joinpsbts", Arr(Arr(Str(psbt1.base64), Str(psbt2.base64)))))
 
       Get() ~> joinRoute ~> check {
         assert(contentType == `application/json`)
-        assert(
-          responseAs[
-            String] == s"""{"result":"${expected.base64}","error":null}""")
+        assert(responseAs[String] == s"""{"result":"${expected.base64}","error":null}""")
       }
     }
 
@@ -124,14 +106,11 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
         "70736274ff01009a020000000258e87a21b56daf0c23be8e7070456c336f7cbaa5c8757924f545887bb2abdd750000000000ffffffff838d0427d0ec650a68aa46bb0b098aea4422c071b2ca78352a077959d07cea1d0100000000ffffffff0270aaf00800000000160014d85c2b71d0060b09c9886aeb815e50991dda124d00e1f5050000000016001400aea9a2e5f0f876a588df5546e8742d1d87008f00000000000100bb0200000001aad73931018bd25f84ae400b68848be09db706eac2ac18298babee71ab656f8b0000000048473044022058f6fc7c6a33e1b31548d481c826c015bd30135aad42cd67790dab66d2ad243b02204a1ced2604c6735b6393e5b41691dd78b00f0c5942fb9f751856faa938157dba01feffffff0280f0fa020000000017a9140fb9463421696b82c833af241c78c17ddbde493487d0f20a270100000017a91429ca74f8a08f81999428185c97b5d852e4063f6187650000000107da00473044022074018ad4180097b873323c0015720b3684cc8123891048e7dbcd9b55ad679c99022073d369b740e3eb53dcefa33823c8070514ca55a7dd9544f157c167913261118c01483045022100f61038b308dc1da865a34852746f015772934208c6d24454393cd99bdf2217770220056e675a675a6d0a02b85b14e5e29074d8a25a9b5760bea2816f661910a006ea01475221029583bf39ae0a609747ad199addd634fa6108559d6c5cd39b4c2183f1ab96e07f2102dab61ff49a14db6a7d02b0cd1fbb78fc4b18312b5b4e54dae4dba2fbfef536d752ae000100f80200000000010158e87a21b56daf0c23be8e7070456c336f7cbaa5c8757924f545887bb2abdd7501000000171600145f275f436b09a8cc9a2eb2a2f528485c68a56323feffffff02d8231f1b0100000017a914aed962d6654f9a2b36608eb9d64d2b260db4f1118700c2eb0b0000000017a914b7f5faf40e3d40a5a459b1db3535f2b72fa921e88702483045022100a22edcc6e5bc511af4cc4ae0de0fcd75c7e04d8c1c3a8aa9d820ed4b967384ec02200642963597b9b1bc22c75e9f3e117284a962188bf5e8a74c895089046a20ad770121035509a48eb623e10aace8bfd0212fdb8a8e5af3c94b0b133b95e114cab89e4f79650000000107232200208c2353173743b595dfb4a07b72ba8e42e3797da74e87fe7d9d7497e3b20289030108da0400473044022062eb7a556107a7c73f45ac4ab5a1dddf6f7075fb1275969a7f383efff784bcb202200c05dbb7470dbf2f08557dd356c7325c1ed30913e996cd3840945db12228da5f01473044022065f45ba5998b59a27ffe1a7bed016af1f1f90d54b3aa8f7450aa5f56a25103bd02207f724703ad1edb96680b284b56d4ffcb88f7fb759eabbe08aa30f29b851383d20147522103089dc10c7ac6db54f91329af617333db388cead0c231f723379d1b99030b02dc21023add904f3d6dcf59ddb906b0dee23529b7ffb9ed50e5e86151926860221f0e7352ae00220203a9a4c37f5996d3aa25dbac6b570af0650394492942460b354753ed9eeca5877110d90c6a4f000000800000008004000080002202027f6399757d2eff55a136ad02c684b1838b6556e5f1b6b34282a94b6b5005109610d90c6a4f00000080000000800500008000")
 
       val route =
-        coreRoutes.handleCommand(
-          ServerCommand("finalizepsbt", Arr(Str(psbt.hex))))
+        coreRoutes.handleCommand(ServerCommand("finalizepsbt", Arr(Str(psbt.hex))))
 
       Get() ~> route ~> check {
         assert(contentType == `application/json`)
-        assert(
-          responseAs[
-            String] == s"""{"result":"${expected.base64}","error":null}""")
+        assert(responseAs[String] == s"""{"result":"${expected.base64}","error":null}""")
 
       }
     }
@@ -143,14 +122,11 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
         "0200000000010258e87a21b56daf0c23be8e7070456c336f7cbaa5c8757924f545887bb2abdd7500000000da00473044022074018ad4180097b873323c0015720b3684cc8123891048e7dbcd9b55ad679c99022073d369b740e3eb53dcefa33823c8070514ca55a7dd9544f157c167913261118c01483045022100f61038b308dc1da865a34852746f015772934208c6d24454393cd99bdf2217770220056e675a675a6d0a02b85b14e5e29074d8a25a9b5760bea2816f661910a006ea01475221029583bf39ae0a609747ad199addd634fa6108559d6c5cd39b4c2183f1ab96e07f2102dab61ff49a14db6a7d02b0cd1fbb78fc4b18312b5b4e54dae4dba2fbfef536d752aeffffffff838d0427d0ec650a68aa46bb0b098aea4422c071b2ca78352a077959d07cea1d01000000232200208c2353173743b595dfb4a07b72ba8e42e3797da74e87fe7d9d7497e3b2028903ffffffff0270aaf00800000000160014d85c2b71d0060b09c9886aeb815e50991dda124d00e1f5050000000016001400aea9a2e5f0f876a588df5546e8742d1d87008f000400473044022062eb7a556107a7c73f45ac4ab5a1dddf6f7075fb1275969a7f383efff784bcb202200c05dbb7470dbf2f08557dd356c7325c1ed30913e996cd3840945db12228da5f01473044022065f45ba5998b59a27ffe1a7bed016af1f1f90d54b3aa8f7450aa5f56a25103bd02207f724703ad1edb96680b284b56d4ffcb88f7fb759eabbe08aa30f29b851383d20147522103089dc10c7ac6db54f91329af617333db388cead0c231f723379d1b99030b02dc21023add904f3d6dcf59ddb906b0dee23529b7ffb9ed50e5e86151926860221f0e7352ae00000000")
 
       val route =
-        coreRoutes.handleCommand(
-          ServerCommand("extractfrompsbt", Arr(Str(psbt.hex))))
+        coreRoutes.handleCommand(ServerCommand("extractfrompsbt", Arr(Str(psbt.hex))))
 
       Get() ~> route ~> check {
         assert(contentType == `application/json`)
-        assert(
-          responseAs[
-            String] == s"""{"result":"${expected.hex}","error":null}""")
+        assert(responseAs[String] == s"""{"result":"${expected.hex}","error":null}""")
       }
     }
 
@@ -161,14 +137,11 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
         "70736274ff01009a020000000258e87a21b56daf0c23be8e7070456c336f7cbaa5c8757924f545887bb2abdd750000000000ffffffff838d0427d0ec650a68aa46bb0b098aea4422c071b2ca78352a077959d07cea1d0100000000ffffffff0270aaf00800000000160014d85c2b71d0060b09c9886aeb815e50991dda124d00e1f5050000000016001400aea9a2e5f0f876a588df5546e8742d1d87008f000000000000000000")
 
       val route =
-        coreRoutes.handleCommand(
-          ServerCommand("converttopsbt", Arr(Str(tx.hex))))
+        coreRoutes.handleCommand(ServerCommand("converttopsbt", Arr(Str(tx.hex))))
 
       Get() ~> route ~> check {
         assert(contentType == `application/json`)
-        assert(
-          responseAs[
-            String] == s"""{"result":"${expected.base64}","error":null}""")
+        assert(responseAs[String] == s"""{"result":"${expected.base64}","error":null}""")
 
       }
     }
@@ -226,16 +199,15 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
       Get() ~> route ~> check {
         assert(contentType == `application/json`)
         assert(
-          responseAs[String] == """{"result":"0000000000000000000000000000000000000000000000000000000000000000","error":null}""")
+          responseAs[
+            String] == """{"result":"0000000000000000000000000000000000000000000000000000000000000000","error":null}""")
       }
     }
 
     val blockHeader = BlockHeader(
       "00e0002094c6692e100ed20d14f8c325c897259749e781d55ed1b7eb1000000000000000309a90b49f5f5a14ffdb2857557f6f27a136943603fb29e65e283dcb27fd886124fee25f57e53019886c0e8b")
     val blockHeaderDb =
-      BlockHeaderDbHelper.fromBlockHeader(height = 1899697,
-                                          chainWork = BigInt(12345),
-                                          bh = blockHeader)
+      BlockHeaderDbHelper.fromBlockHeader(height = 1899697, chainWork = BigInt(12345), bh = blockHeader)
 
     "get a block header" in {
       val chainworkStr = {
@@ -258,8 +230,7 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
         .returning(Future.successful(Some(1)))
 
       val route =
-        chainRoutes.handleCommand(
-          ServerCommand("getblockheader", Arr(Str(blockHeader.hashBE.hex))))
+        chainRoutes.handleCommand(ServerCommand("getblockheader", Arr(Str(blockHeader.hashBE.hex))))
 
       Get() ~> route ~> check {
         assert(contentType == `application/json`)
@@ -275,8 +246,7 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
         .returning(Future.successful(Bitcoins(50)))
 
       val route =
-        walletRoutes.handleCommand(
-          ServerCommand("getbalance", Arr(Bool(false))))
+        walletRoutes.handleCommand(ServerCommand("getbalance", Arr(Bool(false))))
 
       Get() ~> route ~> check {
         assert(contentType == `application/json`)
@@ -305,8 +275,7 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
         .returning(Future.successful(Bitcoins(50)))
 
       val route =
-        walletRoutes.handleCommand(
-          ServerCommand("getconfirmedbalance", Arr(Bool(false))))
+        walletRoutes.handleCommand(ServerCommand("getconfirmedbalance", Arr(Bool(false))))
 
       Get() ~> route ~> check {
         assert(contentType == `application/json`)
@@ -320,8 +289,7 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
         .returning(Future.successful(Bitcoins(50)))
 
       val route =
-        walletRoutes.handleCommand(
-          ServerCommand("getconfirmedbalance", Arr(Bool(true))))
+        walletRoutes.handleCommand(ServerCommand("getconfirmedbalance", Arr(Bool(true))))
 
       Get() ~> route ~> check {
         assert(contentType == `application/json`)
@@ -335,8 +303,7 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
         .returning(Future.successful(Bitcoins(50)))
 
       val route =
-        walletRoutes.handleCommand(
-          ServerCommand("getunconfirmedbalance", Arr(Bool(false))))
+        walletRoutes.handleCommand(ServerCommand("getunconfirmedbalance", Arr(Bool(false))))
 
       Get() ~> route ~> check {
         assert(contentType == `application/json`)
@@ -347,8 +314,7 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
     val spendingInfoDb = SegwitV0SpendingInfo(
       outPoint = TransactionOutPoint(DoubleSha256DigestBE.empty, UInt32.zero),
       output = EmptyTransactionOutput,
-      privKeyPath =
-        SegWitHDPath(HDCoinType.Testnet, 0, HDChainType.External, 0),
+      privKeyPath = SegWitHDPath(HDCoinType.Testnet, 0, HDChainType.External, 0),
       scriptWitness = EmptyScriptWitness,
       txid = DoubleSha256DigestBE.empty,
       state = TxoState.PendingConfirmationsSpent,
@@ -370,8 +336,7 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
         .returning(Future.successful(Vector(spendingInfoDb)))
 
       val route =
-        walletRoutes.handleCommand(
-          ServerCommand("getbalances", Arr(Bool(false))))
+        walletRoutes.handleCommand(ServerCommand("getbalances", Arr(Bool(false))))
 
       Get() ~> route ~> check {
         assert(contentType == `application/json`)
@@ -395,8 +360,7 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
         .returning(Future.successful(Vector(spendingInfoDb)))
 
       val route =
-        walletRoutes.handleCommand(
-          ServerCommand("getbalances", Arr(Bool(true))))
+        walletRoutes.handleCommand(ServerCommand("getbalances", Arr(Bool(true))))
 
       Get() ~> route ~> check {
         assert(contentType == `application/json`)
@@ -411,8 +375,7 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
         .returning(Future.successful(Bitcoins(50)))
 
       val route =
-        walletRoutes.handleCommand(
-          ServerCommand("getunconfirmedbalance", Arr(Bool(true))))
+        walletRoutes.handleCommand(ServerCommand("getunconfirmedbalance", Arr(Bool(true))))
 
       Get() ~> route ~> check {
         assert(contentType == `application/json`)
@@ -485,8 +448,7 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
 
       Get() ~> route ~> check {
         assert(contentType == `application/json`)
-        assert(
-          responseAs[String] == """{"result":["""" + testAddressStr + """"],"error":null}""")
+        assert(responseAs[String] == """{"result":["""" + testAddressStr + """"],"error":null}""")
       }
     }
 
@@ -508,8 +470,7 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
 
       Get() ~> route ~> check {
         assert(contentType == `application/json`)
-        assert(
-          responseAs[String] == """{"result":["""" + testAddressStr + """"],"error":null}""")
+        assert(responseAs[String] == """{"result":["""" + testAddressStr + """"],"error":null}""")
       }
     }
 
@@ -522,9 +483,7 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
         testAddress.scriptPubKey
       )
 
-      (mockWalletApi.listFundedAddresses: () => Future[Vector[(
-          AddressDb,
-          CurrencyUnit)]])
+      (mockWalletApi.listFundedAddresses: () => Future[Vector[(AddressDb, CurrencyUnit)]])
         .expects()
         .returning(Future.successful(Vector((addressDb, Satoshis.zero))))
 
@@ -533,8 +492,9 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
 
       Get() ~> route ~> check {
         assert(contentType == `application/json`)
-        assert(responseAs[String] ==
-          s"""{"result":[{"address":"$testAddressStr","value":0}],"error":null}""".stripMargin)
+        assert(
+          responseAs[String] ==
+            s"""{"result":[{"address":"$testAddressStr","value":0}],"error":null}""".stripMargin)
       }
     }
 
@@ -556,8 +516,7 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
 
       Get() ~> route ~> check {
         assert(contentType == `application/json`)
-        assert(
-          responseAs[String] == """{"result":["""" + testAddressStr + """"],"error":null}""")
+        assert(responseAs[String] == """{"result":["""" + testAddressStr + """"],"error":null}""")
       }
     }
 
@@ -567,9 +526,7 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
           "xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8")
 
       val accountDb =
-        AccountDb(xpub = xpub,
-                  hdAccount =
-                    HDAccount(HDCoin(HDPurposes.Legacy, HDCoinType.Testnet), 0))
+        AccountDb(xpub = xpub, hdAccount = HDAccount(HDCoin(HDPurposes.Legacy, HDCoinType.Testnet), 0))
 
       (mockWalletApi.listAccounts: () => Future[Vector[AccountDb]])
         .expects()
@@ -580,8 +537,7 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
 
       Get() ~> route ~> check {
         assert(contentType == `application/json`)
-        assert(responseAs[
-          String] == """{"result":["""" + xpub.toString + """"],"error":null}""")
+        assert(responseAs[String] == """{"result":["""" + xpub.toString + """"],"error":null}""")
       }
     }
 
@@ -592,13 +548,11 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
         .returning(Future.successful(testAddress))
 
       val route =
-        walletRoutes.handleCommand(
-          ServerCommand("getnewaddress", Arr(ujson.Null)))
+        walletRoutes.handleCommand(ServerCommand("getnewaddress", Arr(ujson.Null)))
 
       Get() ~> route ~> check {
         assert(contentType == `application/json`)
-        assert(responseAs[
-          String] == """{"result":"""" + testAddressStr + """","error":null}""")
+        assert(responseAs[String] == """{"result":"""" + testAddressStr + """","error":null}""")
       }
     }
 
@@ -613,13 +567,11 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
         .returning(Future.successful(Some(AddressInfo(key, RegTest, hdPath))))
 
       val route =
-        walletRoutes.handleCommand(
-          ServerCommand("getaddressinfo", Arr(Str(testAddressStr))))
+        walletRoutes.handleCommand(ServerCommand("getaddressinfo", Arr(Str(testAddressStr))))
 
       Get() ~> route ~> check {
         assert(contentType == `application/json`)
-        assert(responseAs[
-          String] == s"""{"result":{"pubkey":"${key.hex}","path":"${hdPath.toString}"},"error":null}""")
+        assert(responseAs[String] == s"""{"result":{"pubkey":"${key.hex}","path":"${hdPath.toString}"},"error":null}""")
       }
     }
 
@@ -630,13 +582,11 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
         .returning(Future.successful(testAddress))
 
       val route =
-        walletRoutes.handleCommand(
-          ServerCommand("getnewaddress", Arr(Str(testLabel.name))))
+        walletRoutes.handleCommand(ServerCommand("getnewaddress", Arr(Str(testLabel.name))))
 
       Get() ~> route ~> check {
         assert(contentType == `application/json`)
-        assert(responseAs[
-          String] == """{"result":"""" + testAddressStr + """","error":null}""")
+        assert(responseAs[String] == """{"result":"""" + testAddressStr + """","error":null}""")
       }
     }
 
@@ -665,8 +615,7 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
         .anyNumberOfTimes()
 
       val route1 =
-        walletRoutes.handleCommand(
-          ServerCommand("lockunspent", Arr(Bool(false), Arr())))
+        walletRoutes.handleCommand(ServerCommand("lockunspent", Arr(Bool(false), Arr())))
 
       Get() ~> route1 ~> check {
         assert(contentType == `application/json`)
@@ -674,8 +623,7 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
       }
 
       val route2 =
-        walletRoutes.handleCommand(
-          ServerCommand("lockunspent", Arr(Bool(true), Arr())))
+        walletRoutes.handleCommand(ServerCommand("lockunspent", Arr(Bool(true), Arr())))
 
       Get() ~> route2 ~> check {
         assert(contentType == `application/json`)
@@ -688,8 +636,7 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
       )
 
       val route3 =
-        walletRoutes.handleCommand(
-          ServerCommand("lockunspent", Arr(Bool(true), Arr(obj))))
+        walletRoutes.handleCommand(ServerCommand("lockunspent", Arr(Bool(true), Arr(obj))))
 
       Get() ~> route3 ~> check {
         assert(contentType == `application/json`)
@@ -697,8 +644,7 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
       }
 
       val route4 =
-        walletRoutes.handleCommand(
-          ServerCommand("lockunspent", Arr(Bool(true), Arr(obj))))
+        walletRoutes.handleCommand(ServerCommand("lockunspent", Arr(Bool(true), Arr(obj))))
 
       Get() ~> route4 ~> check {
         assert(contentType == `application/json`)
@@ -713,9 +659,7 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
         .returning(Future.successful(AddressTagDb(testAddress, testLabel)))
 
       val route =
-        walletRoutes.handleCommand(
-          ServerCommand("labeladdress",
-                        Arr(Str(testAddressStr), Str(testLabel.name))))
+        walletRoutes.handleCommand(ServerCommand("labeladdress", Arr(Str(testAddressStr), Str(testLabel.name))))
 
       Get() ~> route ~> check {
         assert(contentType == `application/json`)
@@ -728,17 +672,14 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
       (mockWalletApi
         .getAddressTags(_: BitcoinAddress))
         .expects(testAddress)
-        .returning(
-          Future.successful(Vector(AddressTagDb(testAddress, testLabel))))
+        .returning(Future.successful(Vector(AddressTagDb(testAddress, testLabel))))
 
       val route =
-        walletRoutes.handleCommand(
-          ServerCommand("getaddresstags", Arr(Str(testAddressStr))))
+        walletRoutes.handleCommand(ServerCommand("getaddresstags", Arr(Str(testAddressStr))))
 
       Get() ~> route ~> check {
         assert(contentType == `application/json`)
-        assert(
-          responseAs[String] == """{"result":["""" + testLabel.name + """"],"error":null}""")
+        assert(responseAs[String] == """{"result":["""" + testLabel.name + """"],"error":null}""")
       }
     }
 
@@ -746,17 +687,14 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
       (mockWalletApi
         .getAddressTags(_: BitcoinAddress, _: AddressTagType))
         .expects(testAddress, AddressLabelTagType)
-        .returning(
-          Future.successful(Vector(AddressTagDb(testAddress, testLabel))))
+        .returning(Future.successful(Vector(AddressTagDb(testAddress, testLabel))))
 
       val route =
-        walletRoutes.handleCommand(
-          ServerCommand("getaddresslabels", Arr(Str(testAddressStr))))
+        walletRoutes.handleCommand(ServerCommand("getaddresslabels", Arr(Str(testAddressStr))))
 
       Get() ~> route ~> check {
         assert(contentType == `application/json`)
-        assert(
-          responseAs[String] == """{"result":["""" + testLabel.name + """"],"error":null}""")
+        assert(responseAs[String] == """{"result":["""" + testLabel.name + """"],"error":null}""")
       }
     }
 
@@ -767,13 +705,11 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
         .returning(Future.successful(0))
 
       val route =
-        walletRoutes.handleCommand(
-          ServerCommand("dropaddresslabels", Arr(Str(testAddressStr))))
+        walletRoutes.handleCommand(ServerCommand("dropaddresslabels", Arr(Str(testAddressStr))))
 
       Get() ~> route ~> check {
         assert(contentType == `application/json`)
-        assert(
-          responseAs[String] == """{"result":"""" + "Address had no labels" + """","error":null}""")
+        assert(responseAs[String] == """{"result":"""" + "Address had no labels" + """","error":null}""")
       }
     }
 
@@ -784,13 +720,11 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
         .returning(Future.successful(1))
 
       val route =
-        walletRoutes.handleCommand(
-          ServerCommand("dropaddresslabels", Arr(Str(testAddressStr))))
+        walletRoutes.handleCommand(ServerCommand("dropaddresslabels", Arr(Str(testAddressStr))))
 
       Get() ~> route ~> check {
         assert(contentType == `application/json`)
-        assert(
-          responseAs[String] == """{"result":"""" + "1 label dropped" + """","error":null}""")
+        assert(responseAs[String] == """{"result":"""" + "1 label dropped" + """","error":null}""")
       }
     }
 
@@ -801,13 +735,11 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
         .returning(Future.successful(2))
 
       val route =
-        walletRoutes.handleCommand(
-          ServerCommand("dropaddresslabels", Arr(Str(testAddressStr))))
+        walletRoutes.handleCommand(ServerCommand("dropaddresslabels", Arr(Str(testAddressStr))))
 
       Get() ~> route ~> check {
         assert(contentType == `application/json`)
-        assert(
-          responseAs[String] == """{"result":"""" + "2 labels dropped" + """","error":null}""")
+        assert(responseAs[String] == """{"result":"""" + "2 labels dropped" + """","error":null}""")
       }
     }
 
@@ -822,14 +754,11 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
         .anyNumberOfTimes()
 
       val route =
-        walletRoutes.handleCommand(
-          ServerCommand("sendrawtransaction", Arr(Str(tx.hex))))
+        walletRoutes.handleCommand(ServerCommand("sendrawtransaction", Arr(Str(tx.hex))))
 
       Get() ~> route ~> check {
         assert(contentType == `application/json`)
-        assert(
-          responseAs[
-            String] == s"""{"result":"${tx.txIdBE.hex}","error":null}""")
+        assert(responseAs[String] == s"""{"result":"${tx.txIdBE.hex}","error":null}""")
       }
     }
 
@@ -846,8 +775,7 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
         .anyNumberOfTimes()
 
       val route =
-        walletRoutes.handleCommand(
-          ServerCommand("gettransaction", Arr(Str(tx.txIdBE.hex))))
+        walletRoutes.handleCommand(ServerCommand("gettransaction", Arr(Str(tx.txIdBE.hex))))
 
       Get() ~> route ~> check {
         assert(contentType == `application/json`)
@@ -883,10 +811,7 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
       "65ace55b5d073cc7a1c783fa8c254692c421270fa988247e3c87627ffe804ed06c20bf779da91f82da3311b1d9e0a3a513409a15c66f25201280751177dad24c")
 
     val dummyOracleAttestment =
-      OracleAttestmentV0TLV("eventId",
-                            dummyPubKey.schnorrPublicKey,
-                            Vector(dummyOracleSig),
-                            Vector("outcome"))
+      OracleAttestmentV0TLV("eventId", dummyPubKey.schnorrPublicKey, Vector(dummyOracleSig), Vector("outcome"))
 
     lazy val winStr: String = "WIN"
 
@@ -897,11 +822,9 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
     val dummyDLCKeys =
       DLCPublicKeys(dummyPubKey, BitcoinAddress(dummyAddress))
 
-    val paramHash = Sha256DigestBE(
-      "de462f212d95ca4cf5db54eee08f14be0ee934e9ecfc6e9b7014ecfa51ba7b66")
+    val paramHash = Sha256DigestBE("de462f212d95ca4cf5db54eee08f14be0ee934e9ecfc6e9b7014ecfa51ba7b66")
 
-    val contractId = ByteVector.fromValidHex(
-      "4c6eb53573aae186dbb1a93274cc00c795473d7cfe2cb69e7d185ee28a39b919")
+    val contractId = ByteVector.fromValidHex("4c6eb53573aae186dbb1a93274cc00c795473d7cfe2cb69e7d185ee28a39b919")
 
     val wtx: WitnessTransaction = WitnessTransaction(
       "02000000000101a2619b5d58b209439c937e563018efcf174063ca011e4f177a5b14e5ba76211c0100000017160014614e9b96cbc7477eda98f0936385ded6b636f74efeffffff024e3f57c4000000001600147cf00288c2c1b3c5cdf275db532a1c15c514bb2fae1112000000000016001440efb02597b9e9d9bc968f12cec3347e2e264c570247304402205768c2ac8178539fd44721e2a7541bedd6b55654f095143514624203c133f7e8022060d51f33fc2b5c1f51f26c7f703de21be6246dbb5fb7e1c6919aae6d442610c6012102b99a63f166ef53ca67a5c55ae969e80c33456e07189f8457e3438f000be42c19307d1900")
@@ -916,12 +839,8 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
 
     val dummyOutcomeSigs =
       Vector(
-        EnumOracleOutcome(
-          Vector(oracleInfo),
-          EnumOutcome(winStr)).sigPoint -> ECAdaptorSignature.dummy,
-        EnumOracleOutcome(
-          Vector(oracleInfo),
-          EnumOutcome(loseStr)).sigPoint -> ECAdaptorSignature.dummy
+        EnumOracleOutcome(Vector(oracleInfo), EnumOutcome(winStr)).sigPoint -> ECAdaptorSignature.dummy,
+        EnumOracleOutcome(Vector(oracleInfo), EnumOutcome(loseStr)).sigPoint -> ECAdaptorSignature.dummy
       )
 
     val contractInfo = ContractInfo(contractDesc, oracleInfo)
@@ -931,24 +850,18 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
       contractInfo = contractInfo,
       pubKeys = dummyDLCKeys,
       totalCollateral = Satoshis(2500),
-      fundingInputs =
-        Vector(fundingInput, fundingInput.copy(inputSerialId = UInt64.max)),
+      fundingInputs = Vector(fundingInput, fundingInput.copy(inputSerialId = UInt64.max)),
       changeAddress = Bech32Address.fromString(dummyAddress),
       payoutSerialId = UInt64.zero,
       changeSerialId = UInt64.zero,
       fundOutputSerialId = UInt64.one,
       feeRate = SatoshisPerVirtualByte.one,
-      timeouts =
-        DLCTimeouts(BlockStamp(contractMaturity), BlockStamp(contractTimeout))
+      timeouts = DLCTimeouts(BlockStamp(contractMaturity), BlockStamp(contractTimeout))
     )
 
     "create a dlc offer" in {
       (mockWalletApi
-        .createDLCOffer(_: ContractInfoV0TLV,
-                        _: Satoshis,
-                        _: Option[SatoshisPerVirtualByte],
-                        _: UInt32,
-                        _: UInt32))
+        .createDLCOffer(_: ContractInfoV0TLV, _: Satoshis, _: Option[SatoshisPerVirtualByte], _: UInt32, _: UInt32))
         .expects(
           contractInfoTLV,
           Satoshis(2500),
@@ -972,8 +885,7 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
 
       Post() ~> route ~> check {
         assert(contentType == `application/json`)
-        assert(responseAs[String] == s"""{"result":"${LnMessage(
-          offer.toTLV).hex}","error":null}""")
+        assert(responseAs[String] == s"""{"result":"${LnMessage(offer.toTLV).hex}","error":null}""")
       }
     }
 
@@ -996,13 +908,11 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
         .expects(offer.toTLV)
         .returning(Future.successful(accept))
 
-      val route = walletRoutes.handleCommand(
-        ServerCommand("acceptdlcoffer", Arr(Str(LnMessage(offer.toTLV).hex))))
+      val route = walletRoutes.handleCommand(ServerCommand("acceptdlcoffer", Arr(Str(LnMessage(offer.toTLV).hex))))
 
       Post() ~> route ~> check {
         assert(contentType == `application/json`)
-        assert(responseAs[String] == s"""{"result":"${LnMessage(
-          accept.toTLV).hex}","error":null}""")
+        assert(responseAs[String] == s"""{"result":"${LnMessage(accept.toTLV).hex}","error":null}""")
       }
     }
 
@@ -1019,13 +929,11 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
         .expects(accept.toTLV)
         .returning(Future.successful(sign))
 
-      val route = walletRoutes.handleCommand(
-        ServerCommand("signdlc", Arr(Str(LnMessage(accept.toTLV).hex))))
+      val route = walletRoutes.handleCommand(ServerCommand("signdlc", Arr(Str(LnMessage(accept.toTLV).hex))))
 
       Post() ~> route ~> check {
         assert(contentType == `application/json`)
-        assert(responseAs[String] == s"""{"result":"${LnMessage(
-          sign.toTLV).hex}","error":null}""")
+        assert(responseAs[String] == s"""{"result":"${LnMessage(sign.toTLV).hex}","error":null}""")
       }
     }
 
@@ -1033,16 +941,14 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
       (mockWalletApi
         .addDLCSigs(_: DLCSignTLV))
         .expects(sign.toTLV)
-        .returning(Future.successful(
-          DLCWalletUtil.sampleDLCDb.copy(contractIdOpt = Some(contractId))))
+        .returning(Future.successful(DLCWalletUtil.sampleDLCDb.copy(contractIdOpt = Some(contractId))))
 
-      val route = walletRoutes.handleCommand(
-        ServerCommand("adddlcsigs", Arr(Str(LnMessage(sign.toTLV).hex))))
+      val route = walletRoutes.handleCommand(ServerCommand("adddlcsigs", Arr(Str(LnMessage(sign.toTLV).hex))))
 
       Post() ~> route ~> check {
         assert(contentType == `application/json`)
-        assert(responseAs[
-          String] == s"""{"result":"Successfully added sigs to DLC ${contractId.toHex}","error":null}""")
+        assert(
+          responseAs[String] == s"""{"result":"Successfully added sigs to DLC ${contractId.toHex}","error":null}""")
       }
     }
 
@@ -1050,22 +956,19 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
       (mockWalletApi
         .addDLCSigs(_: DLCSignTLV))
         .expects(sign.toTLV)
-        .returning(Future.successful(
-          DLCWalletUtil.sampleDLCDb.copy(contractIdOpt = Some(contractId))))
+        .returning(Future.successful(DLCWalletUtil.sampleDLCDb.copy(contractIdOpt = Some(contractId))))
 
       (mockWalletApi
         .broadcastDLCFundingTx(_: ByteVector))
         .expects(sign.contractId)
         .returning(Future.successful(EmptyTransaction))
 
-      val route = walletRoutes.handleCommand(
-        ServerCommand("adddlcsigsandbroadcast",
-                      Arr(Str(LnMessage(sign.toTLV).hex))))
+      val route =
+        walletRoutes.handleCommand(ServerCommand("adddlcsigsandbroadcast", Arr(Str(LnMessage(sign.toTLV).hex))))
 
       Post() ~> route ~> check {
         assert(contentType == `application/json`)
-        assert(
-          responseAs[String] == s"""{"result":"${EmptyTransaction.txIdBE.hex}","error":null}""")
+        assert(responseAs[String] == s"""{"result":"${EmptyTransaction.txIdBE.hex}","error":null}""")
       }
     }
 
@@ -1075,14 +978,11 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
         .expects(contractId)
         .returning(Future.successful(EmptyTransaction))
 
-      val route = walletRoutes.handleCommand(
-        ServerCommand("getdlcfundingtx", Arr(Str(contractId.toHex))))
+      val route = walletRoutes.handleCommand(ServerCommand("getdlcfundingtx", Arr(Str(contractId.toHex))))
 
       Post() ~> route ~> check {
         assert(contentType == `application/json`)
-        assert(
-          responseAs[
-            String] == s"""{"result":"${EmptyTransaction.hex}","error":null}""")
+        assert(responseAs[String] == s"""{"result":"${EmptyTransaction.hex}","error":null}""")
       }
     }
 
@@ -1092,13 +992,11 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
         .expects(contractId)
         .returning(Future.successful(EmptyTransaction))
 
-      val route = walletRoutes.handleCommand(
-        ServerCommand("broadcastdlcfundingtx", Arr(Str(contractId.toHex))))
+      val route = walletRoutes.handleCommand(ServerCommand("broadcastdlcfundingtx", Arr(Str(contractId.toHex))))
 
       Post() ~> route ~> check {
         assert(contentType == `application/json`)
-        assert(
-          responseAs[String] == s"""{"result":"${EmptyTransaction.txIdBE.hex}","error":null}""")
+        assert(responseAs[String] == s"""{"result":"${EmptyTransaction.txIdBE.hex}","error":null}""")
       }
     }
 
@@ -1109,38 +1007,28 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
         .returning(Future.successful(EmptyTransaction))
 
       val route = walletRoutes.handleCommand(
-        ServerCommand("executedlc",
-                      Arr(Str(contractId.toHex),
-                          Arr(Str(dummyOracleAttestment.hex)),
-                          Bool(true))))
+        ServerCommand("executedlc", Arr(Str(contractId.toHex), Arr(Str(dummyOracleAttestment.hex)), Bool(true))))
 
       Post() ~> route ~> check {
         assert(contentType == `application/json`)
-        assert(
-          responseAs[
-            String] == s"""{"result":"${EmptyTransaction.hex}","error":null}""")
+        assert(responseAs[String] == s"""{"result":"${EmptyTransaction.hex}","error":null}""")
       }
     }
 
     "execute a dlc with multiple sigs" in {
       (mockWalletApi
         .executeDLC(_: ByteVector, _: Seq[OracleAttestmentTLV]))
-        .expects(contractId,
-                 Vector(dummyOracleAttestment, dummyOracleAttestment))
+        .expects(contractId, Vector(dummyOracleAttestment, dummyOracleAttestment))
         .returning(Future.successful(EmptyTransaction))
 
       val route = walletRoutes.handleCommand(
-        ServerCommand("executedlc",
-                      Arr(Str(contractId.toHex),
-                          Arr(Str(dummyOracleAttestment.hex),
-                              Str(dummyOracleAttestment.hex)),
-                          Bool(true))))
+        ServerCommand(
+          "executedlc",
+          Arr(Str(contractId.toHex), Arr(Str(dummyOracleAttestment.hex), Str(dummyOracleAttestment.hex)), Bool(true))))
 
       Post() ~> route ~> check {
         assert(contentType == `application/json`)
-        assert(
-          responseAs[
-            String] == s"""{"result":"${EmptyTransaction.hex}","error":null}""")
+        assert(responseAs[String] == s"""{"result":"${EmptyTransaction.hex}","error":null}""")
       }
     }
 
@@ -1156,15 +1044,11 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
         .anyNumberOfTimes()
 
       val route = walletRoutes.handleCommand(
-        ServerCommand("executedlc",
-                      Arr(Str(contractId.toHex),
-                          Arr(Str(dummyOracleAttestment.hex)),
-                          Bool(false))))
+        ServerCommand("executedlc", Arr(Str(contractId.toHex), Arr(Str(dummyOracleAttestment.hex)), Bool(false))))
 
       Post() ~> route ~> check {
         assert(contentType == `application/json`)
-        assert(
-          responseAs[String] == s"""{"result":"${EmptyTransaction.txIdBE.hex}","error":null}""")
+        assert(responseAs[String] == s"""{"result":"${EmptyTransaction.txIdBE.hex}","error":null}""")
       }
     }
 
@@ -1174,15 +1058,11 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
         .expects(contractId)
         .returning(Future.successful(EmptyTransaction))
 
-      val route = walletRoutes.handleCommand(
-        ServerCommand("executedlcrefund",
-                      Arr(Str(contractId.toHex), Bool(true))))
+      val route = walletRoutes.handleCommand(ServerCommand("executedlcrefund", Arr(Str(contractId.toHex), Bool(true))))
 
       Post() ~> route ~> check {
         assert(contentType == `application/json`)
-        assert(
-          responseAs[
-            String] == s"""{"result":"${EmptyTransaction.hex}","error":null}""")
+        assert(responseAs[String] == s"""{"result":"${EmptyTransaction.hex}","error":null}""")
       }
     }
 
@@ -1197,14 +1077,11 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
         .returning(FutureUtil.unit)
         .anyNumberOfTimes()
 
-      val route = walletRoutes.handleCommand(
-        ServerCommand("executedlcrefund",
-                      Arr(Str(contractId.toHex), Bool(false))))
+      val route = walletRoutes.handleCommand(ServerCommand("executedlcrefund", Arr(Str(contractId.toHex), Bool(false))))
 
       Post() ~> route ~> check {
         assert(contentType == `application/json`)
-        assert(
-          responseAs[String] == s"""{"result":"${EmptyTransaction.txIdBE.hex}","error":null}""")
+        assert(responseAs[String] == s"""{"result":"${EmptyTransaction.txIdBE.hex}","error":null}""")
       }
     }
 
@@ -1212,8 +1089,7 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
       // positive cases
 
       (mockWalletApi
-        .sendToAddress(_: BitcoinAddress, _: CurrencyUnit, _: Option[FeeUnit])(
-          _: ExecutionContext))
+        .sendToAddress(_: BitcoinAddress, _: CurrencyUnit, _: Option[FeeUnit])(_: ExecutionContext))
         .expects(testAddress, Bitcoins(100), *, executor)
         .returning(Future.successful(EmptyTransaction))
 
@@ -1223,53 +1099,41 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
         .anyNumberOfTimes()
 
       val route = walletRoutes.handleCommand(
-        ServerCommand("sendtoaddress",
-                      Arr(Str(testAddressStr), Num(100), Num(4), Bool(false))))
+        ServerCommand("sendtoaddress", Arr(Str(testAddressStr), Num(100), Num(4), Bool(false))))
 
       Post() ~> route ~> check {
         assert(contentType == `application/json`)
         assert(
-          responseAs[String] == """{"result":"0000000000000000000000000000000000000000000000000000000000000000","error":null}""")
+          responseAs[
+            String] == """{"result":"0000000000000000000000000000000000000000000000000000000000000000","error":null}""")
       }
 
       // negative cases
 
-      val route1 = walletRoutes.handleCommand(
-        ServerCommand("sendtoaddress", Arr(Null, Null, Null, Bool(false))))
+      val route1 = walletRoutes.handleCommand(ServerCommand("sendtoaddress", Arr(Null, Null, Null, Bool(false))))
 
       Post() ~> route1 ~> check {
-        rejection == ValidationRejection(
-          "failure",
-          Some(InvalidData(Null, "Expected ujson.Str")))
+        rejection == ValidationRejection("failure", Some(InvalidData(Null, "Expected ujson.Str")))
       }
 
-      val route2 = walletRoutes.handleCommand(
-        ServerCommand("sendtoaddress", Arr("Null", Null, Null, Bool(false))))
+      val route2 = walletRoutes.handleCommand(ServerCommand("sendtoaddress", Arr("Null", Null, Null, Bool(false))))
 
       Post() ~> route2 ~> check {
-        rejection == ValidationRejection(
-          "failure",
-          Some(InvalidData("Null", "Expected a valid address")))
+        rejection == ValidationRejection("failure", Some(InvalidData("Null", "Expected a valid address")))
       }
 
-      val route3 = walletRoutes.handleCommand(
-        ServerCommand("sendtoaddress",
-                      Arr(Str(testAddressStr), Null, Null, Bool(false))))
+      val route3 =
+        walletRoutes.handleCommand(ServerCommand("sendtoaddress", Arr(Str(testAddressStr), Null, Null, Bool(false))))
 
       Post() ~> route3 ~> check {
-        rejection == ValidationRejection(
-          "failure",
-          Some(InvalidData(Null, "Expected ujson.Num")))
+        rejection == ValidationRejection("failure", Some(InvalidData(Null, "Expected ujson.Num")))
       }
 
       val route4 = walletRoutes.handleCommand(
-        ServerCommand("sendtoaddress",
-                      Arr(Str(testAddressStr), Str("abc"), Null, Bool(false))))
+        ServerCommand("sendtoaddress", Arr(Str(testAddressStr), Str("abc"), Null, Bool(false))))
 
       Post() ~> route4 ~> check {
-        rejection == ValidationRejection(
-          "failure",
-          Some(InvalidData("abc", "Expected ujson.Num")))
+        rejection == ValidationRejection("failure", Some(InvalidData("abc", "Expected ujson.Num")))
       }
 
     }
@@ -1278,15 +1142,9 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
       // positive cases
 
       (mockWalletApi
-        .sendFromOutPoints(_: Vector[TransactionOutPoint],
-                           _: BitcoinAddress,
-                           _: CurrencyUnit,
-                           _: Option[FeeUnit])(_: ExecutionContext))
-        .expects(Vector.empty[TransactionOutPoint],
-                 testAddress,
-                 Bitcoins(100),
-                 *,
-                 executor)
+        .sendFromOutPoints(_: Vector[TransactionOutPoint], _: BitcoinAddress, _: CurrencyUnit, _: Option[FeeUnit])(
+          _: ExecutionContext))
+        .expects(Vector.empty[TransactionOutPoint], testAddress, Bitcoins(100), *, executor)
         .returning(Future.successful(EmptyTransaction))
 
       (mockWalletApi.broadcastTransaction _)
@@ -1295,70 +1153,54 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
         .anyNumberOfTimes()
 
       val route = walletRoutes.handleCommand(
-        ServerCommand("sendfromoutpoints",
-                      Arr(Arr(), Str(testAddressStr), Num(100), Num(4))))
+        ServerCommand("sendfromoutpoints", Arr(Arr(), Str(testAddressStr), Num(100), Num(4))))
 
       Post() ~> route ~> check {
         assert(contentType == `application/json`)
         assert(
-          responseAs[String] == """{"result":"0000000000000000000000000000000000000000000000000000000000000000","error":null}""")
+          responseAs[
+            String] == """{"result":"0000000000000000000000000000000000000000000000000000000000000000","error":null}""")
       }
 
       // negative cases
 
-      val route1 = walletRoutes.handleCommand(
-        ServerCommand("sendfromoutpoints", Arr(Arr(), Null, Null, Null)))
+      val route1 = walletRoutes.handleCommand(ServerCommand("sendfromoutpoints", Arr(Arr(), Null, Null, Null)))
 
       Post() ~> route1 ~> check {
-        rejection == ValidationRejection(
-          "failure",
-          Some(InvalidData(Null, "Expected ujson.Str")))
+        rejection == ValidationRejection("failure", Some(InvalidData(Null, "Expected ujson.Str")))
       }
 
-      val route2 = walletRoutes.handleCommand(
-        ServerCommand("sendfromoutpoints", Arr(Arr(), "Null", Null, Null)))
+      val route2 = walletRoutes.handleCommand(ServerCommand("sendfromoutpoints", Arr(Arr(), "Null", Null, Null)))
 
       Post() ~> route2 ~> check {
-        rejection == ValidationRejection(
-          "failure",
-          Some(InvalidData("Null", "Expected a valid address")))
+        rejection == ValidationRejection("failure", Some(InvalidData("Null", "Expected a valid address")))
       }
 
-      val route3 = walletRoutes.handleCommand(
-        ServerCommand("sendfromoutpoints",
-                      Arr(Arr(), Str(testAddressStr), Null, Null)))
+      val route3 =
+        walletRoutes.handleCommand(ServerCommand("sendfromoutpoints", Arr(Arr(), Str(testAddressStr), Null, Null)))
 
       Post() ~> route3 ~> check {
-        rejection == ValidationRejection(
-          "failure",
-          Some(InvalidData(Null, "Expected ujson.Num")))
+        rejection == ValidationRejection("failure", Some(InvalidData(Null, "Expected ujson.Num")))
       }
 
       val route4 = walletRoutes.handleCommand(
-        ServerCommand("sendfromoutpoints",
-                      Arr(Arr(), Str(testAddressStr), Str("abc"), Null)))
+        ServerCommand("sendfromoutpoints", Arr(Arr(), Str(testAddressStr), Str("abc"), Null)))
 
       Post() ~> route4 ~> check {
-        rejection == ValidationRejection(
-          "failure",
-          Some(InvalidData("abc", "Expected ujson.Num")))
+        rejection == ValidationRejection("failure", Some(InvalidData("abc", "Expected ujson.Num")))
       }
 
-      val route5 = walletRoutes.handleCommand(
-        ServerCommand("sendfromoutpoints",
-                      Arr(Null, Str(testAddressStr), Num(100), Num(4))))
+      val route5 =
+        walletRoutes.handleCommand(ServerCommand("sendfromoutpoints", Arr(Null, Str(testAddressStr), Num(100), Num(4))))
 
       Post() ~> route5 ~> check {
-        rejection == ValidationRejection(
-          "failure",
-          Some(InvalidData(Null, "Expected ujson.Arr")))
+        rejection == ValidationRejection("failure", Some(InvalidData(Null, "Expected ujson.Arr")))
       }
     }
 
     "sweep wallet" in {
       (mockWalletApi
-        .sweepWallet(_: BitcoinAddress, _: Option[FeeUnit])(
-          _: ExecutionContext))
+        .sweepWallet(_: BitcoinAddress, _: Option[FeeUnit])(_: ExecutionContext))
         .expects(testAddress, *, executor)
         .returning(Future.successful(EmptyTransaction))
 
@@ -1367,13 +1209,13 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
         .returning(Future.unit)
         .anyNumberOfTimes()
 
-      val route = walletRoutes.handleCommand(
-        ServerCommand("sweepwallet", Arr(Str(testAddressStr), Num(4))))
+      val route = walletRoutes.handleCommand(ServerCommand("sweepwallet", Arr(Str(testAddressStr), Num(4))))
 
       Post() ~> route ~> check {
         assert(contentType == `application/json`)
         assert(
-          responseAs[String] == """{"result":"0000000000000000000000000000000000000000000000000000000000000000","error":null}""")
+          responseAs[
+            String] == """{"result":"0000000000000000000000000000000000000000000000000000000000000000","error":null}""")
       }
     }
 
@@ -1381,10 +1223,8 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
       // positive cases
 
       (mockWalletApi
-        .sendWithAlgo(_: BitcoinAddress,
-                      _: CurrencyUnit,
-                      _: Option[FeeUnit],
-                      _: CoinSelectionAlgo)(_: ExecutionContext))
+        .sendWithAlgo(_: BitcoinAddress, _: CurrencyUnit, _: Option[FeeUnit], _: CoinSelectionAlgo)(
+          _: ExecutionContext))
         .expects(testAddress,
                  Bitcoins(100),
                  Some(SatoshisPerVirtualByte(Satoshis(4))),
@@ -1398,66 +1238,47 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
         .anyNumberOfTimes()
 
       val route = walletRoutes.handleCommand(
-        ServerCommand("sendwithalgo",
-                      Arr(Str(testAddressStr),
-                          Num(100),
-                          Num(4),
-                          Str("AccumulateSmallestViable"))))
+        ServerCommand("sendwithalgo", Arr(Str(testAddressStr), Num(100), Num(4), Str("AccumulateSmallestViable"))))
 
       Post() ~> route ~> check {
         assert(contentType == `application/json`)
         assert(
-          responseAs[String] == """{"result":"0000000000000000000000000000000000000000000000000000000000000000","error":null}""")
+          responseAs[
+            String] == """{"result":"0000000000000000000000000000000000000000000000000000000000000000","error":null}""")
       }
 
       // negative cases
 
-      val route1 = walletRoutes.handleCommand(
-        ServerCommand("sendwithalgo", Arr(Null, Null, Null, Null)))
+      val route1 = walletRoutes.handleCommand(ServerCommand("sendwithalgo", Arr(Null, Null, Null, Null)))
 
       Post() ~> route1 ~> check {
-        rejection == ValidationRejection(
-          "failure",
-          Some(InvalidData(Null, "Expected ujson.Str")))
+        rejection == ValidationRejection("failure", Some(InvalidData(Null, "Expected ujson.Str")))
       }
 
-      val route2 = walletRoutes.handleCommand(
-        ServerCommand("sendwithalgo", Arr("Null", Null, Null, Null)))
+      val route2 = walletRoutes.handleCommand(ServerCommand("sendwithalgo", Arr("Null", Null, Null, Null)))
 
       Post() ~> route2 ~> check {
-        rejection == ValidationRejection(
-          "failure",
-          Some(InvalidData("Null", "Expected a valid address")))
+        rejection == ValidationRejection("failure", Some(InvalidData("Null", "Expected a valid address")))
       }
 
-      val route3 = walletRoutes.handleCommand(
-        ServerCommand("sendwithalgo",
-                      Arr(Str(testAddressStr), Null, Null, Null)))
+      val route3 = walletRoutes.handleCommand(ServerCommand("sendwithalgo", Arr(Str(testAddressStr), Null, Null, Null)))
 
       Post() ~> route3 ~> check {
-        rejection == ValidationRejection(
-          "failure",
-          Some(InvalidData(Null, "Expected ujson.Num")))
+        rejection == ValidationRejection("failure", Some(InvalidData(Null, "Expected ujson.Num")))
       }
 
-      val route4 = walletRoutes.handleCommand(
-        ServerCommand("sendwithalgo",
-                      Arr(Str(testAddressStr), Str("abc"), Null, Null)))
+      val route4 =
+        walletRoutes.handleCommand(ServerCommand("sendwithalgo", Arr(Str(testAddressStr), Str("abc"), Null, Null)))
 
       Post() ~> route4 ~> check {
-        rejection == ValidationRejection(
-          "failure",
-          Some(InvalidData("abc", "Expected ujson.Num")))
+        rejection == ValidationRejection("failure", Some(InvalidData("abc", "Expected ujson.Num")))
       }
 
-      val route5 = walletRoutes.handleCommand(
-        ServerCommand("sendwithalgo",
-                      Arr(Str(testAddressStr), Num(100), Num(4), Null)))
+      val route5 =
+        walletRoutes.handleCommand(ServerCommand("sendwithalgo", Arr(Str(testAddressStr), Num(100), Num(4), Null)))
 
       Post() ~> route5 ~> check {
-        rejection == ValidationRejection(
-          "failure",
-          Some(InvalidData(Null, "Expected ujson.Str")))
+        rejection == ValidationRejection("failure", Some(InvalidData(Null, "Expected ujson.Str")))
       }
     }
 
@@ -1472,8 +1293,7 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
         .anyNumberOfTimes()
 
       val route =
-        walletRoutes.handleCommand(
-          ServerCommand("signpsbt", Arr(Str(PSBT.empty.hex))))
+        walletRoutes.handleCommand(ServerCommand("signpsbt", Arr(Str(PSBT.empty.hex))))
 
       Post() ~> route ~> check {
         assert(contentType == `application/json`)
@@ -1488,8 +1308,7 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
       val message = "Never gonna give you up, never gonna let you down"
 
       (mockWalletApi
-        .makeOpReturnCommitment(_: String, _: Boolean, _: Option[FeeUnit])(
-          _: ExecutionContext))
+        .makeOpReturnCommitment(_: String, _: Boolean, _: Option[FeeUnit])(_: ExecutionContext))
         .expects(message, false, *, executor)
         .returning(Future.successful(EmptyTransaction))
 
@@ -1498,13 +1317,13 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
         .returning(Future.unit)
         .anyNumberOfTimes()
 
-      val route = walletRoutes.handleCommand(
-        ServerCommand("opreturncommit", Arr(message, Bool(false), Num(4))))
+      val route = walletRoutes.handleCommand(ServerCommand("opreturncommit", Arr(message, Bool(false), Num(4))))
 
       Post() ~> route ~> check {
         assert(contentType == `application/json`)
         assert(
-          responseAs[String] == """{"result":"0000000000000000000000000000000000000000000000000000000000000000","error":null}""")
+          responseAs[
+            String] == """{"result":"0000000000000000000000000000000000000000000000000000000000000000","error":null}""")
       }
     }
 
@@ -1519,14 +1338,14 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
         .returning(Future.unit)
         .anyNumberOfTimes()
 
-      val route = walletRoutes.handleCommand(
-        ServerCommand("bumpfeerbf",
-                      Arr(Str(DoubleSha256DigestBE.empty.hex), Num(1))))
+      val route =
+        walletRoutes.handleCommand(ServerCommand("bumpfeerbf", Arr(Str(DoubleSha256DigestBE.empty.hex), Num(1))))
 
       Post() ~> route ~> check {
         assert(contentType == `application/json`)
         assert(
-          responseAs[String] == """{"result":"0000000000000000000000000000000000000000000000000000000000000000","error":null}""")
+          responseAs[
+            String] == """{"result":"0000000000000000000000000000000000000000000000000000000000000000","error":null}""")
       }
     }
 
@@ -1541,26 +1360,23 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
         .returning(Future.unit)
         .anyNumberOfTimes()
 
-      val route = walletRoutes.handleCommand(
-        ServerCommand("bumpfeecpfp",
-                      Arr(Str(DoubleSha256DigestBE.empty.hex), Num(1))))
+      val route =
+        walletRoutes.handleCommand(ServerCommand("bumpfeecpfp", Arr(Str(DoubleSha256DigestBE.empty.hex), Num(1))))
 
       Post() ~> route ~> check {
         assert(contentType == `application/json`)
         assert(
-          responseAs[String] == """{"result":"0000000000000000000000000000000000000000000000000000000000000000","error":null}""")
+          responseAs[
+            String] == """{"result":"0000000000000000000000000000000000000000000000000000000000000000","error":null}""")
       }
     }
 
     "create multisig" in {
-      val key1 = ECPublicKey(
-        "0369c68f212ecaf3b3be52acb158a6fd87e469bc08726ef98a3b58401b75da3392")
-      val key2 = ECPublicKey(
-        "02c23222c46b96c5976930319cc4915791fdf5e1ad1203790ff98cb1e7517eed4a")
+      val key1 = ECPublicKey("0369c68f212ecaf3b3be52acb158a6fd87e469bc08726ef98a3b58401b75da3392")
+      val key2 = ECPublicKey("02c23222c46b96c5976930319cc4915791fdf5e1ad1203790ff98cb1e7517eed4a")
 
-      val route = coreRoutes.handleCommand(
-        ServerCommand("createmultisig",
-                      Arr(Num(1), Arr(Str(key1.hex), Str(key2.hex)))))
+      val route =
+        coreRoutes.handleCommand(ServerCommand("createmultisig", Arr(Num(1), Arr(Str(key1.hex), Str(key2.hex)))))
 
       Post() ~> route ~> check {
         assert(contentType == `application/json`)
@@ -1575,9 +1391,7 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
 
       Get() ~> route ~> check {
         assert(contentType == `application/json`)
-        assert(
-          responseAs[
-            String] == """{"result":"TODO implement getpeers","error":null}""")
+        assert(responseAs[String] == """{"result":"TODO implement getpeers","error":null}""")
       }
     }
 
@@ -1592,159 +1406,108 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
         .expects()
         .returning(Future.successful(false))
       (mockWalletApi
-        .rescanNeutrinoWallet(_: Option[BlockStamp],
-                              _: Option[BlockStamp],
-                              _: Int,
-                              _: Boolean)(_: ExecutionContext))
+        .rescanNeutrinoWallet(_: Option[BlockStamp], _: Option[BlockStamp], _: Int, _: Boolean)(_: ExecutionContext))
         .expects(None, None, 100, false, executor)
         .returning(Future.unit)
 
       val route1 =
-        walletRoutes.handleCommand(
-          ServerCommand("rescan", Arr(Arr(), Null, Null, true, true)))
+        walletRoutes.handleCommand(ServerCommand("rescan", Arr(Arr(), Null, Null, true, true)))
 
       Post() ~> route1 ~> check {
         assert(contentType == `application/json`)
-        assert(
-          responseAs[String] == """{"result":"Rescan started.","error":null}""")
+        assert(responseAs[String] == """{"result":"Rescan started.","error":null}""")
       }
 
       (mockWalletApi.isEmpty: () => Future[Boolean])
         .expects()
         .returning(Future.successful(false))
       (mockWalletApi
-        .rescanNeutrinoWallet(_: Option[BlockStamp],
-                              _: Option[BlockStamp],
-                              _: Int,
-                              _: Boolean)(_: ExecutionContext))
-        .expects(
-          Some(BlockTime(
-            ZonedDateTime.of(2018, 10, 27, 12, 34, 56, 0, ZoneId.of("UTC")))),
-          None,
-          100,
-          false,
-          executor)
-        .returning(Future.unit)
-
-      val route2 =
-        walletRoutes.handleCommand(
-          ServerCommand(
-            "rescan",
-            Arr(Arr(), Str("2018-10-27T12:34:56Z"), Null, true, true)))
-
-      Post() ~> route2 ~> check {
-        assert(contentType == `application/json`)
-        assert(
-          responseAs[String] == """{"result":"Rescan started.","error":null}""")
-      }
-
-      (mockWalletApi.isEmpty: () => Future[Boolean])
-        .expects()
-        .returning(Future.successful(false))
-      (mockWalletApi
-        .rescanNeutrinoWallet(_: Option[BlockStamp],
-                              _: Option[BlockStamp],
-                              _: Int,
-                              _: Boolean)(_: ExecutionContext))
-        .expects(None,
-                 Some(BlockHash(DoubleSha256DigestBE.empty)),
+        .rescanNeutrinoWallet(_: Option[BlockStamp], _: Option[BlockStamp], _: Int, _: Boolean)(_: ExecutionContext))
+        .expects(Some(BlockTime(ZonedDateTime.of(2018, 10, 27, 12, 34, 56, 0, ZoneId.of("UTC")))),
+                 None,
                  100,
                  false,
                  executor)
+        .returning(Future.unit)
+
+      val route2 =
+        walletRoutes.handleCommand(ServerCommand("rescan", Arr(Arr(), Str("2018-10-27T12:34:56Z"), Null, true, true)))
+
+      Post() ~> route2 ~> check {
+        assert(contentType == `application/json`)
+        assert(responseAs[String] == """{"result":"Rescan started.","error":null}""")
+      }
+
+      (mockWalletApi.isEmpty: () => Future[Boolean])
+        .expects()
+        .returning(Future.successful(false))
+      (mockWalletApi
+        .rescanNeutrinoWallet(_: Option[BlockStamp], _: Option[BlockStamp], _: Int, _: Boolean)(_: ExecutionContext))
+        .expects(None, Some(BlockHash(DoubleSha256DigestBE.empty)), 100, false, executor)
         .returning(Future.unit)
 
       val route3 =
         walletRoutes.handleCommand(
-          ServerCommand(
-            "rescan",
-            Arr(Null, Null, Str(DoubleSha256DigestBE.empty.hex), true, true)))
+          ServerCommand("rescan", Arr(Null, Null, Str(DoubleSha256DigestBE.empty.hex), true, true)))
 
       Post() ~> route3 ~> check {
         assert(contentType == `application/json`)
-        assert(
-          responseAs[String] == """{"result":"Rescan started.","error":null}""")
+        assert(responseAs[String] == """{"result":"Rescan started.","error":null}""")
       }
 
       (mockWalletApi.isEmpty: () => Future[Boolean])
         .expects()
         .returning(Future.successful(false))
       (mockWalletApi
-        .rescanNeutrinoWallet(_: Option[BlockStamp],
-                              _: Option[BlockStamp],
-                              _: Int,
-                              _: Boolean)(_: ExecutionContext))
-        .expects(Some(BlockHeight(12345)),
-                 Some(BlockHeight(67890)),
-                 100,
-                 false,
-                 executor)
+        .rescanNeutrinoWallet(_: Option[BlockStamp], _: Option[BlockStamp], _: Int, _: Boolean)(_: ExecutionContext))
+        .expects(Some(BlockHeight(12345)), Some(BlockHeight(67890)), 100, false, executor)
         .returning(Future.unit)
 
       val route4 =
-        walletRoutes.handleCommand(
-          ServerCommand("rescan",
-                        Arr(Arr(), Str("12345"), Num(67890), true, true)))
+        walletRoutes.handleCommand(ServerCommand("rescan", Arr(Arr(), Str("12345"), Num(67890), true, true)))
 
       Post() ~> route4 ~> check {
         assert(contentType == `application/json`)
-        assert(
-          responseAs[String] == """{"result":"Rescan started.","error":null}""")
+        assert(responseAs[String] == """{"result":"Rescan started.","error":null}""")
       }
 
       // negative cases
 
       val route5 =
-        walletRoutes.handleCommand(
-          ServerCommand("rescan",
-                        Arr(Null, Str("abcd"), Str("efgh"), true, true)))
+        walletRoutes.handleCommand(ServerCommand("rescan", Arr(Null, Str("abcd"), Str("efgh"), true, true)))
 
       Post() ~> route5 ~> check {
-        rejection == ValidationRejection("failure",
-                                         Some(InvalidBlockStamp("abcd")))
+        rejection == ValidationRejection("failure", Some(InvalidBlockStamp("abcd")))
       }
 
       val route6 =
-        walletRoutes.handleCommand(
-          ServerCommand(
-            "rescan",
-            Arr(Arr(55), Null, Str("2018-10-27T12:34:56"), true, true)))
+        walletRoutes.handleCommand(ServerCommand("rescan", Arr(Arr(55), Null, Str("2018-10-27T12:34:56"), true, true)))
 
       Post() ~> route6 ~> check {
-        rejection == ValidationRejection(
-          "failure",
-          Some(InvalidBlockStamp("2018-10-27T12:34:56")))
+        rejection == ValidationRejection("failure", Some(InvalidBlockStamp("2018-10-27T12:34:56")))
       }
 
       val route7 =
-        walletRoutes.handleCommand(
-          ServerCommand("rescan", Arr(Null, Num(-1), Null, true, false)))
+        walletRoutes.handleCommand(ServerCommand("rescan", Arr(Null, Num(-1), Null, true, false)))
 
       Post() ~> route7 ~> check {
-        rejection == ValidationRejection(
-          "failure",
-          Some(InvalidData(Num(-1), "Expected a positive integer")))
+        rejection == ValidationRejection("failure", Some(InvalidData(Num(-1), "Expected a positive integer")))
       }
 
       (mockWalletApi.isEmpty: () => Future[Boolean])
         .expects()
         .returning(Future.successful(false))
       (mockWalletApi
-        .rescanNeutrinoWallet(_: Option[BlockStamp],
-                              _: Option[BlockStamp],
-                              _: Int,
-                              _: Boolean)(_: ExecutionContext))
+        .rescanNeutrinoWallet(_: Option[BlockStamp], _: Option[BlockStamp], _: Int, _: Boolean)(_: ExecutionContext))
         .expects(None, None, 55, false, executor)
         .returning(Future.unit)
 
       val route8 =
-        walletRoutes.handleCommand(
-          ServerCommand("rescan",
-                        Arr(Arr(55), Arr(), Arr(), Bool(true), Bool(true))))
+        walletRoutes.handleCommand(ServerCommand("rescan", Arr(Arr(55), Arr(), Arr(), Bool(true), Bool(true))))
 
       Post() ~> route8 ~> check {
         assert(contentType == `application/json`)
-        assert(
-          responseAs[String] == """{"result":"Rescan started.","error":null}""")
+        assert(responseAs[String] == """{"result":"Rescan started.","error":null}""")
       }
     }
 
@@ -1758,8 +1521,7 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
         .expects()
         .returning(Future.successful(accounting))
 
-      val route = walletRoutes.handleCommand(
-        ServerCommand("getdlcwalletaccounting", Arr()))
+      val route = walletRoutes.handleCommand(ServerCommand("getdlcwalletaccounting", Arr()))
 
       Get() ~> route ~> check {
         assert(contentType == `application/json`)
@@ -1778,8 +1540,7 @@ class RoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
         .returning(Future.unit)
 
       val route =
-        walletRoutes.handleCommand(
-          ServerCommand("backupwallet", Arr(Str("location"))))
+        walletRoutes.handleCommand(ServerCommand("backupwallet", Arr(Str("location"))))
 
       Post() ~> route ~> check {
         assert(contentType == `application/json`)

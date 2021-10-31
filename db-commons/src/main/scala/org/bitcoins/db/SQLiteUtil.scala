@@ -12,16 +12,12 @@ object SQLiteUtil extends Logging {
   def backup(jdbcUrl: String, backupFilePath: Path): Unit = {
     val conn = java.sql.DriverManager.getConnection(jdbcUrl)
     try {
-      val existsAndWritable =
-        Files.exists(backupFilePath) && Files.isWritable(backupFilePath)
-      val doesntExistAndPArentIsWritable = !Files.exists(
-        backupFilePath) && Files.isWritable(backupFilePath.getParent)
+      val existsAndWritable = Files.exists(backupFilePath) && Files.isWritable(backupFilePath)
+      val doesntExistAndPArentIsWritable = !Files.exists(backupFilePath) && Files.isWritable(backupFilePath.getParent)
       if (existsAndWritable || doesntExistAndPArentIsWritable) {
-        val _ =
-          conn.createStatement().executeUpdate(s"BACKUP TO $backupFilePath")
+        val _ = conn.createStatement().executeUpdate(s"BACKUP TO $backupFilePath")
       } else {
-        throw new IOException(
-          s"Backup destination is not writable: $backupFilePath")
+        throw new IOException(s"Backup destination is not writable: $backupFilePath")
       }
     } finally conn.close()
   }

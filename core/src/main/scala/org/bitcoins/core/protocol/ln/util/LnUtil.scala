@@ -41,16 +41,13 @@ abstract class LnUtil {
   }
 
   def decodeDataLength(u5s: List[UInt5]): Long = {
-    require(u5s.length == 2,
-            s"Data Length is required to be 10 bits, got ${u5s.length}")
+    require(u5s.length == 2, s"Data Length is required to be 10 bits, got ${u5s.length}")
     decodeNumber(u5s).toLong
   }
 
   /** Returns a 5 bit bytevector with the encoded number for a LN invoice */
   @tailrec
-  final def encodeNumber(
-      len: BigInt,
-      accum: List[UInt5] = List.empty): List[UInt5] = {
+  final def encodeNumber(len: BigInt, accum: List[UInt5] = List.empty): List[UInt5] = {
     val quotient = len / 32
     val remainder = UInt5(len % 32)
     if (quotient >= 32) {

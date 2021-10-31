@@ -1,16 +1,9 @@
 package org.bitcoins.explorer.client
 
 import org.bitcoins.commons.jsonmodels.ExplorerEnv
-import org.bitcoins.core.protocol.tlv.{
-  OracleAnnouncementV0TLV,
-  OracleAttestmentV0TLV
-}
+import org.bitcoins.core.protocol.tlv.{OracleAnnouncementV0TLV, OracleAttestmentV0TLV}
 import org.bitcoins.crypto.Sha256Digest
-import org.bitcoins.explorer.model.{
-  CreateAnnouncementExplorer,
-  CreateAttestations,
-  SbAnnouncementEvent
-}
+import org.bitcoins.explorer.model.{CreateAnnouncementExplorer, CreateAttestations, SbAnnouncementEvent}
 import org.bitcoins.testkit.util.BitcoinSAsyncTest
 import org.bitcoins.tor.Socks5ProxyParams
 

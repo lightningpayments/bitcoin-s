@@ -1,12 +1,7 @@
 package org.bitcoins.core.protocol.script
 
 import org.bitcoins.core.script.bitwise.OP_EQUALVERIFY
-import org.bitcoins.core.script.constant.{
-  BytesToPushOntoStack,
-  ScriptConstant,
-  ScriptNumber,
-  ScriptToken
-}
+import org.bitcoins.core.script.constant.{BytesToPushOntoStack, ScriptConstant, ScriptNumber, ScriptToken}
 import org.bitcoins.core.script.crypto.{OP_CHECKSIG, OP_HASH160}
 import org.bitcoins.core.script.locktime.OP_CHECKLOCKTIMEVERIFY
 import org.bitcoins.core.script.stack.{OP_DROP, OP_DUP}
@@ -31,10 +26,7 @@ class CLTVScriptPubKeyTest extends BitcoinSUnitTest {
 
   "CLTVScriptPubKey" must "return the expected asm from hex" in {
     val expectedCLTVAsm: Seq[ScriptToken] =
-      List(BytesToPushOntoStack(4),
-           ScriptConstant("2b07ae57"),
-           OP_CHECKLOCKTIMEVERIFY,
-           OP_DROP) ++ expectedAsm
+      List(BytesToPushOntoStack(4), ScriptConstant("2b07ae57"), OP_CHECKLOCKTIMEVERIFY, OP_DROP) ++ expectedAsm
     val cltv = CLTVScriptPubKey(ScriptNumber(1471022891), scriptPubKey)
     cltv.asm must be(expectedCLTVAsm)
   }

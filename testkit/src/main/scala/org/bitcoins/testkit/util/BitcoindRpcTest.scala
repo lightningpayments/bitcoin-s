@@ -36,9 +36,7 @@ abstract class BitcoindRpcTest extends BitcoinSAsyncTest with Logging {
     * stopped running (either by succeeding or failing)
     * all clients found in the builder is shut down.
     */
-  lazy val clientAccum: mutable.Builder[
-    BitcoindRpcClient,
-    Vector[BitcoindRpcClient]] = Vector.newBuilder
+  lazy val clientAccum: mutable.Builder[BitcoindRpcClient, Vector[BitcoindRpcClient]] = Vector.newBuilder
 
   override def afterAll(): Unit = {
     val stopF = BitcoindRpcTestUtil.stopServers(clientAccum.result())

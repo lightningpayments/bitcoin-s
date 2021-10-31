@@ -18,10 +18,8 @@ class BouncyCastleBIP340Test extends BitcoinSCryptoTest {
     val secpSig = secKey.schnorrSign(msg, auxRand)
     val bouncyCastleSig =
       BouncycastleCryptoRuntime.schnorrSign(msg, secKey, auxRand)
-    assert(secpSig == expectedSig,
-           s"Test $index failed signing for libsecp256k1")
-    assert(bouncyCastleSig == expectedSig,
-           s"Test $index failed signing for Bouncy Castle")
+    assert(secpSig == expectedSig, s"Test $index failed signing for libsecp256k1")
+    assert(bouncyCastleSig == expectedSig, s"Test $index failed signing for Bouncy Castle")
     assert(bouncyCastleSig == secpSig)
   }
 
@@ -36,10 +34,8 @@ class BouncyCastleBIP340Test extends BitcoinSCryptoTest {
     val bouncyCastleResult =
       Try(BouncycastleCryptoRuntime.schnorrVerify(msg, pubKey, sig))
         .getOrElse(false)
-    assert(secpResult == expectedResult,
-           s"Test $index failed verification for libsecp256k1: $comment")
-    assert(bouncyCastleResult == expectedResult,
-           s"Test $index failed verification for Bouncy Castle: $comment")
+    assert(secpResult == expectedResult, s"Test $index failed verification for libsecp256k1: $comment")
+    assert(bouncyCastleResult == expectedResult, s"Test $index failed verification for Bouncy Castle: $comment")
     assert(bouncyCastleResult == secpResult)
   }
 
@@ -68,8 +64,7 @@ class BouncyCastleBIP340Test extends BitcoinSCryptoTest {
         }
 
         testVerify(index, pk, msgBytes, schnorrSig, result, comment)
-      case (Failure(_), _) |
-          (_, Failure(_)) => // Must be verify only test resulting in false
+      case (Failure(_), _) | (_, Failure(_)) => // Must be verify only test resulting in false
         assert(secKeyOpt.isEmpty)
         assert(auxRandOpt.isEmpty)
         assert(!result, s"Test $index failed to parse signature: $comment")
@@ -77,16 +72,15 @@ class BouncyCastleBIP340Test extends BitcoinSCryptoTest {
   }
 
   it must "pass the BIP 340 test-vectors with both secp256k1 bindings and bouncy castle" in {
-    BIP340TestVectors.vectors.foreach {
-      case (index, secKeyOpt, pubKey, auxRandOpt, msg, sig, result, comment) =>
-        test(index = index,
-             secKeyOpt = secKeyOpt,
-             pubKey = pubKey,
-             auxRandOpt = auxRandOpt,
-             msg = msg,
-             sig = sig,
-             result = result,
-             comment = comment)
+    BIP340TestVectors.vectors.foreach { case (index, secKeyOpt, pubKey, auxRandOpt, msg, sig, result, comment) =>
+      test(index = index,
+           secKeyOpt = secKeyOpt,
+           pubKey = pubKey,
+           auxRandOpt = auxRandOpt,
+           msg = msg,
+           sig = sig,
+           result = result,
+           comment = comment)
     }
   }
 }

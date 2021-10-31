@@ -26,9 +26,7 @@ import scodec.bits.ByteVector
   */
 object DLEQUtil {
 
-  def dleqPair(
-      fe: FieldElement,
-      adaptorPoint: ECPublicKey): (ECPublicKey, ECPublicKey) = {
+  def dleqPair(fe: FieldElement, adaptorPoint: ECPublicKey): (ECPublicKey, ECPublicKey) = {
     val point = fe.getPublicKey
     val tweakedPoint = adaptorPoint.tweakMultiply(fe)
 
@@ -48,11 +46,7 @@ object DLEQUtil {
       .sha256(point.bytes ++ tweakedPoint.bytes)
       .bytes
 
-    AdaptorUtil.adaptorNonce(hash,
-                             fe.toPrivateKey,
-                             adaptorPoint,
-                             "DLEQ",
-                             auxRand)
+    AdaptorUtil.adaptorNonce(hash, fe.toPrivateKey, adaptorPoint, "DLEQ", auxRand)
   }
 
   /** Computes the challenge hash value for dleqProve as specified in
@@ -75,10 +69,7 @@ object DLEQUtil {
     * For a full description, see https://cs.nyu.edu/courses/spring07/G22.3220-001/lec3.pdf
     * @see https://github.com/discreetlogcontracts/dlcspecs/blob/d01595b70269d4204b05510d19bba6a4f4fcff23/ECDSA-adaptor.md#proving
     */
-  def dleqProve(
-      fe: FieldElement,
-      adaptorPoint: ECPublicKey,
-      auxRand: ByteVector): (FieldElement, FieldElement) = {
+  def dleqProve(fe: FieldElement, adaptorPoint: ECPublicKey, auxRand: ByteVector): (FieldElement, FieldElement) = {
     require(!fe.isZero, "Input field element cannot be zero.")
 
     // (fe*G, fe*Y)
@@ -115,12 +106,7 @@ object DLEQUtil {
   /** Verifies a proof that the DLOG_G of P1 equals the DLOG_adaptor of P2
     * @see https://github.com/discreetlogcontracts/dlcspecs/blob/d01595b70269d4204b05510d19bba6a4f4fcff23/ECDSA-adaptor.md#verifying
     */
-  def dleqVerify(
-      s: FieldElement,
-      e: FieldElement,
-      p1: ECPublicKey,
-      adaptor: ECPublicKey,
-      p2: ECPublicKey): Boolean = {
+  def dleqVerify(s: FieldElement, e: FieldElement, p1: ECPublicKey, adaptor: ECPublicKey, p2: ECPublicKey): Boolean = {
     val r1 = p1.tweakMultiply(e.negate).add(s.getPublicKey)
     val r2 = p2.tweakMultiply(e.negate).add(adaptor.tweakMultiply(s))
     val challengeHash = dleqChallengeHash(adaptor, r1, r2, p1, p2)

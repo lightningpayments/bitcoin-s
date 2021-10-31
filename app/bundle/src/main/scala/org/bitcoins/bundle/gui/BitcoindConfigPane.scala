@@ -10,9 +10,7 @@ import scalafx.scene.control._
 import scalafx.scene.layout._
 import scalafx.scene.text.{Font, TextAlignment}
 
-class BitcoindConfigPane(
-    appConfig: BitcoinSAppConfig,
-    model: LandingPaneModel) {
+class BitcoindConfigPane(appConfig: BitcoinSAppConfig, model: LandingPaneModel) {
 
   private val bitcoindExplainer: Label = new Label {
     padding = Insets(20)
@@ -48,8 +46,7 @@ class BitcoindConfigPane(
 
   private val versionComboBox: ComboBox[BitcoindVersion] =
     new ComboBox[BitcoindVersion](BitcoindVersion.standard) {
-      value =
-        appConfig.bitcoindRpcConf.versionOpt.getOrElse(BitcoindVersion.newest)
+      value = appConfig.bitcoindRpcConf.versionOpt.getOrElse(BitcoindVersion.newest)
       minWidth = 300
     }
 
@@ -94,8 +91,7 @@ class BitcoindConfigPane(
   }
 
   val view: Node = new VBox {
-    children =
-      Vector(bitcoindExplainer, gridPane, GUIUtil.getVSpacer(), launchButton)
+    children = Vector(bitcoindExplainer, gridPane, GUIUtil.getVSpacer(), launchButton)
     spacing = 20
     alignment = Pos.TopCenter
   }

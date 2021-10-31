@@ -26,12 +26,9 @@ class RawCompactFilterHeadersMessageSerializerTest extends BitcoinSUnitTest {
     assert(message.previousFilterHeader == DoubleSha256Digest.empty)
     assert(
       message.filterHashes == Vector(
-        DoubleSha256Digest.fromHex(
-          "1f30de30fabb7892d15eb985cc5d6c34c54a11b7e4c51f3da498f16255a27bb1"),
-        DoubleSha256Digest.fromHex(
-          "57965194aaa7ad3890c977d1b3c738d0a43a357ec645df28dc5c21876fb529c4"),
-        DoubleSha256Digest.fromHex(
-          "87eb3f35daf3b6adba13b40c2f0d0e99dee59b624b0e09d870894e1a0d6d3bb0")
+        DoubleSha256Digest.fromHex("1f30de30fabb7892d15eb985cc5d6c34c54a11b7e4c51f3da498f16255a27bb1"),
+        DoubleSha256Digest.fromHex("57965194aaa7ad3890c977d1b3c738d0a43a357ec645df28dc5c21876fb529c4"),
+        DoubleSha256Digest.fromHex("87eb3f35daf3b6adba13b40c2f0d0e99dee59b624b0e09d870894e1a0d6d3bb0")
       ))
   }
 
@@ -51,10 +48,9 @@ class RawCompactFilterHeadersMessageSerializerTest extends BitcoinSUnitTest {
 
     val biggerMessage = CompactFilterHeadersMessage(
       filterType = FilterType.Basic,
-      stopHash = DoubleSha256Digest.fromHex(
-        "0000000000000000000000000000000000000000000000000000000000000001"),
-      previousFilterHeader = DoubleSha256Digest.fromHex(
-        "0000000000000000000000000000000000000000000000000000000000000002"),
+      stopHash = DoubleSha256Digest.fromHex("0000000000000000000000000000000000000000000000000000000000000001"),
+      previousFilterHeader =
+        DoubleSha256Digest.fromHex("0000000000000000000000000000000000000000000000000000000000000002"),
       filterHashes = 1.to(2000).toVector.map(_ => DoubleSha256Digest.empty)
     )
 

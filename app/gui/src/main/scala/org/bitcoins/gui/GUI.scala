@@ -18,8 +18,7 @@ import scala.util._
 
 object GUI extends WalletGUI with JFXApp3 {
 
-  implicit override lazy val system: ActorSystem = ActorSystem(
-    s"bitcoin-s-gui-${System.currentTimeMillis()}")
+  implicit override lazy val system: ActorSystem = ActorSystem(s"bitcoin-s-gui-${System.currentTimeMillis()}")
 
   override lazy val glassPane: VBox = new VBox {
     children = new ProgressIndicator {

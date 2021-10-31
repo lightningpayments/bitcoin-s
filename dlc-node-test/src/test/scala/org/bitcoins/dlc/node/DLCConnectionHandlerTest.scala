@@ -18,8 +18,7 @@ class DLCConnectionHandlerTest extends BitcoinSAsyncTest {
       firstHalfParseHeaders must be(empty)
 
       val (secondHalfParsedHeaders, _) =
-        DLCConnectionHandler.parseIndividualMessages(
-          remainingBytes ++ secondHalf)
+        DLCConnectionHandler.parseIndividualMessages(remainingBytes ++ secondHalf)
       val parsedLnMessage = secondHalfParsedHeaders.head
       val parsedLnAcceptMessage =
         parsedLnMessage.asInstanceOf[LnMessage[DLCAcceptTLV]]

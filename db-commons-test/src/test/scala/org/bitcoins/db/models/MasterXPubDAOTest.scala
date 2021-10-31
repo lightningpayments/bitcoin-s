@@ -51,19 +51,18 @@ class MasterXPubDAOTest extends TestAppConfigFixture {
 
   }
 
-  it must "validate the masterxpub and succeed in the database" in {
-    testAppConfig: TestAppConfig =>
-      val xpriv = ExtPrivateKey.freshRootKey(ExtKeyVersion.SegWitTestNet3Priv)
-      val xpub = xpriv.extPublicKey
-      val masterXpub =
-        MasterXPubDAO()(executionContext, appConfig = testAppConfig)
+  it must "validate the masterxpub and succeed in the database" in { testAppConfig: TestAppConfig =>
+    val xpriv = ExtPrivateKey.freshRootKey(ExtKeyVersion.SegWitTestNet3Priv)
+    val xpub = xpriv.extPublicKey
+    val masterXpub =
+      MasterXPubDAO()(executionContext, appConfig = testAppConfig)
 
-      val createdF = masterXpub.create(xpub)
+    val createdF = masterXpub.create(xpub)
 
-      for {
-        _ <- createdF
-        _ <- masterXpub.validate(xpub)
-      } yield succeed
+    for {
+      _ <- createdF
+      _ <- masterXpub.validate(xpub)
+    } yield succeed
   }
 
   it must "throw an exception is the stored master xpub is different than the given" in {

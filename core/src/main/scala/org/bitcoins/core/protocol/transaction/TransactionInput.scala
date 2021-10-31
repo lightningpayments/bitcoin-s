@@ -48,19 +48,14 @@ object TransactionInput extends Factory[TransactionInput] {
       vout: UInt32,
       signature: ScriptSignature = ScriptSignature.empty): TransactionInput = {
     val outpoint = TransactionOutPoint(txid, vout)
-    TransactionInput(outPoint = outpoint,
-                     scriptSignature = signature,
-                     sequenceNumber = TransactionConstants.sequence)
+    TransactionInput(outPoint = outpoint, scriptSignature = signature, sequenceNumber = TransactionConstants.sequence)
 
   }
 
   def fromBytes(bytes: ByteVector): TransactionInput =
     RawTransactionInputParser.read(bytes)
 
-  def apply(
-      outPoint: TransactionOutPoint,
-      scriptSignature: ScriptSignature,
-      sequenceNumber: UInt32): TransactionInput =
+  def apply(outPoint: TransactionOutPoint, scriptSignature: ScriptSignature, sequenceNumber: UInt32): TransactionInput =
     outPoint match {
       case EmptyTransactionOutPoint =>
         CoinbaseInput(scriptSignature, sequenceNumber)
@@ -72,18 +67,13 @@ object TransactionInput extends Factory[TransactionInput] {
 
 object CoinbaseInput {
 
-  private case class CoinbaseInputImpl(
-      scriptSignature: ScriptSignature,
-      sequence: UInt32)
-      extends CoinbaseInput
+  private case class CoinbaseInputImpl(scriptSignature: ScriptSignature, sequence: UInt32) extends CoinbaseInput
 
   /** Creates a coinbase input - coinbase inputs always have an empty outpoint
     * @param scriptSignature this can contain anything, miners use this to signify support for various protocol BIPs
     * @return the coinbase input
     */
-  def apply(
-      scriptSignature: ScriptSignature,
-      sequence: UInt32): CoinbaseInput = {
+  def apply(scriptSignature: ScriptSignature, sequence: UInt32): CoinbaseInput = {
     CoinbaseInputImpl(scriptSignature, sequence)
   }
 }

@@ -34,13 +34,10 @@ trait NodeDAOFixture extends NodeUnitTest with CachedBitcoinSAppConfig {
                     _ <- cachedNodeConf.start()
                   } yield daos
                 },
-                destroy =
-                  () => destroyAppConfig(cachedChainConf, cachedNodeConf))(test)
+                destroy = () => destroyAppConfig(cachedChainConf, cachedNodeConf))(test)
   }
 
-  private def destroyAppConfig(
-      chainConfig: ChainAppConfig,
-      nodeConfig: NodeAppConfig): Future[Unit] = {
+  private def destroyAppConfig(chainConfig: ChainAppConfig, nodeConfig: NodeAppConfig): Future[Unit] = {
 
     for {
       _ <- nodeConfig.dropAll()

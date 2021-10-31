@@ -16,8 +16,7 @@ trait RawGetDataMessageSerializer extends RawBitcoinSerializer[GetDataMessage] {
   }
 
   def write(getDataMessage: GetDataMessage): ByteVector = {
-    val inv = InventoryMessage(getDataMessage.inventoryCount,
-                               getDataMessage.inventories)
+    val inv = InventoryMessage(getDataMessage.inventoryCount, getDataMessage.inventories)
     inv.bytes
   }
 }

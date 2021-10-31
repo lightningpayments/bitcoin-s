@@ -6,10 +6,7 @@ import org.bitcoins.rpc.util.RpcUtil
 import org.bitcoins.server.BitcoinSAppConfig
 import org.bitcoins.testkit.BitcoinSTestAppConfig
 import org.bitcoins.testkit.node.fixture.SpvNodeConnectedWithBitcoind
-import org.bitcoins.testkit.node.{
-  NodeTestUtil,
-  NodeTestWithCachedBitcoindNewest
-}
+import org.bitcoins.testkit.node.{NodeTestUtil, NodeTestWithCachedBitcoindNewest}
 import org.bitcoins.testkit.util.TorUtil
 import org.scalatest.{FutureOutcome, Outcome}
 
@@ -30,9 +27,7 @@ class SpvNodeTest extends NodeTestWithCachedBitcoindNewest {
     val outcomeF: Future[Outcome] = for {
       _ <- torClientF
       bitcoind <- cachedBitcoindWithFundsF
-      outcome = withSpvNodeConnectedToBitcoindCached(test, bitcoind)(
-        system,
-        getFreshConfig)
+      outcome = withSpvNodeConnectedToBitcoindCached(test, bitcoind)(system, getFreshConfig)
       f <- outcome.toFuture
     } yield f
     new FutureOutcome(outcomeF)
@@ -68,57 +63,55 @@ class SpvNodeTest extends NodeTestWithCachedBitcoindNewest {
       }
   }
 
-  it must "stay in sync with a bitcoind instance" in {
-    spvNodeConnectedWithBitcoind: SpvNodeConnectedWithBitcoind =>
-      val spvNode = spvNodeConnectedWithBitcoind.node
-      val bitcoind = spvNodeConnectedWithBitcoind.bitcoind
+  it must "stay in sync with a bitcoind instance" in { spvNodeConnectedWithBitcoind: SpvNodeConnectedWithBitcoind =>
+    val spvNode = spvNodeConnectedWithBitcoind.node
+    val bitcoind = spvNodeConnectedWithBitcoind.bitcoind
 
-      //we need to generate 1 block for bitcoind to consider
-      //itself out of IBD. bitcoind will not sendheaders
-      //when it believes itself, or it's peer is in IBD
-      val gen1F =
-        bitcoind.getNewAddress.flatMap(bitcoind.generateToAddress(1, _))
+    //we need to generate 1 block for bitcoind to consider
+    //itself out of IBD. bitcoind will not sendheaders
+    //when it believes itself, or it's peer is in IBD
+    val gen1F =
+      bitcoind.getNewAddress.flatMap(bitcoind.generateToAddress(1, _))
 
-      //this needs to be called to get our peer to send us headers
-      //as they happen with the 'sendheaders' message
-      //both our spv node and our bitcoind node _should_ both be at the genesis block (regtest)
-      //at this point so no actual syncing is happening
-      val initSyncF = gen1F.flatMap { hashes =>
-        val syncF = spvNode.sync()
-        for {
-          _ <- syncF
-          _ <- NodeTestUtil.awaitBestHash(hashes.head, spvNode)
-        } yield ()
-      }
+    //this needs to be called to get our peer to send us headers
+    //as they happen with the 'sendheaders' message
+    //both our spv node and our bitcoind node _should_ both be at the genesis block (regtest)
+    //at this point so no actual syncing is happening
+    val initSyncF = gen1F.flatMap { hashes =>
+      val syncF = spvNode.sync()
+      for {
+        _ <- syncF
+        _ <- NodeTestUtil.awaitBestHash(hashes.head, spvNode)
+      } yield ()
+    }
 
-      //start generating a block every 10 seconds with bitcoind
-      //this should result in 5 blocks
-      val startGenF: Future[Cancellable] = initSyncF.map { _ =>
-        //generate a block every 5 seconds
-        //until we have generated 5 total blocks
-        genBlockInterval(bitcoind)
-      }
+    //start generating a block every 10 seconds with bitcoind
+    //this should result in 5 blocks
+    val startGenF: Future[Cancellable] = initSyncF.map { _ =>
+      //generate a block every 5 seconds
+      //until we have generated 5 total blocks
+      genBlockInterval(bitcoind)
+    }
 
-      startGenF.flatMap { cancel =>
-        //we should expect 5 headers have been announced to us via
-        //the send headers message.
-        val has6BlocksF = RpcUtil.retryUntilSatisfiedF(
-          conditionF = () =>
-            spvNode
-              .chainApiFromDb()
-              .flatMap(_.getBlockCount().map { count =>
-                count == 108
-              }),
-          interval = 250.millis)
+    startGenF.flatMap { cancel =>
+      //we should expect 5 headers have been announced to us via
+      //the send headers message.
+      val has6BlocksF = RpcUtil.retryUntilSatisfiedF(conditionF = () =>
+                                                       spvNode
+                                                         .chainApiFromDb()
+                                                         .flatMap(_.getBlockCount().map { count =>
+                                                           count == 108
+                                                         }),
+                                                     interval = 250.millis)
 
-        has6BlocksF.map { _ =>
-          val isCanceled = cancel.cancel()
-          if (!isCanceled) {
-            logger.warn(s"Failed to cancel generating blocks on bitcoind")
-          }
-          succeed
+      has6BlocksF.map { _ =>
+        val isCanceled = cancel.cancel()
+        if (!isCanceled) {
+          logger.warn(s"Failed to cancel generating blocks on bitcoind")
         }
+        succeed
       }
+    }
   }
 
 }

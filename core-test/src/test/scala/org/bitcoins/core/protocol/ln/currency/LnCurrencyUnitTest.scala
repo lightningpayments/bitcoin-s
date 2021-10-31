@@ -17,16 +17,15 @@ class LnCurrencyUnitTest extends BitcoinSUnitTest {
   }
 
   it must "add to LnCurrencyUnits" in {
-    forAll(LnCurrencyUnitGen.lnCurrencyUnit, LnCurrencyUnitGen.lnCurrencyUnit) {
-      (num1, num2) =>
-        val resultT: Try[LnCurrencyUnit] = Try(num1 + num2)
-        resultT match {
-          case Success(result) =>
-            assert(PicoBitcoins.min <= result)
-            assert(result <= PicoBitcoins.max)
-            assert(num1 + num2 == result)
-          case Failure(_) => succeed
-        }
+    forAll(LnCurrencyUnitGen.lnCurrencyUnit, LnCurrencyUnitGen.lnCurrencyUnit) { (num1, num2) =>
+      val resultT: Try[LnCurrencyUnit] = Try(num1 + num2)
+      resultT match {
+        case Success(result) =>
+          assert(PicoBitcoins.min <= result)
+          assert(result <= PicoBitcoins.max)
+          assert(num1 + num2 == result)
+        case Failure(_) => succeed
+      }
     }
   }
 
@@ -37,16 +36,15 @@ class LnCurrencyUnitTest extends BitcoinSUnitTest {
   }
 
   it must "subtract two LnCurrencyUnit values" in {
-    forAll(LnCurrencyUnitGen.lnCurrencyUnit, LnCurrencyUnitGen.lnCurrencyUnit) {
-      (num1, num2) =>
-        val resultT: Try[LnCurrencyUnit] = Try(num1 - num2)
-        resultT match {
-          case Success(result) =>
-            assert(PicoBitcoins.min <= result)
-            assert(result <= PicoBitcoins.max)
-            assert(num1 - num2 == result)
-          case Failure(_) => succeed
-        }
+    forAll(LnCurrencyUnitGen.lnCurrencyUnit, LnCurrencyUnitGen.lnCurrencyUnit) { (num1, num2) =>
+      val resultT: Try[LnCurrencyUnit] = Try(num1 - num2)
+      resultT match {
+        case Success(result) =>
+          assert(PicoBitcoins.min <= result)
+          assert(result <= PicoBitcoins.max)
+          assert(num1 - num2 == result)
+        case Failure(_) => succeed
+      }
     }
   }
 
@@ -63,16 +61,15 @@ class LnCurrencyUnitTest extends BitcoinSUnitTest {
   }
 
   it must "multiply two LnCurrencyUnit values" in {
-    forAll(LnCurrencyUnitGen.lnCurrencyUnit, LnCurrencyUnitGen.lnCurrencyUnit) {
-      (num1, num2) =>
-        val resultT: Try[LnCurrencyUnit] = Try(num1 * num2)
-        resultT match {
-          case Success(result) =>
-            assert(result >= PicoBitcoins.min)
-            assert(result <= PicoBitcoins.max)
-            assert(num1 * num2 == result)
-          case Failure(_) => succeed
-        }
+    forAll(LnCurrencyUnitGen.lnCurrencyUnit, LnCurrencyUnitGen.lnCurrencyUnit) { (num1, num2) =>
+      val resultT: Try[LnCurrencyUnit] = Try(num1 * num2)
+      resultT match {
+        case Success(result) =>
+          assert(result >= PicoBitcoins.min)
+          assert(result <= PicoBitcoins.max)
+          assert(num1 * num2 == result)
+        case Failure(_) => succeed
+      }
     }
   }
 
@@ -85,9 +82,7 @@ class LnCurrencyUnitTest extends BitcoinSUnitTest {
     forAll(lnCurrWithInt) { case (ln, int) =>
       val safeProduct = ln.multiplySafe(int)
       val underlyingProduct = ln.toBigInt * int
-      if (
-        underlyingProduct <= PicoBitcoins.min.toBigInt && underlyingProduct >= PicoBitcoins.max.toBigInt
-      ) {
+      if (underlyingProduct <= PicoBitcoins.min.toBigInt && underlyingProduct >= PicoBitcoins.max.toBigInt) {
         assert(safeProduct.isSuccess)
         safeProduct.get.toBigInt == underlyingProduct
       } else {
@@ -97,23 +92,20 @@ class LnCurrencyUnitTest extends BitcoinSUnitTest {
   }
 
   it must "have property '< & >=''" in {
-    forAll(LnCurrencyUnitGen.lnCurrencyUnit, LnCurrencyUnitGen.lnCurrencyUnit) {
-      (num1, num2) =>
-        assert((num1 < num2) || (num1 >= num2))
+    forAll(LnCurrencyUnitGen.lnCurrencyUnit, LnCurrencyUnitGen.lnCurrencyUnit) { (num1, num2) =>
+      assert((num1 < num2) || (num1 >= num2))
     }
   }
 
   it must "have property '<= & >'" in {
-    forAll(LnCurrencyUnitGen.lnCurrencyUnit, LnCurrencyUnitGen.lnCurrencyUnit) {
-      (num1, num2) =>
-        assert((num1 <= num2) || (num1 > num2))
+    forAll(LnCurrencyUnitGen.lnCurrencyUnit, LnCurrencyUnitGen.lnCurrencyUnit) { (num1, num2) =>
+      assert((num1 <= num2) || (num1 > num2))
     }
   }
 
   it must "have property '== & !='" in {
-    forAll(LnCurrencyUnitGen.lnCurrencyUnit, LnCurrencyUnitGen.lnCurrencyUnit) {
-      (num1, num2) =>
-        assert((num1 == num2) || (num1 != num2))
+    forAll(LnCurrencyUnitGen.lnCurrencyUnit, LnCurrencyUnitGen.lnCurrencyUnit) { (num1, num2) =>
+      assert((num1 == num2) || (num1 != num2))
     }
   }
 
@@ -138,9 +130,7 @@ class LnCurrencyUnitTest extends BitcoinSUnitTest {
   }
 
   it must "have Long syntax" in {
-    forAll(
-      Gen.choose(LnPolicy.minMilliBitcoins.toLong,
-                 LnPolicy.maxMilliBitcoins.toLong)) { num =>
+    forAll(Gen.choose(LnPolicy.minMilliBitcoins.toLong, LnPolicy.maxMilliBitcoins.toLong)) { num =>
       assert(num.millibitcoins == MilliBitcoins(num))
       assert(num.millibitcoin == MilliBitcoins(num))
       assert(num.mBTC == MilliBitcoins(num))

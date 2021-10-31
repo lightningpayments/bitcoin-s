@@ -48,10 +48,7 @@ object GetNewAddressDialog {
     val height = 250
     val qrCodeWriter = new QRCodeWriter
     val bitMatrix: BitMatrix =
-      qrCodeWriter.encode(s"bitcoin:$address",
-                          BarcodeFormat.QR_CODE,
-                          width,
-                          height)
+      qrCodeWriter.encode(s"bitcoin:$address", BarcodeFormat.QR_CODE, width, height)
 
     val writableImage = new WritableImage(width, height)
     val pixelWriter = writableImage.getPixelWriter

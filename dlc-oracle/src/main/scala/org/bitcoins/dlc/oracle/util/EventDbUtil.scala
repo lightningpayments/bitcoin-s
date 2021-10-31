@@ -30,8 +30,7 @@ trait EventDbUtil {
           case _: SignedDigitDecompositionEventDescriptor =>
             val plusHash = signingVersion.calcOutcomeHash(decomp, "+")
             val minusHash = signingVersion.calcOutcomeHash(decomp, "-")
-            Vector(EventOutcomeDb(nonces.head, "+", plusHash),
-                   EventOutcomeDb(nonces.head, "-", minusHash))
+            Vector(EventOutcomeDb(nonces.head, "+", plusHash), EventOutcomeDb(nonces.head, "-", minusHash))
           case _: UnsignedDigitDecompositionEventDescriptor =>
             Vector.empty
         }
@@ -57,10 +56,8 @@ trait EventDbUtil {
 
   def toEventOutcomeDbs(
       oracleAnnouncementV0TLV: OracleAnnouncementV0TLV,
-      signingVersion: SigningVersion = SigningVersion.latest): Vector[
-    EventOutcomeDb] = {
-    toEventOutcomeDbs(descriptor =
-                        oracleAnnouncementV0TLV.eventTLV.eventDescriptor,
+      signingVersion: SigningVersion = SigningVersion.latest): Vector[EventOutcomeDb] = {
+    toEventOutcomeDbs(descriptor = oracleAnnouncementV0TLV.eventTLV.eventDescriptor,
                       nonces = oracleAnnouncementV0TLV.eventTLV.nonces,
                       signingVersion = signingVersion)
   }
@@ -68,8 +65,7 @@ trait EventDbUtil {
   def toEventDbs(
       oracleAnnouncementV0TLV: OracleAnnouncementV0TLV,
       eventName: String,
-      signingVersion: SigningVersion = SigningVersion.latest): Vector[
-    EventDb] = {
+      signingVersion: SigningVersion = SigningVersion.latest): Vector[EventDb] = {
     val nonces = oracleAnnouncementV0TLV.eventTLV.nonces.vec
     nonces.zipWithIndex.map { case (nonce, index) =>
       EventDb(

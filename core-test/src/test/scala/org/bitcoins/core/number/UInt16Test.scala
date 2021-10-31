@@ -94,14 +94,13 @@ class UInt16Test extends BitcoinSUnitTest {
   }
 
   it must "add two uint16s and get the mathematical sum of the two numbers" in {
-    forAll(NumberGenerator.uInt16, NumberGenerator.uInt16) {
-      (num1: UInt16, num2: UInt16) =>
-        val result = num1.toInt + num2.toInt
-        if (result <= UInt16.max.toInt) {
-          assert(num1 + num2 == UInt16(result.toInt))
-        } else {
-          assert(Try(num1 + num2).isFailure)
-        }
+    forAll(NumberGenerator.uInt16, NumberGenerator.uInt16) { (num1: UInt16, num2: UInt16) =>
+      val result = num1.toInt + num2.toInt
+      if (result <= UInt16.max.toInt) {
+        assert(num1 + num2 == UInt16(result.toInt))
+      } else {
+        assert(Try(num1 + num2).isFailure)
+      }
     }
   }
 
@@ -122,14 +121,13 @@ class UInt16Test extends BitcoinSUnitTest {
   }
 
   it must "subtract a uint16 from another uint16 and get the correct result" in {
-    forAll(NumberGenerator.uInt16, NumberGenerator.uInt16) {
-      (num1: UInt16, num2: UInt16) =>
-        val result = num1.toInt - num2.toInt
-        if (result >= 0) {
-          assert(num1 - num2 == UInt16(result))
-        } else {
-          assert(Try(num1 - num2).isFailure)
-        }
+    forAll(NumberGenerator.uInt16, NumberGenerator.uInt16) { (num1: UInt16, num2: UInt16) =>
+      val result = num1.toInt - num2.toInt
+      if (result >= 0) {
+        assert(num1 - num2 == UInt16(result))
+      } else {
+        assert(Try(num1 - num2).isFailure)
+      }
     }
   }
 
@@ -146,45 +144,41 @@ class UInt16Test extends BitcoinSUnitTest {
   }
 
   it must "multiply two UInt16s correctly" in {
-    forAll(NumberGenerator.uInt16, NumberGenerator.uInt16) {
-      (num1: UInt16, num2: UInt16) =>
-        val bigInt1 = num1.toBigInt
-        val bigInt2 = num2.toBigInt
-        if (bigInt1 * bigInt2 <= UInt16.max.toInt) {
-          assert(
-            num1 * num2 ==
-              UInt16(num1.toInt * num2.toInt))
-        } else {
-          assert(Try(num1 * num2).isFailure)
-        }
+    forAll(NumberGenerator.uInt16, NumberGenerator.uInt16) { (num1: UInt16, num2: UInt16) =>
+      val bigInt1 = num1.toBigInt
+      val bigInt2 = num2.toBigInt
+      if (bigInt1 * bigInt2 <= UInt16.max.toInt) {
+        assert(
+          num1 * num2 ==
+            UInt16(num1.toInt * num2.toInt))
+      } else {
+        assert(Try(num1 * num2).isFailure)
+      }
     }
   }
 
   it must "compare UInt16s correctly" in {
-    forAll(NumberGenerator.uInt16, NumberGenerator.uInt16) {
-      (num1: UInt16, num2: UInt16) =>
-        if (num1.toInt < num2.toInt) assert(num1 < num2)
-        else assert(num1 >= num2)
+    forAll(NumberGenerator.uInt16, NumberGenerator.uInt16) { (num1: UInt16, num2: UInt16) =>
+      if (num1.toInt < num2.toInt) assert(num1 < num2)
+      else assert(num1 >= num2)
 
-        if (num1.toInt <= num2.toInt) assert(num1 <= num2)
-        else assert(num1 > num2)
+      if (num1.toInt <= num2.toInt) assert(num1 <= num2)
+      else assert(num1 > num2)
 
-        if (num1.toInt == num2.toInt) assert(num1 == num2)
-        else assert(num1 != num2)
+      if (num1.toInt == num2.toInt) assert(num1 == num2)
+      else assert(num1 != num2)
     }
   }
 
   it must "| correctly" in {
-    forAll(NumberGenerator.uInt16, NumberGenerator.uInt16) {
-      (num1: UInt16, num2: UInt16) =>
-        assert(UInt16(num1.toInt | num2.toInt) == (num1 | num2))
+    forAll(NumberGenerator.uInt16, NumberGenerator.uInt16) { (num1: UInt16, num2: UInt16) =>
+      assert(UInt16(num1.toInt | num2.toInt) == (num1 | num2))
     }
   }
 
   it must "& correctly" in {
-    forAll(NumberGenerator.uInt16, NumberGenerator.uInt16) {
-      (num1: UInt16, num2: UInt16) =>
-        assert(UInt16(num1.toInt & num2.toInt) == (num1 & num2))
+    forAll(NumberGenerator.uInt16, NumberGenerator.uInt16) { (num1: UInt16, num2: UInt16) =>
+      assert(UInt16(num1.toInt & num2.toInt) == (num1 & num2))
     }
   }
 

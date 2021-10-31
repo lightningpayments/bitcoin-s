@@ -1,11 +1,6 @@
 package org.bitcoins.core.psbt
 
-import org.bitcoins.core.psbt.InputPSBTRecord.{
-  HASH160PreImage,
-  HASH256PreImage,
-  RIPEMD160PreImage,
-  SHA256PreImage
-}
+import org.bitcoins.core.psbt.InputPSBTRecord.{HASH160PreImage, HASH256PreImage, RIPEMD160PreImage, SHA256PreImage}
 import org.bitcoins.core.psbt.OutputPSBTRecord.{RedeemScript, WitnessScript}
 import org.bitcoins.core.wallet.utxo.{InputInfo, ScriptSignatureParams}
 import org.bitcoins.crypto.CryptoUtil
@@ -30,24 +25,21 @@ class PSBTTest extends BitcoinSUnitTest {
 
       val newGlobal = PSBTGenerators.pruneGlobal(global)
       val newInputs =
-        inputs.map(input =>
-          InputPSBTMap(PSBTGenerators.pruneVec(input.elements)))
+        inputs.map(input => InputPSBTMap(PSBTGenerators.pruneVec(input.elements)))
       val newOutputs =
-        outputs.map(output =>
-          OutputPSBTMap(PSBTGenerators.pruneVec(output.elements)))
+        outputs.map(output => OutputPSBTMap(PSBTGenerators.pruneVec(output.elements)))
 
       val psbt1 = PSBT(newGlobal, newInputs, newOutputs)
 
-      val oppositeGlobalElements = global.elements.filterNot(e =>
-        newGlobal.elements.contains(e)) :+ global.unsignedTransaction
+      val oppositeGlobalElements =
+        global.elements.filterNot(e => newGlobal.elements.contains(e)) :+ global.unsignedTransaction
       val oppositeGlobal = GlobalPSBTMap(oppositeGlobalElements.distinct)
       val oppositeInputs = inputs.zip(newInputs).map { case (map, pruned) =>
         InputPSBTMap(map.elements.filterNot(e => pruned.elements.contains(e)))
       }
       val oppositeOutputs =
         outputs.zip(newOutputs).map { case (map, pruned) =>
-          OutputPSBTMap(
-            map.elements.filterNot(e => pruned.elements.contains(e)))
+          OutputPSBTMap(map.elements.filterNot(e => pruned.elements.contains(e)))
         }
 
       val psbt2 = PSBT(oppositeGlobal, oppositeInputs, oppositeOutputs)
@@ -70,8 +62,7 @@ class PSBTTest extends BitcoinSUnitTest {
               .addUTXOToInput(utxo.prevTransaction, index)
               .addSigHashTypeToInput(utxo.hashType, index)
 
-            (InputInfo.getRedeemScript(utxo.inputInfo),
-             InputInfo.getScriptWitness(utxo.inputInfo)) match {
+            (InputInfo.getRedeemScript(utxo.inputInfo), InputInfo.getScriptWitness(utxo.inputInfo)) match {
               case (Some(redeemScript), Some(scriptWitness)) =>
                 partUpdatedPsbt
                   .addRedeemOrWitnessScriptToInput(redeemScript, index)
@@ -94,17 +85,13 @@ class PSBTTest extends BitcoinSUnitTest {
 
   it must "correctly construct and sign a PSBT" in {
     forAll(PSBTGenerators.psbtToBeSigned) { case (psbtNoSigs, utxos, _) =>
-      val infos = utxos.toVector.zipWithIndex.map {
-        case (utxo: ScriptSignatureParams[InputInfo], index) =>
-          (index, utxo)
+      val infos = utxos.toVector.zipWithIndex.map { case (utxo: ScriptSignatureParams[InputInfo], index) =>
+        (index, utxo)
       }
-      val signedPSBT = infos.foldLeft(psbtNoSigs) {
-        case (unsignedPSBT, (index, info)) =>
-          info.toSingles.foldLeft(unsignedPSBT) { (psbtToSign, singleInfo) =>
-            psbtToSign.sign(index,
-                            singleInfo.signer,
-                            singleInfo.conditionalPath)
-          }
+      val signedPSBT = infos.foldLeft(psbtNoSigs) { case (unsignedPSBT, (index, info)) =>
+        info.toSingles.foldLeft(unsignedPSBT) { (psbtToSign, singleInfo) =>
+          psbtToSign.sign(index, singleInfo.signer, singleInfo.conditionalPath)
+        }
       }
       val finalizedPsbtT = signedPSBT.finalizePSBT
       finalizedPsbtT match {
@@ -124,9 +111,8 @@ class PSBTTest extends BitcoinSUnitTest {
             psbt.addRedeemOrWitnessScriptToOutput(spk._1, spk._2))
 
         val allOutputsValid =
-          psbtWithOutputs.outputMaps.zip(redeemScripts).forall {
-            case (map, spk) =>
-              map.redeemScriptOpt.contains(RedeemScript(spk))
+          psbtWithOutputs.outputMaps.zip(redeemScripts).forall { case (map, spk) =>
+            map.redeemScriptOpt.contains(RedeemScript(spk))
           }
         assert(allOutputsValid)
     }
@@ -140,9 +126,8 @@ class PSBTTest extends BitcoinSUnitTest {
             psbt.addRedeemOrWitnessScriptToOutput(spk._1, spk._2))
 
         val allOutputsValid =
-          psbtWithOutputs.outputMaps.zip(redeemScripts).forall {
-            case (map, spk) =>
-              map.witnessScriptOpt.contains(WitnessScript(spk))
+          psbtWithOutputs.outputMaps.zip(redeemScripts).forall { case (map, spk) =>
+            map.witnessScriptOpt.contains(WitnessScript(spk))
 
           }
         assert(allOutputsValid)
@@ -152,44 +137,40 @@ class PSBTTest extends BitcoinSUnitTest {
   it must "correctly construct and finalize PSBTs from UTXOSpendingInfo" in {
     forAll(CreditingTxGen.inputsAndOutputs(),
            ScriptGenerators.scriptPubKey,
-           ChainParamsGenerator.bitcoinNetworkParams) {
-      case ((creditingTxsInfo, destinations), (changeSPK, _), _) =>
-        val crediting =
-          creditingTxsInfo.foldLeft(0L)(_ + _.amount.satoshis.toLong)
-        val spending = destinations.foldLeft(0L)(_ + _.value.satoshis.toLong)
-        val maxFee = crediting - spending
-        val fee = GenUtil.sample(FeeUnitGen.feeUnit(maxFee))
+           ChainParamsGenerator.bitcoinNetworkParams) { case ((creditingTxsInfo, destinations), (changeSPK, _), _) =>
+      val crediting =
+        creditingTxsInfo.foldLeft(0L)(_ + _.amount.satoshis.toLong)
+      val spending = destinations.foldLeft(0L)(_ + _.value.satoshis.toLong)
+      val maxFee = crediting - spending
+      val fee = GenUtil.sample(FeeUnitGen.feeUnit(maxFee))
 
-        val (psbt, _, _) =
-          PSBTGenerators.psbtAndBuilderFromInputs(finalized = false,
-                                                  creditingTxsInfo =
-                                                    creditingTxsInfo,
-                                                  destinations = destinations,
-                                                  changeSPK = changeSPK,
-                                                  fee = fee)
-        val (expected, _, _) =
-          PSBTGenerators.psbtAndBuilderFromInputs(finalized = true,
-                                                  creditingTxsInfo =
-                                                    creditingTxsInfo,
-                                                  destinations = destinations,
-                                                  changeSPK = changeSPK,
-                                                  fee = fee)
+      val (psbt, _, _) =
+        PSBTGenerators.psbtAndBuilderFromInputs(finalized = false,
+                                                creditingTxsInfo = creditingTxsInfo,
+                                                destinations = destinations,
+                                                changeSPK = changeSPK,
+                                                fee = fee)
+      val (expected, _, _) =
+        PSBTGenerators.psbtAndBuilderFromInputs(finalized = true,
+                                                creditingTxsInfo = creditingTxsInfo,
+                                                destinations = destinations,
+                                                changeSPK = changeSPK,
+                                                fee = fee)
 
-        val finalizedPsbtOpt = psbt.finalizePSBT
-        assert(finalizedPsbtOpt.isSuccess, psbt.hex)
-        assert(finalizedPsbtOpt.get == expected)
+      val finalizedPsbtOpt = psbt.finalizePSBT
+      assert(finalizedPsbtOpt.isSuccess, psbt.hex)
+      assert(finalizedPsbtOpt.get == expected)
     }
   }
 
   it must "agree with TxBuilder.sign given UTXOSpendingInfos" in {
-    forAll(PSBTGenerators.finalizedPSBTWithBuilder) {
-      case (psbt, builder, fee) =>
-        val signedTx = builder.sign(fee)
+    forAll(PSBTGenerators.finalizedPSBTWithBuilder) { case (psbt, builder, fee) =>
+      val signedTx = builder.sign(fee)
 
-        val txT = psbt.extractTransactionAndValidate
-        assert(txT.isSuccess, txT.failed)
+      val txT = psbt.extractTransactionAndValidate
+      assert(txT.isSuccess, txT.failed)
 
-        assert(txT.get == signedTx)
+      assert(txT.get == signedTx)
     }
   }
 

@@ -39,8 +39,7 @@ private[peer] object MerkleBuffers extends P2PLogger {
                         // clearing the builder
                         Vector.newBuilder)
     } else {
-      logger.trace(
-        s"Merkleblock=${merkle.blockHeader.hashBE} has no matches, not adding to buffer")
+      logger.trace(s"Merkleblock=${merkle.blockHeader.hashBE} has no matches, not adding to buffer")
     }
 
     ()
@@ -56,22 +55,19 @@ private[peer] object MerkleBuffers extends P2PLogger {
     * @return If the transaction matches a merkle block, returns true.
     *         Otherwise, false.
     */
-  def putTx(tx: Transaction, callbacks: NodeCallbacks)(implicit
-      ec: ExecutionContext): Future[Boolean] = {
+  def putTx(tx: Transaction, callbacks: NodeCallbacks)(implicit ec: ExecutionContext): Future[Boolean] = {
     val blocksInBuffer = underlyingMap.keys.toList
     logger.trace(s"Looking for transaction=${tx.txIdBE} in merkleblock buffer")
     logger.trace(s"Merkleblocks in buffer: ${blocksInBuffer.length}")
     blocksInBuffer.find { block =>
       val matches = block.partialMerkleTree.extractMatches
 
-      logger.trace(
-        s"Block=${block.blockHeader.hashBE} has matches=${matches.map(_.flip)}")
+      logger.trace(s"Block=${block.blockHeader.hashBE} has matches=${matches.map(_.flip)}")
 
       matches.contains(tx.txId)
     } match {
       case None =>
-        logger.debug(
-          s"Transaction=${tx.txIdBE} does not belong to any merkle block")
+        logger.debug(s"Transaction=${tx.txIdBE} does not belong to any merkle block")
         Future.successful(false)
       case Some(key) =>
         handleMerkleMatch(tx, merkleBlock = key, callbacks = callbacks)
@@ -79,10 +75,7 @@ private[peer] object MerkleBuffers extends P2PLogger {
   }
 
   // TODO Scaladoc
-  private def handleMerkleMatch(
-      transaction: Transaction,
-      merkleBlock: MerkleBlock,
-      callbacks: NodeCallbacks)(implicit
+  private def handleMerkleMatch(transaction: Transaction, merkleBlock: MerkleBlock, callbacks: NodeCallbacks)(implicit
       ec: ExecutionContext): Future[Boolean] = {
     val merkleBlockMatches = merkleBlock.partialMerkleTree.extractMatches
     val merkleHash = merkleBlock.blockHeader.hashBE
@@ -99,21 +92,17 @@ private[peer] object MerkleBuffers extends P2PLogger {
     val transactionSoFarCount = transactionSoFar.length
     val matchesCount = merkleBlockMatches.length
     if (transactionSoFarCount == matchesCount) {
-      logger.debug(
-        s"We've received all transactions ($transactionSoFarCount) for merkleBlock=$merkleHash")
+      logger.debug(s"We've received all transactions ($transactionSoFarCount) for merkleBlock=$merkleHash")
 
       logger.trace(s"Removing merkle block from buffer")
       underlyingMap.remove(merkleBlock) // TODO: error handling
 
       logger.trace(s"Calling merkle block callback(s)")
       callbacks
-        .executeOnMerkleBlockReceivedCallbacks(logger,
-                                               merkleBlock,
-                                               transactionSoFar)
+        .executeOnMerkleBlockReceivedCallbacks(logger, merkleBlock, transactionSoFar)
         .map(_ => true)
     } else {
-      logger.trace(
-        s"We've received $transactionSoFarCount, expecting $matchesCount")
+      logger.trace(s"We've received $transactionSoFarCount, expecting $matchesCount")
       assert(transactionSoFarCount < matchesCount)
       Future.successful(true)
     }

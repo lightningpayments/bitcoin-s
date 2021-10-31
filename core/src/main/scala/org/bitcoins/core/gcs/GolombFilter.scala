@@ -2,13 +2,7 @@ package org.bitcoins.core.gcs
 
 import org.bitcoins.core.number.{UInt64, UInt8}
 import org.bitcoins.core.protocol.CompactSizeUInt
-import org.bitcoins.crypto.{
-  CryptoUtil,
-  DoubleSha256Digest,
-  DoubleSha256DigestBE,
-  NetworkElement,
-  SipHashKey
-}
+import org.bitcoins.crypto.{CryptoUtil, DoubleSha256Digest, DoubleSha256DigestBE, NetworkElement, SipHashKey}
 import scodec.bits.{BitVector, ByteVector}
 
 /** Represents a GCS encoded set with all parameters specified
@@ -16,12 +10,7 @@ import scodec.bits.{BitVector, ByteVector}
   *
   * TODO: Replace ByteVector with a type for keys
   */
-case class GolombFilter(
-    key: SipHashKey,
-    m: UInt64,
-    p: UInt8,
-    n: CompactSizeUInt,
-    encodedData: BitVector)
+case class GolombFilter(key: SipHashKey, m: UInt64, p: UInt8, n: CompactSizeUInt, encodedData: BitVector)
     extends NetworkElement {
   lazy val f: UInt64 = n.num * m
 

@@ -4,11 +4,7 @@ import org.bitcoins.core.currency.Satoshis
 import org.bitcoins.core.number.UInt32
 import org.bitcoins.core.protocol.dlc.models.DLCMessage.DLCOffer
 import org.bitcoins.core.protocol.dlc.models.DLCState
-import org.bitcoins.core.protocol.dlc.models.DLCStatus.{
-  Claimed,
-  Refunded,
-  RemoteClaimed
-}
+import org.bitcoins.core.protocol.dlc.models.DLCStatus.{Claimed, Refunded, RemoteClaimed}
 import org.bitcoins.core.protocol.tlv._
 import org.bitcoins.core.script.interpreter.ScriptInterpreter
 import org.bitcoins.core.wallet.fee.SatoshisPerVirtualByte
@@ -68,24 +64,19 @@ class DLCExecutionTest extends BitcoinSDualWalletTest {
       assert(fundingTxOutpoints.diff(outpointsA ++ outpointsB).isEmpty)
 
       assert(fundingTx.outputs.size == 3)
-      assert(
-        fundingTx.outputs.exists(
-          _.scriptPubKey == offer.changeAddress.scriptPubKey))
-      assert(
-        fundingTx.outputs.exists(
-          _.scriptPubKey == accept.changeAddress.scriptPubKey))
+      assert(fundingTx.outputs.exists(_.scriptPubKey == offer.changeAddress.scriptPubKey))
+      assert(fundingTx.outputs.exists(_.scriptPubKey == accept.changeAddress.scriptPubKey))
       assert(ScriptInterpreter.checkTransaction(fundingTx))
 
       val fundingTxPrevOutputRefs = inputsA.map(_.toOutputReference) ++ inputsB
         .map(_.toOutputReference)
 
-      val fundingTxVerify = fundingTx.inputs.zipWithIndex.forall {
-        case (input, index) =>
-          val output = fundingTxPrevOutputRefs
-            .find(_.outPoint == input.previousOutput)
-            .get
-            .output
-          verifyInput(fundingTx, index, output)
+      val fundingTxVerify = fundingTx.inputs.zipWithIndex.forall { case (input, index) =>
+        val output = fundingTxPrevOutputRefs
+          .find(_.outPoint == input.previousOutput)
+          .get
+          .output
+        verifyInput(fundingTx, index, output)
       }
       assert(fundingTxVerify)
     }
@@ -98,10 +89,7 @@ class DLCExecutionTest extends BitcoinSDualWalletTest {
       (sig, _) = getSigs(status.contractInfo)
       func = (wallet: DLCWallet) => wallet.executeDLC(contractId, sig)
 
-      result <- dlcExecutionTest(wallets = wallets,
-                                 asInitiator = true,
-                                 func = func,
-                                 expectedOutputs = 1)
+      result <- dlcExecutionTest(wallets = wallets, asInitiator = true, func = func, expectedOutputs = 1)
 
       _ = assert(result)
       dlcDbAOpt <- wallets._1.wallet.dlcDAO.findByContractId(contractId)
@@ -134,10 +122,7 @@ class DLCExecutionTest extends BitcoinSDualWalletTest {
       (_, sig) = getSigs(status.contractInfo)
       func = (wallet: DLCWallet) => wallet.executeDLC(contractId, sig)
 
-      result <- dlcExecutionTest(wallets = wallets,
-                                 asInitiator = false,
-                                 func = func,
-                                 expectedOutputs = 1)
+      result <- dlcExecutionTest(wallets = wallets, asInitiator = false, func = func, expectedOutputs = 1)
 
       _ = assert(result)
 
@@ -189,10 +174,7 @@ class DLCExecutionTest extends BitcoinSDualWalletTest {
 
       func = (wallet: DLCWallet) => wallet.executeDLC(contractId, sig)
 
-      result <- dlcExecutionTest(wallets = wallets,
-                                 asInitiator = true,
-                                 func = func,
-                                 expectedOutputs = 1)
+      result <- dlcExecutionTest(wallets = wallets, asInitiator = true, func = func, expectedOutputs = 1)
 
       _ = assert(result)
 
@@ -227,10 +209,7 @@ class DLCExecutionTest extends BitcoinSDualWalletTest {
       status <- getDLCStatus(wallets._1.wallet)
       func = (wallet: DLCWallet) => wallet.executeDLCRefund(contractId)
 
-      result <- dlcExecutionTest(wallets = wallets,
-                                 asInitiator = true,
-                                 func = func,
-                                 expectedOutputs = 2)
+      result <- dlcExecutionTest(wallets = wallets, asInitiator = true, func = func, expectedOutputs = 2)
 
       _ = assert(result)
 
@@ -265,10 +244,7 @@ class DLCExecutionTest extends BitcoinSDualWalletTest {
       status <- getDLCStatus(wallets._1.wallet)
       func = (wallet: DLCWallet) => wallet.executeDLCRefund(contractId)
 
-      result <- dlcExecutionTest(wallets = wallets,
-                                 asInitiator = false,
-                                 func = func,
-                                 expectedOutputs = 2)
+      result <- dlcExecutionTest(wallets = wallets, asInitiator = false, func = func, expectedOutputs = 2)
 
       _ = assert(result)
 
@@ -336,40 +312,30 @@ class DLCExecutionTest extends BitcoinSDualWalletTest {
       _ <- makeOffer()
       announcementVec1 <- walletA.announcementDAO.findByAnnouncementSignatures(
         Vector(announcement.announcementSignature))
-      _ = assert(announcementVec1.length == 1,
-                 s"Got length=${announcementVec1.length}")
+      _ = assert(announcementVec1.length == 1, s"Got length=${announcementVec1.length}")
       _ <- makeOffer()
       announcementVec2 <- walletA.announcementDAO.findByAnnouncementSignatures(
         Vector(announcement.announcementSignature))
-      _ = assert(announcementVec2.length == 1,
-                 s"Got length=${announcementVec2.length}")
+      _ = assert(announcementVec2.length == 1, s"Got length=${announcementVec2.length}")
     } yield succeed
   }
 
-  it must "be able to construct an offer of the same contract info of a closed DLC" in {
-    wallets =>
-      val walletA = wallets._1.wallet
-      val walletB = wallets._2.wallet
+  it must "be able to construct an offer of the same contract info of a closed DLC" in { wallets =>
+    val walletA = wallets._1.wallet
+    val walletB = wallets._2.wallet
 
-      for {
-        contractId <- getContractId(walletA)
-        status <- getDLCStatus(walletB)
-        (_, sig) = getSigs(status.contractInfo)
-        func = (wallet: DLCWallet) => wallet.executeDLC(contractId, sig)
+    for {
+      contractId <- getContractId(walletA)
+      status <- getDLCStatus(walletB)
+      (_, sig) = getSigs(status.contractInfo)
+      func = (wallet: DLCWallet) => wallet.executeDLC(contractId, sig)
 
-        result <- dlcExecutionTest(wallets = wallets,
-                                   asInitiator = true,
-                                   func = func,
-                                   expectedOutputs = 1)
-        _ = assert(result)
+      result <- dlcExecutionTest(wallets = wallets, asInitiator = true, func = func, expectedOutputs = 1)
+      _ = assert(result)
 
-        _ <- walletA.createDLCOffer(status.contractInfo,
-                                    status.localCollateral.satoshis,
-                                    None,
-                                    UInt32.zero,
-                                    UInt32.one)
+      _ <- walletA.createDLCOffer(status.contractInfo, status.localCollateral.satoshis, None, UInt32.zero, UInt32.one)
 
-        _ <- walletA.listDLCs()
-      } yield succeed
+      _ <- walletA.listDLCs()
+    } yield succeed
   }
 }

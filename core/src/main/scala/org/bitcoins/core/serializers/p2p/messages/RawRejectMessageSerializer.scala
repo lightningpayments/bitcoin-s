@@ -16,16 +16,13 @@ trait RawRejectMessageSerializer extends RawBitcoinSerializer[RejectMessage] {
       .toArray
       .map(_.toChar)
       .mkString
-    val code: Char = bytes(
-      messageSize.byteSize.toInt + messageSize.num.toInt).toChar
+    val code: Char = bytes(messageSize.byteSize.toInt + messageSize.num.toInt).toChar
     val reasonSizeStartIndex =
       messageSize.byteSize.toInt + messageSize.num.toInt + 1
-    val reasonSize = CompactSizeUInt.parseCompactSizeUInt(
-      bytes.slice(reasonSizeStartIndex.toInt, bytes.size))
+    val reasonSize = CompactSizeUInt.parseCompactSizeUInt(bytes.slice(reasonSizeStartIndex.toInt, bytes.size))
     val reason = bytes
-      .slice(
-        (reasonSizeStartIndex + reasonSize.byteSize).toInt,
-        (reasonSizeStartIndex + reasonSize.byteSize.toInt + reasonSize.num.toInt))
+      .slice((reasonSizeStartIndex + reasonSize.byteSize).toInt,
+             (reasonSizeStartIndex + reasonSize.byteSize.toInt + reasonSize.num.toInt))
       .toArray
       .map(_.toChar)
       .mkString

@@ -15,9 +15,7 @@ import ujson._
 import java.nio.file.FileSystems
 import scala.util.{Failure, Success}
 
-case class OracleRoutes(oracle: DLCOracleApi)(implicit
-    system: ActorSystem,
-    conf: DLCOracleAppConfig)
+case class OracleRoutes(oracle: DLCOracleApi)(implicit system: ActorSystem, conf: DLCOracleAppConfig)
     extends ServerRoute {
   import system.dispatcher
 
@@ -68,13 +66,7 @@ case class OracleRoutes(oracle: DLCOracleApi)(implicit
       CreateNumericAnnouncement.fromJsArr(arr) match {
         case Failure(exception) =>
           reject(ValidationRejection("failure", Some(exception)))
-        case Success(
-              CreateNumericAnnouncement(eventName,
-                                        maturationTime,
-                                        minValue,
-                                        maxValue,
-                                        unit,
-                                        precision)) =>
+        case Success(CreateNumericAnnouncement(eventName, maturationTime, minValue, maxValue, unit, precision)) =>
           complete {
 
             val isSigned = minValue < 0
@@ -103,13 +95,7 @@ case class OracleRoutes(oracle: DLCOracleApi)(implicit
         case Failure(exception) =>
           reject(ValidationRejection("failure", Some(exception)))
         case Success(
-              CreateDigitDecompAnnouncement(eventName,
-                                            maturationTime,
-                                            base,
-                                            isSigned,
-                                            numDigits,
-                                            unit,
-                                            precision)) =>
+              CreateDigitDecompAnnouncement(eventName, maturationTime, base, isSigned, numDigits, unit, precision)) =>
           complete {
             oracle
               .createNewDigitDecompAnnouncement(eventName,
@@ -176,10 +162,8 @@ case class OracleRoutes(oracle: DLCOracleApi)(implicit
                   "eventName" -> Str(event.eventName),
                   "signingVersion" -> Str(event.signingVersion.toString),
                   "maturationTime" -> Str(event.maturationTime.toString),
-                  "maturationTimeEpoch" -> Num(
-                    event.maturationTime.getEpochSecond.toDouble),
-                  "announcementSignature" -> Str(
-                    event.announcementSignature.hex),
+                  "maturationTimeEpoch" -> Num(event.maturationTime.getEpochSecond.toDouble),
+                  "announcementSignature" -> Str(event.announcementSignature.hex),
                   "eventDescriptorTLV" -> Str(event.eventDescriptorTLV.hex),
                   "eventTLV" -> Str(event.eventTLV.hex),
                   "announcementTLV" -> Str(event.announcementTLV.hex),
@@ -267,9 +251,7 @@ case class OracleRoutes(oracle: DLCOracleApi)(implicit
         case Success(KeyManagerPassphraseChange(oldPassword, newPassword)) =>
           complete {
             val path = conf.seedPath
-            WalletStorage.changeAesPassword(path,
-                                            Some(oldPassword),
-                                            Some(newPassword))
+            WalletStorage.changeAesPassword(path, Some(oldPassword), Some(newPassword))
 
             Server.httpSuccess(ujson.Null)
           }

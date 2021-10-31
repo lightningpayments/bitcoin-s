@@ -161,9 +161,7 @@ sealed abstract class DERSignatureUtil {
     //logger.debug("s was not a negative number")
     // Null bytes at the start of S are not allowed, unless S would otherwise be
     // interpreted as a negative number.
-    if (
-      sSize > 1 && (bytes(rSize + 6) == 0x00) && (bytes(rSize + 7) & 0x80) == 0
-    )
+    if (sSize > 1 && (bytes(rSize + 6) == 0x00) && (bytes(rSize + 7) & 0x80) == 0)
       return false
     //logger.debug("There were not any null bytes at the start of S")
     //if we made it to this point without returning false this must be a valid strictly encoded der sig
@@ -196,8 +194,7 @@ sealed abstract class DERSignatureUtil {
     val sigLowS =
       if (isLowS(signature)) signature
       else
-        ECDigitalSignature(signature.r,
-                           CryptoParams.getN.subtract(signature.s.bigInteger))
+        ECDigitalSignature(signature.r, CryptoParams.getN.subtract(signature.s.bigInteger))
     require(DERSignatureUtil.isLowS(sigLowS))
     sigLowS
   }
@@ -254,9 +251,7 @@ sealed abstract class DERSignatureUtil {
           if ((lengthByteUnProcessed & 0x80) != 0) {
             var lenByte = lengthByteUnProcessed - 0x80
 
-            while (
-              lenByte > 0 && iterator.hasNext && iterator.head == 0.toByte
-            ) {
+            while (lenByte > 0 && iterator.hasNext && iterator.head == 0.toByte) {
               iterator.next()
               lenByte -= 1
             }

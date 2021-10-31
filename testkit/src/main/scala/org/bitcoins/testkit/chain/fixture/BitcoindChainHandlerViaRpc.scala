@@ -13,12 +13,8 @@ sealed trait BitcoindChainHandlerViaRpc {
   * This is useful for when the bitcoind version doesn't matter, you
   * just need a generic [[BitcoindRpcClient]]
   */
-case class BitcoindBaseVersionChainHandlerViaRpc(
-    bitcoindRpc: BitcoindRpcClient,
-    chainHandler: ChainHandler)
+case class BitcoindBaseVersionChainHandlerViaRpc(bitcoindRpc: BitcoindRpcClient, chainHandler: ChainHandler)
     extends BitcoindChainHandlerViaRpc
 
-case class BitcoindV19ChainHandler(
-    override val bitcoindRpc: BitcoindV19RpcClient,
-    chainHandler: ChainHandler)
+case class BitcoindV19ChainHandler(override val bitcoindRpc: BitcoindV19RpcClient, chainHandler: ChainHandler)
     extends BitcoindChainHandlerViaRpc

@@ -131,8 +131,7 @@ class KeyManagerAppConfigTest extends BitcoinSAsyncTest {
       _ <- started2F
     } yield {
       //make sure they are internally consistent
-      assert(
-        appConfig1.toBip39KeyManager.getRootXPub == appConfig2.toBip39KeyManager.getRootXPub)
+      assert(appConfig1.toBip39KeyManager.getRootXPub == appConfig2.toBip39KeyManager.getRootXPub)
 
       //manually build the xpub to make sure we are correct
       val mnemonic = MnemonicCode.fromEntropy(entropy)

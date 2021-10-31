@@ -6,8 +6,7 @@ import org.bitcoins.testkitcore.util.BitcoinSUnitTest
 class NetworkMessageTest extends BitcoinSUnitTest {
 
   "NetworkMessage" must "be able to serialize then deserialize a message and get the original hex back" in {
-    NetworkMessage(P2PMessageTestUtil.rawNetworkMessage).hex must be(
-      P2PMessageTestUtil.rawNetworkMessage)
+    NetworkMessage(P2PMessageTestUtil.rawNetworkMessage).hex must be(P2PMessageTestUtil.rawNetworkMessage)
   }
 
   it must "serialize and deserialize a version message example from the bitcoin wiki" in {

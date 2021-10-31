@@ -1,10 +1,7 @@
 package org.bitcoins.dlc
 
 import org.bitcoins.core.protocol.dlc.execution.{CETInfo, SetupDLC}
-import org.bitcoins.core.protocol.dlc.models.{
-  EnumOracleOutcome,
-  EnumSingleOracleInfo
-}
+import org.bitcoins.core.protocol.dlc.models.{EnumOracleOutcome, EnumSingleOracleInfo}
 import org.bitcoins.core.protocol.tlv.EnumOutcome
 import org.bitcoins.core.protocol.transaction.{Transaction, WitnessTransaction}
 import org.bitcoins.crypto._
@@ -54,27 +51,21 @@ class SetupDLCTest extends BitcoinSJvmTest {
       refundTx: WitnessTransaction = validRefundTx): SetupDLC = {
     SetupDLC(
       fundingTx = fundingTx,
-      cets = Vector(EnumOracleOutcome(Vector(oracleInfo),
-                                      EnumOutcome("WIN")).sigPoint -> cet0,
-                    EnumOracleOutcome(Vector(oracleInfo),
-                                      EnumOutcome("LOSE")).sigPoint -> cet1),
+      cets = Vector(EnumOracleOutcome(Vector(oracleInfo), EnumOutcome("WIN")).sigPoint -> cet0,
+                    EnumOracleOutcome(Vector(oracleInfo), EnumOutcome("LOSE")).sigPoint -> cet1),
       refundTx = refundTx
     )
   }
 
   it must "not allow an invalid number of inputs for CETs" in {
     // Funding tx has more than 1 input
-    assertThrows[IllegalArgumentException](
-      setupDLC(cet0 = validCETInfo.copy(tx = validFundingTx)))
-    assertThrows[IllegalArgumentException](
-      setupDLC(cet1 = validCETInfo.copy(tx = validFundingTx)))
+    assertThrows[IllegalArgumentException](setupDLC(cet0 = validCETInfo.copy(tx = validFundingTx)))
+    assertThrows[IllegalArgumentException](setupDLC(cet1 = validCETInfo.copy(tx = validFundingTx)))
   }
 
   it must "not allow an invalid input for CETs" in {
-    assertThrows[IllegalArgumentException](
-      setupDLC(cet0 = validCETInfo.copy(tx = invalidCET)))
-    assertThrows[IllegalArgumentException](
-      setupDLC(cet1 = validCETInfo.copy(tx = invalidCET)))
+    assertThrows[IllegalArgumentException](setupDLC(cet0 = validCETInfo.copy(tx = invalidCET)))
+    assertThrows[IllegalArgumentException](setupDLC(cet1 = validCETInfo.copy(tx = invalidCET)))
   }
 
   it must "not allow an invalid number of inputs for the refundTx" in {

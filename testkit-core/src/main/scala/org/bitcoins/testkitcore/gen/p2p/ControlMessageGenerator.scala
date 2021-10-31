@@ -3,12 +3,7 @@ package org.bitcoins.testkitcore.gen.p2p
 import org.bitcoins.core.number.{UInt32, UInt64}
 import org.bitcoins.core.p2p._
 import org.bitcoins.core.protocol.CompactSizeUInt
-import org.bitcoins.core.wallet.fee.{
-  SatoshisPerByte,
-  SatoshisPerKW,
-  SatoshisPerKiloByte,
-  SatoshisPerVirtualByte
-}
+import org.bitcoins.core.wallet.fee.{SatoshisPerByte, SatoshisPerKW, SatoshisPerKiloByte, SatoshisPerVirtualByte}
 import org.bitcoins.testkitcore.gen._
 import org.bitcoins.testkitcore.gen.p2p.P2PGenerator._
 import org.scalacheck.Gen
@@ -130,10 +125,7 @@ object ControlMessageGenerator {
       hashFuncs <- Gen.choose(0, 50)
       tweak <- NumberGenerator.uInt32s
       flags <- BloomFilterGenerator.bloomFlag
-    } yield FilterLoadMessage(ByteVector(filter),
-                              UInt32(hashFuncs),
-                              tweak,
-                              flags)
+    } yield FilterLoadMessage(ByteVector(filter), UInt32(hashFuncs), tweak, flags)
 
   /** Creates a [[org.bitcoins.core.p2p.FilterAddMessage]]
     *

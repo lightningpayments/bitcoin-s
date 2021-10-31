@@ -2,10 +2,7 @@ package org.bitcoins.rpc.common
 
 import java.net.URI
 
-import org.bitcoins.commons.jsonmodels.bitcoind.RpcOpts.{
-  AddNodeArgument,
-  SetBanCommand
-}
+import org.bitcoins.commons.jsonmodels.bitcoind.RpcOpts.{AddNodeArgument, SetBanCommand}
 import org.bitcoins.core.number.UInt32
 import org.bitcoins.rpc.client.common.BitcoindRpcClient
 import org.bitcoins.testkit.rpc.BitcoindRpcTestUtil

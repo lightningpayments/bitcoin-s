@@ -5,11 +5,7 @@ import org.bitcoins.chain.validation.TipValidation
 import org.bitcoins.core.api.chain.db.{BlockHeaderDb, BlockHeaderDbHelper}
 import org.bitcoins.core.number.{Int32, UInt32}
 import org.bitcoins.core.protocol.blockchain.BlockHeader
-import org.bitcoins.crypto.{
-  DoubleSha256Digest,
-  DoubleSha256DigestBE,
-  ECPrivateKey
-}
+import org.bitcoins.crypto.{DoubleSha256Digest, DoubleSha256DigestBE, ECPrivateKey}
 
 import scala.annotation.tailrec
 
@@ -29,9 +25,7 @@ abstract class BlockHeaderHelper {
   }
 
   val header1Db: BlockHeaderDb = {
-    BlockHeaderDbHelper.fromBlockHeader(566093,
-                                        Pow.getBlockProof(header1),
-                                        header1)
+    BlockHeaderDbHelper.fromBlockHeader(566093, Pow.getBlockProof(header1), header1)
   }
 
   /** The next block is [[header1]] after this block
@@ -57,8 +51,7 @@ abstract class BlockHeaderHelper {
 
   /** Gives us a block header that has a bad prev hash (can't connect to anything */
   lazy val badPrevHash: BlockHeader = {
-    BlockHeaderHelper.withPrevhash(bh = header1,
-                                   newPrevHash = DoubleSha256DigestBE.empty)
+    BlockHeaderHelper.withPrevhash(bh = header1, newPrevHash = DoubleSha256DigestBE.empty)
   }
 
   lazy val badNonce: BlockHeader = {
@@ -70,9 +63,7 @@ abstract class BlockHeaderHelper {
   }
 
   /** Modifies the given block header with the newPrevHash */
-  def withPrevhash(
-      bh: BlockHeader,
-      newPrevHash: DoubleSha256DigestBE): BlockHeader = {
+  def withPrevhash(bh: BlockHeader, newPrevHash: DoubleSha256DigestBE): BlockHeader = {
     BlockHeader(version = bh.version,
                 previousBlockHash = newPrevHash.flip,
                 merkleRootHash = bh.merkleRootHash,
@@ -117,13 +108,11 @@ abstract class BlockHeaderHelper {
         version = Int32.one,
         previousBlockHash = prevHash,
         //get random 32 bytes
-        merkleRootHash =
-          DoubleSha256Digest.fromBytes(ECPrivateKey.freshPrivateKey.bytes),
+        merkleRootHash = DoubleSha256Digest.fromBytes(ECPrivateKey.freshPrivateKey.bytes),
         time = prevHeader.time + UInt32.one,
         nBits = prevHeader.nBits,
         //generate random uint32 for nonce
-        nonce =
-          UInt32(Math.abs(scala.util.Random.nextInt() % UInt32.max.toLong))
+        nonce = UInt32(Math.abs(scala.util.Random.nextInt() % UInt32.max.toLong))
       )
     }
 
@@ -132,9 +121,7 @@ abstract class BlockHeaderHelper {
       buildNextHeader(prevHeader)
     } else {
       val chainWork = prevHeader.chainWork + Pow.getBlockProof(blockHeader)
-      BlockHeaderDbHelper.fromBlockHeader(prevHeader.height + 1,
-                                          chainWork,
-                                          blockHeader)
+      BlockHeaderDbHelper.fromBlockHeader(prevHeader.height + 1, chainWork, blockHeader)
     }
   }
 }

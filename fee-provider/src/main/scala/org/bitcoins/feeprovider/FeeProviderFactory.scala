@@ -6,6 +6,5 @@ import org.bitcoins.tor.Socks5ProxyParams
 
 trait FeeProviderFactory[T <: FeeRateApi] {
 
-  def fromBlockTarget(blocks: Int, proxyParams: Option[Socks5ProxyParams])(
-      implicit system: ActorSystem): T
+  def fromBlockTarget(blocks: Int, proxyParams: Option[Socks5ProxyParams])(implicit system: ActorSystem): T
 }

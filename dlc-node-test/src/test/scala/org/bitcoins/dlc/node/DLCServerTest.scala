@@ -67,13 +67,11 @@ class DLCServerTest extends BitcoinSActorFixtureWithDLCWallet {
         _ <- AsyncUtil.retryUntilSatisfied(serverConnectionHandlerOpt.isDefined)
         _ <- AsyncUtil.retryUntilSatisfied(clientConnectionHandlerOpt.isDefined)
         pingTLV =
-          PingTLV(UInt16.one,
-                  ByteVector.fromValidHex("00112233445566778899aabbccddeeff"))
+          PingTLV(UInt16.one, ByteVector.fromValidHex("00112233445566778899aabbccddeeff"))
         clientConnectionHandler = clientConnectionHandlerOpt.get
         _ = clientProbe.send(clientConnectionHandler, pingTLV)
         _ = serverProbe.expectMsg(LnMessage(pingTLV))
-        pongTLV = PongTLV.forIgnored(
-          ByteVector.fromValidHex("00112233445566778899aabbccddeeff"))
+        pongTLV = PongTLV.forIgnored(ByteVector.fromValidHex("00112233445566778899aabbccddeeff"))
         serverConnectionHandler = serverConnectionHandlerOpt.get
         _ = serverProbe.send(serverConnectionHandler, pongTLV)
         _ = clientProbe.expectMsg(LnMessage(pongTLV))
@@ -83,8 +81,7 @@ class DLCServerTest extends BitcoinSActorFixtureWithDLCWallet {
           PongTLV.forIgnored(ignored)
         _ = clientProbe.send(clientConnectionHandler, bigTLV)
         _ = serverProbe.expectMsg(LnMessage(bigTLV))
-        _ = clientProbe.send(clientConnectionHandler,
-                             DLCConnectionHandler.CloseConnection)
+        _ = clientProbe.send(clientConnectionHandler, DLCConnectionHandler.CloseConnection)
         _ = clientProbe.send(clientConnectionHandler, pingTLV)
         _ = serverProbe.expectNoMessage()
         _ = serverProbe.send(serverConnectionHandler, pongTLV)

@@ -20,9 +20,8 @@ class ECPrivateKeyTest extends BitcoinSCryptoTest {
   }
 
   it must "generate unique keys" in {
-    forAll(CryptoGenerators.privateKey, CryptoGenerators.privateKey) {
-      (privKey1, privKey2) =>
-        assert(privKey1 != privKey2)
+    forAll(CryptoGenerators.privateKey, CryptoGenerators.privateKey) { (privKey1, privKey2) =>
+      assert(privKey1 != privKey2)
     }
   }
 
@@ -37,15 +36,12 @@ class ECPrivateKeyTest extends BitcoinSCryptoTest {
       val negPubKey = negPrivKey.publicKey
       assert(pubKey.bytes.tail == negPubKey.bytes.tail)
       assert(pubKey.bytes.head != negPubKey.bytes.head)
-      assert(
-        privKey.fieldElement.add(negPrivKey.fieldElement) == FieldElement.zero)
+      assert(privKey.fieldElement.add(negPrivKey.fieldElement) == FieldElement.zero)
     }
   }
 
   it must "correctly execute the ecdsa single signer adaptor signature protocol" in {
-    forAll(CryptoGenerators.privateKey,
-           CryptoGenerators.privateKey,
-           NumberGenerator.bytevector(32)) {
+    forAll(CryptoGenerators.privateKey, CryptoGenerators.privateKey, NumberGenerator.bytevector(32)) {
       case (privKey, adaptorSecret, msg) =>
         val adaptorSig = privKey.adaptorSign(adaptorSecret.publicKey, msg)
         assert(

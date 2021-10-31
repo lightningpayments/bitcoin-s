@@ -1,10 +1,6 @@
 package org.bitcoins.core.api.chain
 
-import org.bitcoins.core.api.chain.db.{
-  BlockHeaderDb,
-  CompactFilterDb,
-  CompactFilterHeaderDb
-}
+import org.bitcoins.core.api.chain.db.{BlockHeaderDb, CompactFilterDb, CompactFilterHeaderDb}
 import org.bitcoins.core.gcs.FilterHeader
 import org.bitcoins.core.p2p.CompactFilterMessage
 import org.bitcoins.core.protocol.BlockStamp
@@ -55,30 +51,22 @@ trait ChainApi extends ChainQueryApi {
   /** Adds a compact filter header into the filter header chain and returns a new [[ChainApi chain api]]
     * that contains this header
     */
-  def processFilterHeader(
-      filterHeader: FilterHeader,
-      blockHash: DoubleSha256DigestBE): Future[ChainApi] = {
+  def processFilterHeader(filterHeader: FilterHeader, blockHash: DoubleSha256DigestBE): Future[ChainApi] = {
     processFilterHeaders(Vector(filterHeader), blockHash)
   }
 
   /** Process all of the given compact filter headers and returns a new [[ChainApi chain api]]
     * that contains these headers.
     */
-  def processFilterHeaders(
-      filterHeaders: Vector[FilterHeader],
-      stopHash: DoubleSha256DigestBE): Future[ChainApi]
+  def processFilterHeaders(filterHeaders: Vector[FilterHeader], stopHash: DoubleSha256DigestBE): Future[ChainApi]
 
   /** Generates a block range in form of (startHeight, stopHash) by the given stop hash.
     */
-  def nextBlockHeaderBatchRange(
-      prevStopHash: DoubleSha256DigestBE,
-      batchSize: Int): Future[Option[FilterSyncMarker]]
+  def nextBlockHeaderBatchRange(prevStopHash: DoubleSha256DigestBE, batchSize: Int): Future[Option[FilterSyncMarker]]
 
   /** Generates a filter header range in form of (startHeight, stopHash) by the given stop hash.
     */
-  def nextFilterHeaderBatchRange(
-      startHeight: Int,
-      batchSize: Int): Future[Option[FilterSyncMarker]]
+  def nextFilterHeaderBatchRange(startHeight: Int, batchSize: Int): Future[Option[FilterSyncMarker]]
 
   /** Adds a compact filter into the filter database.
     */
@@ -92,25 +80,20 @@ trait ChainApi extends ChainQueryApi {
 
   /** Adds a compact filter header check point into the list of check points.
     */
-  def processCheckpoint(
-      filterHeaderHash: DoubleSha256DigestBE,
-      blockHash: DoubleSha256DigestBE): Future[ChainApi] = {
+  def processCheckpoint(filterHeaderHash: DoubleSha256DigestBE, blockHash: DoubleSha256DigestBE): Future[ChainApi] = {
     processCheckpoints(Vector(filterHeaderHash), blockHash)
   }
 
   /** Process all ompact filter header check points.
     */
-  def processCheckpoints(
-      checkpoints: Vector[DoubleSha256DigestBE],
-      blockHash: DoubleSha256DigestBE): Future[ChainApi]
+  def processCheckpoints(checkpoints: Vector[DoubleSha256DigestBE], blockHash: DoubleSha256DigestBE): Future[ChainApi]
 
   /** Gets the number of compact filter headers in the database */
   def getFilterHeaderCount(): Future[Int]
 
   /** Looks up a compact filter header by its height.
     */
-  def getFilterHeadersAtHeight(
-      height: Int): Future[Vector[CompactFilterHeaderDb]]
+  def getFilterHeadersAtHeight(height: Int): Future[Vector[CompactFilterHeaderDb]]
 
   /** Finds the "best" filter header we have stored in our database
     * What this means in practice is the latest filter header we
@@ -123,8 +106,7 @@ trait ChainApi extends ChainQueryApi {
 
   /** Looks up a compact filter header by its hash.
     */
-  def getFilterHeader(
-      blockHash: DoubleSha256DigestBE): Future[Option[CompactFilterHeaderDb]]
+  def getFilterHeader(blockHash: DoubleSha256DigestBE): Future[Option[CompactFilterHeaderDb]]
 
   /** Looks up a compact filter by its hash.
     */
@@ -141,7 +123,5 @@ trait ChainApi extends ChainQueryApi {
   def getHeightByBlockStamp(blockStamp: BlockStamp): Future[Int]
 
   /** Fetchs the block headers between from and to (inclusive). */
-  def getHeadersBetween(
-      from: BlockHeaderDb,
-      to: BlockHeaderDb): Future[Vector[BlockHeaderDb]]
+  def getHeadersBetween(from: BlockHeaderDb, to: BlockHeaderDb): Future[Vector[BlockHeaderDb]]
 }

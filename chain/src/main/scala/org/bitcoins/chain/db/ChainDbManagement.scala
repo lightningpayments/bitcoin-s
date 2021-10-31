@@ -1,11 +1,7 @@
 package org.bitcoins.chain.db
 
 import org.bitcoins.chain.config.ChainAppConfig
-import org.bitcoins.chain.models.{
-  BlockHeaderDAO,
-  CompactFilterDAO,
-  CompactFilterHeaderDAO
-}
+import org.bitcoins.chain.models.{BlockHeaderDAO, CompactFilterDAO, CompactFilterHeaderDAO}
 import org.bitcoins.db.{DbManagement, JdbcProfileComponent}
 
 import scala.concurrent.ExecutionContext

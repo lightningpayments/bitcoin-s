@@ -2,11 +2,7 @@ package org.bitcoins.gui.dlc.dialog
 
 import org.bitcoins.core.protocol.dlc.models.DLCStatus._
 import org.bitcoins.core.protocol.dlc.models._
-import org.bitcoins.core.protocol.tlv.{
-  EnumOutcome,
-  SignedNumericOutcome,
-  UnsignedNumericOutcome
-}
+import org.bitcoins.core.protocol.tlv.{EnumOutcome, SignedNumericOutcome, UnsignedNumericOutcome}
 import org.bitcoins.gui._
 import org.bitcoins.gui.dlc.{DLCPaneModel, DLCPlotUtil, GlobalDLCData}
 import org.bitcoins.gui.util.GUIUtil
@@ -20,10 +16,7 @@ import scalafx.stage.Window
 
 object ViewDLCDialog {
 
-  def showAndWait(
-      parentWindow: Window,
-      status: DLCStatus,
-      model: DLCPaneModel): Unit = {
+  def showAndWait(parentWindow: Window, status: DLCStatus, model: DLCPaneModel): Unit = {
     val dialog = new Dialog[Unit]() {
       initOwner(parentWindow)
       title = "View DLC"
@@ -54,8 +47,7 @@ object ViewDLCDialog {
   }
 
   def buildView(status: DLCStatus, model: DLCPaneModel) = {
-    val closingTxId: StringProperty = StringProperty(
-      DLCStatus.getClosingTxId(status).map(_.hex).getOrElse(""))
+    val closingTxId: StringProperty = StringProperty(DLCStatus.getClosingTxId(status).map(_.hex).getOrElse(""))
     new GridPane() {
       alignment = Pos.Center
       padding = Insets(10)
@@ -68,17 +60,13 @@ object ViewDLCDialog {
 
       row += 1
       add(getLabel("Event Id"), 0, row)
-      add(
-        getTextField(
-          status.oracleInfo.singleOracleInfos.head.announcement.eventTLV.eventId),
-        columnIndex = 1,
-        rowIndex = row)
+      add(getTextField(status.oracleInfo.singleOracleInfos.head.announcement.eventTLV.eventId),
+          columnIndex = 1,
+          rowIndex = row)
 
       row += 1
       add(getLabel("Initiator"), 0, row)
-      add(getTextField(if (status.isInitiator) "Yes" else "No"),
-          columnIndex = 1,
-          rowIndex = row)
+      add(getTextField(if (status.isInitiator) "Yes" else "No"), columnIndex = 1, rowIndex = row)
 
       row += 1
       add(getLabel("State"), 0, row)
@@ -96,23 +84,17 @@ object ViewDLCDialog {
       row += 1
       add(getLabel("Contract Info"), 0, row)
 
-      add(getTextField(status.contractInfo.toTLV.hex),
-          columnIndex = 1,
-          rowIndex = row)
+      add(getTextField(status.contractInfo.toTLV.hex), columnIndex = 1, rowIndex = row)
 
       status match {
         case closed: ClosedDLCStatus =>
           row += 1
           add(getLabel("My payout"), 0, row)
-          add(getTextField(s"${closed.myPayout}"),
-              columnIndex = 1,
-              rowIndex = row)
+          add(getTextField(s"${closed.myPayout}"), columnIndex = 1, rowIndex = row)
 
           row += 1
           add(getLabel("Counterparty payout"), 0, row)
-          add(getTextField(s"${closed.counterPartyPayout}"),
-              columnIndex = 1,
-              rowIndex = row)
+          add(getTextField(s"${closed.counterPartyPayout}"), columnIndex = 1, rowIndex = row)
 
           row += 1
           add(getLabel("PNL"), 0, row)
@@ -120,31 +102,22 @@ object ViewDLCDialog {
 
           row += 1
           add(getLabel("Rate of Return"), 0, row)
-          add(getTextField(s"${closed.rateOfReturnPrettyPrint}"),
-              columnIndex = 1,
-              rowIndex = row)
+          add(getTextField(s"${closed.rateOfReturnPrettyPrint}"), columnIndex = 1, rowIndex = row)
         case _: AcceptedDLCStatus | _: Offered =>
         //do nothing as that stats aren't available
       }
 
       row += 1
       add(getLabel("Fee Rate"), 0, row)
-      add(getTextField(s"${status.feeRate.toLong} sats/vbyte"),
-          columnIndex = 1,
-          rowIndex = row)
+      add(getTextField(s"${status.feeRate.toLong} sats/vbyte"), columnIndex = 1, rowIndex = row)
 
       row += 1
       add(getLabel("Contract Timeout"), 0, row)
-      add(getTextField(
-            GUIUtil.epochToDateString(status.timeouts.contractTimeout)),
-          columnIndex = 1,
-          rowIndex = row)
+      add(getTextField(GUIUtil.epochToDateString(status.timeouts.contractTimeout)), columnIndex = 1, rowIndex = row)
 
       row += 1
       add(getLabel("Collateral"), 0, row)
-      add(getTextField(status.totalCollateral.satoshis.toLong.toString),
-          columnIndex = 1,
-          rowIndex = row)
+      add(getTextField(status.totalCollateral.satoshis.toLong.toString), columnIndex = 1, rowIndex = row)
 
       row += 1
       // TODO : Status filtering for showing this view vs just the TextField

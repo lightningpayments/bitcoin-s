@@ -28,29 +28,24 @@ class TipValidationTest extends ChainDbUnitTest {
 
   it must "connect two blocks with that are valid" in { _ =>
     val newValidTipDb =
-      BlockHeaderDbHelper.fromBlockHeader(
-        566093,
-        currentTipDb.chainWork + Pow.getBlockProof(newValidTip),
-        newValidTip)
+      BlockHeaderDbHelper.fromBlockHeader(566093, currentTipDb.chainWork + Pow.getBlockProof(newValidTip), newValidTip)
     val expected = TipUpdateResult.Success(newValidTipDb)
 
     runTest(newValidTip, expected, blockchain)
   }
 
-  it must "fail to connect two blocks that do not reference prev block hash correctly" in {
-    _ =>
-      val badPrevHash = BlockHeaderHelper.badPrevHash
+  it must "fail to connect two blocks that do not reference prev block hash correctly" in { _ =>
+    val badPrevHash = BlockHeaderHelper.badPrevHash
 
-      val expected = TipUpdateResult.BadPreviousBlockHash(badPrevHash)
+    val expected = TipUpdateResult.BadPreviousBlockHash(badPrevHash)
 
-      runTest(badPrevHash, expected, blockchain)
+    runTest(badPrevHash, expected, blockchain)
   }
 
-  it must "fail to connect two blocks with two different POW requirements at the wrong interval" in {
-    _ =>
-      val badPOW = BlockHeaderHelper.badNBits
-      val expected = TipUpdateResult.BadPOW(badPOW)
-      runTest(badPOW, expected, blockchain)
+  it must "fail to connect two blocks with two different POW requirements at the wrong interval" in { _ =>
+    val badPOW = BlockHeaderHelper.badNBits
+    val expected = TipUpdateResult.BadPOW(badPOW)
+    runTest(badPOW, expected, blockchain)
   }
 
   it must "fail to connect two blocks with a bad nonce" in { _ =>
@@ -59,10 +54,7 @@ class TipValidationTest extends ChainDbUnitTest {
     runTest(badNonce, expected, blockchain)
   }
 
-  private def runTest(
-      header: BlockHeader,
-      expected: TipUpdateResult,
-      blockchain: Blockchain): Assertion = {
+  private def runTest(header: BlockHeader, expected: TipUpdateResult, blockchain: Blockchain): Assertion = {
     val result = TipValidation.checkNewTip(header, blockchain)
     assert(result == expected)
   }

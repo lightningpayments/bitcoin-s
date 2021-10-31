@@ -8,8 +8,7 @@ import scodec.bits.ByteVector
 /** Responsible for serializing and deserializing a [[org.bitcoins.core.p2p.FilterAddMessage FilterAddMessage]]
   * @see [[https://bitcoin.org/en/developer-reference#filteradd]]
   */
-trait RawFilterAddMessageSerializer
-    extends RawBitcoinSerializer[FilterAddMessage] {
+trait RawFilterAddMessageSerializer extends RawBitcoinSerializer[FilterAddMessage] {
 
   override def read(bytes: ByteVector): FilterAddMessage = {
     val elementSize = CompactSizeUInt.parseCompactSizeUInt(bytes)

@@ -29,16 +29,7 @@ import org.bitcoins.gui.util.GUIUtil
 import scalafx.beans.property.StringProperty
 import scalafx.geometry._
 import scalafx.scene.Parent
-import scalafx.scene.control.{
-  ContextMenu,
-  Hyperlink,
-  Label,
-  MenuItem,
-  TableColumn,
-  TableView,
-  TextArea,
-  TextField
-}
+import scalafx.scene.control.{ContextMenu, Hyperlink, Label, MenuItem, TableColumn, TableView, TextArea, TextField}
 import scalafx.scene.layout._
 
 import java.io.File
@@ -105,9 +96,7 @@ class ContractGUI(glassPane: VBox) {
     add(acceptTF, 4, 0)
   }
 
-  private lazy val eventIdCol = new TableColumn[
-    (OracleAnnouncementV0TLV, Option[ContractInfoV0TLV]),
-    String] {
+  private lazy val eventIdCol = new TableColumn[(OracleAnnouncementV0TLV, Option[ContractInfoV0TLV]), String] {
     text = "Event Id"
     prefWidth = 160
     cellValueFactory = { status =>
@@ -118,21 +107,16 @@ class ContractGUI(glassPane: VBox) {
 
   private val ISO_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'")
 
-  private lazy val maturityCol = new TableColumn[
-    (OracleAnnouncementV0TLV, Option[ContractInfoV0TLV]),
-    String] {
+  private lazy val maturityCol = new TableColumn[(OracleAnnouncementV0TLV, Option[ContractInfoV0TLV]), String] {
     text = "Matures"
     prefWidth = 130
     cellValueFactory = { status =>
-      val d = new Date(
-        status.value._1.eventTLV.eventMaturityEpoch.toLong * 1000)
+      val d = new Date(status.value._1.eventTLV.eventMaturityEpoch.toLong * 1000)
       new StringProperty(status, "Matures", ISO_FORMAT.format(d))
     }
   }
 
-  private lazy val contractCol = new TableColumn[
-    (OracleAnnouncementV0TLV, Option[ContractInfoV0TLV]),
-    String] {
+  private lazy val contractCol = new TableColumn[(OracleAnnouncementV0TLV, Option[ContractInfoV0TLV]), String] {
     text = "Contract"
     prefWidth = 160
     cellValueFactory = { status =>
@@ -146,8 +130,7 @@ class ContractGUI(glassPane: VBox) {
   }
 
   private lazy val eventTableView =
-    new TableView[(OracleAnnouncementV0TLV, Option[ContractInfoV0TLV])](
-      GlobalContractData.announcements) {
+    new TableView[(OracleAnnouncementV0TLV, Option[ContractInfoV0TLV])](GlobalContractData.announcements) {
       columns ++= Seq(eventIdCol, maturityCol, contractCol)
       sortOrder.add(maturityCol)
 
@@ -247,8 +230,7 @@ class ContractGUI(glassPane: VBox) {
             onAction = _ => GUIUtil.openUrl("https://suredbits.com/krystalbull")
           },
           new Hyperlink("Bitcoin-S Code Repository") {
-            onAction =
-              _ => GUIUtil.openUrl("https://github.com/bitcoin-s/bitcoin-s")
+            onAction = _ => GUIUtil.openUrl("https://github.com/bitcoin-s/bitcoin-s")
           }
         )
       }
@@ -276,11 +258,7 @@ class ContractGUI(glassPane: VBox) {
     val offerDialog = new CreateDLCOfferDialog()
     val view = offerDialog.buildView(Some(announcement), contractInfoOpt)
     val container =
-      new DLCDialogContainer[CreateDLCOffer]("New Offer",
-                                             view,
-                                             offerDialog,
-                                             model.taskRunner,
-                                             "offer")
+      new DLCDialogContainer[CreateDLCOffer]("New Offer", view, offerDialog, model.taskRunner, "offer")
     showContractStep(container.view)
   }
 
@@ -298,12 +276,11 @@ class ContractGUI(glassPane: VBox) {
 
   private def showSignDLCPane(hex: String, file: Option[File]): Unit = {
     val container =
-      new DLCDialogContainer[SignDLCCliCommand](
-        "Sign DLC",
-        SignDLCDialog.buildView(hex, file),
-        SignDLCDialog,
-        model.taskRunner,
-        "signed")
+      new DLCDialogContainer[SignDLCCliCommand]("Sign DLC",
+                                                SignDLCDialog.buildView(hex, file),
+                                                SignDLCDialog,
+                                                model.taskRunner,
+                                                "signed")
     container.toFileButton.visible = false
     container.toClipboardButton.visible = false
     showContractStep(container.view)
@@ -311,12 +288,11 @@ class ContractGUI(glassPane: VBox) {
 
   private def showBroadcastDLCPane(hex: String, file: Option[File]): Unit = {
     val container =
-      new DLCDialogContainer[AddDLCSigsAndBroadcastCliCommand](
-        "Broadcast DLC",
-        BroadcastDLCDialog.buildView(hex, file),
-        BroadcastDLCDialog,
-        model.taskRunner,
-        "broadcast")
+      new DLCDialogContainer[AddDLCSigsAndBroadcastCliCommand]("Broadcast DLC",
+                                                               BroadcastDLCDialog.buildView(hex, file),
+                                                               BroadcastDLCDialog,
+                                                               model.taskRunner,
+                                                               "broadcast")
     showContractStep(container.view)
   }
 

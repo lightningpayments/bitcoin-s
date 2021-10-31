@@ -5,10 +5,7 @@ import org.bitcoins.tor.Socks5ProxyParams
 
 import java.net.InetSocketAddress
 
-case class Peer(
-    socket: InetSocketAddress,
-    socks5ProxyParams: Option[Socks5ProxyParams],
-    id: Option[Long] = None)
+case class Peer(socket: InetSocketAddress, socks5ProxyParams: Option[Socks5ProxyParams], id: Option[Long] = None)
     extends DbRowAutoInc[Peer] {
 
   override def copyWithId(id: Long): Peer = {
@@ -22,9 +19,7 @@ case class Peer(
 
 object Peer {
 
-  def fromSocket(
-      socket: InetSocketAddress,
-      socks5ProxyParams: Option[Socks5ProxyParams]): Peer = {
+  def fromSocket(socket: InetSocketAddress, socks5ProxyParams: Option[Socks5ProxyParams]): Peer = {
     Peer(socket, socks5ProxyParams = socks5ProxyParams)
   }
 }

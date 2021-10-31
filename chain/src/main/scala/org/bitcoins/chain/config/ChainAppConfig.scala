@@ -17,9 +17,8 @@ import scala.concurrent.{ExecutionContext, Future}
   * @param directory The data directory of the module
   * @param confs Optional sequence of configuration overrides
   */
-case class ChainAppConfig(
-    private val directory: Path,
-    private val confs: Config*)(implicit override val ec: ExecutionContext)
+case class ChainAppConfig(private val directory: Path, private val confs: Config*)(implicit
+    override val ec: ExecutionContext)
     extends DbAppConfig
     with ChainDbManagement
     with JdbcProfileComponent[ChainAppConfig] {
@@ -30,8 +29,7 @@ case class ChainAppConfig(
     ChainAppConfig.moduleName
   override protected[bitcoins] type ConfigType = ChainAppConfig
 
-  override protected[bitcoins] def newConfigOfType(
-      configs: Seq[Config]): ChainAppConfig =
+  override protected[bitcoins] def newConfigOfType(configs: Seq[Config]): ChainAppConfig =
     ChainAppConfig(directory, configs: _*)
   protected[bitcoins] def baseDatadir: Path = directory
 
@@ -77,10 +75,9 @@ case class ChainAppConfig(
           Future.unit
         } else {
           val genesisHeader =
-            BlockHeaderDbHelper.fromBlockHeader(
-              height = 0,
-              chainWork = Pow.getBlockProof(chain.genesisBlock.blockHeader),
-              bh = chain.genesisBlock.blockHeader)
+            BlockHeaderDbHelper.fromBlockHeader(height = 0,
+                                                chainWork = Pow.getBlockProof(chain.genesisBlock.blockHeader),
+                                                bh = chain.genesisBlock.blockHeader)
 
           val blockHeaderDAO = BlockHeaderDAO()(ec, appConfig)
           val bhCreatedF = blockHeaderDAO.create(genesisHeader)
@@ -111,12 +108,10 @@ case class ChainAppConfig(
   lazy val filterHeaderBatchSize: Int = {
     // try by network, if that fails, try general
     try {
-      config.getInt(
-        s"bitcoin-s.$moduleName.neutrino.filter-header-batch-size.${chain.network.chainParams.networkId}")
+      config.getInt(s"bitcoin-s.$moduleName.neutrino.filter-header-batch-size.${chain.network.chainParams.networkId}")
     } catch {
       case _: ConfigException.Missing | _: ConfigException.WrongType =>
-        config.getInt(
-          s"bitcoin-s.$moduleName.neutrino.filter-header-batch-size.default")
+        config.getInt(s"bitcoin-s.$moduleName.neutrino.filter-header-batch-size.default")
     }
   }
 
@@ -124,8 +119,7 @@ case class ChainAppConfig(
     config.getInt(s"bitcoin-s.${moduleName}.neutrino.filter-batch-size")
 
   lazy val forceRecalcChainWork: Boolean =
-    config.getBooleanOrElse(s"bitcoin-s.$moduleName.force-recalc-chainwork",
-                            default = false)
+    config.getBooleanOrElse(s"bitcoin-s.$moduleName.force-recalc-chainwork", default = false)
 }
 
 object ChainAppConfig extends AppConfigFactory[ChainAppConfig] {
@@ -135,7 +129,6 @@ object ChainAppConfig extends AppConfigFactory[ChainAppConfig] {
   /** Constructs a chain verification configuration from the default Bitcoin-S
     * data directory and given list of configuration overrides.
     */
-  override def fromDatadir(datadir: Path, confs: Vector[Config])(implicit
-      ec: ExecutionContext): ChainAppConfig =
+  override def fromDatadir(datadir: Path, confs: Vector[Config])(implicit ec: ExecutionContext): ChainAppConfig =
     ChainAppConfig(datadir, confs: _*)
 }

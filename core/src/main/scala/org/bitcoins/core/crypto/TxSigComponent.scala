@@ -61,9 +61,7 @@ object TxSigComponent {
     }
   }
 
-  private def setTransactionWitness(
-      inputInfo: InputInfo,
-      unsignedTx: Transaction): WitnessTransaction = {
+  private def setTransactionWitness(inputInfo: InputInfo, unsignedTx: Transaction): WitnessTransaction = {
     val idx = TxUtil.inputIndex(inputInfo, unsignedTx)
     val unsignedWtx = WitnessTransaction.toWitnessTx(unsignedTx)
 
@@ -107,10 +105,9 @@ object TxSigComponent {
       flags: Seq[ScriptFlag] = Policy.standardFlags): TxSigComponent = {
     val idx = TxUtil.inputIndex(inputInfo, unsignedTx)
     val emptyInput = unsignedTx.inputs(idx)
-    val newInput = TransactionInput(
-      emptyInput.previousOutput,
-      P2SHScriptSignature(EmptyScriptSignature, inputInfo.redeemScript),
-      emptyInput.sequence)
+    val newInput = TransactionInput(emptyInput.previousOutput,
+                                    P2SHScriptSignature(EmptyScriptSignature, inputInfo.redeemScript),
+                                    emptyInput.sequence)
     val updatedTx = unsignedTx.updateInput(idx, newInput)
 
     val wtx = WitnessTransaction.toWitnessTx(updatedTx)
@@ -120,10 +117,7 @@ object TxSigComponent {
     WitnessTxSigComponentP2SH(updatedWtx, UInt32(idx), inputInfo.output, flags)
   }
 
-  def fromP2SHInput(
-      inputInfo: P2SHInputInfo,
-      unsignedTx: Transaction,
-      flags: Seq[ScriptFlag]): TxSigComponent = {
+  def fromP2SHInput(inputInfo: P2SHInputInfo, unsignedTx: Transaction, flags: Seq[ScriptFlag]): TxSigComponent = {
     inputInfo match {
       case nonSegwit: P2SHNonSegwitInputInfo =>
         fromP2SHInput(nonSegwit, unsignedTx, flags)
@@ -141,19 +135,16 @@ object TxSigComponent {
     val updatedTx = unsignedTx.inputs(idx).scriptSignature match {
       case EmptyScriptSignature =>
         val emptyInput = unsignedTx.inputs(idx)
-        val newInput = TransactionInput(
-          emptyInput.previousOutput,
-          P2SHScriptSignature(EmptyScriptSignature, inputInfo.redeemScript),
-          emptyInput.sequence)
+        val newInput = TransactionInput(emptyInput.previousOutput,
+                                        P2SHScriptSignature(EmptyScriptSignature, inputInfo.redeemScript),
+                                        emptyInput.sequence)
         unsignedTx.updateInput(idx, newInput)
       case _: P2SHScriptSignature =>
         unsignedTx
-      case invalid @ (_: CLTVScriptSignature | _: CSVScriptSignature |
-          _: ConditionalScriptSignature | _: MultiSignatureScriptSignature |
-          _: NonStandardScriptSignature | _: P2PKHScriptSignature |
+      case invalid @ (_: CLTVScriptSignature | _: CSVScriptSignature | _: ConditionalScriptSignature |
+          _: MultiSignatureScriptSignature | _: NonStandardScriptSignature | _: P2PKHScriptSignature |
           _: P2PKScriptSignature | TrivialTrueScriptSignature) =>
-        throw new IllegalArgumentException(
-          s"Unexpected script sig with P2SHNonSegwitInputInfo, got $invalid")
+        throw new IllegalArgumentException(s"Unexpected script sig with P2SHNonSegwitInputInfo, got $invalid")
     }
 
     P2SHTxSigComponent(updatedTx, UInt32(idx), inputInfo.output, flags)
@@ -200,8 +191,7 @@ object TxSigComponent {
     }
   }
 
-  def getScriptWitness(
-      txSigComponent: TxSigComponent): Option[ScriptWitnessV0] = {
+  def getScriptWitness(txSigComponent: TxSigComponent): Option[ScriptWitnessV0] = {
     txSigComponent.transaction match {
       case _: NonWitnessTransaction => None
       case wtx: WitnessTransaction =>
@@ -280,17 +270,14 @@ sealed abstract class WitnessTxSigComponentRaw extends WitnessTxSigComponent {
 /** This represents checking the [[org.bitcoins.core.protocol.transaction.WitnessTransaction WitnessTransaction]]
   * against a P2SH(P2WSH) or P2SH(P2WPKH) scriptPubKey
   */
-sealed abstract class WitnessTxSigComponentP2SH
-    extends P2SHTxSigComponent
-    with WitnessTxSigComponent {
+sealed abstract class WitnessTxSigComponentP2SH extends P2SHTxSigComponent with WitnessTxSigComponent {
 
   override def scriptPubKey: P2SHScriptPubKey =
     output.scriptPubKey.asInstanceOf[P2SHScriptPubKey]
 
   override def scriptSignature: P2SHScriptSignature = {
     val s = transaction.inputs(inputIndex.toInt).scriptSignature
-    require(s.isInstanceOf[P2SHScriptSignature],
-            "Must have P2SHScriptSignature for P2SH(WitSPK()), got: " + s)
+    require(s.isInstanceOf[P2SHScriptSignature], "Must have P2SHScriptSignature for P2SH(WitSPK()), got: " + s)
     val p2sh = s.asInstanceOf[P2SHScriptSignature]
     p2sh
 
@@ -299,11 +286,9 @@ sealed abstract class WitnessTxSigComponentP2SH
   def witnessScriptPubKey: Try[WitnessScriptPubKey] =
     scriptSignature.redeemScript match {
       case w: WitnessScriptPubKey => Success(w)
-      case x @ (_: P2PKScriptPubKey | _: P2PKHScriptPubKey |
-          _: P2PKWithTimeoutScriptPubKey | _: MultiSignatureScriptPubKey |
-          _: P2SHScriptPubKey | _: CSVScriptPubKey | _: CLTVScriptPubKey |
-          _: ConditionalScriptPubKey | _: NonStandardScriptPubKey |
-          _: WitnessCommitment | EmptyScriptPubKey) =>
+      case x @ (_: P2PKScriptPubKey | _: P2PKHScriptPubKey | _: P2PKWithTimeoutScriptPubKey |
+          _: MultiSignatureScriptPubKey | _: P2SHScriptPubKey | _: CSVScriptPubKey | _: CLTVScriptPubKey |
+          _: ConditionalScriptPubKey | _: NonStandardScriptPubKey | _: WitnessCommitment | EmptyScriptPubKey) =>
         Failure(new IllegalArgumentException(
           "Must have a witness scriptPubKey as redeemScript for P2SHScriptPubKey in WitnessTxSigComponentP2SH, got: " + x))
 
@@ -403,13 +388,10 @@ object WitnessTxSigComponent {
         WitnessTxSigComponentRaw(transaction, inputIndex, output, flags)
       case _: P2SHScriptPubKey =>
         WitnessTxSigComponentP2SH(transaction, inputIndex, output, flags)
-      case x @ (_: P2PKScriptPubKey | _: P2PKHScriptPubKey |
-          _: P2PKWithTimeoutScriptPubKey | _: MultiSignatureScriptPubKey |
-          _: LockTimeScriptPubKey | _: ConditionalScriptPubKey |
-          _: WitnessCommitment | _: NonStandardScriptPubKey |
-          EmptyScriptPubKey) =>
-        throw new IllegalArgumentException(
-          s"Cannot create a WitnessTxSigComponent out of $x")
+      case x @ (_: P2PKScriptPubKey | _: P2PKHScriptPubKey | _: P2PKWithTimeoutScriptPubKey |
+          _: MultiSignatureScriptPubKey | _: LockTimeScriptPubKey | _: ConditionalScriptPubKey | _: WitnessCommitment |
+          _: NonStandardScriptPubKey | EmptyScriptPubKey) =>
+        throw new IllegalArgumentException(s"Cannot create a WitnessTxSigComponent out of $x")
     }
 
 }
@@ -431,13 +413,10 @@ object WitnessTxSigComponentRaw {
     output.scriptPubKey match {
       case _: WitnessScriptPubKey =>
         WitnessTxSigComponentRawImpl(transaction, inputIndex, output, flags)
-      case x @ (_: P2PKScriptPubKey | _: P2PKHScriptPubKey |
-          _: P2PKWithTimeoutScriptPubKey | _: MultiSignatureScriptPubKey |
-          _: P2SHScriptPubKey | _: LockTimeScriptPubKey |
-          _: ConditionalScriptPubKey | _: NonStandardScriptPubKey |
-          _: WitnessCommitment | EmptyScriptPubKey) =>
-        throw new IllegalArgumentException(
-          s"Cannot create a WitnessTxSigComponentRaw with a spk of $x")
+      case x @ (_: P2PKScriptPubKey | _: P2PKHScriptPubKey | _: P2PKWithTimeoutScriptPubKey |
+          _: MultiSignatureScriptPubKey | _: P2SHScriptPubKey | _: LockTimeScriptPubKey | _: ConditionalScriptPubKey |
+          _: NonStandardScriptPubKey | _: WitnessCommitment | EmptyScriptPubKey) =>
+        throw new IllegalArgumentException(s"Cannot create a WitnessTxSigComponentRaw with a spk of $x")
     }
 
   }
@@ -460,13 +439,10 @@ object WitnessTxSigComponentP2SH {
     output.scriptPubKey match {
       case _: P2SHScriptPubKey =>
         WitnessTxSigComponentP2SHImpl(transaction, inputIndex, output, flags)
-      case x @ (_: P2PKScriptPubKey | _: P2PKHScriptPubKey |
-          _: P2PKWithTimeoutScriptPubKey | _: MultiSignatureScriptPubKey |
-          _: LockTimeScriptPubKey | _: ConditionalScriptPubKey |
-          _: NonStandardScriptPubKey | _: WitnessCommitment |
-          _: WitnessScriptPubKey | EmptyScriptPubKey) =>
-        throw new IllegalArgumentException(
-          s"Cannot create a WitnessTxSigComponentP2SH with a spk of $x")
+      case x @ (_: P2PKScriptPubKey | _: P2PKHScriptPubKey | _: P2PKWithTimeoutScriptPubKey |
+          _: MultiSignatureScriptPubKey | _: LockTimeScriptPubKey | _: ConditionalScriptPubKey |
+          _: NonStandardScriptPubKey | _: WitnessCommitment | _: WitnessScriptPubKey | EmptyScriptPubKey) =>
+        throw new IllegalArgumentException(s"Cannot create a WitnessTxSigComponentP2SH with a spk of $x")
     }
 
   }
@@ -488,10 +464,6 @@ object WitnessTxSigComponentRebuilt {
       output: TransactionOutput,
       witScriptPubKey: WitnessScriptPubKey,
       flags: Seq[ScriptFlag]): WitnessTxSigComponentRebuilt = {
-    WitnessTxSigComponentRebuiltImpl(wtx,
-                                     inputIndex,
-                                     output,
-                                     witScriptPubKey,
-                                     flags)
+    WitnessTxSigComponentRebuiltImpl(wtx, inputIndex, output, witScriptPubKey, flags)
   }
 }

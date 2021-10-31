@@ -1,21 +1,10 @@
 package org.bitcoins.core.protocol.dlc.models
 
 import org.bitcoins.core.currency.Satoshis
-import org.bitcoins.core.protocol.dlc.compute.CETCalculator.{
-  CETOutcome,
-  MultiOracleOutcome
-}
-import org.bitcoins.core.protocol.dlc.compute.{
-  CETCalculator,
-  DLCAdaptorPointComputer
-}
+import org.bitcoins.core.protocol.dlc.compute.CETCalculator.{CETOutcome, MultiOracleOutcome}
+import org.bitcoins.core.protocol.dlc.compute.{CETCalculator, DLCAdaptorPointComputer}
 import org.bitcoins.core.protocol.dlc.models.DLCMessage.DLCAccept
-import org.bitcoins.core.protocol.tlv.{
-  ContractInfoV0TLV,
-  TLVDeserializable,
-  TLVSerializable,
-  UnsignedNumericOutcome
-}
+import org.bitcoins.core.protocol.tlv.{ContractInfoV0TLV, TLVDeserializable, TLVSerializable, UnsignedNumericOutcome}
 import org.bitcoins.core.util.Indexed
 import org.bitcoins.crypto.ECPublicKey
 
@@ -32,9 +21,7 @@ import scala.collection.immutable.HashMap
   * done regarding CETs during DLC setup and execution.
   * @see https://github.com/discreetlogcontracts/dlcspecs/blob/a8876ed28ed33d5f7d5104f01aa2a8d80d128460/Messaging.md#the-contract_info-type
   */
-case class ContractInfo(
-    totalCollateral: Satoshis,
-    contractOraclePair: ContractOraclePair)
+case class ContractInfo(totalCollateral: Satoshis, contractOraclePair: ContractOraclePair)
     extends TLVSerializable[ContractInfoV0TLV] {
 
   def contractDescriptor: ContractDescriptor =
@@ -43,9 +30,7 @@ case class ContractInfo(
   def oracleInfo: OracleInfo = contractOraclePair.oracleInfo
 
   override def toTLV: ContractInfoV0TLV = {
-    ContractInfoV0TLV(totalCollateral,
-                      contractDescriptor.toTLV,
-                      oracleInfo.toTLV)
+    ContractInfoV0TLV(totalCollateral, contractDescriptor.toTLV, oracleInfo.toTLV)
   }
 
   /** Returns the maximum payout the offerer could win from this contract */
@@ -58,15 +43,13 @@ case class ContractInfo(
   /** Computes the CET set and their corresponding payouts using CETCalculator. */
   lazy val allOutcomesAndPayouts: Vector[(OracleOutcome, Satoshis)] = {
     contractOraclePair match {
-      case ContractOraclePair.EnumPair(descriptor,
-                                       single: EnumSingleOracleInfo) =>
+      case ContractOraclePair.EnumPair(descriptor, single: EnumSingleOracleInfo) =>
         descriptor.keys.map { outcome =>
           // Safe .get because outcome is from descriptor.keys
           val payout = descriptor.find(_._1 == outcome).get._2
           (EnumOracleOutcome(Vector(single), outcome), payout)
         }
-      case ContractOraclePair.EnumPair(descriptor: EnumContractDescriptor,
-                                       oracleInfo: EnumMultiOracleInfo) =>
+      case ContractOraclePair.EnumPair(descriptor: EnumContractDescriptor, oracleInfo: EnumMultiOracleInfo) =>
         descriptor.keys.flatMap { outcome =>
           // Safe .get because outcome is from descriptor.keys
           val payout = descriptor.find(_._1 == outcome).get._2
@@ -76,9 +59,7 @@ case class ContractInfo(
               (EnumOracleOutcome(oracles, outcome), payout)
             }
         }
-      case ContractOraclePair.NumericPair(
-            descriptor,
-            oracleInfo: NumericSingleOracleInfo) =>
+      case ContractOraclePair.NumericPair(descriptor, oracleInfo: NumericSingleOracleInfo) =>
         val vec = CETCalculator.computeCETs(base = 2,
                                             descriptor.numDigits,
                                             descriptor.outcomeValueFunc,
@@ -86,12 +67,9 @@ case class ContractInfo(
                                             descriptor.roundingIntervals)
 
         vec.map { case CETOutcome(digits, amt) =>
-          (NumericOracleOutcome(oracleInfo, UnsignedNumericOutcome(digits)),
-           amt)
+          (NumericOracleOutcome(oracleInfo, UnsignedNumericOutcome(digits)), amt)
         }
-      case ContractOraclePair.NumericPair(
-            descriptor,
-            oracleInfo: NumericExactMultiOracleInfo) =>
+      case ContractOraclePair.NumericPair(descriptor, oracleInfo: NumericExactMultiOracleInfo) =>
         val vec = CETCalculator.computeCETs(base = 2,
                                             descriptor.numDigits,
                                             descriptor.outcomeValueFunc,
@@ -106,8 +84,7 @@ case class ContractInfo(
               (NumericOracleOutcome(oracles.map((_, outcome))), amt)
             }
           }
-      case ContractOraclePair.NumericPair(descriptor: NumericContractDescriptor,
-                                          oracleInfo: NumericMultiOracleInfo) =>
+      case ContractOraclePair.NumericPair(descriptor: NumericContractDescriptor, oracleInfo: NumericMultiOracleInfo) =>
         val vec: Vector[MultiOracleOutcome] =
           CETCalculator.computeMultiOracleCETsBinary(
             descriptor.numDigits,
@@ -145,11 +122,10 @@ case class ContractInfo(
     val builder =
       HashMap.newBuilder[OracleOutcome, (ECPublicKey, Satoshis, Satoshis)]
 
-    allOutcomesAndPayouts.zip(adaptorPoints).foreach {
-      case ((outcome, offerPayout), adaptorPoint) =>
-        val acceptPayout = (totalCollateral - offerPayout).satoshis
+    allOutcomesAndPayouts.zip(adaptorPoints).foreach { case ((outcome, offerPayout), adaptorPoint) =>
+      val acceptPayout = (totalCollateral - offerPayout).satoshis
 
-        builder.+=((outcome, (adaptorPoint, offerPayout, acceptPayout)))
+      builder.+=((outcome, (adaptorPoint, offerPayout, acceptPayout)))
     }
 
     builder.result()
@@ -159,8 +135,7 @@ case class ContractInfo(
     DLCAdaptorPointComputer.computeAdaptorPoints(this)
   }
 
-  lazy val adaptorPointsIndexed: Vector[Indexed[ECPublicKey]] = Indexed(
-    adaptorPoints)
+  lazy val adaptorPointsIndexed: Vector[Indexed[ECPublicKey]] = Indexed(adaptorPoints)
 
   /** Checks if the given OracleSignatures exactly match the given OracleOutcome.
     *
@@ -168,9 +143,7 @@ case class ContractInfo(
     *
     * TODO: Needs a lot of optimization
     */
-  def verifySigs(
-      outcome: OracleOutcome,
-      sigs: Vector[OracleSignatures]): Boolean = {
+  def verifySigs(outcome: OracleOutcome, sigs: Vector[OracleSignatures]): Boolean = {
     outcome match {
       case EnumOracleOutcome(oracles, enumOutcome) =>
         oracleInfo match {
@@ -189,10 +162,9 @@ case class ContractInfo(
             throw new IllegalArgumentException(
               s"Cannot handle numeric outcomes with enum oracle commitments: $oracleInfo")
           case _: NumericOracleInfo =>
-            oraclesAndOutcomes.foldLeft(true) {
-              case (boolSoFar, (oracle, digits)) =>
-                lazy val sig = sigs.find(_.oracle == oracle)
-                boolSoFar && sig.exists(_.verifySignatures(digits))
+            oraclesAndOutcomes.foldLeft(true) { case (boolSoFar, (oracle, digits)) =>
+              lazy val sig = sigs.find(_.oracle == oracle)
+              boolSoFar && sig.exists(_.verifySignatures(digits))
             }
         }
     }
@@ -209,8 +181,7 @@ case class ContractInfo(
   }
 
   /** Returns the adaptor point and payouts for a given OracleOutcome */
-  def resultOfOutcome(
-      outcome: OracleOutcome): (ECPublicKey, Satoshis, Satoshis) = {
+  def resultOfOutcome(outcome: OracleOutcome): (ECPublicKey, Satoshis, Satoshis) = {
     outcomeMap(outcome)
   }
 
@@ -219,8 +190,7 @@ case class ContractInfo(
     val outcome = findOutcome(sigs) match {
       case Some(outcome) => outcome
       case None =>
-        throw new IllegalArgumentException(
-          s"Signatures do not correspond to a possible outcome! $sigs")
+        throw new IllegalArgumentException(s"Signatures do not correspond to a possible outcome! $sigs")
     }
     getPayouts(outcome)
   }
@@ -239,9 +209,7 @@ case class ContractInfo(
     *
     * In these cases, this function should be called to update the ContractInfo.
     */
-  def updateOnAccept(
-      newTotalCollateral: Satoshis,
-      negotiationFields: DLCAccept.NegotiationFields): ContractInfo = {
+  def updateOnAccept(newTotalCollateral: Satoshis, negotiationFields: DLCAccept.NegotiationFields): ContractInfo = {
     if (newTotalCollateral == totalCollateral) {
       this
     } else {
@@ -256,8 +224,7 @@ case class ContractInfo(
         case ContractOraclePair.NumericPair(descriptor, oracleInfo) =>
           val newRoundingIntervals = negotiationFields match {
             case DLCAccept.NegotiationFieldsV1(acceptRoundingIntervals) =>
-              descriptor.roundingIntervals.minRoundingWith(
-                acceptRoundingIntervals)
+              descriptor.roundingIntervals.minRoundingWith(acceptRoundingIntervals)
             case DLCAccept.NoNegotiationFields => descriptor.roundingIntervals
           }
 
@@ -265,16 +232,13 @@ case class ContractInfo(
             descriptor.copy(roundingIntervals = newRoundingIntervals)
           val contractOraclePair =
             ContractOraclePair.NumericPair(newDescriptor, oracleInfo)
-          ContractInfo(totalCollateral = newTotalCollateral,
-                       contractOraclePair = contractOraclePair)
+          ContractInfo(totalCollateral = newTotalCollateral, contractOraclePair = contractOraclePair)
       }
     }
   }
 }
 
-object ContractInfo
-    extends TLVDeserializable[ContractInfoV0TLV, ContractInfo](
-      ContractInfoV0TLV) {
+object ContractInfo extends TLVDeserializable[ContractInfoV0TLV, ContractInfo](ContractInfoV0TLV) {
 
   lazy val dummy: ContractInfo = fromTLV(ContractInfoV0TLV.dummy)
 
@@ -286,20 +250,12 @@ object ContractInfo
     ContractInfo(tlv.totalCollateral, contractOraclePair)
   }
 
-  def apply(
-      enumDescriptor: EnumContractDescriptor,
-      enumOracleInfo: EnumOracleInfo): ContractInfo = {
+  def apply(enumDescriptor: EnumContractDescriptor, enumOracleInfo: EnumOracleInfo): ContractInfo = {
     val enumPair = ContractOraclePair.EnumPair(enumDescriptor, enumOracleInfo)
-    ContractInfo(totalCollateral = enumDescriptor.values.maxBy(_.toLong),
-                 enumPair)
+    ContractInfo(totalCollateral = enumDescriptor.values.maxBy(_.toLong), enumPair)
   }
 
-  def apply(
-      totalCollateral: Satoshis,
-      contractDescriptor: ContractDescriptor,
-      oracleInfo: OracleInfo): ContractInfo = {
-    ContractInfo(
-      totalCollateral,
-      ContractOraclePair.fromDescriptorOracle(contractDescriptor, oracleInfo))
+  def apply(totalCollateral: Satoshis, contractDescriptor: ContractDescriptor, oracleInfo: OracleInfo): ContractInfo = {
+    ContractInfo(totalCollateral, ContractOraclePair.fromDescriptorOracle(contractDescriptor, oracleInfo))
   }
 }

@@ -12,11 +12,7 @@ import org.bitcoins.core.hd.AddressType
 import org.bitcoins.core.hd.AddressType.SegWit
 import org.bitcoins.core.number.UInt32
 import org.bitcoins.core.protocol.tlv._
-import org.bitcoins.core.protocol.transaction.{
-  EmptyTransaction,
-  Transaction,
-  TransactionOutPoint
-}
+import org.bitcoins.core.protocol.transaction.{EmptyTransaction, Transaction, TransactionOutPoint}
 import org.bitcoins.core.protocol.{BitcoinAddress, BlockStamp}
 import org.bitcoins.core.psbt.PSBT
 import org.bitcoins.core.util.EnvUtil
@@ -75,8 +71,7 @@ object ConsoleCli {
         .action((_, conf) => conf.copy(command = GetBestBlockHash))
         .text(s"Get the best block hash"),
       cmd("getblockheader")
-        .action((_, conf) =>
-          conf.copy(command = GetBlockHeader(DoubleSha256DigestBE.empty)))
+        .action((_, conf) => conf.copy(command = GetBlockHeader(DoubleSha256DigestBE.empty)))
         .text("Returns information about block header <hash>")
         .children(
           arg[DoubleSha256DigestBE]("hash")
@@ -88,8 +83,7 @@ object ConsoleCli {
                 case other               => other
               }))),
       cmd("decoderawtransaction")
-        .action((_, conf) =>
-          conf.copy(command = DecodeRawTransaction(EmptyTransaction)))
+        .action((_, conf) => conf.copy(command = DecodeRawTransaction(EmptyTransaction)))
         .text(s"Decode the given raw hex transaction")
         .children(
           arg[Transaction]("tx")
@@ -139,8 +133,7 @@ object ConsoleCli {
                   // Need to ignoreCreationTime so we try to call
                   // rescan with rescanNeutrinoWallet with a block
                   // and a creation time
-                  rescan.copy(startBlock = Option(start),
-                              ignoreCreationTime = true)
+                  rescan.copy(startBlock = Option(start), ignoreCreationTime = true)
                 case other => other
               })),
           opt[BlockStamp]("end")
@@ -235,8 +228,7 @@ object ConsoleCli {
         .text("Returns list of all wallet addresses currently being watched"),
       cmd("getspentaddresses")
         .action((_, conf) => conf.copy(command = GetSpentAddresses))
-        .text(
-          "Returns list of all wallet addresses that have received funds and been spent"),
+        .text("Returns list of all wallet addresses that have received funds and been spent"),
       cmd("getfundedaddresses")
         .action((_, conf) => conf.copy(command = GetFundedAddresses))
         .text("Returns list of all wallet addresses that are holding funds"),
@@ -277,8 +269,7 @@ object ConsoleCli {
               }))
         ),
       cmd("labeladdress")
-        .action((_, conf) =>
-          conf.copy(command = LabelAddress(null, AddressLabelTag(""))))
+        .action((_, conf) => conf.copy(command = LabelAddress(null, AddressLabelTag(""))))
         .text("Add a label to the wallet address")
         .children(
           arg[BitcoinAddress]("address")
@@ -345,9 +336,7 @@ object ConsoleCli {
       cmd("sendtoaddress")
         .action(
           // TODO how to handle null here?
-          (_, conf) =>
-            conf.copy(command =
-              SendToAddress(null, 0.bitcoin, None, noBroadcast = false)))
+          (_, conf) => conf.copy(command = SendToAddress(null, 0.bitcoin, None, noBroadcast = false)))
         .text("Send money to the given address")
         .children(
           arg[BitcoinAddress]("address")
@@ -388,9 +377,7 @@ object ConsoleCli {
               }))
         ),
       cmd("sendfromoutpoints")
-        .action((_, conf) =>
-          conf.copy(
-            command = SendFromOutPoints(Vector.empty, null, 0.bitcoin, None)))
+        .action((_, conf) => conf.copy(command = SendFromOutPoints(Vector.empty, null, 0.bitcoin, None)))
         .text("Send money to the given address")
         .children(
           arg[Seq[TransactionOutPoint]]("outpoints")
@@ -431,10 +418,8 @@ object ConsoleCli {
               }))
         ),
       cmd("sendwithalgo")
-        .action((_, conf) =>
-          conf.copy(command = SendWithAlgo(null, 0.bitcoin, None, null)))
-        .text(
-          "Send money to the given address using a specific coin selection algo")
+        .action((_, conf) => conf.copy(command = SendWithAlgo(null, 0.bitcoin, None, null)))
+        .text("Send money to the given address using a specific coin selection algo")
         .children(
           arg[BitcoinAddress]("address")
             .text("Address to send to")
@@ -511,8 +496,7 @@ object ConsoleCli {
               }))
         ),
       cmd("opreturncommit")
-        .action((_, conf) =>
-          conf.copy(command = OpReturnCommit("", hashMessage = false, None)))
+        .action((_, conf) => conf.copy(command = OpReturnCommit("", hashMessage = false, None)))
         .text("Creates OP_RETURN commitment transaction")
         .children(
           arg[String]("message")
@@ -544,9 +528,7 @@ object ConsoleCli {
               }))
         ),
       cmd("bumpfeecpfp")
-        .action((_, conf) =>
-          conf.copy(command = BumpFeeCPFP(DoubleSha256DigestBE.empty,
-                                          SatoshisPerVirtualByte.zero)))
+        .action((_, conf) => conf.copy(command = BumpFeeCPFP(DoubleSha256DigestBE.empty, SatoshisPerVirtualByte.zero)))
         .text("Bump the fee of the given transaction id with a child tx using the given fee rate")
         .children(
           arg[DoubleSha256DigestBE]("txid")
@@ -569,9 +551,7 @@ object ConsoleCli {
               }))
         ),
       cmd("bumpfeerbf")
-        .action((_, conf) =>
-          conf.copy(command = BumpFeeRBF(DoubleSha256DigestBE.empty,
-                                         SatoshisPerVirtualByte.zero)))
+        .action((_, conf) => conf.copy(command = BumpFeeRBF(DoubleSha256DigestBE.empty, SatoshisPerVirtualByte.zero)))
         .text("Replace given transaction with one with the new fee rate")
         .children(
           arg[DoubleSha256DigestBE]("txid")
@@ -594,8 +574,7 @@ object ConsoleCli {
               }))
         ),
       cmd("gettransaction")
-        .action((_, conf) =>
-          conf.copy(command = GetTransaction(DoubleSha256DigestBE.empty)))
+        .action((_, conf) => conf.copy(command = GetTransaction(DoubleSha256DigestBE.empty)))
         .text("Get detailed information about in-wallet transaction <txid>")
         .children(
           arg[DoubleSha256DigestBE]("txid")
@@ -609,8 +588,7 @@ object ConsoleCli {
               }))
         ),
       cmd("lockunspent")
-        .action((_, conf) =>
-          conf.copy(command = LockUnspent(unlock = false, Vector.empty)))
+        .action((_, conf) => conf.copy(command = LockUnspent(unlock = false, Vector.empty)))
         .text("Temporarily lock (unlock=false) or unlock (unlock=true) specified transaction outputs." +
           "\nIf no transaction outputs are specified when unlocking then all current locked transaction outputs are unlocked.")
         .children(
@@ -696,8 +674,7 @@ object ConsoleCli {
               }))
         ),
       cmd("keymanagerpassphrasechange")
-        .action((_, conf) =>
-          conf.copy(command = KeyManagerPassphraseChange(null, null)))
+        .action((_, conf) => conf.copy(command = KeyManagerPassphraseChange(null, null)))
         .text("Changes the wallet passphrase")
         .children(
           arg[AesPassword]("oldpassphrase")
@@ -805,12 +782,7 @@ object ConsoleCli {
         .text("Returns the public listening address of the DLC Node"),
       cmd("createdlcoffer")
         .action((_, conf) =>
-          conf.copy(
-            command = CreateDLCOffer(ContractInfoV0TLV.dummy,
-                                     Satoshis.zero,
-                                     None,
-                                     UInt32.zero,
-                                     UInt32.zero)))
+          conf.copy(command = CreateDLCOffer(ContractInfoV0TLV.dummy, Satoshis.zero, None, UInt32.zero, UInt32.zero)))
         .text("Creates a DLC offer that another party can accept")
         .children(
           arg[ContractInfoV0TLV]("contractInfo")
@@ -860,10 +832,7 @@ object ConsoleCli {
               }))
         ),
       cmd("acceptdlc")
-        .action((_, conf) =>
-          conf.copy(command =
-            AcceptDLC(null,
-                      InetSocketAddress.createUnresolved("localhost", 0))))
+        .action((_, conf) => conf.copy(command = AcceptDLC(null, InetSocketAddress.createUnresolved("localhost", 0))))
         .text("Accepts a DLC offer given from another party")
         .children(
           arg[LnMessage[DLCOfferTLV]]("offer")
@@ -900,9 +869,7 @@ object ConsoleCli {
               }))
         ),
       cmd("acceptdlcofferfromfile")
-        .action((_, conf) =>
-          conf.copy(command =
-            AcceptDLCOfferFromFile(new File("").toPath, None)))
+        .action((_, conf) => conf.copy(command = AcceptDLCOfferFromFile(new File("").toPath, None)))
         .text("Accepts a DLC offer given from another party")
         .children(
           arg[Path]("path")
@@ -939,8 +906,7 @@ object ConsoleCli {
               }))
         ),
       cmd("signdlcfromfile")
-        .action((_, conf) =>
-          conf.copy(command = SignDLCFromFile(new File("").toPath, None)))
+        .action((_, conf) => conf.copy(command = SignDLCFromFile(new File("").toPath, None)))
         .text("Signs a DLC")
         .children(
           arg[Path]("path")
@@ -977,8 +943,7 @@ object ConsoleCli {
               }))
         ),
       cmd("adddlcsigsfromfile")
-        .action((_, conf) =>
-          conf.copy(command = AddDLCSigsFromFile(new File("").toPath)))
+        .action((_, conf) => conf.copy(command = AddDLCSigsFromFile(new File("").toPath)))
         .text("Adds DLC Signatures into the database")
         .children(
           arg[Path]("path")
@@ -1006,9 +971,7 @@ object ConsoleCli {
               }))
         ),
       cmd("adddlcsigsandbroadcastfromfile")
-        .action((_, conf) =>
-          conf.copy(command =
-            AddDLCSigsAndBroadcastFromFile(new File("").toPath)))
+        .action((_, conf) => conf.copy(command = AddDLCSigsAndBroadcastFromFile(new File("").toPath)))
         .text("Adds DLC Signatures into the database and broadcasts the funding transaction")
         .children(
           arg[Path]("path")
@@ -1050,9 +1013,7 @@ object ConsoleCli {
               }))
         ),
       cmd("executedlc")
-        .action((_, conf) =>
-          conf.copy(command =
-            ExecuteDLC(ByteVector.empty, Vector.empty, noBroadcast = false)))
+        .action((_, conf) => conf.copy(command = ExecuteDLC(ByteVector.empty, Vector.empty, noBroadcast = false)))
         .text("Executes the DLC with the given contractId")
         .children(
           arg[ByteVector]("contractId")
@@ -1084,8 +1045,7 @@ object ConsoleCli {
               }))
         ),
       cmd("executedlcrefund")
-        .action((_, conf) =>
-          conf.copy(command = ExecuteDLCRefund(null, noBroadcast = false)))
+        .action((_, conf) => conf.copy(command = ExecuteDLCRefund(null, noBroadcast = false)))
         .text("Executes the Refund transaction for the given DLC")
         .children(
           arg[ByteVector]("contractId")
@@ -1176,8 +1136,7 @@ object ConsoleCli {
         .action((_, conf) => conf.copy(command = Stop))
         .text("Request a graceful shutdown of Bitcoin-S"),
       cmd("sendrawtransaction")
-        .action((_, conf) =>
-          conf.copy(command = SendRawTransaction(EmptyTransaction)))
+        .action((_, conf) => conf.copy(command = SendRawTransaction(EmptyTransaction)))
         .text("Broadcasts the raw transaction")
         .children(
           arg[Transaction]("tx")
@@ -1275,8 +1234,7 @@ object ConsoleCli {
               }))
         ),
       cmd("converttopsbt")
-        .action((_, conf) =>
-          conf.copy(command = ConvertToPSBT(EmptyTransaction)))
+        .action((_, conf) => conf.copy(command = ConvertToPSBT(EmptyTransaction)))
         .text("Creates an empty psbt from the given transaction")
         .children(
           arg[Transaction]("unsignedTx")
@@ -1300,9 +1258,7 @@ object ConsoleCli {
         .action((_, conf) => conf.copy(command = ListAnnouncements))
         .text(s"Lists all announcement names"),
       cmd("createenumannouncement")
-        .action((_, conf) =>
-          conf.copy(command =
-            CreateEnumAnnouncement("", new Date(), Seq.empty)))
+        .action((_, conf) => conf.copy(command = CreateEnumAnnouncement("", new Date(), Seq.empty)))
         .text("Registers an oracle enum announcement")
         .children(
           arg[String]("label")
@@ -1336,8 +1292,7 @@ object ConsoleCli {
       cmd("createnumericannouncement")
         .action((_, conf) =>
           conf.copy(command = CreateNumericAnnouncement(eventName = "",
-                                                        maturationTime =
-                                                          new Date(),
+                                                        maturationTime = new Date(),
                                                         minValue = 0,
                                                         maxValue = 0,
                                                         unit = "",
@@ -1389,9 +1344,10 @@ object ConsoleCli {
                 case other => other
               })),
           arg[Int]("precision")
-            .text("The precision of the outcome representing the " +
-              "base exponent by which to multiply the number represented by " +
-              "the composition of the digits to obtain the actual outcome value.")
+            .text(
+              "The precision of the outcome representing the " +
+                "base exponent by which to multiply the number represented by " +
+                "the composition of the digits to obtain the actual outcome value.")
             .action((precision, conf) =>
               conf.copy(command = conf.command match {
                 case createNumericEvent: CreateNumericAnnouncement =>
@@ -1401,13 +1357,7 @@ object ConsoleCli {
         ),
       cmd("createdigitdecompannouncement")
         .action((_, conf) =>
-          conf.copy(command = CreateDigitDecompAnnouncement("",
-                                                            Instant.MIN,
-                                                            0,
-                                                            isSigned = false,
-                                                            0,
-                                                            "",
-                                                            0)))
+          conf.copy(command = CreateDigitDecompAnnouncement("", Instant.MIN, 0, isSigned = false, 0, "", 0)))
         .text("Registers an oracle announcement that uses digit decomposition when signing the number")
         .children(
           arg[String]("name")
@@ -1462,9 +1412,10 @@ object ConsoleCli {
                 case other => other
               })),
           arg[Int]("precision")
-            .text("The precision of the outcome representing the " +
-              "base exponent by which to multiply the number represented by " +
-              "the composition of the digits to obtain the actual outcome value.")
+            .text(
+              "The precision of the outcome representing the " +
+                "base exponent by which to multiply the number represented by " +
+                "the composition of the digits to obtain the actual outcome value.")
             .action((precision, conf) =>
               conf.copy(command = conf.command match {
                 case createLargeRangedEvent: CreateDigitDecompAnnouncement =>
@@ -1621,8 +1572,7 @@ object ConsoleCli {
         ),
       note(sys.props("line.separator") + "=== Util ==="),
       cmd("createmultisig")
-        .action((_, conf) =>
-          conf.copy(command = CreateMultisig(0, Vector.empty, SegWit)))
+        .action((_, conf) => conf.copy(command = CreateMultisig(0, Vector.empty, SegWit)))
         .text("Creates a multi-signature address with n signature of m keys required.")
         .children(
           arg[Int]("nrequired")
@@ -1657,10 +1607,8 @@ object ConsoleCli {
         .action((_, conf) => conf.copy(command = EstimateFee))
         .text("Returns the recommended fee rate using the fee provider"),
       cmd("zipdatadir")
-        .action((_, conf) =>
-          conf.copy(command = ZipDataDir(new File("").toPath)))
-        .text(
-          "zips the bitcoin-s datadir and places the file at the given path")
+        .action((_, conf) => conf.copy(command = ZipDataDir(new File("").toPath)))
+        .text("zips the bitcoin-s datadir and places the file at the given path")
         .children(
           arg[Path]("path")
             .text("Location of final zip file")
@@ -1743,11 +1691,7 @@ object ConsoleCli {
       case GetDLCs => RequestParam("getdlcs")
       case GetDLC(dlcId) =>
         RequestParam("getdlc", Seq(up.writeJs(dlcId)))
-      case CreateDLCOffer(contractInfo,
-                          collateral,
-                          feeRateOpt,
-                          locktime,
-                          refundLT) =>
+      case CreateDLCOffer(contractInfo, collateral, feeRateOpt, locktime, refundLT) =>
         RequestParam(
           "createdlcoffer",
           Seq(
@@ -1763,8 +1707,7 @@ object ConsoleCli {
       case AcceptDLCOffer(offer) =>
         RequestParam("acceptdlcoffer", Seq(up.writeJs(offer)))
       case AcceptDLCOfferFromFile(path, dest) =>
-        RequestParam("acceptdlcofferfromfile",
-                     Seq(up.writeJs(path), up.writeJs(dest)))
+        RequestParam("acceptdlcofferfromfile", Seq(up.writeJs(path), up.writeJs(dest)))
       case SignDLC(accept) =>
         RequestParam("signdlc", Seq(up.writeJs(accept)))
       case SignDLCFromFile(path, dest) =>
@@ -1778,17 +1721,13 @@ object ConsoleCli {
       case AddDLCSigsAndBroadcastFromFile(path) =>
         RequestParam("adddlcsigsandbroadcastfromfile", Seq(up.writeJs(path)))
       case ExecuteDLC(contractId, oracleSigs, noBroadcast) =>
-        RequestParam("executedlc",
-                     Seq(up.writeJs(contractId),
-                         up.writeJs(oracleSigs),
-                         up.writeJs(noBroadcast)))
+        RequestParam("executedlc", Seq(up.writeJs(contractId), up.writeJs(oracleSigs), up.writeJs(noBroadcast)))
       case GetDLCFundingTx(contractId) =>
         RequestParam("getdlcfundingtx", Seq(up.writeJs(contractId)))
       case BroadcastDLCFundingTx(contractId) =>
         RequestParam("broadcastdlcfundingtx", Seq(up.writeJs(contractId)))
       case ExecuteDLCRefund(contractId, noBroadcast) =>
-        RequestParam("executedlcrefund",
-                     Seq(up.writeJs(contractId), up.writeJs(noBroadcast)))
+        RequestParam("executedlcrefund", Seq(up.writeJs(contractId), up.writeJs(noBroadcast)))
       case CancelDLC(dlcId) =>
         RequestParam("canceldlc", Seq(up.writeJs(dlcId)))
       // Wallet
@@ -1805,22 +1744,16 @@ object ConsoleCli {
       case GetNewAddress(labelOpt) =>
         RequestParam("getnewaddress", Seq(up.writeJs(labelOpt)))
       case LockUnspent(unlock, outPoints) =>
-        RequestParam("lockunspent",
-                     Seq(up.writeJs(unlock), up.writeJs(outPoints)))
+        RequestParam("lockunspent", Seq(up.writeJs(unlock), up.writeJs(outPoints)))
       case LabelAddress(address, label) =>
-        RequestParam("labeladdress",
-                     Seq(up.writeJs(address), up.writeJs(label)))
+        RequestParam("labeladdress", Seq(up.writeJs(address), up.writeJs(label)))
       case GetAddressTags(address) =>
         RequestParam("getaddresstags", Seq(up.writeJs(address)))
       case GetAddressLabels(address) =>
         RequestParam("getaddresslabels", Seq(up.writeJs(address)))
       case DropAddressLabels(address) =>
         RequestParam("dropaddresslabels", Seq(up.writeJs(address)))
-      case Rescan(addressBatchSize,
-                  startBlock,
-                  endBlock,
-                  force,
-                  ignoreCreationTime) =>
+      case Rescan(addressBatchSize, startBlock, endBlock, force, ignoreCreationTime) =>
         RequestParam("rescan",
                      Seq(up.writeJs(addressBatchSize),
                          up.writeJs(startBlock),
@@ -1831,60 +1764,39 @@ object ConsoleCli {
       case GetTransaction(txId) =>
         RequestParam("gettransaction", Seq(up.writeJs(txId)))
 
-      case SendToAddress(address,
-                         bitcoins,
-                         satoshisPerVirtualByte,
-                         noBroadcast) =>
-        RequestParam("sendtoaddress",
-                     Seq(up.writeJs(address),
-                         up.writeJs(bitcoins),
-                         up.writeJs(satoshisPerVirtualByte),
-                         up.writeJs(noBroadcast)))
+      case SendToAddress(address, bitcoins, satoshisPerVirtualByte, noBroadcast) =>
+        RequestParam(
+          "sendtoaddress",
+          Seq(up.writeJs(address), up.writeJs(bitcoins), up.writeJs(satoshisPerVirtualByte), up.writeJs(noBroadcast)))
       case SendFromOutPoints(outPoints, address, bitcoins, feeRateOpt) =>
         RequestParam("sendfromoutpoints",
-                     Seq(up.writeJs(outPoints),
-                         up.writeJs(address),
-                         up.writeJs(bitcoins),
-                         up.writeJs(feeRateOpt)))
+                     Seq(up.writeJs(outPoints), up.writeJs(address), up.writeJs(bitcoins), up.writeJs(feeRateOpt)))
       case SweepWallet(address, feeRateOpt) =>
-        RequestParam("sweepwallet",
-                     Seq(up.writeJs(address), up.writeJs(feeRateOpt)))
+        RequestParam("sweepwallet", Seq(up.writeJs(address), up.writeJs(feeRateOpt)))
       case SendWithAlgo(address, bitcoins, feeRateOpt, algo) =>
         RequestParam("sendwithalgo",
-                     Seq(up.writeJs(address),
-                         up.writeJs(bitcoins),
-                         up.writeJs(feeRateOpt),
-                         up.writeJs(algo)))
+                     Seq(up.writeJs(address), up.writeJs(bitcoins), up.writeJs(feeRateOpt), up.writeJs(algo)))
       case BumpFeeCPFP(txId, feeRate) =>
         RequestParam("bumpfeecpfp", Seq(up.writeJs(txId), up.writeJs(feeRate)))
       case BumpFeeRBF(txId, feeRate) =>
         RequestParam("bumpfeerbf", Seq(up.writeJs(txId), up.writeJs(feeRate)))
       case OpReturnCommit(message, hashMessage, satoshisPerVirtualByte) =>
         RequestParam("opreturncommit",
-                     Seq(up.writeJs(message),
-                         up.writeJs(hashMessage),
-                         up.writeJs(satoshisPerVirtualByte)))
+                     Seq(up.writeJs(message), up.writeJs(hashMessage), up.writeJs(satoshisPerVirtualByte)))
       case SignPSBT(psbt) =>
         RequestParam("signpsbt", Seq(up.writeJs(psbt)))
 
       case KeyManagerPassphraseChange(oldPassword, newPassword) =>
-        RequestParam("keymanagerpassphrasechange",
-                     Seq(up.writeJs(oldPassword), up.writeJs(newPassword)))
+        RequestParam("keymanagerpassphrasechange", Seq(up.writeJs(oldPassword), up.writeJs(newPassword)))
 
       case KeyManagerPassphraseSet(password) =>
         RequestParam("keymanagerpassphraseset", Seq(up.writeJs(password)))
 
       case ImportSeed(walletName, mnemonic, passwordOpt) =>
-        RequestParam("importseed",
-                     Seq(up.writeJs(walletName),
-                         up.writeJs(mnemonic),
-                         up.writeJs(passwordOpt)))
+        RequestParam("importseed", Seq(up.writeJs(walletName), up.writeJs(mnemonic), up.writeJs(passwordOpt)))
 
       case ImportXprv(walletName, xprv, passwordOpt) =>
-        RequestParam("importxprv",
-                     Seq(up.writeJs(walletName),
-                         up.writeJs(xprv),
-                         up.writeJs(passwordOpt)))
+        RequestParam("importxprv", Seq(up.writeJs(walletName), up.writeJs(xprv), up.writeJs(passwordOpt)))
       case BackupWallet(location) =>
         RequestParam("backupwallet", Seq(up.writeJs(location)))
 
@@ -1937,15 +1849,8 @@ object ConsoleCli {
       case GetAnnouncement(eventName) =>
         RequestParam("getannouncement", Seq(up.writeJs(eventName)))
       case CreateEnumAnnouncement(label, time, outcomes) =>
-        RequestParam(
-          "createenumannouncement",
-          Seq(up.writeJs(label), up.writeJs(time), up.writeJs(outcomes)))
-      case CreateNumericAnnouncement(eventName,
-                                     time,
-                                     minValue,
-                                     maxValue,
-                                     unit,
-                                     precision) =>
+        RequestParam("createenumannouncement", Seq(up.writeJs(label), up.writeJs(time), up.writeJs(outcomes)))
+      case CreateNumericAnnouncement(eventName, time, minValue, maxValue, unit, precision) =>
         RequestParam(
           "createnumericannouncement",
           Seq(up.writeJs(eventName),
@@ -1955,13 +1860,7 @@ object ConsoleCli {
               up.writeJs(unit),
               up.writeJs(precision))
         )
-      case CreateDigitDecompAnnouncement(eventName,
-                                         time,
-                                         base,
-                                         isSigned,
-                                         numDigits,
-                                         unit,
-                                         precision) =>
+      case CreateDigitDecompAnnouncement(eventName, time, base, isSigned, numDigits, unit, precision) =>
         RequestParam(
           "createdigitdecompannouncement",
           Seq(up.writeJs(eventName),
@@ -1973,8 +1872,7 @@ object ConsoleCli {
               up.writeJs(precision))
         )
       case SignEnum(eventName, outcome) =>
-        RequestParam("signenum",
-                     Seq(up.writeJs(eventName), up.writeJs(outcome)))
+        RequestParam("signenum", Seq(up.writeJs(eventName), up.writeJs(outcome)))
       case SignDigits(eventName, num) =>
         RequestParam("signdigits", Seq(up.writeJs(eventName), up.writeJs(num)))
       case GetSignatures(eventName) =>
@@ -1991,10 +1889,7 @@ object ConsoleCli {
         RequestParam("backuporacle", Seq(up.writeJs(dest)))
 
       case CreateMultisig(requiredKeys, keys, addressType) =>
-        RequestParam("createmultisig",
-                     Seq(up.writeJs(requiredKeys),
-                         up.writeJs(keys),
-                         up.writeJs(addressType)))
+        RequestParam("createmultisig", Seq(up.writeJs(requiredKeys), up.writeJs(keys), up.writeJs(addressType)))
       case EstimateFee => RequestParam("estimatefee")
       case ZipDataDir(path) =>
         RequestParam("zipdatadir", Seq(up.writeJs(path)))
@@ -2006,9 +1901,7 @@ object ConsoleCli {
         return Success(EnvUtil.getVersion)
 
       case CreateContractInfo(ann, totalCollateral, contractDescriptor) =>
-        val args = Seq(up.writeJs(ann),
-                       up.writeJs(totalCollateral),
-                       up.writeJs(contractDescriptor))
+        val args = Seq(up.writeJs(ann), up.writeJs(totalCollateral), up.writeJs(contractDescriptor))
         RequestParam("createcontractinfo", args)
 
       case NoCommand => ???
@@ -2052,8 +1945,7 @@ object ConsoleCli {
         * and is not null
         */
       def getKey(key: String): Option[ujson.Value] = {
-        jsObjT.toOption.flatMap(_.get(key).flatMap(result =>
-          if (result.isNull) None else Some(result)))
+        jsObjT.toOption.flatMap(_.get(key).flatMap(result => if (result.isNull) None else Some(result)))
       }
 
       /** Converts a `ujson.Value` to String, making an
@@ -2082,9 +1974,7 @@ object ConsoleCli {
 
   def host = "localhost"
 
-  case class RequestParam(
-      method: String,
-      params: Seq[ujson.Value.Value] = Nil) {
+  case class RequestParam(method: String, params: Seq[ujson.Value.Value] = Nil) {
 
     lazy val toJsonMap: Map[String, ujson.Value] = {
       if (params.isEmpty)
@@ -2144,17 +2034,13 @@ object CliCommand {
   // DLC
   case object GetDLCHostAddress extends AppServerCliCommand
 
-  case class DecodeContractInfo(contractInfo: ContractInfoV0TLV)
-      extends AppServerCliCommand
+  case class DecodeContractInfo(contractInfo: ContractInfoV0TLV) extends AppServerCliCommand
 
-  case class DecodeOffer(offer: LnMessage[DLCOfferTLV])
-      extends AppServerCliCommand
+  case class DecodeOffer(offer: LnMessage[DLCOfferTLV]) extends AppServerCliCommand
 
-  case class DecodeAnnouncement(announcement: OracleAnnouncementV0TLV)
-      extends AppServerCliCommand
+  case class DecodeAnnouncement(announcement: OracleAnnouncementV0TLV) extends AppServerCliCommand
 
-  case class DecodeAttestments(sigs: OracleAttestmentV0TLV)
-      extends AppServerCliCommand
+  case class DecodeAttestments(sigs: OracleAttestmentV0TLV) extends AppServerCliCommand
 
   case class CreateDLCOffer(
       contractInfo: ContractInfoV0TLV,
@@ -2166,48 +2052,35 @@ object CliCommand {
 
   sealed trait AcceptDLCCliCommand extends AppServerCliCommand
 
-  case class AcceptDLC(
-      offer: LnMessage[DLCOfferTLV],
-      peerAddr: InetSocketAddress)
-      extends AcceptDLCCliCommand
+  case class AcceptDLC(offer: LnMessage[DLCOfferTLV], peerAddr: InetSocketAddress) extends AcceptDLCCliCommand
 
-  case class AcceptDLCOffer(offer: LnMessage[DLCOfferTLV])
-      extends AcceptDLCCliCommand
+  case class AcceptDLCOffer(offer: LnMessage[DLCOfferTLV]) extends AcceptDLCCliCommand
 
-  case class AcceptDLCOfferFromFile(path: Path, destination: Option[Path])
-      extends AcceptDLCCliCommand
+  case class AcceptDLCOfferFromFile(path: Path, destination: Option[Path]) extends AcceptDLCCliCommand
 
   sealed trait SignDLCCliCommand extends AppServerCliCommand
 
   case class SignDLC(accept: LnMessage[DLCAcceptTLV]) extends SignDLCCliCommand
 
-  case class SignDLCFromFile(path: Path, destination: Option[Path])
-      extends SignDLCCliCommand
+  case class SignDLCFromFile(path: Path, destination: Option[Path]) extends SignDLCCliCommand
 
   sealed trait AddDLCSigsCliCommand extends AppServerCliCommand
 
-  case class AddDLCSigs(sigs: LnMessage[DLCSignTLV])
-      extends AddDLCSigsCliCommand
+  case class AddDLCSigs(sigs: LnMessage[DLCSignTLV]) extends AddDLCSigsCliCommand
 
   case class AddDLCSigsFromFile(path: Path) extends AddDLCSigsCliCommand
 
   sealed trait AddDLCSigsAndBroadcastCliCommand extends AddDLCSigsCliCommand
 
-  case class AddDLCSigsAndBroadcast(sigs: LnMessage[DLCSignTLV])
-      extends AddDLCSigsAndBroadcastCliCommand
+  case class AddDLCSigsAndBroadcast(sigs: LnMessage[DLCSignTLV]) extends AddDLCSigsAndBroadcastCliCommand
 
-  case class AddDLCSigsAndBroadcastFromFile(path: Path)
-      extends AddDLCSigsAndBroadcastCliCommand
+  case class AddDLCSigsAndBroadcastFromFile(path: Path) extends AddDLCSigsAndBroadcastCliCommand
 
   case class GetDLCFundingTx(contractId: ByteVector) extends AppServerCliCommand
 
-  case class BroadcastDLCFundingTx(contractId: ByteVector)
-      extends AppServerCliCommand
+  case class BroadcastDLCFundingTx(contractId: ByteVector) extends AppServerCliCommand
 
-  case class ExecuteDLC(
-      contractId: ByteVector,
-      oracleSigs: Vector[OracleAttestmentTLV],
-      noBroadcast: Boolean)
+  case class ExecuteDLC(contractId: ByteVector, oracleSigs: Vector[OracleAttestmentTLV], noBroadcast: Boolean)
       extends AppServerCliCommand
       with Broadcastable
 
@@ -2255,10 +2128,7 @@ object CliCommand {
       feeRateOpt: Option[SatoshisPerVirtualByte])
       extends SendCliCommand
 
-  case class SweepWallet(
-      destination: BitcoinAddress,
-      feeRateOpt: Option[SatoshisPerVirtualByte])
-      extends SendCliCommand
+  case class SweepWallet(destination: BitcoinAddress, feeRateOpt: Option[SatoshisPerVirtualByte]) extends SendCliCommand
 
   case class SendWithAlgo(
       destination: BitcoinAddress,
@@ -2267,42 +2137,26 @@ object CliCommand {
       algo: CoinSelectionAlgo)
       extends SendCliCommand
 
-  case class OpReturnCommit(
-      message: String,
-      hashMessage: Boolean,
-      feeRateOpt: Option[SatoshisPerVirtualByte])
+  case class OpReturnCommit(message: String, hashMessage: Boolean, feeRateOpt: Option[SatoshisPerVirtualByte])
       extends AppServerCliCommand
 
-  case class BumpFeeCPFP(
-      txId: DoubleSha256DigestBE,
-      feeRate: SatoshisPerVirtualByte)
-      extends AppServerCliCommand
+  case class BumpFeeCPFP(txId: DoubleSha256DigestBE, feeRate: SatoshisPerVirtualByte) extends AppServerCliCommand
 
-  case class BumpFeeRBF(
-      txId: DoubleSha256DigestBE,
-      feeRate: SatoshisPerVirtualByte)
-      extends AppServerCliCommand
+  case class BumpFeeRBF(txId: DoubleSha256DigestBE, feeRate: SatoshisPerVirtualByte) extends AppServerCliCommand
 
   case class SignPSBT(psbt: PSBT) extends AppServerCliCommand
 
-  case class LockUnspent(
-      unlock: Boolean,
-      outPoints: Vector[LockUnspentOutputParameter])
-      extends AppServerCliCommand
+  case class LockUnspent(unlock: Boolean, outPoints: Vector[LockUnspentOutputParameter]) extends AppServerCliCommand
 
-  case class LabelAddress(address: BitcoinAddress, label: AddressLabelTag)
-      extends AppServerCliCommand
+  case class LabelAddress(address: BitcoinAddress, label: AddressLabelTag) extends AppServerCliCommand
 
   case class GetAddressTags(address: BitcoinAddress) extends AppServerCliCommand
 
-  case class GetAddressLabels(address: BitcoinAddress)
-      extends AppServerCliCommand
+  case class GetAddressLabels(address: BitcoinAddress) extends AppServerCliCommand
 
-  case class DropAddressLabels(address: BitcoinAddress)
-      extends AppServerCliCommand
+  case class DropAddressLabels(address: BitcoinAddress) extends AppServerCliCommand
 
-  case class GetNewAddress(labelOpt: Option[AddressLabelTag])
-      extends AppServerCliCommand
+  case class GetNewAddress(labelOpt: Option[AddressLabelTag]) extends AppServerCliCommand
   case object GetUtxos extends AppServerCliCommand
   case object ListReservedUtxos extends AppServerCliCommand
   case object GetAddresses extends AppServerCliCommand
@@ -2321,27 +2175,16 @@ object CliCommand {
   case object GetDLCWalletAccounting extends AppServerCliCommand
   case class BackupWallet(destination: String) extends AppServerCliCommand
 
-  case class GetTransaction(txId: DoubleSha256DigestBE)
+  case class GetTransaction(txId: DoubleSha256DigestBE) extends AppServerCliCommand
+
+  case class KeyManagerPassphraseChange(oldPassword: AesPassword, newPassword: AesPassword) extends AppServerCliCommand
+
+  case class KeyManagerPassphraseSet(password: AesPassword) extends AppServerCliCommand
+
+  case class ImportSeed(walletName: String, mnemonic: MnemonicCode, passwordOpt: Option[AesPassword])
       extends AppServerCliCommand
 
-  case class KeyManagerPassphraseChange(
-      oldPassword: AesPassword,
-      newPassword: AesPassword)
-      extends AppServerCliCommand
-
-  case class KeyManagerPassphraseSet(password: AesPassword)
-      extends AppServerCliCommand
-
-  case class ImportSeed(
-      walletName: String,
-      mnemonic: MnemonicCode,
-      passwordOpt: Option[AesPassword])
-      extends AppServerCliCommand
-
-  case class ImportXprv(
-      walletName: String,
-      xprv: ExtPrivateKey,
-      passwordOpt: Option[AesPassword])
+  case class ImportXprv(walletName: String, xprv: ExtPrivateKey, passwordOpt: Option[AesPassword])
       extends AppServerCliCommand
 
   // Node
@@ -2355,11 +2198,9 @@ object CliCommand {
   case object GetFilterCount extends AppServerCliCommand
   case object GetFilterHeaderCount extends AppServerCliCommand
 
-  case class GetBlockHeader(hash: DoubleSha256DigestBE)
-      extends AppServerCliCommand
+  case class GetBlockHeader(hash: DoubleSha256DigestBE) extends AppServerCliCommand
 
-  case class DecodeRawTransaction(transaction: Transaction)
-      extends AppServerCliCommand
+  case class DecodeRawTransaction(transaction: Transaction) extends AppServerCliCommand
 
   case class Rescan(
       addressBatchSize: Option[Int],
@@ -2379,10 +2220,7 @@ object CliCommand {
   case class AnalyzePSBT(psbt: PSBT) extends AppServerCliCommand
 
   // Util
-  case class CreateMultisig(
-      requiredKeys: Int,
-      keys: Vector[ECPublicKey],
-      addressType: AddressType)
+  case class CreateMultisig(requiredKeys: Int, keys: Vector[ECPublicKey], addressType: AddressType)
       extends AppServerCliCommand
 
   case class ZipDataDir(path: Path) extends AppServerCliCommand
@@ -2396,10 +2234,7 @@ object CliCommand {
 
   case class GetAnnouncement(eventName: String) extends OracleServerCliCommand
 
-  case class CreateEnumAnnouncement(
-      label: String,
-      maturationTime: Date,
-      outcomes: Seq[String])
+  case class CreateEnumAnnouncement(label: String, maturationTime: Date, outcomes: Seq[String])
       extends OracleServerCliCommand
 
   case class CreateNumericAnnouncement(
@@ -2421,18 +2256,15 @@ object CliCommand {
       precision: Int)
       extends OracleServerCliCommand
 
-  case class SignEnum(eventName: String, outcome: String)
-      extends OracleServerCliCommand
+  case class SignEnum(eventName: String, outcome: String) extends OracleServerCliCommand
 
-  case class SignDigits(eventName: String, num: Long)
-      extends OracleServerCliCommand
+  case class SignDigits(eventName: String, num: Long) extends OracleServerCliCommand
 
   case class GetSignatures(eventName: String) extends OracleServerCliCommand
 
   case class SignMessage(message: String) extends OracleServerCliCommand
 
-  case class DeleteAnnouncement(eventName: String)
-      extends OracleServerCliCommand
+  case class DeleteAnnouncement(eventName: String) extends OracleServerCliCommand
 
   case class DeleteAttestation(eventName: String) extends OracleServerCliCommand
 

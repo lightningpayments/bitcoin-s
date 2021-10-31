@@ -11,8 +11,7 @@ import org.bitcoins.testkit.wallet.FundWalletUtil.FundedDLCWallet
 import org.bitcoins.wallet.config.WalletAppConfig
 import org.scalatest.FutureOutcome
 
-trait DualWalletTestCachedBitcoind
-    extends BitcoinSWalletTestCachedBitcoindNewest {
+trait DualWalletTestCachedBitcoind extends BitcoinSWalletTestCachedBitcoindNewest {
   import BitcoinSWalletTest._
 
   implicit protected def config2: BitcoinSAppConfig =
@@ -44,14 +43,10 @@ trait DualWalletTestCachedBitcoind
         for {
           bitcoind <- cachedBitcoindWithFundsF
           walletA <-
-            FundWalletUtil.createFundedDLCWalletWithBitcoind(
-              bitcoind,
-              getBIP39PasswordOpt(),
-              Some(segwitWalletConf))
-          walletB <- FundWalletUtil.createFundedDLCWalletWithBitcoind(
-            bitcoind,
-            getBIP39PasswordOpt(),
-            Some(segwitWalletConf))(config2, system)
+            FundWalletUtil.createFundedDLCWalletWithBitcoind(bitcoind, getBIP39PasswordOpt(), Some(segwitWalletConf))
+          walletB <- FundWalletUtil.createFundedDLCWalletWithBitcoind(bitcoind,
+                                                                      getBIP39PasswordOpt(),
+                                                                      Some(segwitWalletConf))(config2, system)
         } yield (walletA, walletB, bitcoind),
       destroy = { fundedWallets: (FundedDLCWallet, FundedDLCWallet, _) =>
         for {
@@ -63,24 +58,18 @@ trait DualWalletTestCachedBitcoind
   }
 
   /** Creates 2 funded segwit wallets that have a DLC initiated */
-  def withDualDLCWallets(
-      test: OneArgAsyncTest,
-      contractOraclePair: ContractOraclePair): FutureOutcome = {
+  def withDualDLCWallets(test: OneArgAsyncTest, contractOraclePair: ContractOraclePair): FutureOutcome = {
     makeDependentFixture(
       build = () => {
         val bitcoindF = cachedBitcoindWithFundsF
 
         val walletAF = bitcoindF.flatMap { bitcoind =>
-          FundWalletUtil.createFundedDLCWalletWithBitcoind(
-            bitcoind,
-            getBIP39PasswordOpt(),
-            Some(segwitWalletConf))
+          FundWalletUtil.createFundedDLCWalletWithBitcoind(bitcoind, getBIP39PasswordOpt(), Some(segwitWalletConf))
         }
         val walletBF = bitcoindF.flatMap { bitcoind =>
-          FundWalletUtil.createFundedDLCWalletWithBitcoind(
-            bitcoind,
-            getBIP39PasswordOpt(),
-            Some(segwitWalletConf))(config2, system)
+          FundWalletUtil.createFundedDLCWalletWithBitcoind(bitcoind, getBIP39PasswordOpt(), Some(segwitWalletConf))(
+            config2,
+            system)
         }
 
         for {

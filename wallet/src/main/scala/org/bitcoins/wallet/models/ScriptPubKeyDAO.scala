@@ -48,35 +48,27 @@ case class ScriptPubKeyDAO()(implicit
   }
 
   /** Searches for the given set of spks and returns the ones that exist in the db */
-  def findScriptPubKeys(
-      spks: Vector[ScriptPubKey]): Future[Vector[ScriptPubKeyDb]] = {
+  def findScriptPubKeys(spks: Vector[ScriptPubKey]): Future[Vector[ScriptPubKeyDb]] = {
     val query = table.filter(_.scriptPubKey.inSet(spks))
     safeDatabase.runVec(query.result)
   }
 
-  case class ScriptPubKeyTable(tag: Tag)
-      extends TableAutoInc[ScriptPubKeyDb](tag, schemaName, "pub_key_scripts") {
+  case class ScriptPubKeyTable(tag: Tag) extends TableAutoInc[ScriptPubKeyDb](tag, schemaName, "pub_key_scripts") {
 
     def scriptPubKey: Rep[ScriptPubKey] = column("script_pub_key")
     def scriptType: Rep[ScriptType] = column("script_type")
 
     private type ScriptPubKeyTuple = (Option[Long], ScriptPubKey, ScriptType)
 
-    private val fromTuple: ScriptPubKeyTuple => ScriptPubKeyDb = {
-      case (id, scriptPubKey, scriptType) =>
-        require(
-          scriptPubKey.scriptType == scriptType,
-          s"script type must match it script: `${scriptPubKey.scriptType}` != `${scriptType}` ")
-        ScriptPubKeyDb(scriptPubKey, id)
+    private val fromTuple: ScriptPubKeyTuple => ScriptPubKeyDb = { case (id, scriptPubKey, scriptType) =>
+      require(scriptPubKey.scriptType == scriptType,
+              s"script type must match it script: `${scriptPubKey.scriptType}` != `${scriptType}` ")
+      ScriptPubKeyDb(scriptPubKey, id)
 
     }
 
-    private val toTuple: ScriptPubKeyDb => Option[ScriptPubKeyTuple] = {
-      scriptPubKeyDb =>
-        Some(
-          (scriptPubKeyDb.id,
-           scriptPubKeyDb.scriptPubKey,
-           scriptPubKeyDb.scriptPubKey.scriptType))
+    private val toTuple: ScriptPubKeyDb => Option[ScriptPubKeyTuple] = { scriptPubKeyDb =>
+      Some((scriptPubKeyDb.id, scriptPubKeyDb.scriptPubKey, scriptPubKeyDb.scriptPubKey.scriptType))
     }
 
     override def * =

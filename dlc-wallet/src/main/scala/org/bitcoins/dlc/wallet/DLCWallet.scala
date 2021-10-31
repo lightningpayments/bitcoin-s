@@ -36,11 +36,7 @@ import scodec.bits.ByteVector
 import scala.concurrent.{ExecutionContext, Future}
 
 /** A [[Wallet]] with full DLC Functionality */
-abstract class DLCWallet
-    extends Wallet
-    with AnyDLCHDWalletApi
-    with DLCDataManagement
-    with DLCTransactionProcessing {
+abstract class DLCWallet extends Wallet with AnyDLCHDWalletApi with DLCDataManagement with DLCTransactionProcessing {
 
   implicit val dlcConfig: DLCAppConfig
 
@@ -67,20 +63,15 @@ abstract class DLCWallet
   }
 
   /** Updates the contract Id in the wallet database for the given offer and accept */
-  private def updateDLCContractIds(
-      offer: DLCOffer,
-      accept: DLCAccept): Future[DLCDb] = {
-    require(accept.tempContractId == offer.tempContractId,
-            "Offer and Accept have differing tempContractIds!")
+  private def updateDLCContractIds(offer: DLCOffer, accept: DLCAccept): Future[DLCDb] = {
+    require(accept.tempContractId == offer.tempContractId, "Offer and Accept have differing tempContractIds!")
     val dlcId = calcDLCId(offer.fundingInputs.map(_.outPoint))
     for {
       dlcOpt <- dlcDAO.read(dlcId)
       dlcDb <- dlcOpt match {
         case Some(dlc) => Future.successful(dlc)
         case None =>
-          Future.failed(
-            new IllegalArgumentException(
-              s"No DLCDb found with dlcId ${dlcId.hex}"))
+          Future.failed(new IllegalArgumentException(s"No DLCDb found with dlcId ${dlcId.hex}"))
       }
       contractId = calcContractId(offer, accept)
 
@@ -91,17 +82,13 @@ abstract class DLCWallet
   }
 
   /** Updates the [[DLCState]] of a DLC with the given contractId in the wallet's database */
-  private def updateDLCState(
-      contractId: ByteVector,
-      state: DLCState): Future[DLCDb] = {
+  private def updateDLCState(contractId: ByteVector, state: DLCState): Future[DLCDb] = {
     for {
       dlcOpt <- dlcDAO.findByContractId(contractId)
       dlcDb <- dlcOpt match {
         case Some(dlc) => Future.successful(dlc)
         case None =>
-          Future.failed(
-            new IllegalArgumentException(
-              s"No DLCDb found with contractId ${contractId.toHex}"))
+          Future.failed(new IllegalArgumentException(s"No DLCDb found with contractId ${contractId.toHex}"))
       }
       _ = logger.debug(s"Updating DLC (${contractId.toHex}) to state $state")
       updated <- dlcDAO.update(dlcDb.updateState(state))
@@ -109,39 +96,29 @@ abstract class DLCWallet
   }
 
   /** Updates the funding outpoint in the DLCDb corresponding to the given contractId */
-  private def updateFundingOutPoint(
-      contractId: ByteVector,
-      outPoint: TransactionOutPoint): Future[DLCDb] = {
+  private def updateFundingOutPoint(contractId: ByteVector, outPoint: TransactionOutPoint): Future[DLCDb] = {
     for {
       dlcOpt <- dlcDAO.findByContractId(contractId)
       dlcDb <- dlcOpt match {
         case Some(dlc) => Future.successful(dlc)
         case None =>
-          Future.failed(
-            new IllegalArgumentException(
-              s"No DLCDb found with contractId ${contractId.toHex}"))
+          Future.failed(new IllegalArgumentException(s"No DLCDb found with contractId ${contractId.toHex}"))
       }
-      _ = logger.debug(
-        s"Updating DLC (${contractId.toHex}) funding outpoint to ${outPoint.hex}")
+      _ = logger.debug(s"Updating DLC (${contractId.toHex}) funding outpoint to ${outPoint.hex}")
       updated <- dlcDAO.update(dlcDb.updateFundingOutPoint(outPoint))
     } yield updated
   }
 
   /** Updates the closing txId in the DLCDb corresponding to the given contractId */
-  private def updateClosingTxId(
-      contractId: ByteVector,
-      txId: DoubleSha256DigestBE): Future[DLCDb] = {
+  private def updateClosingTxId(contractId: ByteVector, txId: DoubleSha256DigestBE): Future[DLCDb] = {
     for {
       dlcOpt <- dlcDAO.findByContractId(contractId)
       dlcDb <- dlcOpt match {
         case Some(dlc) => Future.successful(dlc)
         case None =>
-          Future.failed(
-            new IllegalArgumentException(
-              s"No DLCDb found with contractId ${contractId.toHex}"))
+          Future.failed(new IllegalArgumentException(s"No DLCDb found with contractId ${contractId.toHex}"))
       }
-      _ = logger.info(
-        s"Updating DLC (${contractId.toHex}) closing txId to txIdBE=${txId.hex}")
+      _ = logger.info(s"Updating DLC (${contractId.toHex}) closing txId to txIdBE=${txId.hex}")
       updated <- dlcDAO.update(dlcDb.updateClosingTxId(txId))
     } yield updated
   }
@@ -155,20 +132,15 @@ abstract class DLCWallet
       dlcDb <- dlcOpt match {
         case Some(dlc) => Future.successful(dlc)
         case None =>
-          Future.failed(
-            new IllegalArgumentException(
-              s"No DLCDb found with contractId ${contractId.toHex}"))
+          Future.failed(new IllegalArgumentException(s"No DLCDb found with contractId ${contractId.toHex}"))
       }
-      _ = logger.debug(
-        s"Updating DLC (${contractId.toHex}) aggregate signature to ${aggregateSignature.hex}")
-      updated <- dlcDAO.update(
-        dlcDb.updateAggregateSignature(aggregateSignature))
+      _ = logger.debug(s"Updating DLC (${contractId.toHex}) aggregate signature to ${aggregateSignature.hex}")
+      updated <- dlcDAO.update(dlcDb.updateAggregateSignature(aggregateSignature))
     } yield updated
   }
 
   /** Updates the signatures in the oracle nonce database */
-  private def updateDLCOracleSigs(
-      sigs: Vector[OracleSignatures]): Future[Vector[OracleNonceDb]] = {
+  private def updateDLCOracleSigs(sigs: Vector[OracleSignatures]): Future[Vector[OracleNonceDb]] = {
     val outcomeAndSigByNonce = sigs.flatMap {
       case enum: EnumOracleSignature =>
         Vector((enum.sig.rx, (enum.getOutcome.outcome, enum.sig)))
@@ -179,14 +151,11 @@ abstract class DLCWallet
         nonces.zip(outcomeAndSigs)
     }.toMap
 
-    require(outcomeAndSigByNonce.forall(t => t._1 == t._2._2.rx),
-            "nonces out of order")
+    require(outcomeAndSigByNonce.forall(t => t._1 == t._2._2.rx), "nonces out of order")
 
     for {
-      nonceDbs <- oracleNonceDAO.findByNonces(
-        outcomeAndSigByNonce.keys.toVector)
-      _ = assert(nonceDbs.size == outcomeAndSigByNonce.keys.size,
-                 "Didn't receive all nonce dbs")
+      nonceDbs <- oracleNonceDAO.findByNonces(outcomeAndSigByNonce.keys.toVector)
+      _ = assert(nonceDbs.size == outcomeAndSigByNonce.keys.size, "Didn't receive all nonce dbs")
 
       updated = nonceDbs.map { db =>
         val (outcome, sig) = outcomeAndSigByNonce(db.nonce)
@@ -196,18 +165,14 @@ abstract class DLCWallet
       updates <- oracleNonceDAO.updateAll(updated)
 
       announcementIds = updates.map(_.announcementId).distinct
-      announcementDbs <- dlcAnnouncementDAO.findByAnnouncementIds(
-        announcementIds)
+      announcementDbs <- dlcAnnouncementDAO.findByAnnouncementIds(announcementIds)
       updatedDbs = announcementDbs.map(_.copy(used = true))
       _ <- dlcAnnouncementDAO.updateAll(updatedDbs)
     } yield updates
   }
 
   /** Calculates a [[DLCPublicKeys]] from the wallet's [[BIP39KeyManager]] */
-  private def calcDLCPubKeys(
-      xpub: ExtPublicKey,
-      chainType: HDChainType,
-      keyIndex: Int): DLCPublicKeys = {
+  private def calcDLCPubKeys(xpub: ExtPublicKey, chainType: HDChainType, keyIndex: Int): DLCPublicKeys = {
     val chainIndex = chainType.index
     val fundingKey =
       xpub
@@ -217,8 +182,7 @@ abstract class DLCWallet
 
     val payoutKey =
       xpub
-        .deriveChildPubKey(
-          BIP32Path.fromString(s"m/$chainIndex/${keyIndex + 1}"))
+        .deriveChildPubKey(BIP32Path.fromString(s"m/$chainIndex/${keyIndex + 1}"))
         .get
         .key
 
@@ -253,13 +217,11 @@ abstract class DLCWallet
       dlcOpt <- dlcDAO.read(dlcId)
       dlcDb = dlcOpt match {
         case Some(db) =>
-          require(
-            db.state == DLCState.Offered || db.state == DLCState.Accepted || db.state == DLCState.Signed,
-            "Cannot cancel a DLC after it has been signed")
+          require(db.state == DLCState.Offered || db.state == DLCState.Accepted || db.state == DLCState.Signed,
+                  "Cannot cancel a DLC after it has been signed")
           db
         case None =>
-          throw new IllegalArgumentException(
-            s"No DLC Found with dlc id ${dlcId.hex}")
+          throw new IllegalArgumentException(s"No DLC Found with dlc id ${dlcId.hex}")
       }
 
       inputs <- dlcInputsDAO.findByDLCId(dlcId, dlcDb.isInitiator)
@@ -306,14 +268,12 @@ abstract class DLCWallet
     for {
       feeRate <- feeRateF
       groupedAnnouncements <- groupedAnnouncementsF
-      announcementDataDbs <- announcementDAO.createAll(
-        groupedAnnouncements.newAnnouncements)
+      announcementDataDbs <- announcementDAO.createAll(groupedAnnouncements.newAnnouncements)
       allAnnouncementDbs =
         announcementDataDbs ++ groupedAnnouncements.existingAnnouncements
 
       newAnnouncements = announcements.filter(a =>
-        groupedAnnouncements.newAnnouncements.exists(
-          _.announcementSignature == a.announcementSignature))
+        groupedAnnouncements.newAnnouncements.exists(_.announcementSignature == a.announcementSignature))
 
       newAnnouncementsWithId = newAnnouncements.map { tlv =>
         val idOpt: Option[Long] =
@@ -340,19 +300,12 @@ abstract class DLCWallet
 
       serialIds = DLCMessage.genSerialIds(spendingInfos.size)
       utxos = spendingInfos.zip(serialIds).map { case (utxo, id) =>
-        DLCFundingInput.fromInputSigningInfo(
-          utxo,
-          id,
-          TransactionConstants.enableRBFSequence)
+        DLCFundingInput.fromInputSigningInfo(utxo, id, TransactionConstants.enableRBFSequence)
       }
 
       dlcId = calcDLCId(utxos.map(_.outPoint))
-      dlcAnnouncementDbs = allAnnouncementDbs.zipWithIndex.map {
-        case (a, index) =>
-          DLCAnnouncementDb(dlcId = dlcId,
-                            announcementId = a.id.get,
-                            index = index,
-                            used = false)
+      dlcAnnouncementDbs = allAnnouncementDbs.zipWithIndex.map { case (a, index) =>
+        DLCAnnouncementDb(dlcId = dlcId, announcementId = a.id.get, index = index, used = false)
       }
 
       changeSPK =
@@ -361,15 +314,13 @@ abstract class DLCWallet
 
       dlcPubKeys = calcDLCPubKeys(account.xpub, chainType, nextIndex)
 
-      _ = logger.debug(
-        s"DLC Offer data collected, creating database entry, ${dlcId.hex}")
+      _ = logger.debug(s"DLC Offer data collected, creating database entry, ${dlcId.hex}")
 
       payoutSerialId = DLCMessage.genSerialId()
       changeSerialId = DLCMessage.genSerialId()
       fundOutputSerialId = DLCMessage.genSerialId(Vector(changeSerialId))
 
-      timeouts = DLCTimeouts(BlockTimeStamp(locktime),
-                             BlockTimeStamp(refundLocktime))
+      timeouts = DLCTimeouts(BlockTimeStamp(locktime), BlockTimeStamp(refundLocktime))
 
       offer = DLCOffer(
         contractInfo = contractInfo,
@@ -420,32 +371,29 @@ abstract class DLCWallet
       _ <- dlcAnnouncementDAO.createAll(dlcAnnouncementDbs)
       dlcOfferDb = DLCOfferDbHelper.fromDLCOffer(dlcId, offer)
 
-      dlcInputs = spendingInfos.zip(utxos).zipWithIndex.map {
-        case ((utxo, fundingInput), idx) =>
-          DLCFundingInputDb(
-            dlcId = dlcId,
-            isInitiator = true,
-            index = idx,
-            inputSerialId = fundingInput.inputSerialId,
-            outPoint = utxo.outPoint,
-            output = utxo.output,
-            nSequence = fundingInput.sequence,
-            maxWitnessLength = fundingInput.maxWitnessLen.toLong,
-            redeemScriptOpt = InputInfo.getRedeemScript(utxo.inputInfo),
-            witnessScriptOpt = InputInfo.getScriptWitness(utxo.inputInfo)
-          )
+      dlcInputs = spendingInfos.zip(utxos).zipWithIndex.map { case ((utxo, fundingInput), idx) =>
+        DLCFundingInputDb(
+          dlcId = dlcId,
+          isInitiator = true,
+          index = idx,
+          inputSerialId = fundingInput.inputSerialId,
+          outPoint = utxo.outPoint,
+          output = utxo.output,
+          nSequence = fundingInput.sequence,
+          maxWitnessLength = fundingInput.maxWitnessLen.toLong,
+          redeemScriptOpt = InputInfo.getRedeemScript(utxo.inputInfo),
+          witnessScriptOpt = InputInfo.getScriptWitness(utxo.inputInfo)
+        )
       }
 
-      _ = logger.info(
-        s"Created offer with tempContractId ${offer.tempContractId.hex}")
+      _ = logger.info(s"Created offer with tempContractId ${offer.tempContractId.hex}")
       _ <- dlcInputsDAO.createAll(dlcInputs)
       _ <- dlcOfferDAO.create(dlcOfferDb)
     } yield offer
   }
 
   private def initDLCForAccept(offer: DLCOffer): Future[(DLCDb, AccountDb)] = {
-    logger.info(
-      s"Initializing DLC from received offer with tempContractId ${offer.tempContractId.hex}")
+    logger.info(s"Initializing DLC from received offer with tempContractId ${offer.tempContractId.hex}")
     dlcDAO.findByTempContractId(offer.tempContractId).flatMap {
       case Some(dlcDb) =>
         accountDAO
@@ -508,15 +456,13 @@ abstract class DLCWallet
           _ <- contractDataDAO.create(contractDataDb)
 
           groupedAnnouncements <- groupedAnnouncementsF
-          createdDbs <- announcementDAO.createAll(
-            groupedAnnouncements.newAnnouncements)
+          createdDbs <- announcementDAO.createAll(groupedAnnouncements.newAnnouncements)
 
           announcementDataDbs =
             createdDbs ++ groupedAnnouncements.existingAnnouncements
 
           newAnnouncements = announcements.filter(a =>
-            groupedAnnouncements.newAnnouncements.exists(
-              _.announcementSignature == a.announcementSignature))
+            groupedAnnouncements.newAnnouncements.exists(_.announcementSignature == a.announcementSignature))
 
           newAnnouncementsWithId = newAnnouncements.map { tlv =>
             val idOpt = createdDbs
@@ -524,16 +470,11 @@ abstract class DLCWallet
               .flatMap(_.id)
             (tlv, idOpt.get)
           }
-          nonceDbs = OracleNonceDbHelper.fromAnnouncements(
-            newAnnouncementsWithId)
+          nonceDbs = OracleNonceDbHelper.fromAnnouncements(newAnnouncementsWithId)
           _ <- oracleNonceDAO.createAll(nonceDbs)
 
-          dlcAnnouncementDbs = announcementDataDbs.zipWithIndex.map {
-            case (a, index) =>
-              DLCAnnouncementDb(dlcId = dlcId,
-                                announcementId = a.id.get,
-                                index = index,
-                                used = false)
+          dlcAnnouncementDbs = announcementDataDbs.zipWithIndex.map { case (a, index) =>
+            DLCAnnouncementDb(dlcId = dlcId, announcementId = a.id.get, index = index, used = false)
           }
           _ <- dlcAnnouncementDAO.createAll(dlcAnnouncementDbs)
         } yield (writtenDLC, account)
@@ -558,8 +499,7 @@ abstract class DLCWallet
       dlcAcceptDbOpt <- dlcAcceptDAO.findByDLCId(dlcId)
       dlcAccept <- dlcAcceptDbOpt match {
         case Some(dlcAcceptDb) =>
-          logger.debug(
-            s"DLC Accept (${dlcId.hex}) has already been made, returning accept")
+          logger.debug(s"DLC Accept (${dlcId.hex}) has already been made, returning accept")
           for {
             fundingInputs <-
               dlcInputsDAO.findByDLCId(dlc.dlcId, isInitiator = false)
@@ -588,8 +528,7 @@ abstract class DLCWallet
       account: AccountDb,
       collateral: CurrencyUnit,
       offer: DLCOffer): Future[DLCAccept] = {
-    logger.info(
-      s"Creating DLC Accept for tempContractId ${offer.tempContractId.hex}")
+    logger.info(s"Creating DLC Accept for tempContractId ${offer.tempContractId.hex}")
     for {
       (txBuilder, spendingInfos) <- fundRawTransactionInternal(
         destinations = Vector(TransactionOutput(collateral, EmptyScriptPubKey)),
@@ -599,23 +538,16 @@ abstract class DLCWallet
         markAsReserved = true
       )
 
-      serialIds = DLCMessage.genSerialIds(
-        spendingInfos.size,
-        offer.fundingInputs.map(_.inputSerialId))
+      serialIds = DLCMessage.genSerialIds(spendingInfos.size, offer.fundingInputs.map(_.inputSerialId))
       utxos = spendingInfos.zip(serialIds).map { case (utxo, id) =>
-        DLCFundingInput.fromInputSigningInfo(
-          utxo,
-          id,
-          TransactionConstants.enableRBFSequence)
+        DLCFundingInput.fromInputSigningInfo(utxo, id, TransactionConstants.enableRBFSequence)
       }
 
       changeSPK = txBuilder.finalizer.changeSPK
       changeAddr = BitcoinAddress.fromScriptPubKey(changeSPK, networkParameters)
 
       bip32Path = BIP32Path(
-        account.hdAccount.path ++ Vector(BIP32Node(0, hardened = false),
-                                         BIP32Node(dlc.keyIndex,
-                                                   hardened = false)))
+        account.hdAccount.path ++ Vector(BIP32Node(0, hardened = false), BIP32Node(dlc.keyIndex, hardened = false)))
 
       privKeyPath = HDPath.fromString(bip32Path.toString)
       fundingPrivKey =
@@ -627,8 +559,7 @@ abstract class DLCWallet
                   "Did not derive the same funding private and public key")
 
       payoutSerialId = DLCMessage.genSerialId(Vector(offer.payoutSerialId))
-      changeSerialId = DLCMessage.genSerialId(
-        Vector(offer.fundOutputSerialId, offer.changeSerialId))
+      changeSerialId = DLCMessage.genSerialId(Vector(offer.fundOutputSerialId, offer.changeSerialId))
 
       acceptWithoutSigs = DLCAcceptWithoutSigs(
         totalCollateral = collateral.satoshis,
@@ -662,8 +593,7 @@ abstract class DLCWallet
       _ = logger.info(s"Creating CET Sigs for ${contractId.toHex}")
       cetSigs <- signer.createCETSigsAsync()
 
-      _ = logger.debug(
-        s"DLC Accept data collected, creating database entry, ${dlc.dlcId.hex}")
+      _ = logger.debug(s"DLC Accept data collected, creating database entry, ${dlc.dlcId.hex}")
 
       dlcAcceptDb = DLCAcceptDb(
         dlcId = dlc.dlcId,
@@ -685,50 +615,43 @@ abstract class DLCWallet
 
       dlcOfferDb = DLCOfferDbHelper.fromDLCOffer(dlc.dlcId, offer)
 
-      offerInputs = offer.fundingInputs.zipWithIndex.map {
-        case (funding, idx) =>
-          DLCFundingInputDb(
-            dlcId = dlc.dlcId,
-            isInitiator = true,
-            index = idx,
-            inputSerialId = funding.inputSerialId,
-            outPoint = funding.outPoint,
-            output = funding.output,
-            nSequence = funding.sequence,
-            maxWitnessLength = funding.maxWitnessLen.toLong,
-            redeemScriptOpt = funding.redeemScriptOpt,
-            witnessScriptOpt = None
-          )
+      offerInputs = offer.fundingInputs.zipWithIndex.map { case (funding, idx) =>
+        DLCFundingInputDb(
+          dlcId = dlc.dlcId,
+          isInitiator = true,
+          index = idx,
+          inputSerialId = funding.inputSerialId,
+          outPoint = funding.outPoint,
+          output = funding.output,
+          nSequence = funding.sequence,
+          maxWitnessLength = funding.maxWitnessLen.toLong,
+          redeemScriptOpt = funding.redeemScriptOpt,
+          witnessScriptOpt = None
+        )
       }
 
       offerPrevTxs = offer.fundingInputs.map(funding =>
-        TransactionDbHelper.fromTransaction(funding.prevTx,
-                                            blockHashOpt = None))
+        TransactionDbHelper.fromTransaction(funding.prevTx, blockHashOpt = None))
 
-      acceptInputs = spendingInfos.zip(utxos).zipWithIndex.map {
-        case ((utxo, fundingInput), idx) =>
-          DLCFundingInputDb(
-            dlcId = dlc.dlcId,
-            isInitiator = false,
-            index = idx,
-            inputSerialId = fundingInput.inputSerialId,
-            outPoint = utxo.outPoint,
-            output = utxo.output,
-            nSequence = fundingInput.sequence,
-            maxWitnessLength = fundingInput.maxWitnessLen.toLong,
-            redeemScriptOpt = InputInfo.getRedeemScript(utxo.inputInfo),
-            witnessScriptOpt = InputInfo.getScriptWitness(utxo.inputInfo)
-          )
+      acceptInputs = spendingInfos.zip(utxos).zipWithIndex.map { case ((utxo, fundingInput), idx) =>
+        DLCFundingInputDb(
+          dlcId = dlc.dlcId,
+          isInitiator = false,
+          index = idx,
+          inputSerialId = fundingInput.inputSerialId,
+          outPoint = utxo.outPoint,
+          output = utxo.output,
+          nSequence = fundingInput.sequence,
+          maxWitnessLength = fundingInput.maxWitnessLen.toLong,
+          redeemScriptOpt = InputInfo.getRedeemScript(utxo.inputInfo),
+          witnessScriptOpt = InputInfo.getScriptWitness(utxo.inputInfo)
+        )
       }
 
       accept =
-        dlcAcceptDb.toDLCAccept(dlc.tempContractId,
-                                utxos,
-                                cetSigs.outcomeSigs,
-                                cetSigs.refundSig)
+        dlcAcceptDb.toDLCAccept(dlc.tempContractId, utxos, cetSigs.outcomeSigs, cetSigs.refundSig)
 
-      _ = require(accept.tempContractId == offer.tempContractId,
-                  "Offer and Accept have differing tempContractIds!")
+      _ = require(accept.tempContractId == offer.tempContractId, "Offer and Accept have differing tempContractIds!")
 
       _ <- remoteTxDAO.upsertAll(offerPrevTxs)
       _ <- dlcInputsDAO.createAll(offerInputs ++ acceptInputs)
@@ -742,22 +665,18 @@ abstract class DLCWallet
         s"Created DLCAccept for tempContractId ${offer.tempContractId.hex} with contract Id ${contractId.toHex}")
 
       fundingTx = builder.buildFundingTx
-      outPoint = TransactionOutPoint(fundingTx.txId,
-                                     UInt32(builder.fundOutputIndex))
+      outPoint = TransactionOutPoint(fundingTx.txId, UInt32(builder.fundOutputIndex))
       _ <- updateFundingOutPoint(dlcDb.contractIdOpt.get, outPoint)
     } yield accept
   }
 
-  def registerDLCAccept(
-      accept: DLCAccept): Future[(DLCDb, Vector[DLCCETSignaturesDb])] = {
-    logger.debug(
-      s"Checking if DLC Accept with tempContractId ${accept.tempContractId.hex} has already been registered")
+  def registerDLCAccept(accept: DLCAccept): Future[(DLCDb, Vector[DLCCETSignaturesDb])] = {
+    logger.debug(s"Checking if DLC Accept with tempContractId ${accept.tempContractId.hex} has already been registered")
     val dbsF = for {
       dlcDbOpt <- dlcDAO.findByTempContractId(accept.tempContractId)
       (dlcDb, acceptDbOpt) <- dlcDbOpt match {
         case Some(db) =>
-          require(db.isInitiator,
-                  "Cannot call DLC Sign on our own DLC Accept message")
+          require(db.isInitiator, "Cannot call DLC Sign on our own DLC Accept message")
           dlcAcceptDAO
             .findByDLCId(db.dlcId)
             .map(acceptDbOpt => (db, acceptDbOpt))
@@ -769,54 +688,46 @@ abstract class DLCWallet
 
     dbsF.flatMap {
       case (dlc, None) =>
-        require(
-          dlc.isInitiator,
-          s"We cannot register a DLCAccept if we are not the initiator, got $dlc")
+        require(dlc.isInitiator, s"We cannot register a DLCAccept if we are not the initiator, got $dlc")
 
         logger.debug(s"DLC Offer (${dlc.dlcId.hex}) found, adding accept data")
 
         val dlcId = dlc.dlcId
         lazy val dlcAcceptDb = DLCAcceptDbHelper.fromDLCAccept(dlcId, accept)
-        lazy val acceptInputs = accept.fundingInputs.zipWithIndex.map {
-          case (funding, idx) =>
-            DLCFundingInputDb(
-              dlcId = dlcId,
-              isInitiator = false,
-              index = idx,
-              inputSerialId = funding.inputSerialId,
-              outPoint = funding.outPoint,
-              output = funding.output,
-              nSequence = funding.sequence,
-              maxWitnessLength = funding.maxWitnessLen.toLong,
-              redeemScriptOpt = funding.redeemScriptOpt,
-              witnessScriptOpt = None
-            )
+        lazy val acceptInputs = accept.fundingInputs.zipWithIndex.map { case (funding, idx) =>
+          DLCFundingInputDb(
+            dlcId = dlcId,
+            isInitiator = false,
+            index = idx,
+            inputSerialId = funding.inputSerialId,
+            outPoint = funding.outPoint,
+            output = funding.output,
+            nSequence = funding.sequence,
+            maxWitnessLength = funding.maxWitnessLen.toLong,
+            redeemScriptOpt = funding.redeemScriptOpt,
+            witnessScriptOpt = None
+          )
         }
 
         lazy val acceptPrevTxs = accept.fundingInputs.map { funding =>
-          TransactionDbHelper.fromTransaction(funding.prevTx,
-                                              blockHashOpt = None)
+          TransactionDbHelper.fromTransaction(funding.prevTx, blockHashOpt = None)
         }
 
-        lazy val sigsDbs = accept.cetSigs.outcomeSigs.zipWithIndex.map {
-          case (sig, index) =>
-            DLCCETSignaturesDb(dlc.dlcId, index = index, sig._1, sig._2, None)
+        lazy val sigsDbs = accept.cetSigs.outcomeSigs.zipWithIndex.map { case (sig, index) =>
+          DLCCETSignaturesDb(dlc.dlcId, index = index, sig._1, sig._2, None)
         }
 
         lazy val refundSigsDb =
           DLCRefundSigsDb(dlcId, accept.cetSigs.refundSig, None)
 
-        logger.info(
-          s"Verifying ${accept.cetSigs.outcomeSigs.size} CET Signatures")
+        logger.info(s"Verifying ${accept.cetSigs.outcomeSigs.size} CET Signatures")
         for {
           isCETSigsValid <- verifyCETSigs(accept)
           _ = if (!isCETSigsValid)
-            throw new IllegalArgumentException(
-              s"CET sigs provided are not valid! got ${accept.cetSigs.outcomeSigs}")
+            throw new IllegalArgumentException(s"CET sigs provided are not valid! got ${accept.cetSigs.outcomeSigs}")
           isRefundSigValid <- verifyRefundSig(accept)
           _ = if (!isRefundSigValid)
-            throw new IllegalArgumentException(
-              s"Refund sig provided is not valid! got ${accept.cetSigs.refundSig}")
+            throw new IllegalArgumentException(s"Refund sig provided is not valid! got ${accept.cetSigs.refundSig}")
 
           _ = logger.debug(
             s"CET Signatures for tempContractId ${accept.tempContractId.hex} were valid, adding to database")
@@ -835,26 +746,18 @@ abstract class DLCWallet
             transactionDAO.findByTxIdBEs(offerInputs.map(_.outPoint.txIdBE))
 
           contractData <- contractDataDAO.read(dlcId).map(_.get)
-          (announcements, announcementData, nonceDbs) <- getDLCAnnouncementDbs(
-            dlcId)
+          (announcements, announcementData, nonceDbs) <- getDLCAnnouncementDbs(dlcId)
 
-          contractInfo = getContractInfo(contractData,
-                                         announcements,
-                                         announcementData,
-                                         nonceDbs)
+          contractInfo = getContractInfo(contractData, announcements, announcementData, nonceDbs)
 
           offer =
-            offerDb.toDLCOffer(contractInfo,
-                               matchPrevTxsWithInputs(offerInputs, prevTxs),
-                               dlc,
-                               contractData)
+            offerDb.toDLCOffer(contractInfo, matchPrevTxsWithInputs(offerInputs, prevTxs), dlc, contractData)
 
           dlcDb <- updateDLCContractIds(offer, accept)
 
           builder = DLCTxBuilder(offer, accept.withoutSigs)
           fundingTx = builder.buildFundingTx
-          outPoint = TransactionOutPoint(fundingTx.txId,
-                                         UInt32(builder.fundOutputIndex))
+          outPoint = TransactionOutPoint(fundingTx.txId, UInt32(builder.fundOutputIndex))
 
           spkDb = ScriptPubKeyDb(builder.fundingSPK)
           // only update spk db if we don't have it
@@ -870,8 +773,7 @@ abstract class DLCWallet
               .updateFundingOutPoint(outPoint))
         } yield (updatedDLCDb, sigsDbs)
       case (dlc, Some(_)) =>
-        logger.debug(
-          s"DLC Accept (${dlc.contractIdOpt.get.toHex}) has already been registered")
+        logger.debug(s"DLC Accept (${dlc.contractIdOpt.get.toHex}) has already been registered")
         dlcSigsDAO.findByDLCId(dlc.dlcId).map((dlc, _))
     }
   }
@@ -948,8 +850,7 @@ abstract class DLCWallet
         (db.outPoint, sig)
       }
 
-      updatedRefundSigsDb = refundSigsDb.copy(initiatorSig =
-        Some(cetSigs.refundSig))
+      updatedRefundSigsDb = refundSigsDb.copy(initiatorSig = Some(cetSigs.refundSig))
       _ <- dlcRefundSigDAO.update(updatedRefundSigsDb)
 
       _ <- updateDLCState(dlc.contractIdOpt.get, DLCState.Signed)
@@ -958,13 +859,11 @@ abstract class DLCWallet
   }
 
   def verifyCETSigs(accept: DLCAccept): Future[Boolean] = {
-    verifierFromAccept(accept).flatMap(
-      _.verifyCETSigs(accept.cetSigs.indexedOutcomeSigs))
+    verifierFromAccept(accept).flatMap(_.verifyCETSigs(accept.cetSigs.indexedOutcomeSigs))
   }
 
   def verifyCETSigs(sign: DLCSign): Future[Boolean] = {
-    verifierFromDb(sign.contractId).flatMap(
-      _.verifyCETSigs(sign.cetSigs.indexedOutcomeSigs))
+    verifierFromDb(sign.contractId).flatMap(_.verifyCETSigs(sign.cetSigs.indexedOutcomeSigs))
   }
 
   def verifyRefundSig(accept: DLCAccept): Future[Boolean] = {
@@ -972,20 +871,16 @@ abstract class DLCWallet
   }
 
   def verifyRefundSig(sign: DLCSign): Future[Boolean] = {
-    verifierFromDb(sign.contractId).map(
-      _.verifyRefundSig(sign.cetSigs.refundSig))
+    verifierFromDb(sign.contractId).map(_.verifyRefundSig(sign.cetSigs.refundSig))
   }
 
-  def verifyFundingSigs(
-      inputs: Vector[DLCFundingInputDb],
-      sign: DLCSign): Future[Boolean] = {
+  def verifyFundingSigs(inputs: Vector[DLCFundingInputDb], sign: DLCSign): Future[Boolean] = {
     if (inputs.count(_.isInitiator) == sign.fundingSigs.length) {
       verifierFromDb(sign.contractId).map { verifier =>
         verifier.verifyRemoteFundingSigs(sign.fundingSigs)
       }
     } else {
-      logger.info(
-        "Funding Signatures provided did not have the correct amount of inputs")
+      logger.info("Funding Signatures provided did not have the correct amount of inputs")
       Future.successful(false)
     }
   }
@@ -998,13 +893,12 @@ abstract class DLCWallet
       dlc <- dlcDAO.findByContractId(sign.contractId).map(_.get)
       inputs <- dlcInputsDAO.findByDLCId(dlc.dlcId).map(_.sortBy(_.index))
 
-      _ = logger.info(
-        s"Verifying ${sign.fundingSigs.length} funding sigs for contract ${sign.contractId.toHex}")
+      _ = logger.info(s"Verifying ${sign.fundingSigs.length} funding sigs for contract ${sign.contractId.toHex}")
       isValid <- verifyFundingSigs(inputs = inputs, sign = sign)
       _ <- {
         if (!isValid)
-          Future.failed(new IllegalArgumentException(
-            s"Funding Signatures provided are not valid! got ${sign.fundingSigs}"))
+          Future.failed(
+            new IllegalArgumentException(s"Funding Signatures provided are not valid! got ${sign.fundingSigs}"))
         else FutureUtil.unit
       }
 
@@ -1031,17 +925,11 @@ abstract class DLCWallet
           require(!db.isInitiator, "Cannot add DLC sigs as initiator")
           Future.successful(db)
         case None =>
-          Future.failed(new RuntimeException(
-            s"No DLC found with corresponding contractId ${contractId.toHex}"))
+          Future.failed(new RuntimeException(s"No DLC found with corresponding contractId ${contractId.toHex}"))
       }
       (_, contractData, dlcOffer, dlcAccept, fundingInputs, contractInfo) <-
         getDLCFundingData(dlcDb.dlcId)
-      builder <- builderFromDbData(dlcDb,
-                                   contractData,
-                                   dlcOffer,
-                                   dlcAccept,
-                                   fundingInputs,
-                                   contractInfo)
+      builder <- builderFromDbData(dlcDb, contractData, dlcOffer, dlcAccept, fundingInputs, contractInfo)
 
       sign = DLCSign.fromTLV(signTLV, builder.offer)
       result <- addDLCSigs(sign)
@@ -1058,28 +946,22 @@ abstract class DLCWallet
         require(!dlc.isInitiator, "Cannot add DLC sigs as initiator")
         dlc.state match {
           case Offered =>
-            Future.failed(
-              new RuntimeException(
-                "Cannot add sigs to a DLC before it has been accepted"))
+            Future.failed(new RuntimeException("Cannot add sigs to a DLC before it has been accepted"))
           case Accepted =>
-            logger.info(
-              s"Verifying CET Signatures for contract ${sign.contractId.toHex}")
+            logger.info(s"Verifying CET Signatures for contract ${sign.contractId.toHex}")
             for {
               isRefundSigValid <- verifyRefundSig(sign)
               _ = if (!isRefundSigValid)
-                throw new IllegalArgumentException(
-                  s"Refund sig provided is not valid! got ${sign.cetSigs.refundSig}")
+                throw new IllegalArgumentException(s"Refund sig provided is not valid! got ${sign.cetSigs.refundSig}")
 
               isCETSigsValid <- verifyCETSigs(sign)
               _ = if (!isCETSigsValid)
-                throw new IllegalArgumentException(
-                  s"CET sigs provided are not valid! got ${sign.cetSigs.outcomeSigs}")
+                throw new IllegalArgumentException(s"CET sigs provided are not valid! got ${sign.cetSigs.outcomeSigs}")
 
               refundSigsDb <- dlcRefundSigDAO.findByDLCId(dlc.dlcId).map(_.get)
               sigsDbs <- dlcSigsDAO.findByDLCId(dlc.dlcId)
 
-              updatedRefund = refundSigsDb.copy(initiatorSig =
-                Some(sign.cetSigs.refundSig))
+              updatedRefund = refundSigsDb.copy(initiatorSig = Some(sign.cetSigs.refundSig))
               updatedSigsDbs = sigsDbs
                 .sortBy(_.index)
                 .zip(sign.cetSigs.outcomeSigs)
@@ -1087,24 +969,21 @@ abstract class DLCWallet
                   db.copy(initiatorSig = Some(sig))
                 }
 
-              _ = logger.info(
-                s"CET Signatures are valid for contract ${sign.contractId.toHex}")
+              _ = logger.info(s"CET Signatures are valid for contract ${sign.contractId.toHex}")
 
               _ <- addFundingSigs(sign)
               _ <- dlcSigsDAO.updateAll(updatedSigsDbs)
               _ <- dlcRefundSigDAO.update(updatedRefund)
               updated <- dlcDAO.update(dlc.updateState(DLCState.Signed))
-              _ = logger.info(
-                s"DLC ${sign.contractId.toHex} sigs are verified and stored, ready to broadcast")
+              _ = logger.info(s"DLC ${sign.contractId.toHex} sigs are verified and stored, ready to broadcast")
             } yield updated
           case _: DLCState.ClosedState | Broadcasted | Confirmed | Signed =>
-            logger.info(
-              s"DLC sigs already added for ${sign.contractId.toHex}, skipping..")
+            logger.info(s"DLC sigs already added for ${sign.contractId.toHex}, skipping..")
             Future.successful(dlc)
         }
       case None =>
-        Future.failed(new NoSuchElementException(
-          s"No DLC found with corresponding contractId ${sign.contractId.toHex}"))
+        Future.failed(
+          new NoSuchElementException(s"No DLC found with corresponding contractId ${sign.contractId.toHex}"))
     }
   }
 
@@ -1113,12 +992,7 @@ abstract class DLCWallet
       (dlcDb, contractData, dlcOffer, dlcAccept, fundingInputs, contractInfo) <-
         getDLCFundingData(contractId)
 
-      signer <- signerFromDb(dlcDb,
-                             contractData,
-                             dlcOffer,
-                             dlcAccept,
-                             fundingInputs,
-                             contractInfo)
+      signer <- signerFromDb(dlcDb, contractData, dlcOffer, dlcAccept, fundingInputs, contractInfo)
       fundingTx <-
         if (dlcDb.isInitiator) {
           transactionDAO.findByTxId(signer.builder.buildFundingTx.txIdBE).map {
@@ -1135,8 +1009,7 @@ abstract class DLCWallet
                   case Some(witnessScript) =>
                     witnessScript match {
                       case EmptyScriptWitness =>
-                        throw new RuntimeException(
-                          "Script witness cannot be empty")
+                        throw new RuntimeException("Script witness cannot be empty")
                       case witness: ScriptWitnessV0 => (input.outPoint, witness)
                     }
                   case None => throw new RuntimeException("")
@@ -1145,28 +1018,24 @@ abstract class DLCWallet
             signer.completeFundingTx(FundingSignatures(remoteSigs))
           }
         }
-      _ = logger.info(
-        s"Created funding transaction ${fundingTx.txIdBE.hex} for contract ${contractId.toHex}")
+      _ = logger.info(s"Created funding transaction ${fundingTx.txIdBE.hex} for contract ${contractId.toHex}")
     } yield fundingTx
   }
 
-  override def broadcastDLCFundingTx(
-      contractId: ByteVector): Future[Transaction] = {
+  override def broadcastDLCFundingTx(contractId: ByteVector): Future[Transaction] = {
     val dlcDbOptF = dlcDAO.findByContractId(contractId)
     val fundingTxF = getDLCFundingTx(contractId)
     for {
       dlcDbOpt <- dlcDbOptF
       _ = dlcDbOpt match {
         case None =>
-          sys.error(
-            s"Cannot broadcast DLC when we don't know the contract, given contractId=${contractId}")
+          sys.error(s"Cannot broadcast DLC when we don't know the contract, given contractId=${contractId}")
         case Some(dlcDb) =>
           isValidBroadcastState(dlcDb)
       }
       tx <- fundingTxF
       _ <- updateDLCState(contractId, DLCState.Broadcasted)
-      _ = logger.info(
-        s"Broadcasting funding transaction ${tx.txIdBE.hex} for contract ${contractId.toHex}")
+      _ = logger.info(s"Broadcasting funding transaction ${tx.txIdBE.hex} for contract ${contractId.toHex}")
       _ <- broadcastTransaction(tx)
     } yield tx
   }
@@ -1181,29 +1050,22 @@ abstract class DLCWallet
   private def isValidBroadcastState(dlcDb: DLCDb): DLCDb = {
     dlcDb.state match {
       case DLCState.Broadcasted | DLCState.Signed => dlcDb
-      case state @ (DLCState.Offered | DLCState.Confirmed | DLCState.Accepted |
-          DLCState.Claimed | DLCState.RemoteClaimed | DLCState.Refunded) =>
-        sys.error(
-          s"Cannot broadcast the dlc when it is in the state=${state} contractId=${dlcDb.contractIdOpt}")
+      case state @ (DLCState.Offered | DLCState.Confirmed | DLCState.Accepted | DLCState.Claimed |
+          DLCState.RemoteClaimed | DLCState.Refunded) =>
+        sys.error(s"Cannot broadcast the dlc when it is in the state=${state} contractId=${dlcDb.contractIdOpt}")
     }
   }
 
-  override def executeDLC(
-      contractId: ByteVector,
-      sigs: Seq[OracleAttestmentTLV]): Future[Transaction] = {
-    logger.info(
-      s"Executing dlc with contractId=${contractId.toHex} sigs=${sigs.map(_.hex)}")
+  override def executeDLC(contractId: ByteVector, sigs: Seq[OracleAttestmentTLV]): Future[Transaction] = {
+    logger.info(s"Executing dlc with contractId=${contractId.toHex} sigs=${sigs.map(_.hex)}")
     require(sigs.nonEmpty, "Must provide at least one oracle signature")
 
     for {
       dlcDb <- dlcDAO.findByContractId(contractId).map(_.get)
 
-      (announcements, announcementData, nonceDbs) <- getDLCAnnouncementDbs(
-        dlcDb.dlcId)
+      (announcements, announcementData, nonceDbs) <- getDLCAnnouncementDbs(dlcDb.dlcId)
 
-      announcementTLVs = getOracleAnnouncements(announcements,
-                                                announcementData,
-                                                nonceDbs)
+      announcementTLVs = getOracleAnnouncements(announcements, announcementData, nonceDbs)
 
       oracleSigs =
         sigs.foldLeft(Vector.empty[OracleSignatures]) { (acc, sig) =>
@@ -1216,8 +1078,7 @@ abstract class DLCWallet
             case Some(announcement) =>
               acc :+ OracleSignatures(SingleOracleInfo(announcement), sig.sigs)
             case None =>
-              throw new RuntimeException(
-                s"Cannot find announcement for associated public key, ${sig.publicKey.hex}")
+              throw new RuntimeException(s"Cannot find announcement for associated public key, ${sig.publicKey.hex}")
           }
         }
 
@@ -1225,15 +1086,11 @@ abstract class DLCWallet
     } yield tx
   }
 
-  override def executeDLC(
-      contractId: ByteVector,
-      oracleSigs: Vector[OracleSignatures]): Future[Transaction] = {
+  override def executeDLC(contractId: ByteVector, oracleSigs: Vector[OracleSignatures]): Future[Transaction] = {
     require(oracleSigs.nonEmpty, "Must provide at least one oracle signature")
     dlcDAO.findByContractId(contractId).flatMap {
       case None =>
-        Future.failed(
-          new IllegalArgumentException(
-            s"No DLC found with contractId $contractId"))
+        Future.failed(new IllegalArgumentException(s"No DLC found with contractId $contractId"))
       case Some(db) =>
         db.closingTxIdOpt match {
           case Some(txId) =>
@@ -1257,8 +1114,7 @@ abstract class DLCWallet
       executed = executor.executeDLC(setup, oracleSigs)
       (tx, outcome, sigsUsed) =
         (executed.cet, executed.outcome, executed.sigsUsed)
-      _ = logger.info(
-        s"Created DLC execution transaction ${tx.txIdBE.hex} for contract ${contractId.toHex}")
+      _ = logger.info(s"Created DLC execution transaction ${tx.txIdBE.hex} for contract ${contractId.toHex}")
 
       _ <- updateDLCOracleSigs(sigsUsed)
       _ <- updateDLCState(contractId, DLCState.Claimed)
@@ -1266,8 +1122,7 @@ abstract class DLCWallet
 
       oracleSigSum =
         OracleSignatures.computeAggregateSignature(outcome, sigsUsed)
-      aggSig = SchnorrDigitalSignature(outcome.aggregateNonce,
-                                       oracleSigSum.fieldElement)
+      aggSig = SchnorrDigitalSignature(outcome.aggregateNonce, oracleSigSum.fieldElement)
       _ <- updateAggregateSignature(contractId, aggSig)
 
       _ <- processTransaction(tx, None)
@@ -1288,9 +1143,8 @@ abstract class DLCWallet
             s"Refund transaction is not valid yet, current height: $currentHeight, refund valid at height $height")
         case BlockStamp.BlockTime(time) =>
           val currentTime = TimeUtil.currentEpochSecond
-          require(
-            currentTime >= time.toLong,
-            s"Refund transaction is not valid yet, current time: $currentTime, refund valid at time $time")
+          require(currentTime >= time.toLong,
+                  s"Refund transaction is not valid yet, current time: $currentTime, refund valid at time $time")
       }
 
       executor <- executorFromDb(dlcDb.dlcId)
@@ -1301,8 +1155,7 @@ abstract class DLCWallet
         else refundSigsDbOpt.get.initiatorSig.get
 
       refundTx = executor.executeRefundDLC(refundSig).refundTx
-      _ = logger.info(
-        s"Created DLC refund transaction ${refundTx.txIdBE.hex} for contract ${contractId.toHex}")
+      _ = logger.info(s"Created DLC refund transaction ${refundTx.txIdBE.hex} for contract ${contractId.toHex}")
 
       _ <- updateDLCState(contractId, DLCState.Refunded)
       _ <- updateClosingTxId(contractId, refundTx.txIdBE)
@@ -1369,19 +1222,13 @@ abstract class DLCWallet
       result <- {
         (dlcDbOpt, contractDataOpt, offerDbOpt) match {
           case (Some(dlcDb), Some(contractData), Some(offerDb)) =>
-            buildDLCStatus(dlcDb,
-                           contractData,
-                           offerDb,
-                           acceptDbOpt,
-                           closingTxOpt)
+            buildDLCStatus(dlcDb, contractData, offerDb, acceptDbOpt, closingTxOpt)
           case (_, _, _) => Future.successful(None)
         }
       }
     } yield result
 
-    dlcOptF.foreach(_ =>
-      logger.debug(
-        s"Done finding dlc=$dlcId, it took=${System.currentTimeMillis() - start}ms"))
+    dlcOptF.foreach(_ => logger.debug(s"Done finding dlc=$dlcId, it took=${System.currentTimeMillis() - start}ms"))
     dlcOptF
   }
 
@@ -1393,21 +1240,13 @@ abstract class DLCWallet
       acceptDbOpt: Option[DLCAcceptDb],
       closingTxOpt: Option[TransactionDb]): Future[Option[DLCStatus]] = {
     val dlcId = dlcDb.dlcId
-    val aggregatedF: Future[(
-        Vector[DLCAnnouncementDb],
-        Vector[OracleAnnouncementDataDb],
-        Vector[OracleNonceDb])] = getDLCAnnouncementDbs(dlcDb.dlcId)
+    val aggregatedF: Future[(Vector[DLCAnnouncementDb], Vector[OracleAnnouncementDataDb], Vector[OracleNonceDb])] =
+      getDLCAnnouncementDbs(dlcDb.dlcId)
 
-    val contractInfoAndAnnouncementsF: Future[
-      (ContractInfo, Vector[(OracleAnnouncementV0TLV, Long)])] = {
+    val contractInfoAndAnnouncementsF: Future[(ContractInfo, Vector[(OracleAnnouncementV0TLV, Long)])] = {
       aggregatedF.map { case (announcements, announcementData, nonceDbs) =>
-        val contractInfo = getContractInfo(contractData,
-                                           announcements,
-                                           announcementData,
-                                           nonceDbs)
-        val announcementsWithId = getOracleAnnouncementsWithId(announcements,
-                                                               announcementData,
-                                                               nonceDbs)
+        val contractInfo = getContractInfo(contractData, announcements, announcementData, nonceDbs)
+        val announcementsWithId = getOracleAnnouncementsWithId(announcements, announcementData, nonceDbs)
         (contractInfo, announcementsWithId)
       }
     }
@@ -1418,11 +1257,10 @@ abstract class DLCWallet
       status <- {
         dlcDb.state match {
           case _: DLCState.InProgressState =>
-            val inProgress = DLCStatusBuilder.buildInProgressDLCStatus(
-              dlcDb = dlcDb,
-              contractInfo = contractInfo,
-              contractData = contractData,
-              offerDb = offerDb)
+            val inProgress = DLCStatusBuilder.buildInProgressDLCStatus(dlcDb = dlcDb,
+                                                                       contractInfo = contractInfo,
+                                                                       contractData = contractData,
+                                                                       offerDb = offerDb)
             Future.successful(inProgress)
           case _: DLCState.ClosedState =>
             (acceptDbOpt, closingTxOpt) match {
@@ -1440,14 +1278,15 @@ abstract class DLCWallet
                 )
                 Future.successful(status)
               case (None, None) =>
-                Future.failed(new RuntimeException(
-                  s"Could not find acceptDb or closingTx for closing state=${dlcDb.state} dlcId=$dlcId"))
+                Future.failed(
+                  new RuntimeException(
+                    s"Could not find acceptDb or closingTx for closing state=${dlcDb.state} dlcId=$dlcId"))
               case (Some(_), None) =>
-                Future.failed(new RuntimeException(
-                  s"Could not find closingTx for state=${dlcDb.state} dlcId=$dlcId"))
+                Future.failed(new RuntimeException(s"Could not find closingTx for state=${dlcDb.state} dlcId=$dlcId"))
               case (None, Some(_)) =>
-                Future.failed(new RuntimeException(
-                  s"Cannot find acceptDb for dlcId=$dlcId. This likely means we have data corruption"))
+                Future.failed(
+                  new RuntimeException(
+                    s"Cannot find acceptDb for dlcId=$dlcId. This likely means we have data corruption"))
             }
         }
       }
@@ -1463,8 +1302,7 @@ abstract class DLCWallet
       newAnnouncements: Vector[OracleAnnouncementDataDb],
       existingAnnouncements: Vector[OracleAnnouncementDataDb]) {
     require(existingAnnouncements.forall(_.id.isDefined))
-    require(newAnnouncements.forall(_.id.isEmpty),
-            s"announcmeent had id defined=${newAnnouncements.map(_.id)}")
+    require(newAnnouncements.forall(_.id.isEmpty), s"announcmeent had id defined=${newAnnouncements.map(_.id)}")
   }
 
   /** This is needed because our upserts do not work
@@ -1475,8 +1313,7 @@ abstract class DLCWallet
     * @param announcementDataDbs
     */
   private def groupByExistingAnnouncements(
-      announcementTLVs: Vector[OracleAnnouncementTLV]): Future[
-    AnnouncementGrouping] = {
+      announcementTLVs: Vector[OracleAnnouncementTLV]): Future[AnnouncementGrouping] = {
 
     val announcementSignatures: Vector[SchnorrDigitalSignature] = {
       announcementTLVs.map(a => a.announcementSignature)
@@ -1489,14 +1326,12 @@ abstract class DLCWallet
     for {
       existingAnnouncementsDb <- existingAnnouncementsInDbF
       newAnnouncements = announcementTLVs.filterNot(a =>
-        existingAnnouncementsDb.exists(
-          _.announcementSignature == a.announcementSignature))
+        existingAnnouncementsDb.exists(_.announcementSignature == a.announcementSignature))
     } yield {
       val newAnnouncementsDb =
         OracleAnnouncementDbHelper.fromAnnouncements(newAnnouncements)
 
-      AnnouncementGrouping(newAnnouncements = newAnnouncementsDb,
-                           existingAnnouncements = existingAnnouncementsDb)
+      AnnouncementGrouping(newAnnouncements = newAnnouncementsDb, existingAnnouncements = existingAnnouncementsDb)
     }
   }
 }
@@ -1513,10 +1348,7 @@ object DLCWallet extends WalletLogger {
       val ec: ExecutionContext
   ) extends DLCWallet
 
-  def apply(
-      nodeApi: NodeApi,
-      chainQueryApi: ChainQueryApi,
-      feeRateApi: FeeRateApi)(implicit
+  def apply(nodeApi: NodeApi, chainQueryApi: ChainQueryApi, feeRateApi: FeeRateApi)(implicit
       config: WalletAppConfig,
       dlcConfig: DLCAppConfig,
       ec: ExecutionContext): DLCWallet = {

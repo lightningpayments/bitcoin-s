@@ -29,9 +29,6 @@ case class RawTxBuilderResult(
 object RawTxBuilderResult {
 
   def fromTransaction(tx: Transaction): RawTxBuilderResult = {
-    RawTxBuilderResult(tx.version,
-                       tx.inputs.toVector,
-                       tx.outputs.toVector,
-                       tx.lockTime)
+    RawTxBuilderResult(tx.version, tx.inputs.toVector, tx.outputs.toVector, tx.lockTime)
   }
 }

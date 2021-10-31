@@ -4,15 +4,11 @@ import scodec.bits.ByteVector
 
 import java.math.BigInteger
 
-abstract class FiniteFieldMember[F <: FiniteFieldMember[F]](
-    fieldOrder: BigInteger,
-    byteSize: Int)
+abstract class FiniteFieldMember[F <: FiniteFieldMember[F]](fieldOrder: BigInteger, byteSize: Int)
     extends NetworkElement {
-  require(bytes.length == byteSize,
-          s"Finite field member must have $byteSize bytes, got $bytes")
-  require(
-    toBigInteger.compareTo(fieldOrder) < 0,
-    s"$bytes is not a valid field member (was not less than $fieldOrder).")
+  require(bytes.length == byteSize, s"Finite field member must have $byteSize bytes, got $bytes")
+  require(toBigInteger.compareTo(fieldOrder) < 0,
+          s"$bytes is not a valid field member (was not less than $fieldOrder).")
 
   def isZero: Boolean = bytes.toArray.forall(_ == 0.toByte)
 
@@ -51,10 +47,7 @@ abstract class FiniteFieldMember[F <: FiniteFieldMember[F]](
   def inverse: F = fieldObj.computeInverse(thisAsF)
 }
 
-abstract class FiniteFieldObject[F <: FiniteFieldMember[F]](
-    fieldOrder: BigInteger,
-    byteSize: Int)
-    extends Factory[F] {
+abstract class FiniteFieldObject[F <: FiniteFieldMember[F]](fieldOrder: BigInteger, byteSize: Int) extends Factory[F] {
 
   def fieldMemberConstructor(bytes: ByteVector): F
 
@@ -66,8 +59,7 @@ abstract class FiniteFieldObject[F <: FiniteFieldMember[F]](
     } else if (bytes.length == byteSize + 1 && bytes.head == 0.toByte) {
       fieldMemberConstructor(bytes.tail)
     } else {
-      throw new IllegalArgumentException(
-        s"Field element cannot have more than 32 bytes, got $bytes")
+      throw new IllegalArgumentException(s"Field element cannot have more than 32 bytes, got $bytes")
     }
   }
 

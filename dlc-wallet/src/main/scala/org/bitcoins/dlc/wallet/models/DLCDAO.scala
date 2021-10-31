@@ -15,9 +15,7 @@ import slick.lifted._
 import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future}
 
-case class DLCDAO()(implicit
-    val ec: ExecutionContext,
-    override val appConfig: DLCAppConfig)
+case class DLCDAO()(implicit val ec: ExecutionContext, override val appConfig: DLCAppConfig)
     extends CRUD[DLCDb, Sha256Digest]
     with SlickUtil[DLCDb, Sha256Digest] {
   private val mappers = new org.bitcoins.db.DbCommonsColumnMappers(profile)
@@ -29,12 +27,10 @@ case class DLCDAO()(implicit
   override def createAll(ts: Vector[DLCDb]): Future[Vector[DLCDb]] =
     createAllNoAutoInc(ts, safeDatabase)
 
-  override protected def findByPrimaryKeys(
-      ids: Vector[Sha256Digest]): Query[DLCTable, DLCDb, Seq] =
+  override protected def findByPrimaryKeys(ids: Vector[Sha256Digest]): Query[DLCTable, DLCDb, Seq] =
     table.filter(_.dlcId.inSet(ids))
 
-  override def findByPrimaryKey(
-      id: Sha256Digest): Query[DLCTable, DLCDb, Seq] = {
+  override def findByPrimaryKey(id: Sha256Digest): Query[DLCTable, DLCDb, Seq] = {
     table
       .filter(_.dlcId === id)
   }
@@ -47,8 +43,7 @@ case class DLCDAO()(implicit
     safeDatabase.run(q.delete)
   }
 
-  def findByTempContractId(
-      tempContractId: Sha256Digest): Future[Option[DLCDb]] = {
+  def findByTempContractId(tempContractId: Sha256Digest): Future[Option[DLCDb]] = {
     val q = table.filter(_.tempContractId === tempContractId)
 
     safeDatabase.run(q.result).map {
@@ -57,13 +52,11 @@ case class DLCDAO()(implicit
       case Vector() =>
         None
       case dlcs: Vector[DLCDb] =>
-        throw new RuntimeException(
-          s"More than one DLC per tempContractId (${tempContractId.hex}), got: $dlcs")
+        throw new RuntimeException(s"More than one DLC per tempContractId (${tempContractId.hex}), got: $dlcs")
     }
   }
 
-  def findByTempContractId(
-      tempContractId: Sha256DigestBE): Future[Option[DLCDb]] =
+  def findByTempContractId(tempContractId: Sha256DigestBE): Future[Option[DLCDb]] =
     findByTempContractId(tempContractId.flip)
 
   def findByContractId(contractId: ByteVector): Future[Option[DLCDb]] = {
@@ -75,8 +68,7 @@ case class DLCDAO()(implicit
       case Vector() =>
         None
       case dlcs: Vector[DLCDb] =>
-        throw new RuntimeException(
-          s"More than one DLC per contractId (${contractId.toHex}), got: $dlcs")
+        throw new RuntimeException(s"More than one DLC per contractId (${contractId.toHex}), got: $dlcs")
     }
   }
 
@@ -89,20 +81,17 @@ case class DLCDAO()(implicit
       case Vector() =>
         None
       case dlcs: Vector[DLCDb] =>
-        throw new RuntimeException(
-          s"More than one DLC per dlcId (${dlcId.hex}), got: $dlcs")
+        throw new RuntimeException(s"More than one DLC per dlcId (${dlcId.hex}), got: $dlcs")
     }
   }
 
-  def findByFundingOutPoint(
-      outPoint: TransactionOutPoint): Future[Option[DLCDb]] = {
+  def findByFundingOutPoint(outPoint: TransactionOutPoint): Future[Option[DLCDb]] = {
     val q = table.filter(_.fundingOutPointOpt === outPoint)
 
     safeDatabase.run(q.result).map(_.headOption)
   }
 
-  def findByFundingOutPoints(
-      outPoints: Vector[TransactionOutPoint]): Future[Vector[DLCDb]] = {
+  def findByFundingOutPoints(outPoints: Vector[TransactionOutPoint]): Future[Vector[DLCDb]] = {
     val q = table.filter(_.fundingOutPointOpt.inSet(outPoints))
 
     safeDatabase.runVec(q.result)
@@ -114,8 +103,7 @@ case class DLCDAO()(implicit
     safeDatabase.runVec(q.result)
   }
 
-  class DLCTable(tag: Tag)
-      extends Table[DLCDb](tag, schemaName, "global_dlc_data") {
+  class DLCTable(tag: Tag) extends Table[DLCDb](tag, schemaName, "global_dlc_data") {
 
     def dlcId: Rep[Sha256Digest] = column("dlc_id", O.PrimaryKey)
 
@@ -152,8 +140,7 @@ case class DLCDAO()(implicit
     def closingTxIdOpt: Rep[Option[DoubleSha256DigestBE]] =
       column("closing_tx_id")
 
-    def aggregateSignatureOpt: Rep[Option[SchnorrDigitalSignature]] = column(
-      "aggregate_signature")
+    def aggregateSignatureOpt: Rep[Option[SchnorrDigitalSignature]] = column("aggregate_signature")
 
     def * : ProvenShape[DLCDb] =
       (dlcId,

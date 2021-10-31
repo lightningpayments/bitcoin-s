@@ -45,8 +45,7 @@ object HDCoinType {
   }
 
   def fromNode(node: BIP32Node): HDCoinType = {
-    require(node.hardened,
-            s"Cannot construct HDCoinType from un-hardened node: $node")
+    require(node.hardened, s"Cannot construct HDCoinType from un-hardened node: $node")
 
     fromInt(node.index)
   }

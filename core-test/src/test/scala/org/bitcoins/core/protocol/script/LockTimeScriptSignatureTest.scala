@@ -22,8 +22,7 @@ class LockTimeScriptSignatureTest extends BitcoinSUnitTest {
 
   it should "have agreement with nested signatures" in {
     forAll(ScriptGenerators.lockTimeScriptSig) { lockTimeScriptSignature =>
-      assert(
-        lockTimeScriptSignature.signatures == lockTimeScriptSignature.scriptSig.signatures)
+      assert(lockTimeScriptSignature.signatures == lockTimeScriptSignature.scriptSig.signatures)
     }
   }
 }

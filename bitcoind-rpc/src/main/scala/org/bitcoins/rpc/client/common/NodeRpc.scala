@@ -19,8 +19,7 @@ trait NodeRpc { self: Client =>
   private def logging(
       include: Option[Vector[String]],
       exclude: Option[Vector[String]]): Future[Map[String, Boolean]] = {
-    val params = List(Json.toJson(include.getOrElse(Vector.empty)),
-                      Json.toJson(exclude.getOrElse(Vector.empty)))
+    val params = List(Json.toJson(include.getOrElse(Vector.empty)), Json.toJson(exclude.getOrElse(Vector.empty)))
 
     /** Bitcoin Core v0.16 returns a map of 1/0s,
       * v0.17 returns proper booleans

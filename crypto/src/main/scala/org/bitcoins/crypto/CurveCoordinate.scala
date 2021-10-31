@@ -8,8 +8,7 @@ case class CurveCoordinate(bytes: ByteVector)
   override def fieldObj: FiniteFieldObject[CurveCoordinate] = CurveCoordinate
 }
 
-object CurveCoordinate
-    extends FiniteFieldObject[CurveCoordinate](CryptoParams.getCurvePrime, 32) {
+object CurveCoordinate extends FiniteFieldObject[CurveCoordinate](CryptoParams.getCurvePrime, 32) {
 
   override def fieldMemberConstructor(bytes: ByteVector): CurveCoordinate = {
     new CurveCoordinate(bytes)

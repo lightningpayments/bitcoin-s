@@ -41,9 +41,7 @@ sealed abstract class ScriptConstant extends ScriptToken {
 }
 
 /** Represents a [[ScriptNumber]] in the Script language. */
-sealed abstract class ScriptNumber
-    extends ScriptConstant
-    with Ordered[ScriptNumber] {
+sealed abstract class ScriptNumber extends ScriptConstant with Ordered[ScriptNumber] {
 
   def +(that: ScriptNumber): ScriptNumber =
     ScriptNumber(underlying + that.underlying)
@@ -93,12 +91,9 @@ sealed abstract class ScriptNumber
   protected val underlying: Long
 }
 
-object ScriptNumber
-    extends Factory[ScriptNumber]
-    with NumberCache[ScriptNumber] {
+object ScriptNumber extends Factory[ScriptNumber] with NumberCache[ScriptNumber] {
 
-  private case class ScriptNumberImpl(underlying: Long, bytes: ByteVector)
-      extends ScriptNumber
+  private case class ScriptNumberImpl(underlying: Long, bytes: ByteVector) extends ScriptNumber
 
   /** Represents the number zero inside of bitcoin's script language. */
   lazy val zero: ScriptNumber = checkCached(0)
@@ -125,12 +120,11 @@ object ScriptNumber
     }
   }
 
-  def fromBytes(
-      bytes: ByteVector,
-      requireMinimal: Boolean): Try[ScriptNumber] = {
+  def fromBytes(bytes: ByteVector, requireMinimal: Boolean): Try[ScriptNumber] = {
     if (requireMinimal && !BitcoinScriptUtil.isShortestEncoding(bytes)) {
-      Failure(new IllegalArgumentException(
-        s"The given hex was not the shortest encoding for the script number: ${bytes.toHex}"))
+      Failure(
+        new IllegalArgumentException(
+          s"The given hex was not the shortest encoding for the script number: ${bytes.toHex}"))
     } else if (requireMinimal) {
       //our cache contains minimal encoded script numbers
       //so we can check our cache to try and avoid allocating
@@ -174,8 +168,7 @@ object ScriptNumber
       ScriptNumberImpl(ScriptNumberUtil.toLong(bytes))
 
     def apply(underlying: Long): ScriptNumber = {
-      ScriptNumberImpl(underlying,
-                       ScriptNumberUtil.longToByteVector(underlying))
+      ScriptNumberImpl(underlying, ScriptNumberUtil.longToByteVector(underlying))
     }
 
     def apply(int64: Int64): ScriptNumber = checkCached(int64.toLong)
@@ -210,9 +203,7 @@ case object OP_PUSHDATA4 extends ScriptOperation {
 /** Represents a [[ScriptNumberOperation]] where the the number in the operation is pushed onto the stack
   * i.e. OP_0 would be push 0 onto the stack, OP_1 would be push 1 onto the stack.
   */
-sealed abstract class ScriptNumberOperation
-    extends ScriptNumber
-    with ScriptOperation {
+sealed abstract class ScriptNumberOperation extends ScriptNumber with ScriptOperation {
   override def hex = opCode.toHexString
 
   /** This is required so that OP_TRUE == OP_1 and
@@ -374,8 +365,7 @@ case object OP_16 extends ScriptNumberOperation {
   override val underlying: Long = 16
 }
 
-object ScriptNumberOperation
-    extends ScriptOperationFactory[ScriptNumberOperation] {
+object ScriptNumberOperation extends ScriptOperationFactory[ScriptNumberOperation] {
 
   /** Finds the [[ScriptNumberOperation]] based on the given integer. */
   def fromNumber(underlying: Long): Option[ScriptNumberOperation] =
@@ -412,7 +402,6 @@ object ScriptConstant extends Factory[ScriptConstant] {
   def fromBytes(bytes: ByteVector): ScriptConstant = ScriptConstantImpl(bytes)
 
   /** Represent a public key or hash of a public key on our stack. */
-  private case class ScriptConstantImpl(bytes: ByteVector)
-      extends ScriptConstant
+  private case class ScriptConstantImpl(bytes: ByteVector) extends ScriptConstant
 
 }

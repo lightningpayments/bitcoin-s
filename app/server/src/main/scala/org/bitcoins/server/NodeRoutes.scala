@@ -10,8 +10,7 @@ import org.bitcoins.server.routes.{Server, ServerCommand, ServerRoute}
 
 import scala.concurrent.duration.DurationInt
 
-case class NodeRoutes(nodeApi: NodeApi)(implicit system: ActorSystem)
-    extends ServerRoute {
+case class NodeRoutes(nodeApi: NodeApi)(implicit system: ActorSystem) extends ServerRoute {
   import system.dispatcher
 
   def handleCommand: PartialFunction[ServerCommand, Route] = {

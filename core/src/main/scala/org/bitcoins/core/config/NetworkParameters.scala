@@ -150,9 +150,7 @@ sealed abstract class SigNet extends BitcoinNetwork {
   /** @inheritdoc
     */
   override def dnsSeeds: Seq[String] =
-    Seq("178.128.221.177",
-        "2a01:7c8:d005:390::5",
-        "ntv3mtqw5wt63red.onion:38333")
+    Seq("178.128.221.177", "2a01:7c8:d005:390::5", "ntv3mtqw5wt63red.onion:38333")
 
   /** @inheritdoc
     */
@@ -186,8 +184,7 @@ object Networks extends StringFactory[NetworkParameters] {
   def fromChainHash(chainHash: DoubleSha256DigestBE): NetworkParameters = {
     knownNetworks
       .find(_.chainParams.genesisBlock.blockHeader.hashBE == chainHash)
-      .getOrElse(throw new IllegalArgumentException(
-        s"$chainHash is not a recognized Chain Hash"))
+      .getOrElse(throw new IllegalArgumentException(s"$chainHash is not a recognized Chain Hash"))
   }
 }
 

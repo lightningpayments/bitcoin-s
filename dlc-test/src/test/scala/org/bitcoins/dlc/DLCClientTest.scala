@@ -2,22 +2,12 @@ package org.bitcoins.dlc
 
 import org.bitcoins.core.number.UInt32
 import org.bitcoins.core.protocol.dlc.build.DLCTxBuilder
-import org.bitcoins.core.protocol.dlc.execution.{
-  DLCOutcome,
-  ExecutedDLCOutcome,
-  RefundDLCOutcome,
-  SetupDLC
-}
+import org.bitcoins.core.protocol.dlc.execution.{DLCOutcome, ExecutedDLCOutcome, RefundDLCOutcome, SetupDLC}
 import org.bitcoins.core.protocol.dlc.models.DLCMessage._
 import org.bitcoins.core.protocol.dlc.models._
 import org.bitcoins.core.protocol.dlc.verify.DLCSignatureVerifier
 import org.bitcoins.core.protocol.script._
-import org.bitcoins.core.protocol.tlv.{
-  DLCOutcomeType,
-  EnumOutcome,
-  OracleParamsV0TLV,
-  UnsignedNumericOutcome
-}
+import org.bitcoins.core.protocol.tlv.{DLCOutcomeType, EnumOutcome, OracleParamsV0TLV, UnsignedNumericOutcome}
 import org.bitcoins.core.protocol.transaction._
 import org.bitcoins.core.script.crypto.HashType
 import org.bitcoins.core.util.{BitcoinScriptUtil, Indexed, NumberUtil}
@@ -34,10 +24,7 @@ import scala.util.Random
 class DLCClientTest extends BitcoinSJvmTest with DLCTest {
   behavior of "AdaptorDLCClient"
 
-  def validateOutcome(
-      outcome: DLCOutcome,
-      dlcOffer: TestDLCClient,
-      dlcAccept: TestDLCClient): Assertion = {
+  def validateOutcome(outcome: DLCOutcome, dlcOffer: TestDLCClient, dlcAccept: TestDLCClient): Assertion = {
     val fundingTx = outcome.fundingTx
     assert(noEmptySPKOutputs(fundingTx))
 
@@ -48,9 +35,7 @@ class DLCClientTest extends BitcoinSJvmTest with DLCTest {
       P2WSHV0InputInfo(
         TransactionOutPoint(fundingTx.txId, UInt32(fundOutputIndex)),
         fundingTx.outputs(fundOutputIndex).value,
-        P2WSHWitnessV0(
-          MultiSignatureScriptPubKey(2,
-                                     signers.map(_.publicKey).sortBy(_.hex))),
+        P2WSHWitnessV0(MultiSignatureScriptPubKey(2, signers.map(_.publicKey).sortBy(_.hex))),
         ConditionalPath.NoCondition
       ),
       fundingTx,
@@ -60,31 +45,19 @@ class DLCClientTest extends BitcoinSJvmTest with DLCTest {
 
     outcome match {
       case ExecutedDLCOutcome(fundingTx, cet, _, _) =>
-        DLCFeeTestUtil.validateFees(dlcOffer.dlcTxBuilder,
-                                    fundingTx,
-                                    cet,
-                                    fundingTxSigs = 5)
+        DLCFeeTestUtil.validateFees(dlcOffer.dlcTxBuilder, fundingTx, cet, fundingTxSigs = 5)
         assert(noEmptySPKOutputs(cet))
         assert(BitcoinScriptUtil.verifyScript(cet, Vector(closingSpendingInfo)))
       case RefundDLCOutcome(fundingTx, refundTx) =>
-        DLCFeeTestUtil.validateFees(dlcOffer.dlcTxBuilder,
-                                    fundingTx,
-                                    refundTx,
-                                    fundingTxSigs = 5)
+        DLCFeeTestUtil.validateFees(dlcOffer.dlcTxBuilder, fundingTx, refundTx, fundingTxSigs = 5)
         assert(noEmptySPKOutputs(refundTx))
-        assert(
-          BitcoinScriptUtil.verifyScript(refundTx, Vector(closingSpendingInfo)))
+        assert(BitcoinScriptUtil.verifyScript(refundTx, Vector(closingSpendingInfo)))
     }
   }
 
-  def setupDLC(
-      dlcOffer: TestDLCClient,
-      dlcAccept: TestDLCClient): Future[(SetupDLC, SetupDLC)] = {
+  def setupDLC(dlcOffer: TestDLCClient, dlcAccept: TestDLCClient): Future[(SetupDLC, SetupDLC)] = {
 
-    setupDLC(dlcOffer,
-             dlcAccept,
-             _.map(_.fundingTx),
-             _ => Future.successful(()))
+    setupDLC(dlcOffer, dlcAccept, _.map(_.fundingTx), _ => Future.successful(()))
   }
 
   def constructAndSetupDLC(
@@ -93,18 +66,9 @@ class DLCClientTest extends BitcoinSJvmTest with DLCTest {
       oracleThreshold: Int,
       numOracles: Int,
       paramsOpt: Option[OracleParamsV0TLV] = None): Future[
-    (
-        TestDLCClient,
-        SetupDLC,
-        TestDLCClient,
-        SetupDLC,
-        Vector[DLCOutcomeType])] = {
+    (TestDLCClient, SetupDLC, TestDLCClient, SetupDLC, Vector[DLCOutcomeType])] = {
     val (offerDLC, acceptDLC, outcomes) =
-      constructDLCClients(numOutcomes,
-                          isMultiDigit,
-                          oracleThreshold,
-                          numOracles,
-                          paramsOpt)
+      constructDLCClients(numOutcomes, isMultiDigit, oracleThreshold, numOracles, paramsOpt)
 
     for {
       (offerSetup, acceptSetup) <- setupDLC(offerDLC, acceptDLC)
@@ -118,31 +82,21 @@ class DLCClientTest extends BitcoinSJvmTest with DLCTest {
       oracleThreshold: Int,
       numOracles: Int,
       paramsOpt: Option[OracleParamsV0TLV] = None): Future[Assertion] = {
-    constructAndSetupDLC(numOutcomes,
-                         isMultiDigit,
-                         oracleThreshold,
-                         numOracles,
-                         paramsOpt)
-      .flatMap {
-        case (dlcOffer, offerSetup, dlcAccept, acceptSetup, outcomes) =>
-          val oracleSigs = genOracleSignatures(numOutcomes,
-                                               isMultiDigit,
-                                               dlcOffer,
-                                               outcomes,
-                                               outcomeIndex,
-                                               paramsOpt)
+    constructAndSetupDLC(numOutcomes, isMultiDigit, oracleThreshold, numOracles, paramsOpt)
+      .flatMap { case (dlcOffer, offerSetup, dlcAccept, acceptSetup, outcomes) =>
+        val oracleSigs = genOracleSignatures(numOutcomes, isMultiDigit, dlcOffer, outcomes, outcomeIndex, paramsOpt)
 
-          for {
-            offerOutcome <-
-              dlcOffer.executeDLC(offerSetup, Future.successful(oracleSigs))
-            acceptOutcome <-
-              dlcAccept.executeDLC(acceptSetup, Future.successful(oracleSigs))
-          } yield {
-            assert(offerOutcome.fundingTx == acceptOutcome.fundingTx)
+        for {
+          offerOutcome <-
+            dlcOffer.executeDLC(offerSetup, Future.successful(oracleSigs))
+          acceptOutcome <-
+            dlcAccept.executeDLC(acceptSetup, Future.successful(oracleSigs))
+        } yield {
+          assert(offerOutcome.fundingTx == acceptOutcome.fundingTx)
 
-            validateOutcome(offerOutcome, dlcOffer, dlcAccept)
-            validateOutcome(acceptOutcome, dlcOffer, dlcAccept)
-          }
+          validateOutcome(offerOutcome, dlcOffer, dlcAccept)
+          validateOutcome(acceptOutcome, dlcOffer, dlcAccept)
+        }
       }
   }
 
@@ -152,11 +106,7 @@ class DLCClientTest extends BitcoinSJvmTest with DLCTest {
       oracleThreshold: Int,
       numOracles: Int,
       paramsOpt: Option[OracleParamsV0TLV] = None): Future[Assertion] = {
-    constructAndSetupDLC(numOutcomes,
-                         isMultiNonce,
-                         oracleThreshold,
-                         numOracles,
-                         paramsOpt)
+    constructAndSetupDLC(numOutcomes, isMultiNonce, oracleThreshold, numOracles, paramsOpt)
       .flatMap { case (dlcOffer, offerSetup, dlcAccept, acceptSetup, _) =>
         val offerOutcome = dlcOffer.executeRefundDLC(offerSetup)
         val acceptOutcome = dlcAccept.executeRefundDLC(acceptSetup)
@@ -175,13 +125,11 @@ class DLCClientTest extends BitcoinSJvmTest with DLCTest {
   val numEnumOutcomesToTest: Vector[Int] = Vector(2, 3, 5, 8)
 
   def runSingleNonceTests(
-      exec: (Long, Int, Boolean, Int, Int, Option[OracleParamsV0TLV]) => Future[
-        Assertion]): Future[Assertion] = {
+      exec: (Long, Int, Boolean, Int, Int, Option[OracleParamsV0TLV]) => Future[Assertion]): Future[Assertion] = {
     runTestsForParam(numEnumOutcomesToTest) { numOutcomes =>
       runTestsForParam(0.until(numOutcomes).toVector) { outcomeIndex =>
-        runTestsForParam(enumOracleSchemesToTest) {
-          case (threshold, numOracles) =>
-            exec(outcomeIndex, numOutcomes, false, threshold, numOracles, None)
+        runTestsForParam(enumOracleSchemesToTest) { case (threshold, numOracles) =>
+          exec(outcomeIndex, numOutcomes, false, threshold, numOracles, None)
         }
       }
     }
@@ -192,20 +140,18 @@ class DLCClientTest extends BitcoinSJvmTest with DLCTest {
   val numDigitsToTest: Vector[Int] = Vector(4, 5, 10)
 
   def runMultiNonceTests(
-      exec: (Long, Int, Boolean, Int, Int, Option[OracleParamsV0TLV]) => Future[
-        Assertion]): Future[Assertion] = {
+      exec: (Long, Int, Boolean, Int, Int, Option[OracleParamsV0TLV]) => Future[Assertion]): Future[Assertion] = {
     runTestsForParam(numDigitsToTest) { numDigits =>
-      runTestsForParam(numericOracleSchemesToTest) {
-        case (threshold, numOracles) =>
-          val randDigits = (0 until numDigits).toVector.map { _ =>
-            scala.util.Random.nextInt(2)
-          }
-          val num =
-            BitVector
-              .fromValidBin(randDigits.mkString(""))
-              .toLong(signed = false)
+      runTestsForParam(numericOracleSchemesToTest) { case (threshold, numOracles) =>
+        val randDigits = (0 until numDigits).toVector.map { _ =>
+          scala.util.Random.nextInt(2)
+        }
+        val num =
+          BitVector
+            .fromValidBin(randDigits.mkString(""))
+            .toLong(signed = false)
 
-          exec(num, numDigits, true, threshold, numOracles, None)
+        exec(num, numDigits, true, threshold, numOracles, None)
       }
     }
   }
@@ -227,20 +173,14 @@ class DLCClientTest extends BitcoinSJvmTest with DLCTest {
     val num =
       BitVector.fromValidBin(randDigits.mkString("")).toLong(signed = false)
 
-    executeForCase(num,
-                   numDigits,
-                   isMultiDigit = true,
-                   oracleThreshold = 1,
-                   numOracles = 1)
+    executeForCase(num, numDigits, isMultiDigit = true, oracleThreshold = 1, numOracles = 1)
   }
 
   it should "be able to construct and verify with ScriptInterpreter every tx in a DLC for a normal multi-oracle numeric case with bounded differences allowed" in {
     val threshold = 3
     val numOracles = 5
     val numDigits = 8
-    val params = OracleParamsV0TLV(maxErrorExp = 4,
-                                   minFailExp = 2,
-                                   maximizeCoverage = false)
+    val params = OracleParamsV0TLV(maxErrorExp = 4, minFailExp = 2, maximizeCoverage = false)
 
     val randDigits = (0 until numDigits).toVector.map { _ =>
       scala.util.Random.nextInt(2)
@@ -250,12 +190,7 @@ class DLCClientTest extends BitcoinSJvmTest with DLCTest {
         .fromValidBin(randDigits.mkString(""))
         .toLong(signed = false)
 
-    executeForCase(num,
-                   numDigits,
-                   isMultiDigit = true,
-                   threshold,
-                   numOracles,
-                   Some(params))
+    executeForCase(num, numDigits, isMultiDigit = true, threshold, numOracles, Some(params))
   }
 
   it should "be able to construct and verify with ScriptInterpreter every tx in a DLC for the refund case" in {
@@ -263,12 +198,11 @@ class DLCClientTest extends BitcoinSJvmTest with DLCTest {
       val numOutcomesOrDigitsToTest =
         if (isNumeric) numDigitsToTest else numEnumOutcomesToTest
       runTestsForParam(numOutcomesOrDigitsToTest) { numOutcomesOrDigits =>
-        runTestsForParam(numericOracleSchemesToTest) {
-          case (threshold, numOracles) =>
-            executeRefundCase(numOutcomesOrDigits,
-                              isMultiNonce = isNumeric,
-                              oracleThreshold = threshold,
-                              numOracles = numOracles)
+        runTestsForParam(numericOracleSchemesToTest) { case (threshold, numOracles) =>
+          executeRefundCase(numOutcomesOrDigits,
+                            isMultiNonce = isNumeric,
+                            oracleThreshold = threshold,
+                            numOracles = numOracles)
         }
       }
     }
@@ -278,21 +212,13 @@ class DLCClientTest extends BitcoinSJvmTest with DLCTest {
     val numOutcomes = 100
     val testFs = (0 until 10).map(_ * 10).map { outcomeIndex =>
       for {
-        _ <- executeForCase(outcomeIndex,
-                            numOutcomes,
-                            isMultiDigit = false,
-                            oracleThreshold = 1,
-                            numOracles = 1)
+        _ <- executeForCase(outcomeIndex, numOutcomes, isMultiDigit = false, oracleThreshold = 1, numOracles = 1)
       } yield succeed
     }
 
     Future
       .sequence(testFs)
-      .flatMap(_ =>
-        executeRefundCase(numOutcomes,
-                          isMultiNonce = false,
-                          oracleThreshold = 1,
-                          numOracles = 1))
+      .flatMap(_ => executeRefundCase(numOutcomes, isMultiNonce = false, oracleThreshold = 1, numOracles = 1))
   }
 
   it should "fail on invalid funding signatures" in {
@@ -349,16 +275,11 @@ class DLCClientTest extends BitcoinSJvmTest with DLCTest {
     val acceptCETSigs = acceptClient.dlcTxSigner.createCETSigs()
 
     outcomes.zipWithIndex.foreach { case (outcomeUncast, index) =>
-      val outcome = EnumOracleOutcome(
-        Vector(offerClient.offer.oracleInfo.asInstanceOf[EnumSingleOracleInfo]),
-        outcomeUncast.asInstanceOf[EnumOutcome])
+      val outcome = EnumOracleOutcome(Vector(offerClient.offer.oracleInfo.asInstanceOf[EnumSingleOracleInfo]),
+                                      outcomeUncast.asInstanceOf[EnumOutcome])
 
-      assert(
-        offerVerifier.verifyCETSig(Indexed(outcome.sigPoint, index),
-                                   acceptCETSigs(outcome.sigPoint)))
-      assert(
-        acceptVerifier.verifyCETSig(Indexed(outcome.sigPoint, index),
-                                    offerCETSigs(outcome.sigPoint)))
+      assert(offerVerifier.verifyCETSig(Indexed(outcome.sigPoint, index), acceptCETSigs(outcome.sigPoint)))
+      assert(acceptVerifier.verifyCETSig(Indexed(outcome.sigPoint, index), offerCETSigs(outcome.sigPoint)))
     }
 
     assert(offerVerifier.verifyRefundSig(acceptCETSigs.refundSig))
@@ -393,17 +314,12 @@ class DLCClientTest extends BitcoinSJvmTest with DLCTest {
       val oracleSig = genEnumOracleSignature(oracleInfo, outcome.outcome)
 
       assertThrows[RuntimeException] {
-        offerClient.dlcTxSigner.completeCET(
-          oracleOutcome,
-          badAcceptCETSigs(oracleOutcome.sigPoint),
-          Vector(oracleSig))
+        offerClient.dlcTxSigner.completeCET(oracleOutcome, badAcceptCETSigs(oracleOutcome.sigPoint), Vector(oracleSig))
       }
 
       assertThrows[RuntimeException] {
         acceptClient.dlcTxSigner
-          .completeCET(oracleOutcome,
-                       badOfferCETSigs(oracleOutcome.sigPoint),
-                       Vector(oracleSig))
+          .completeCET(oracleOutcome, badOfferCETSigs(oracleOutcome.sigPoint), Vector(oracleSig))
       }
     }
 
@@ -416,24 +332,15 @@ class DLCClientTest extends BitcoinSJvmTest with DLCTest {
     }
 
     outcomes.zipWithIndex.foreach { case (outcomeUncast, index) =>
-      val outcome = EnumOracleOutcome(
-        Vector(offerClient.offer.oracleInfo.asInstanceOf[EnumSingleOracleInfo]),
-        outcomeUncast.asInstanceOf[EnumOutcome])
+      val outcome = EnumOracleOutcome(Vector(offerClient.offer.oracleInfo.asInstanceOf[EnumSingleOracleInfo]),
+                                      outcomeUncast.asInstanceOf[EnumOutcome])
       val adaptorPoint = Indexed(outcome.sigPoint, index)
 
-      assert(
-        !offerVerifier.verifyCETSig(adaptorPoint,
-                                    badAcceptCETSigs(outcome.sigPoint)))
-      assert(
-        !acceptVerifier.verifyCETSig(adaptorPoint,
-                                     badOfferCETSigs(outcome.sigPoint)))
+      assert(!offerVerifier.verifyCETSig(adaptorPoint, badAcceptCETSigs(outcome.sigPoint)))
+      assert(!acceptVerifier.verifyCETSig(adaptorPoint, badOfferCETSigs(outcome.sigPoint)))
 
-      assert(
-        !offerVerifier.verifyCETSig(adaptorPoint,
-                                    offerCETSigs(outcome.sigPoint)))
-      assert(
-        !acceptVerifier.verifyCETSig(adaptorPoint,
-                                     acceptCETSigs(outcome.sigPoint)))
+      assert(!offerVerifier.verifyCETSig(adaptorPoint, offerCETSigs(outcome.sigPoint)))
+      assert(!acceptVerifier.verifyCETSig(adaptorPoint, acceptCETSigs(outcome.sigPoint)))
     }
     assert(!offerVerifier.verifyRefundSig(badAcceptCETSigs.refundSig))
     assert(!offerVerifier.verifyRefundSig(badOfferCETSigs.refundSig))
@@ -444,28 +351,22 @@ class DLCClientTest extends BitcoinSJvmTest with DLCTest {
   it should "compute sigpoints correctly" in {
     runTestsForParam(Vector(4, 6, 8)) { numDigitsOrOutcomes =>
       runTestsForParam(Vector(true, false)) { isNumeric =>
-        runTestsForParam(Vector((1, 1), (2, 3), (3, 5))) {
-          case (threshold, numOracles) =>
-            runTestsForParam(
-              Vector(None,
-                     Some(
-                       OracleParamsV0TLV(numDigitsOrOutcomes / 2 + 1,
-                                         numDigitsOrOutcomes / 2,
-                                         maximizeCoverage = true)))) {
-              oracleParams =>
-                val (client, _, _) = constructDLCClients(numDigitsOrOutcomes,
-                                                         isNumeric,
-                                                         threshold,
-                                                         numOracles,
-                                                         oracleParams)
-                val contract = client.offer.contractInfo
-                val outcomes = contract.allOutcomes
+        runTestsForParam(Vector((1, 1), (2, 3), (3, 5))) { case (threshold, numOracles) =>
+          runTestsForParam(
+            Vector(
+              None,
+              Some(OracleParamsV0TLV(numDigitsOrOutcomes / 2 + 1, numDigitsOrOutcomes / 2, maximizeCoverage = true)))) {
+            oracleParams =>
+              val (client, _, _) =
+                constructDLCClients(numDigitsOrOutcomes, isNumeric, threshold, numOracles, oracleParams)
+              val contract = client.offer.contractInfo
+              val outcomes = contract.allOutcomes
 
-                val adaptorPoints = contract.adaptorPoints
-                val expectedAdaptorPoints = outcomes.map(_.sigPoint)
+              val adaptorPoints = contract.adaptorPoints
+              val expectedAdaptorPoints = outcomes.map(_.sigPoint)
 
-                assert(adaptorPoints == expectedAdaptorPoints)
-            }
+              assert(adaptorPoints == expectedAdaptorPoints)
+          }
         }
       }
     }
@@ -539,20 +440,12 @@ class DLCClientTest extends BitcoinSJvmTest with DLCTest {
 
       val (offerOracleSig, offerDLCOutcome) =
         DLCStatus
-          .calculateOutcomeAndSig(isInitiator = true,
-                                  offer,
-                                  accept,
-                                  sign,
-                                  acceptOutcome.cet)
+          .calculateOutcomeAndSig(isInitiator = true, offer, accept, sign, acceptOutcome.cet)
           .get
 
       val (acceptOracleSig, acceptDLCOutcome) =
         DLCStatus
-          .calculateOutcomeAndSig(isInitiator = false,
-                                  offer,
-                                  accept,
-                                  sign,
-                                  offerOutcome.cet)
+          .calculateOutcomeAndSig(isInitiator = false, offer, accept, sign, offerOutcome.cet)
           .get
 
       assert(offerDLCOutcome == outcome)
@@ -566,27 +459,23 @@ class DLCClientTest extends BitcoinSJvmTest with DLCTest {
     val outcomeIndex = 1
 
     runTestsForParam(numEnumOutcomesToTest) { numOutcomes =>
-      runTestsForParam(enumOracleSchemesToTest) {
-        case (threshold, numOracles) =>
-          constructAndSetupDLC(numOutcomes,
-                               isMultiDigit = false,
-                               oracleThreshold = threshold,
-                               numOracles = numOracles).flatMap {
-            case (dlcOffer, offerSetup, dlcAccept, acceptSetup, outcomes) =>
-              val (oracleOutcome, sigs) =
-                genOracleOutcomeAndSignatures(numOutcomes,
-                                              isNumeric = false,
-                                              dlcOffer,
-                                              outcomes,
-                                              outcomeIndex,
-                                              paramsOpt = None)
+      runTestsForParam(enumOracleSchemesToTest) { case (threshold, numOracles) =>
+        constructAndSetupDLC(numOutcomes, isMultiDigit = false, oracleThreshold = threshold, numOracles = numOracles)
+          .flatMap { case (dlcOffer, offerSetup, dlcAccept, acceptSetup, outcomes) =>
+            val (oracleOutcome, sigs) =
+              genOracleOutcomeAndSignatures(numOutcomes,
+                                            isNumeric = false,
+                                            dlcOffer,
+                                            outcomes,
+                                            outcomeIndex,
+                                            paramsOpt = None)
 
-              assertCorrectSigDerivation(offerSetup = offerSetup,
-                                         dlcOffer = dlcOffer,
-                                         acceptSetup = acceptSetup,
-                                         dlcAccept = dlcAccept,
-                                         oracleSigs = sigs,
-                                         outcome = oracleOutcome)
+            assertCorrectSigDerivation(offerSetup = offerSetup,
+                                       dlcOffer = dlcOffer,
+                                       acceptSetup = acceptSetup,
+                                       dlcAccept = dlcAccept,
+                                       oracleSigs = sigs,
+                                       outcome = oracleOutcome)
           }
       }
     }
@@ -596,63 +485,55 @@ class DLCClientTest extends BitcoinSJvmTest with DLCTest {
     // Larger numbers of digits make tests take too long.
     val numDigitsToTest = Vector(5, 9)
     runTestsForParam(numDigitsToTest) { numDigits =>
-      runTestsForParam(Vector((1, 1), (2, 2), (2, 3))) {
-        case (threshold, numOracles) =>
-          val oracleParamOptsToTest = if (threshold > 1) {
-            Vector(None,
-                   Some(
-                     OracleParamsV0TLV(numDigits - 2,
-                                       numDigits - 4,
-                                       maximizeCoverage = false)))
-          } else Vector(None)
-          runTestsForParam(oracleParamOptsToTest) { oracleParamsOpt =>
-            val max = (1L << numDigits) - 1
-            val outcomesToTest = 0
-              .until(9)
-              .toVector
-              .map(num => (max / num.toDouble).toLong)
-              .map(num => NumberUtil.decompose(num, 2, numDigits))
+      runTestsForParam(Vector((1, 1), (2, 2), (2, 3))) { case (threshold, numOracles) =>
+        val oracleParamOptsToTest = if (threshold > 1) {
+          Vector(None, Some(OracleParamsV0TLV(numDigits - 2, numDigits - 4, maximizeCoverage = false)))
+        } else Vector(None)
+        runTestsForParam(oracleParamOptsToTest) { oracleParamsOpt =>
+          val max = (1L << numDigits) - 1
+          val outcomesToTest = 0
+            .until(9)
+            .toVector
+            .map(num => (max / num.toDouble).toLong)
+            .map(num => NumberUtil.decompose(num, 2, numDigits))
 
-            constructAndSetupDLC(numDigits,
-                                 isMultiDigit = true,
-                                 oracleThreshold = threshold,
-                                 numOracles = numOracles,
-                                 paramsOpt = oracleParamsOpt).flatMap {
-              case (dlcOffer, offerSetup, dlcAccept, acceptSetup, outcomes) =>
-                runTestsForParam(outcomesToTest) { outcomeToTest =>
-                  val possibleOutcomes = outcomes
-                    .collect { case ds: UnsignedNumericOutcome => ds }
-                    .filter(outcome => outcomeToTest.startsWith(outcome.digits))
-                  val outcome =
-                    possibleOutcomes(Random.nextInt(possibleOutcomes.length))
+          constructAndSetupDLC(numDigits,
+                               isMultiDigit = true,
+                               oracleThreshold = threshold,
+                               numOracles = numOracles,
+                               paramsOpt = oracleParamsOpt).flatMap {
+            case (dlcOffer, offerSetup, dlcAccept, acceptSetup, outcomes) =>
+              runTestsForParam(outcomesToTest) { outcomeToTest =>
+                val possibleOutcomes = outcomes
+                  .collect { case ds: UnsignedNumericOutcome => ds }
+                  .filter(outcome => outcomeToTest.startsWith(outcome.digits))
+                val outcome =
+                  possibleOutcomes(Random.nextInt(possibleOutcomes.length))
 
-                  val oracleInfo = dlcOffer.offer.oracleInfo
+                val oracleInfo = dlcOffer.offer.oracleInfo
 
-                  val oracleIndices =
-                    0.until(oracleInfo.numOracles).toVector
-                  val chosenOracles =
-                    Random
-                      .shuffle(oracleIndices)
-                      .take(oracleInfo.threshold)
-                      .sorted
+                val oracleIndices =
+                  0.until(oracleInfo.numOracles).toVector
+                val chosenOracles =
+                  Random
+                    .shuffle(oracleIndices)
+                    .take(oracleInfo.threshold)
+                    .sorted
 
-                  val oracleOutcome =
-                    genNumericOracleOutcome(chosenOracles,
-                                            dlcOffer.offer.contractInfo,
-                                            outcome.digits,
-                                            oracleParamsOpt)
+                val oracleOutcome =
+                  genNumericOracleOutcome(chosenOracles, dlcOffer.offer.contractInfo, outcome.digits, oracleParamsOpt)
 
-                  val oracleSigs = genNumericOracleSignatures(oracleOutcome)
+                val oracleSigs = genNumericOracleSignatures(oracleOutcome)
 
-                  assertCorrectSigDerivation(offerSetup = offerSetup,
-                                             dlcOffer = dlcOffer,
-                                             acceptSetup = acceptSetup,
-                                             dlcAccept = dlcAccept,
-                                             oracleSigs = oracleSigs,
-                                             outcome = oracleOutcome)
-                }
-            }
+                assertCorrectSigDerivation(offerSetup = offerSetup,
+                                           dlcOffer = dlcOffer,
+                                           acceptSetup = acceptSetup,
+                                           dlcAccept = dlcAccept,
+                                           oracleSigs = oracleSigs,
+                                           outcome = oracleOutcome)
+              }
           }
+        }
       }
     }
   }

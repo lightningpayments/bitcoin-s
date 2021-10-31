@@ -15,14 +15,12 @@ case class EnumAttestation(outcomeString: String) extends DLCAttestationType {
 
 sealed trait DigitDecompositionAttestationType extends DLCAttestationType
 
-case class DigitDecompositionSignAttestation(positive: Boolean)
-    extends DigitDecompositionAttestationType {
+case class DigitDecompositionSignAttestation(positive: Boolean) extends DigitDecompositionAttestationType {
   override def outcomeString: String = if (positive) "+" else "-"
   def bytes: ByteVector = CryptoUtil.serializeForHash(outcomeString)
 }
 
-case class DigitDecompositionAttestation(outcome: Int)
-    extends DigitDecompositionAttestationType {
+case class DigitDecompositionAttestation(outcome: Int) extends DigitDecompositionAttestationType {
   override def outcomeString: String = outcome.toString
   def bytes: ByteVector = CryptoUtil.serializeForHash(outcomeString)
 }

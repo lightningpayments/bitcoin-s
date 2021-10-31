@@ -1,10 +1,6 @@
 package org.bitcoins.core.protocol.dlc.models
 
-import org.bitcoins.core.protocol.tlv.{
-  DLCOutcomeType,
-  EnumOutcome,
-  UnsignedNumericOutcome
-}
+import org.bitcoins.core.protocol.tlv.{DLCOutcomeType, EnumOutcome, UnsignedNumericOutcome}
 import org.bitcoins.core.protocol.transaction.WitnessTransaction
 import org.bitcoins.crypto.{ECPublicKey, SchnorrNonce}
 
@@ -41,10 +37,7 @@ sealed trait OracleOutcome {
 /** Corresponds to a CET in an Enumerated Outcome DLC where some set of `threshold`
   * oracles have signed a given EnumOutcome.
   */
-case class EnumOracleOutcome(
-    oracles: Vector[EnumSingleOracleInfo],
-    outcome: EnumOutcome)
-    extends OracleOutcome {
+case class EnumOracleOutcome(oracles: Vector[EnumSingleOracleInfo], outcome: EnumOutcome) extends OracleOutcome {
 
   override protected def computeSigPoint: ECPublicKey = {
     oracles.map(_.sigPoint(outcome)).reduce(_.add(_))
@@ -65,8 +58,8 @@ case class EnumOracleOutcome(
 /** Corresponds to a CET in an Numeric Outcome DLC where some set of `threshold`
   * oracles have each signed some NumericOutcome.
   */
-case class NumericOracleOutcome(override val oraclesAndOutcomes: Vector[
-  (NumericSingleOracleInfo, UnsignedNumericOutcome)])
+case class NumericOracleOutcome(
+    override val oraclesAndOutcomes: Vector[(NumericSingleOracleInfo, UnsignedNumericOutcome)])
     extends OracleOutcome {
 
   override def oracles: Vector[NumericSingleOracleInfo] = {
@@ -101,9 +94,7 @@ case class NumericOracleOutcome(override val oraclesAndOutcomes: Vector[
 
 object NumericOracleOutcome {
 
-  def apply(
-      oracleInfo: NumericSingleOracleInfo,
-      outcome: UnsignedNumericOutcome): NumericOracleOutcome = {
+  def apply(oracleInfo: NumericSingleOracleInfo, outcome: UnsignedNumericOutcome): NumericOracleOutcome = {
     NumericOracleOutcome(Vector((oracleInfo, outcome)))
   }
 }

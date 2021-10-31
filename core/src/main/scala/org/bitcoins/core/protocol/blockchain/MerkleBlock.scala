@@ -54,9 +54,7 @@ object MerkleBlock extends Factory[MerkleBlock] {
     def loop(
         remainingTxs: Seq[Transaction],
         accumFilter: BloomFilter,
-        txMatches: Seq[(Boolean, DoubleSha256Digest)]): (
-        Seq[(Boolean, DoubleSha256Digest)],
-        BloomFilter) = {
+        txMatches: Seq[(Boolean, DoubleSha256Digest)]): (Seq[(Boolean, DoubleSha256Digest)], BloomFilter) = {
       if (remainingTxs.isEmpty) (txMatches.reverse, accumFilter)
       else {
         val tx = remainingTxs.head
@@ -76,9 +74,7 @@ object MerkleBlock extends Factory[MerkleBlock] {
     //follows this function inside of bitcoin core
     //https://github.com/bitcoin/bitcoin/blob/master/src/merkleblock.cpp#L40
     @tailrec
-    def loop(
-        remainingTxs: Seq[Transaction],
-        txMatches: Seq[(Boolean, DoubleSha256Digest)]): (
+    def loop(remainingTxs: Seq[Transaction], txMatches: Seq[(Boolean, DoubleSha256Digest)]): (
       Seq[(Boolean, DoubleSha256Digest)]) = {
       if (remainingTxs.isEmpty) txMatches.reverse
       else {
@@ -95,10 +91,7 @@ object MerkleBlock extends Factory[MerkleBlock] {
     MerkleBlock(block.blockHeader, txCount, partialMerkleTree)
   }
 
-  def apply(
-      blockHeader: BlockHeader,
-      txCount: UInt32,
-      partialMerkleTree: PartialMerkleTree): MerkleBlock = {
+  def apply(blockHeader: BlockHeader, txCount: UInt32, partialMerkleTree: PartialMerkleTree): MerkleBlock = {
     MerkleBlockImpl(blockHeader, txCount, partialMerkleTree)
   }
 

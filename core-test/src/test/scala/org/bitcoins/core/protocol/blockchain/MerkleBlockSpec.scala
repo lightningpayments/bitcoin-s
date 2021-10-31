@@ -13,12 +13,11 @@ class MerkleBlockSpec extends Properties("MerkleBlockSpec") {
   property(
     "contains all inserted txids when we directly create a merkle block from the txids && " +
       "contains all txids matched by a bloom filter && " +
-      "serialization symmetry") =
-    Prop.forAllNoShrink(MerkleGenerator.merkleBlockWithInsertedTxIds) {
-      case (merkleBlock: MerkleBlock, _, txIds: Seq[DoubleSha256Digest]) =>
-        val extractedMatches = merkleBlock.partialMerkleTree.extractMatches
-        extractedMatches == txIds &&
-        extractedMatches.intersect(txIds) == txIds &&
-        MerkleBlock(merkleBlock.hex) == merkleBlock
-    }
+      "serialization symmetry") = Prop.forAllNoShrink(MerkleGenerator.merkleBlockWithInsertedTxIds) {
+    case (merkleBlock: MerkleBlock, _, txIds: Seq[DoubleSha256Digest]) =>
+      val extractedMatches = merkleBlock.partialMerkleTree.extractMatches
+      extractedMatches == txIds &&
+      extractedMatches.intersect(txIds) == txIds &&
+      MerkleBlock(merkleBlock.hex) == merkleBlock
+  }
 }

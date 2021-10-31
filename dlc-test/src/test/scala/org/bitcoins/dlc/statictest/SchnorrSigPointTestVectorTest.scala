@@ -32,9 +32,7 @@ class SchnorrSigPointTestVectorTest extends BitcoinSUnitTest {
 
     vecResult.get.foldLeft(succeed) { case (_, testVec) =>
       assert(SchnorrSigPointTestVector(testVec.inputs) == testVec)
-      assert(
-        testVec.pubKey.computeSigPoint(testVec.msgHash.bytes,
-                                       testVec.pubNonce) == testVec.sigPoint)
+      assert(testVec.pubKey.computeSigPoint(testVec.msgHash.bytes, testVec.pubNonce) == testVec.sigPoint)
     }
   }
 }

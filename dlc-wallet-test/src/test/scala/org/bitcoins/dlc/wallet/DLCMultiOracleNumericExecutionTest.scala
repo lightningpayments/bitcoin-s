@@ -13,9 +13,7 @@ import org.scalatest.FutureOutcome
 
 import scala.util.Random
 
-class DLCMultiOracleNumericExecutionTest
-    extends BitcoinSDualWalletTest
-    with DLCTest {
+class DLCMultiOracleNumericExecutionTest extends BitcoinSDualWalletTest with DLCTest {
   type FixtureParam = (InitializedDLCWallet, InitializedDLCWallet)
 
   behavior of "DLCWallet"
@@ -24,8 +22,7 @@ class DLCMultiOracleNumericExecutionTest
     0.until(5).map(_ => ECPrivateKey.freshPrivateKey).toVector
 
   val kValues: Vector[Vector[ECPrivateKey]] =
-    privateKeys.map(_ =>
-      0.until(numDigits).map(_ => ECPrivateKey.freshPrivateKey).toVector)
+    privateKeys.map(_ => 0.until(numDigits).map(_ => ECPrivateKey.freshPrivateKey).toVector)
 
   val contractDescriptor: NumericContractDescriptor =
     DLCWalletUtil.multiNonceContractDescriptor
@@ -41,9 +38,7 @@ class DLCMultiOracleNumericExecutionTest
     OracleParamsV0TLV(maxErrorExp = 4, minFailExp = 2, maximizeCoverage = false)
 
   val oracleInfo: NumericMultiOracleInfo =
-    NumericMultiOracleInfo(threshold = threshold,
-                           announcements = OrderedAnnouncements(announcements),
-                           params = params)
+    NumericMultiOracleInfo(threshold = threshold, announcements = OrderedAnnouncements(announcements), params = params)
 
   val contractOraclePair: ContractOraclePair.NumericPair =
     ContractOraclePair.NumericPair(contractDescriptor, oracleInfo)
@@ -52,9 +47,7 @@ class DLCMultiOracleNumericExecutionTest
     withDualDLCWallets(test, contractOraclePair)
   }
 
-  def getSigs(contractInfo: ContractInfo): (
-      Vector[OracleAttestmentTLV],
-      Vector[OracleAttestmentTLV]) = {
+  def getSigs(contractInfo: ContractInfo): (Vector[OracleAttestmentTLV], Vector[OracleAttestmentTLV]) = {
     contractInfo.contractDescriptor match {
       case _: NumericContractDescriptor => ()
       case _: EnumContractDescriptor =>
@@ -75,16 +68,12 @@ class DLCMultiOracleNumericExecutionTest
 
     val initiatorWinVec = initiatorWinOutcome.digits
 
-    val initWinOutcomes: NumericOracleOutcome = genNumericOracleOutcome(
-      initChosenOracles,
-      contractInfo,
-      initiatorWinVec,
-      Some(params))
+    val initWinOutcomes: NumericOracleOutcome =
+      genNumericOracleOutcome(initChosenOracles, contractInfo, initiatorWinVec, Some(params))
 
     val initiatorWinSigs =
       privateKeys.zip(kValues).flatMap { case (priv, kValues) =>
-        val outcomeOpt = initWinOutcomes.oraclesAndOutcomes.find(
-          _._1.publicKey == priv.schnorrPublicKey)
+        val outcomeOpt = initWinOutcomes.oraclesAndOutcomes.find(_._1.publicKey == priv.schnorrPublicKey)
 
         outcomeOpt.map { case (oracleInfo, outcome) =>
           val sigs = outcome.digits.zip(kValues).map { case (num, kValue) =>
@@ -95,10 +84,7 @@ class DLCMultiOracleNumericExecutionTest
             case v0: OracleEventV0TLV => v0.eventId
           }
 
-          OracleAttestmentV0TLV(eventId,
-                                priv.schnorrPublicKey,
-                                sigs,
-                                outcome.digits.map(_.toString))
+          OracleAttestmentV0TLV(eventId, priv.schnorrPublicKey, sigs, outcome.digits.map(_.toString))
         }
       }
 
@@ -115,16 +101,12 @@ class DLCMultiOracleNumericExecutionTest
 
     val recipientWinVec = recipientWinOutcome.digits
 
-    val recipientWinOutcomes: NumericOracleOutcome = genNumericOracleOutcome(
-      recipientChosenOracles,
-      contractInfo,
-      recipientWinVec,
-      Some(params))
+    val recipientWinOutcomes: NumericOracleOutcome =
+      genNumericOracleOutcome(recipientChosenOracles, contractInfo, recipientWinVec, Some(params))
 
     val recipientWinSigs =
       privateKeys.zip(kValues).flatMap { case (priv, kValues) =>
-        val outcomeOpt = recipientWinOutcomes.oraclesAndOutcomes.find(
-          _._1.publicKey == priv.schnorrPublicKey)
+        val outcomeOpt = recipientWinOutcomes.oraclesAndOutcomes.find(_._1.publicKey == priv.schnorrPublicKey)
 
         outcomeOpt.map { case (oracleInfo, outcome) =>
           val sigs = outcome.digits.zip(kValues).map { case (num, kValue) =>
@@ -135,10 +117,7 @@ class DLCMultiOracleNumericExecutionTest
             case v0: OracleEventV0TLV => v0.eventId
           }
 
-          OracleAttestmentV0TLV(eventId,
-                                priv.schnorrPublicKey,
-                                sigs,
-                                outcome.digits.map(_.toString))
+          OracleAttestmentV0TLV(eventId, priv.schnorrPublicKey, sigs, outcome.digits.map(_.toString))
         }
       }
 
@@ -153,10 +132,7 @@ class DLCMultiOracleNumericExecutionTest
       (sigs, _) = getSigs(status.contractInfo)
       func = (wallet: DLCWallet) => wallet.executeDLC(contractId, sigs)
 
-      result <- dlcExecutionTest(wallets = wallets,
-                                 asInitiator = true,
-                                 func = func,
-                                 expectedOutputs = 1)
+      result <- dlcExecutionTest(wallets = wallets, asInitiator = true, func = func, expectedOutputs = 1)
 
       _ = assert(result)
 
@@ -192,10 +168,7 @@ class DLCMultiOracleNumericExecutionTest
       (_, sigs) = getSigs(status.contractInfo)
       func = (wallet: DLCWallet) => wallet.executeDLC(contractId, sigs)
 
-      result <- dlcExecutionTest(wallets = wallets,
-                                 asInitiator = false,
-                                 func = func,
-                                 expectedOutputs = 1)
+      result <- dlcExecutionTest(wallets = wallets, asInitiator = false, func = func, expectedOutputs = 1)
 
       _ = assert(result)
 
@@ -224,9 +197,7 @@ class DLCMultiOracleNumericExecutionTest
     }
   }
 
-  private def verifyingMatchingOracleSigs(
-      statusA: Claimed,
-      statusB: RemoteClaimed): Boolean = {
+  private def verifyingMatchingOracleSigs(statusA: Claimed, statusB: RemoteClaimed): Boolean = {
     val outcome = statusB.oracleOutcome
     outcome match {
       case _: EnumOracleOutcome =>
@@ -234,9 +205,8 @@ class DLCMultiOracleNumericExecutionTest
       case numeric: NumericOracleOutcome =>
         val aggR = numeric.aggregateNonce
 
-        val neededNonces = numeric.oraclesAndOutcomes.flatMap {
-          case (oracle, outcome) =>
-            oracle.nonces.take(outcome.serialized.length)
+        val neededNonces = numeric.oraclesAndOutcomes.flatMap { case (oracle, outcome) =>
+          oracle.nonces.take(outcome.serialized.length)
         }
 
         val aggS = statusA.oracleSigs

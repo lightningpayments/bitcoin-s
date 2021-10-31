@@ -27,8 +27,7 @@ import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, ExecutionContext, Future, Promise}
 import scala.util.{Failure, Properties, Success}
 
-class DLCPaneModel(pane: DLCPane)(implicit ec: ExecutionContext)
-    extends Logging {
+class DLCPaneModel(pane: DLCPane)(implicit ec: ExecutionContext) extends Logging {
   var taskRunner: TaskRunner = _
 
   val resultArea: TextArea = pane.resultTextArea
@@ -234,9 +233,7 @@ class DLCPaneModel(pane: DLCPane)(implicit ec: ExecutionContext)
   def viewDLC(status: DLCStatus): Unit = {
     updateDLC(status.dlcId)
     val updatedStatus = dlcs.find(_.tempContractId == status.tempContractId)
-    ViewDLCDialog.showAndWait(parentWindow.value,
-                              updatedStatus.getOrElse(status),
-                              this)
+    ViewDLCDialog.showAndWait(parentWindow.value, updatedStatus.getOrElse(status), this)
   }
 
   def cancelDLC(status: DLCStatus): Unit = {
@@ -248,9 +245,8 @@ class DLCPaneModel(pane: DLCPane)(implicit ec: ExecutionContext)
         new Alert(AlertType.Confirmation) {
           initOwner(owner)
           headerText = "Confirm Canceling DLC"
-          contentText =
-            s"Are you sure you want to cancel this DLC for $eventId?\n" +
-              "This cannot be undone."
+          contentText = s"Are you sure you want to cancel this DLC for $eventId?\n" +
+            "This cannot be undone."
         }.showAndWait() match {
           case Some(ButtonType.OK) => true
           case None | Some(_)      => false
@@ -267,8 +263,7 @@ class DLCPaneModel(pane: DLCPane)(implicit ec: ExecutionContext)
           case Some(ButtonType.OK) => true
           case None | Some(_)      => false
         }
-      case DLCState.Broadcasted | DLCState.Confirmed | DLCState.Claimed |
-          DLCState.RemoteClaimed | DLCState.Refunded =>
+      case DLCState.Broadcasted | DLCState.Confirmed | DLCState.Claimed | DLCState.RemoteClaimed | DLCState.Refunded =>
         new Alert(AlertType.Error) {
           initOwner(owner)
           headerText = "Failed to Cancel DLC"
@@ -281,8 +276,7 @@ class DLCPaneModel(pane: DLCPane)(implicit ec: ExecutionContext)
       taskRunner.run(
         caption = "Canceling DLC",
         op = {
-          ConsoleCli.exec(CancelDLC(status.dlcId),
-                          GlobalData.consoleCliConfig) match {
+          ConsoleCli.exec(CancelDLC(status.dlcId), GlobalData.consoleCliConfig) match {
             case Success(_)   => ()
             case Failure(err) => throw err
           }
@@ -299,20 +293,18 @@ class DLCPaneModel(pane: DLCPane)(implicit ec: ExecutionContext)
         taskRunner.run(
           "Rebroadcast Funding Tx",
           op = {
-            ConsoleCli.exec(BroadcastDLCFundingTx(contractId),
-                            GlobalData.consoleCliConfig) match {
+            ConsoleCli.exec(BroadcastDLCFundingTx(contractId), GlobalData.consoleCliConfig) match {
               case Success(txId) =>
                 logger.info(s"Successfully rebroadcast funding tx " + txId)
                 // Looking for Event Hash in status, but don't see it
                 val announcementHash =
                   status.oracleInfo.singleOracleInfos.head.announcement.sha256.hex
                 Platform.runLater(
-                  FundingTransactionDialog.show(
-                    parentWindow.value,
-                    txId,
-                    GUIUtil.epochToDateString(status.timeouts.contractTimeout),
-                    GlobalData.buildAnnouncementUrl(announcementHash),
-                    true))
+                  FundingTransactionDialog.show(parentWindow.value,
+                                                txId,
+                                                GUIUtil.epochToDateString(status.timeouts.contractTimeout),
+                                                GlobalData.buildAnnouncementUrl(announcementHash),
+                                                true))
               case Failure(err) => throw err
             }
           }
@@ -327,17 +319,14 @@ class DLCPaneModel(pane: DLCPane)(implicit ec: ExecutionContext)
         taskRunner.run(
           "Rebroadcast Closing Tx",
           op = {
-            ConsoleCli.exec(GetTransaction(txId),
-                            GlobalData.consoleCliConfig) match {
+            ConsoleCli.exec(GetTransaction(txId), GlobalData.consoleCliConfig) match {
               case Success(tx) =>
                 val t = Transaction.fromHex(tx)
                 logger.info(s"Successfully found closing tx")
-                ConsoleCli.exec(SendRawTransaction(t),
-                                GlobalData.consoleCliConfig) match {
+                ConsoleCli.exec(SendRawTransaction(t), GlobalData.consoleCliConfig) match {
                   case Success(_) =>
                     logger.info(s"Successfully rebroadcast closing tx")
-                    Platform.runLater(
-                      TransactionSentDialog.show(parentWindow.value, tx))
+                    Platform.runLater(TransactionSentDialog.show(parentWindow.value, tx))
                   case Failure(err) => throw err
                 }
               case Failure(err) => throw err

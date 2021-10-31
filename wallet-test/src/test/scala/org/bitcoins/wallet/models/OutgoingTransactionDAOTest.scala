@@ -9,8 +9,7 @@ import org.bitcoins.testkit.wallet.WalletTestUtil
 class OutgoingTransactionDAOTest extends WalletDAOFixture {
 
   val txDb: TransactionDb =
-    TransactionDbHelper.fromTransaction(WalletTestUtil.sampleTransaction,
-                                        Some(DoubleSha256DigestBE.empty))
+    TransactionDbHelper.fromTransaction(WalletTestUtil.sampleTransaction, Some(DoubleSha256DigestBE.empty))
 
   val outgoing: OutgoingTransactionDb = OutgoingTransactionDb.fromTransaction(
     WalletTestUtil.sampleTransaction,

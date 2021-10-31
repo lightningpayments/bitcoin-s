@@ -3,12 +3,7 @@ package org.bitcoins.rpc
 import org.bitcoins.core.config.RegTest
 import org.bitcoins.core.currency.Bitcoins
 import org.bitcoins.rpc.client.common.BitcoindRpcClient
-import org.bitcoins.rpc.config.{
-  BitcoindAuthCredentials,
-  BitcoindConfig,
-  BitcoindInstanceLocal,
-  BitcoindInstanceRemote
-}
+import org.bitcoins.rpc.config.{BitcoindAuthCredentials, BitcoindConfig, BitcoindInstanceLocal, BitcoindInstanceRemote}
 import org.bitcoins.rpc.util.RpcUtil
 import org.bitcoins.testkit.rpc.BitcoindRpcTestUtil
 import org.bitcoins.testkit.rpc.BitcoindRpcTestUtil.newestBitcoindBinary
@@ -116,8 +111,7 @@ class BitcoindInstanceTest extends BitcoindRpcTest {
 
     val conf = BitcoindConfig(confStr, FileUtil.tmpDir())
     val authCredentials =
-      BitcoindAuthCredentials.PasswordBased(username = "bitcoin-s",
-                                            password = "strong_password")
+      BitcoindAuthCredentials.PasswordBased(username = "bitcoin-s", password = "strong_password")
     val instance =
       BitcoindInstanceLocal(
         network = RegTest,
@@ -167,8 +161,7 @@ class BitcoindInstanceTest extends BitcoindRpcTest {
 
     val conf = BitcoindConfig(confStr, FileUtil.tmpDir())
     val authCredentials =
-      BitcoindAuthCredentials.PasswordBased(username = "bitcoin-s",
-                                            password = "strong_password")
+      BitcoindAuthCredentials.PasswordBased(username = "bitcoin-s", password = "strong_password")
     val instance =
       BitcoindInstanceLocal(
         network = RegTest,

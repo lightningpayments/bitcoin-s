@@ -112,8 +112,7 @@ sealed abstract class CryptoGenerators {
     }
   }
 
-  def adaptorSignatureWithDecryptedSignatureAndAdaptor: Gen[
-    (ECAdaptorSignature, ECDigitalSignature, ECPublicKey)] = {
+  def adaptorSignatureWithDecryptedSignatureAndAdaptor: Gen[(ECAdaptorSignature, ECDigitalSignature, ECPublicKey)] = {
     for {
       privKey <- privateKey
       decKey <- privateKey

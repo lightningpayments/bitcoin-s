@@ -7,19 +7,16 @@ import org.scalacheck.{Prop, Properties}
   */
 class P2SHScriptSignatureSpec extends Properties("P2SHScriptSignatureSpec") {
 
-  property("Symmetrical serialization") =
-    Prop.forAll(ScriptGenerators.p2shScriptSignature) { p2shScriptSig =>
-      P2SHScriptSignature(p2shScriptSig.hex) == p2shScriptSig
+  property("Symmetrical serialization") = Prop.forAll(ScriptGenerators.p2shScriptSignature) { p2shScriptSig =>
+    P2SHScriptSignature(p2shScriptSig.hex) == p2shScriptSig
 
-    }
+  }
 
-  property(
-    "place a witness scriptPubKey in a p2shScriptSig, then extract the witScriptPubKey again") =
-    Prop.forAll(ScriptGenerators.witnessScriptPubKeyV0) {
-      case (witScriptPubKey, _) =>
-        val p2shScriptSig = P2SHScriptSignature(witScriptPubKey)
-        p2shScriptSig.redeemScript == witScriptPubKey
-        p2shScriptSig.scriptSignatureNoRedeemScript == EmptyScriptSignature
+  property("place a witness scriptPubKey in a p2shScriptSig, then extract the witScriptPubKey again") =
+    Prop.forAll(ScriptGenerators.witnessScriptPubKeyV0) { case (witScriptPubKey, _) =>
+      val p2shScriptSig = P2SHScriptSignature(witScriptPubKey)
+      p2shScriptSig.redeemScript == witScriptPubKey
+      p2shScriptSig.scriptSignatureNoRedeemScript == EmptyScriptSignature
 
     }
 }

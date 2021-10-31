@@ -12,8 +12,7 @@ object MultisigHDPath extends HDPathFactory[MultisigHDPath] {
     */
   override val PURPOSE: Int = 45
 
-  private case class MultisigHDPathImpl(address: HDAddress)
-      extends MultisigHDPath
+  private case class MultisigHDPathImpl(address: HDAddress) extends MultisigHDPath
 
   override def apply(
       coinType: HDCoinType,

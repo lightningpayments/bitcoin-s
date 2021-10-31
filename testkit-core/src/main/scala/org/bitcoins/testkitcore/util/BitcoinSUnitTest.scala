@@ -11,11 +11,7 @@ import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import scala.concurrent.duration.DurationInt
 
 /** A wrapper for boi ler plate testing procesures in bitcoin-s */
-abstract class BitcoinSUnitTest
-    extends AnyFlatSpec
-    with Matchers
-    with ScalaCheckPropertyChecks
-    with TimeLimitedTests {
+abstract class BitcoinSUnitTest extends AnyFlatSpec with Matchers with ScalaCheckPropertyChecks with TimeLimitedTests {
 
   override val timeLimit: Span = 120.seconds
 

@@ -28,14 +28,10 @@ case class DataMessageHandler(
     currentFilterBatch: Vector[CompactFilterMessage] = Vector.empty,
     filterHeaderHeightOpt: Option[Int] = None,
     filterHeightOpt: Option[Int] = None,
-    syncing: Boolean = false)(implicit
-    ec: ExecutionContext,
-    appConfig: NodeAppConfig,
-    chainConfig: ChainAppConfig)
+    syncing: Boolean = false)(implicit ec: ExecutionContext, appConfig: NodeAppConfig, chainConfig: ChainAppConfig)
     extends P2PLogger {
 
-  require(appConfig.nodeType != NodeType.BitcoindBackend,
-          "Bitcoind should handle the P2P interactions")
+  require(appConfig.nodeType != NodeType.BitcoindBackend, "Bitcoind should handle the P2P interactions")
 
   private val txDAO = BroadcastAbleTransactionDAO()
 
@@ -55,37 +51,28 @@ case class DataMessageHandler(
 
     val resultF = payload match {
       case checkpoint: CompactFilterCheckPointMessage =>
-        logger.debug(
-          s"Got ${checkpoint.filterHeaders.size} checkpoints ${checkpoint}")
+        logger.debug(s"Got ${checkpoint.filterHeaders.size} checkpoints ${checkpoint}")
         for {
-          newChainApi <- chainApi.processCheckpoints(
-            checkpoint.filterHeaders.map(_.flip),
-            checkpoint.stopHash.flip)
+          newChainApi <- chainApi.processCheckpoints(checkpoint.filterHeaders.map(_.flip), checkpoint.stopHash.flip)
         } yield {
           this.copy(chainApi = newChainApi)
         }
       case filterHeader: CompactFilterHeadersMessage =>
-        logger.info(
-          s"Got ${filterHeader.filterHashes.size} compact filter header hashes")
+        logger.info(s"Got ${filterHeader.filterHashes.size} compact filter header hashes")
         val filterHeaders = filterHeader.filterHeaders
         for {
-          newChainApi <- chainApi.processFilterHeaders(
-            filterHeaders,
-            filterHeader.stopHash.flip)
+          newChainApi <- chainApi.processFilterHeaders(filterHeaders, filterHeader.stopHash.flip)
           newSyncing <-
             if (filterHeaders.size == chainConfig.filterHeaderBatchSize) {
               logger.info(
                 s"Received maximum amount of filter headers in one header message. This means we are not synced, requesting more")
-              sendNextGetCompactFilterHeadersCommand(
-                peerWithCompactFilters,
-                filterHeader.stopHash.flip).map(_ => syncing)
+              sendNextGetCompactFilterHeadersCommand(peerWithCompactFilters, filterHeader.stopHash.flip).map(_ =>
+                syncing)
             } else {
-              logger.info(
-                s"Done syncing filter headers, beginning to sync filters in datamessagehandler")
-              sendFirstGetCompactFilterCommand(peerWithCompactFilters).map {
-                synced =>
-                  if (!synced) logger.info("We are synced")
-                  syncing
+              logger.info(s"Done syncing filter headers, beginning to sync filters in datamessagehandler")
+              sendFirstGetCompactFilterCommand(peerWithCompactFilters).map { synced =>
+                if (!synced) logger.info("We are synced")
+                syncing
               }
             }
           newFilterHeaderHeight <- filterHeaderHeightOpt match {
@@ -95,9 +82,7 @@ case class DataMessageHandler(
               Future.successful(filterHeaderHeight + filterHeaders.size)
           }
         } yield {
-          this.copy(chainApi = newChainApi,
-                    syncing = newSyncing,
-                    filterHeaderHeightOpt = Some(newFilterHeaderHeight))
+          this.copy(chainApi = newChainApi, syncing = newSyncing, filterHeaderHeightOpt = Some(newFilterHeaderHeight))
         }
       case filter: CompactFilterMessage =>
         logger.debug(s"Received ${filter.commandName}, $filter")
@@ -112,8 +97,7 @@ case class DataMessageHandler(
                 for {
                   filterHeaderHeight <- chainApi.getFilterHeaderCount()
                   filterHeight <- chainApi.getFilterCount()
-                } yield (filterHeaderHeight,
-                         if (filterHeight == 0) 0 else filterHeight + 1)
+                } yield (filterHeaderHeight, if (filterHeight == 0) 0 else filterHeight + 1)
             }
           newSyncing =
             if (batchSizeFull) {
@@ -131,24 +115,21 @@ case class DataMessageHandler(
           (newBatch, newChainApi) <-
             if (!newSyncing || batchSizeFull) {
               val blockFilters = filterBatch.map { filter =>
-                (filter.blockHash,
-                 BlockFilter.fromBytes(filter.filterBytes, filter.blockHash))
+                (filter.blockHash, BlockFilter.fromBytes(filter.filterBytes, filter.blockHash))
               }
               logger.info(s"Processing ${filterBatch.size} filters")
               for {
                 newChainApi <- chainApi.processFilters(filterBatch)
                 _ <-
                   appConfig.nodeCallbacks
-                    .executeOnCompactFiltersReceivedCallbacks(logger,
-                                                              blockFilters)
+                    .executeOnCompactFiltersReceivedCallbacks(logger, blockFilters)
               } yield (Vector.empty, newChainApi)
             } else Future.successful((filterBatch, chainApi))
           _ <-
             if (batchSizeFull) {
               logger.info(
                 s"Received maximum amount of filters in one batch. This means we are not synced, requesting more")
-              sendNextGetCompactFilterCommand(peerWithCompactFilters,
-                                              newFilterHeight)
+              sendNextGetCompactFilterCommand(peerWithCompactFilters, newFilterHeight)
             } else Future.unit
         } yield {
           this.copy(
@@ -159,15 +140,12 @@ case class DataMessageHandler(
             filterHeightOpt = Some(newFilterHeight)
           )
         }
-      case notHandling @ (MemPoolMessage | _: GetHeadersMessage |
-          _: GetBlocksMessage | _: GetCompactFiltersMessage |
-          _: GetCompactFilterHeadersMessage |
-          _: GetCompactFilterCheckPointMessage) =>
+      case notHandling @ (MemPoolMessage | _: GetHeadersMessage | _: GetBlocksMessage | _: GetCompactFiltersMessage |
+          _: GetCompactFilterHeadersMessage | _: GetCompactFilterCheckPointMessage) =>
         logger.debug(s"Received ${notHandling.commandName} message, skipping ")
         Future.successful(this)
       case getData: GetDataMessage =>
-        logger.info(
-          s"Received a getdata message for inventories=${getData.inventories}")
+        logger.info(s"Received a getdata message for inventories=${getData.inventories}")
         getData.inventories.foreach { inv =>
           logger.debug(s"Looking for inv=$inv")
           inv.typeIdentifier match {
@@ -176,34 +154,27 @@ case class DataMessageHandler(
                 case Some(tx) =>
                   peerMsgSender.sendTransactionMessage(tx.transaction)
                 case None =>
-                  logger.warn(
-                    s"Got request to send data with hash=${inv.hash}, but found nothing")
+                  logger.warn(s"Got request to send data with hash=${inv.hash}, but found nothing")
               }
-            case other @ (TypeIdentifier.MsgBlock |
-                TypeIdentifier.MsgFilteredBlock |
-                TypeIdentifier.MsgCompactBlock |
-                TypeIdentifier.MsgFilteredWitnessBlock |
-                TypeIdentifier.MsgWitnessBlock | TypeIdentifier.MsgWitnessTx) =>
-              logger.warn(
-                s"Got request to send data type=$other, this is not implemented yet")
+            case other @ (TypeIdentifier.MsgBlock | TypeIdentifier.MsgFilteredBlock | TypeIdentifier.MsgCompactBlock |
+                TypeIdentifier.MsgFilteredWitnessBlock | TypeIdentifier.MsgWitnessBlock |
+                TypeIdentifier.MsgWitnessTx) =>
+              logger.warn(s"Got request to send data type=$other, this is not implemented yet")
 
             case unassigned: MsgUnassigned =>
-              logger.warn(
-                s"Received unassigned message we do not understand, msg=${unassigned}")
+              logger.warn(s"Received unassigned message we do not understand, msg=${unassigned}")
           }
 
         }
         Future.successful(this)
       case HeadersMessage(count, headers) =>
         logger.info(s"Received headers message with ${count.toInt} headers")
-        logger.trace(
-          s"Received headers=${headers.map(_.hashBE.hex).mkString("[", ",", "]")}")
+        logger.trace(s"Received headers=${headers.map(_.hashBE.hex).mkString("[", ",", "]")}")
         val chainApiF = chainApi.processHeaders(headers)
 
         if (appConfig.nodeType == NodeType.SpvNode) {
           logger.trace(s"Requesting data for headers=${headers.length}")
-          peerMsgSender.sendGetDataMessage(TypeIdentifier.MsgFilteredBlock,
-                                           headers.map(_.hash): _*)
+          peerMsgSender.sendGetDataMessage(TypeIdentifier.MsgFilteredBlock, headers.map(_.hash): _*)
         }
 
         val getHeadersF = chainApiF
@@ -213,8 +184,7 @@ case class DataMessageHandler(
               val lastHeader = headers.last
               val lastHash = lastHeader.hash
               newApi.getBlockCount().map { count =>
-                logger.trace(
-                  s"Processed headers, most recent has height=$count and hash=$lastHash.")
+                logger.trace(s"Processed headers, most recent has height=$count and hash=$lastHash.")
               }
 
               if (count.toInt == HeadersMessage.MaxHeadersCount) {
@@ -238,10 +208,8 @@ case class DataMessageHandler(
                     (filterHeaderHeightOpt.isEmpty &&
                       filterHeightOpt.isEmpty))
                 ) {
-                  logger.info(
-                    s"Starting to fetch filter headers in data message handler")
-                  sendFirstGetCompactFilterHeadersCommand(
-                    peerWithCompactFilters)
+                  logger.info(s"Starting to fetch filter headers in data message handler")
+                  sendFirstGetCompactFilterHeadersCommand(peerWithCompactFilters)
                 } else {
                   Try(initialSyncDone.map(_.success(Done)))
                   Future.successful(syncing)
@@ -260,16 +228,13 @@ case class DataMessageHandler(
         for {
           newApi <- chainApiF
           newSyncing <- getHeadersF
-          _ <- appConfig.nodeCallbacks.executeOnBlockHeadersReceivedCallbacks(
-            logger,
-            headers)
+          _ <- appConfig.nodeCallbacks.executeOnBlockHeadersReceivedCallbacks(logger, headers)
         } yield {
           this.copy(chainApi = newApi, syncing = newSyncing)
         }
       case msg: BlockMessage =>
         val block = msg.block
-        logger.info(
-          s"Received block message with hash ${block.blockHeader.hash.flip.hex}")
+        logger.info(s"Received block message with hash ${block.blockHeader.hash.flip.hex}")
 
         val newApiF = {
           chainApi
@@ -281,9 +246,7 @@ case class DataMessageHandler(
                   processedApi <- chainApi.processHeader(block.blockHeader)
                   _ <-
                     appConfig.nodeCallbacks
-                      .executeOnBlockHeadersReceivedCallbacks(
-                        logger,
-                        Vector(block.blockHeader))
+                      .executeOnBlockHeadersReceivedCallbacks(logger, Vector(block.blockHeader))
                 } yield processedApi
               } else Future.successful(chainApi)
             }
@@ -298,19 +261,16 @@ case class DataMessageHandler(
           this.copy(chainApi = newApi)
         }
       case TransactionMessage(tx) =>
-        MerkleBuffers.putTx(tx, appConfig.nodeCallbacks).flatMap {
-          belongsToMerkle =>
-            if (belongsToMerkle) {
-              logger.trace(
-                s"Transaction=${tx.txIdBE} belongs to merkleblock, not calling callbacks")
-              Future.successful(this)
-            } else {
-              logger.trace(
-                s"Transaction=${tx.txIdBE} does not belong to merkleblock, processing given callbacks")
-              appConfig.nodeCallbacks
-                .executeOnTxReceivedCallbacks(logger, tx)
-                .map(_ => this)
-            }
+        MerkleBuffers.putTx(tx, appConfig.nodeCallbacks).flatMap { belongsToMerkle =>
+          if (belongsToMerkle) {
+            logger.trace(s"Transaction=${tx.txIdBE} belongs to merkleblock, not calling callbacks")
+            Future.successful(this)
+          } else {
+            logger.trace(s"Transaction=${tx.txIdBE} does not belong to merkleblock, processing given callbacks")
+            appConfig.nodeCallbacks
+              .executeOnTxReceivedCallbacks(logger, tx)
+              .map(_ => this)
+          }
         }
       case MerkleBlockMessage(merkleBlock) =>
         MerkleBuffers.putMerkle(merkleBlock)
@@ -331,13 +291,11 @@ case class DataMessageHandler(
   private def sendNextGetCompactFilterHeadersCommand(
       peerMsgSender: PeerMessageSender,
       prevStopHash: DoubleSha256DigestBE): Future[Boolean] =
-    peerMsgSender.sendNextGetCompactFilterHeadersCommand(
-      chainApi = chainApi,
-      filterHeaderBatchSize = chainConfig.filterHeaderBatchSize,
-      prevStopHash = prevStopHash)
+    peerMsgSender.sendNextGetCompactFilterHeadersCommand(chainApi = chainApi,
+                                                         filterHeaderBatchSize = chainConfig.filterHeaderBatchSize,
+                                                         prevStopHash = prevStopHash)
 
-  private def sendFirstGetCompactFilterHeadersCommand(
-      peerMsgSender: PeerMessageSender): Future[Boolean] = {
+  private def sendFirstGetCompactFilterHeadersCommand(peerMsgSender: PeerMessageSender): Future[Boolean] = {
 
     for {
       bestFilterHeaderOpt <-
@@ -349,9 +307,8 @@ case class DataMessageHandler(
         case None =>
           DoubleSha256DigestBE.empty
       }
-      hashHeightOpt <- chainApi.nextBlockHeaderBatchRange(
-        prevStopHash = blockHash,
-        batchSize = chainConfig.filterHeaderBatchSize)
+      hashHeightOpt <- chainApi.nextBlockHeaderBatchRange(prevStopHash = blockHash,
+                                                          batchSize = chainConfig.filterHeaderBatchSize)
       res <- hashHeightOpt match {
         case Some(filterSyncMarker) =>
           peerMsgSender
@@ -364,16 +321,12 @@ case class DataMessageHandler(
     } yield res
   }
 
-  private def sendNextGetCompactFilterCommand(
-      peerMsgSender: PeerMessageSender,
-      startHeight: Int): Future[Boolean] =
+  private def sendNextGetCompactFilterCommand(peerMsgSender: PeerMessageSender, startHeight: Int): Future[Boolean] =
     peerMsgSender.sendNextGetCompactFilterCommand(chainApi = chainApi,
-                                                  filterBatchSize =
-                                                    chainConfig.filterBatchSize,
+                                                  filterBatchSize = chainConfig.filterBatchSize,
                                                   startHeight = startHeight)
 
-  private def sendFirstGetCompactFilterCommand(
-      peerMsgSender: PeerMessageSender): Future[Boolean] =
+  private def sendFirstGetCompactFilterCommand(peerMsgSender: PeerMessageSender): Future[Boolean] =
     for {
       filterCount <- chainApi.getFilterCount()
       res <- sendNextGetCompactFilterCommand(peerMsgSender, filterCount)

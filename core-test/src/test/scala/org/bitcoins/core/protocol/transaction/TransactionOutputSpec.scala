@@ -7,9 +7,8 @@ import org.scalacheck.{Prop, Properties}
   */
 class TransactionOutputSpec extends Properties("TransactionOutputSpec") {
 
-  property("Serialization symmetry") =
-    Prop.forAll(TransactionGenerators.output) { output =>
-      TransactionOutput(output.hex) == output
-      output.hex == TransactionOutput(output.hex).hex
-    }
+  property("Serialization symmetry") = Prop.forAll(TransactionGenerators.output) { output =>
+    TransactionOutput(output.hex) == output
+    output.hex == TransactionOutput(output.hex).hex
+  }
 }

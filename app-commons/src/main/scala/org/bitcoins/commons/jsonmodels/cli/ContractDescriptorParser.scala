@@ -15,9 +15,7 @@ import ujson.{Arr, Bool, Null, Num, Obj, Str}
 
 object ContractDescriptorParser {
 
-  def parseCmdLine(
-      value: ujson.Value,
-      announcementTLV: OracleAnnouncementTLV): ContractDescriptorTLV = {
+  def parseCmdLine(value: ujson.Value, announcementTLV: OracleAnnouncementTLV): ContractDescriptorTLV = {
     value match {
       case obj: Obj =>
         upickle.default
@@ -36,12 +34,9 @@ object ContractDescriptorParser {
           .asInstanceOf[DigitDecompositionEventDescriptorV0TLV]
           .numDigits
           .toInt
-        ContractDescriptorV1TLV(numDigits,
-                                payoutCurve,
-                                RoundingIntervalsV0TLV.noRounding)
+        ContractDescriptorV1TLV(numDigits, payoutCurve, RoundingIntervalsV0TLV.noRounding)
       case fail @ (_: Num | _: Bool | Null | _: Str) =>
-        sys.error(
-          s"Cannot parse contract descriptor from $fail, expected json object or array")
+        sys.error(s"Cannot parse contract descriptor from $fail, expected json object or array")
     }
   }
 }

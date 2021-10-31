@@ -94,8 +94,7 @@ class ZMQSubscriber(
   }
 
   private val subscriberThread = new Thread(SubscriberRunnable)
-  subscriberThread.setName(
-    s"ZMQSubscriber-thread-${System.currentTimeMillis()}")
+  subscriberThread.setName(s"ZMQSubscriber-thread-${System.currentTimeMillis()}")
   subscriberThread.setDaemon(true)
 
   override def start(): Unit = {

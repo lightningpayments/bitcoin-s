@@ -7,9 +7,7 @@ import org.bitcoins.core.wallet.utxo.{InputInfo, ScriptSignatureParams}
 /** Contains a finalized tx (output from [[RawTxFinalizer.buildTx]]) and the
   * ScriptSignatureParams needed to sign that transaction.
   */
-case class FinalizedTxWithSigningInfo(
-    finalizedTx: Transaction,
-    infos: Vector[ScriptSignatureParams[InputInfo]]) {
+case class FinalizedTxWithSigningInfo(finalizedTx: Transaction, infos: Vector[ScriptSignatureParams[InputInfo]]) {
 
   def sign(expectedFeeRate: FeeUnit): Transaction = {
     RawTxSigner.sign(this, expectedFeeRate)
@@ -17,9 +15,7 @@ case class FinalizedTxWithSigningInfo(
 
   def sign(
       expectedFeeRate: FeeUnit,
-      invariants: (
-          Vector[ScriptSignatureParams[InputInfo]],
-          Transaction) => Boolean): Transaction = {
+      invariants: (Vector[ScriptSignatureParams[InputInfo]], Transaction) => Boolean): Transaction = {
     RawTxSigner.sign(this, expectedFeeRate, invariants)
   }
 }

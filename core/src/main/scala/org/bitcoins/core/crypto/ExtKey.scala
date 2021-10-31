@@ -13,12 +13,10 @@ import scala.util.{Failure, Success, Try}
   * [[https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki]]
   */
 sealed abstract class ExtKey extends NetworkElement {
-  require(bytes.size == 78,
-          "ExtKey must be 78 bytes in size, got: " + bytes.size)
+  require(bytes.size == 78, "ExtKey must be 78 bytes in size, got: " + bytes.size)
 
-  require(
-    depth != UInt8.zero || !(childNum != UInt32.zero || fingerprint != ExtKey.masterFingerprint),
-    "Cannot have a 0 depth with non-zero parent fingerprint")
+  require(depth != UInt8.zero || !(childNum != UInt32.zero || fingerprint != ExtKey.masterFingerprint),
+          "Cannot have a 0 depth with non-zero parent fingerprint")
 
   protected type VersionType <: ExtKeyVersion
 
@@ -76,9 +74,7 @@ sealed abstract class ExtKey extends NetworkElement {
         Success(priv.deriveChildPrivKey(path).extPublicKey)
       case pub: ExtPublicKey =>
         @tailrec
-        def loop(
-            remainingPath: List[BIP32Node],
-            accum: ExtPublicKey): Try[ExtPublicKey] = {
+        def loop(remainingPath: List[BIP32Node], accum: ExtPublicKey): Try[ExtPublicKey] = {
           remainingPath match {
             case h :: t =>
               accum.deriveChildPubKey(h) match {
@@ -142,10 +138,9 @@ object ExtKey extends Factory[ExtKey] with StringFactory[ExtKey] {
           val pub = ECPublicKey(bytes.slice(45, 78))
           ExtPublicKey(x, depth, fp, childNum, chainCode, pub)
         case x: ExtKeyPrivVersion =>
-          require(
-            bytes(45) == 0,
-            "Byte at index 46 must be zero for a ExtPrivateKey, got: " + BytesUtil
-              .encodeHex(bytes(45)))
+          require(bytes(45) == 0,
+                  "Byte at index 46 must be zero for a ExtPrivateKey, got: " + BytesUtil
+                    .encodeHex(bytes(45)))
           val priv = ECPrivateKey(bytes.slice(46, 78))
           ExtPrivateKey(x, depth, fp, childNum, chainCode, priv)
       }
@@ -171,10 +166,7 @@ object ExtKey extends Factory[ExtKey] with StringFactory[ExtKey] {
   }
 }
 
-sealed abstract class ExtPrivateKey
-    extends ExtKey
-    with ExtSign
-    with MaskedToString {
+sealed abstract class ExtPrivateKey extends ExtKey with ExtSign with MaskedToString {
   import ExtKeyVersion._
 
   override protected type VersionType = ExtKeyPrivVersion
@@ -189,8 +181,7 @@ sealed abstract class ExtPrivateKey
     *      specialized version of a BIP32 path
     */
   def deriveChildPrivKey(path: BIP32Path): ExtPrivateKey = {
-    path.foldLeft(this)((accum: ExtPrivateKey, curr: BIP32Node) =>
-      accum.deriveChildPrivKey(curr.toUInt32))
+    path.foldLeft(this)((accum: ExtPrivateKey, curr: BIP32Node) => accum.deriveChildPrivKey(curr.toUInt32))
   }
 
   def deriveChildPrivKey(idx: UInt32): ExtPrivateKey = {
@@ -233,23 +224,16 @@ sealed abstract class ExtPrivateKey
     key.sign(bytes)
   }
 
-  override def signWithEntropy(
-      bytes: ByteVector,
-      entropy: ByteVector): ECDigitalSignature = {
+  override def signWithEntropy(bytes: ByteVector, entropy: ByteVector): ECDigitalSignature = {
     key.signWithEntropy(bytes, entropy)
   }
 
-  override def adaptorSign(
-      adaptorPoint: ECPublicKey,
-      msg: ByteVector,
-      auxRand: ByteVector): ECAdaptorSignature = {
+  override def adaptorSign(adaptorPoint: ECPublicKey, msg: ByteVector, auxRand: ByteVector): ECAdaptorSignature = {
     key.adaptorSign(adaptorPoint, msg, auxRand)
   }
 
   /** Signs the given bytes with the given [[BIP32Path path]] */
-  override def deriveAndSign(
-      bytes: ByteVector,
-      path: BIP32Path): ECDigitalSignature = {
+  override def deriveAndSign(bytes: ByteVector, path: BIP32Path): ECDigitalSignature = {
     deriveChildPrivKey(path).sign(bytes)
   }
 
@@ -262,9 +246,7 @@ sealed abstract class ExtPrivateKey
   }
 }
 
-object ExtPrivateKey
-    extends Factory[ExtPrivateKey]
-    with StringFactory[ExtPrivateKey] {
+object ExtPrivateKey extends Factory[ExtPrivateKey] with StringFactory[ExtPrivateKey] {
 
   private case class ExtPrivateKeyImpl(
       version: ExtKeyPrivVersion,
@@ -274,8 +256,7 @@ object ExtPrivateKey
       chainCode: ChainCode,
       key: ECPrivateKey)
       extends ExtPrivateKey {
-    require(fingerprint.size == 4,
-            "Fingerprint must be 4 bytes in size, got: " + fingerprint)
+    require(fingerprint.size == 4, "Fingerprint must be 4 bytes in size, got: " + fingerprint)
   }
 
   def freshRootKey(version: ExtKeyPrivVersion): ExtPrivateKey = {
@@ -297,9 +278,7 @@ object ExtPrivateKey
     ExtKey.fromStringT(base58) match {
       case Success(priv: ExtPrivateKey) => Success(priv)
       case Success(_: ExtPublicKey) =>
-        Failure(
-          new IllegalArgumentException(
-            "Got extended public key, expected private"))
+        Failure(new IllegalArgumentException("Got extended public key, expected private"))
       // we get warnings about unchecked generics
       // if we do fail: Failure[ExtPrivateKey] and
       // compile error if we do fail: Failure[_]
@@ -320,8 +299,7 @@ object ExtPrivateKey
     ExtKey.fromStringT(base58) match {
       case Success(priv: ExtPrivateKey) => priv
       case Success(_: ExtPublicKey) =>
-        throw new IllegalArgumentException(
-          "Cannot create ext public in ExtPrivateKey")
+        throw new IllegalArgumentException("Cannot create ext public in ExtPrivateKey")
       case f: Failure[_] => throw f.exception
     }
   }
@@ -369,15 +347,11 @@ object ExtPrivateKey
                              chaincode,
                              masterPrivKey)
 
-    path.foldLeft(root)((accum, curr) =>
-      accum.deriveChildPrivKey(curr.toUInt32))
+    path.foldLeft(root)((accum, curr) => accum.deriveChildPrivKey(curr.toUInt32))
   }
 
   /** Generates a extended private key from the provided seed and version */
-  def fromBIP39Seed(
-      version: ExtKeyPrivVersion,
-      seed: BIP39Seed,
-      path: BIP32Path = BIP32Path.empty): ExtPrivateKey =
+  def fromBIP39Seed(version: ExtKeyPrivVersion, seed: BIP39Seed, path: BIP32Path = BIP32Path.empty): ExtPrivateKey =
     ExtPrivateKey(version, Some(seed.bytes), path)
 }
 
@@ -389,8 +363,7 @@ case class ExtPrivateKeyHardened(
     chainCode: ChainCode,
     key: ECPrivateKey)
     extends ExtPrivateKey {
-  require(fingerprint.size == 4,
-          "Fingerprint must be 4 bytes in size, got: " + fingerprint)
+  require(fingerprint.size == 4, "Fingerprint must be 4 bytes in size, got: " + fingerprint)
 
   /** @inheritdoc */
   override def deriveChildPrivKey(path: BIP32Path): ExtPrivateKeyHardened = {
@@ -411,9 +384,7 @@ case class ExtPrivateKeyHardened(
   }
 }
 
-object ExtPrivateKeyHardened
-    extends Factory[ExtPrivateKeyHardened]
-    with StringFactory[ExtPrivateKeyHardened] {
+object ExtPrivateKeyHardened extends Factory[ExtPrivateKeyHardened] with StringFactory[ExtPrivateKeyHardened] {
 
   def freshRootKey(version: ExtKeyPrivVersion): ExtPrivateKeyHardened = {
     val privKey = ECPrivateKey.freshPrivateKey
@@ -470,9 +441,7 @@ sealed abstract class ExtPublicKey extends ExtKey {
 
   final override def deriveChildPubKey(idx: UInt32): Try[ExtPublicKey] = {
     if (idx >= ExtKey.hardenedIdx) {
-      Failure(
-        new IllegalArgumentException(
-          "Cannot derive hardened child from extended public key"))
+      Failure(new IllegalArgumentException("Cannot derive hardened child from extended public key"))
     } else {
       val data = key.bytes ++ idx.bytes
       val hmac = CryptoUtil.hmac512(chainCode.bytes, data)
@@ -486,15 +455,12 @@ sealed abstract class ExtPublicKey extends ExtKey {
       //https://botbot.me/freenode/bitcoin-wizards/2017-11-20/?tz=America/Chicago
       val cc = ChainCode(ir)
       val fp = CryptoUtil.sha256Hash160(key.bytes).bytes.take(4)
-      Success(
-        ExtPublicKey(version, depth + UInt8.one, fp, idx, cc, childPubKey))
+      Success(ExtPublicKey(version, depth + UInt8.one, fp, idx, cc, childPubKey))
     }
   }
 }
 
-object ExtPublicKey
-    extends Factory[ExtPublicKey]
-    with StringFactory[ExtPublicKey] {
+object ExtPublicKey extends Factory[ExtPublicKey] with StringFactory[ExtPublicKey] {
 
   private case class ExtPublicKeyImpl(
       version: ExtKeyPubVersion,
@@ -520,9 +486,7 @@ object ExtPublicKey
     ExtKey.fromStringT(base58) match {
       case Success(pub: ExtPublicKey) => Success(pub)
       case Success(_: ExtPrivateKey) =>
-        Failure(
-          new IllegalArgumentException(
-            "Got extended private key, expected public"))
+        Failure(new IllegalArgumentException("Got extended private key, expected public"))
       // we get warnings about unchecked generics
       // if we do fail: Failure[ExtPublicKey] and
       // compile error if we do fail: Failure[_]
@@ -542,26 +506,17 @@ object ExtPublicKey
       Base58.encode(bytes ++ CryptoUtil.doubleSHA256(bytes).bytes.take(4))
     ExtKey.fromStringT(base58) match {
       case Success(_: ExtPrivateKey) =>
-        throw new IllegalArgumentException(
-          "Cannot create ext privatkey in ExtPublicKey")
+        throw new IllegalArgumentException("Cannot create ext privatkey in ExtPublicKey")
       case Success(pub: ExtPublicKey) => pub
       case f: Failure[_]              => throw f.exception
     }
   }
 
-  def tupled: (
-      (
-          ExtKeyPubVersion,
-          UInt8,
-          ByteVector,
-          UInt32,
-          ChainCode,
-          ECPublicKey)) => ExtPublicKey = {
+  def tupled: ((ExtKeyPubVersion, UInt8, ByteVector, UInt32, ChainCode, ECPublicKey)) => ExtPublicKey = {
     ExtPublicKeyImpl.tupled
   }
 
-  def unapply: ExtPublicKey => Option[
-    (ExtKeyPubVersion, UInt8, ByteVector, UInt32, ChainCode, ECPublicKey)] = {
+  def unapply: ExtPublicKey => Option[(ExtKeyPubVersion, UInt8, ByteVector, UInt32, ChainCode, ECPublicKey)] = {
     extPubKey =>
       ExtPublicKeyImpl.unapply(extPubKey.asInstanceOf[ExtPublicKeyImpl])
   }

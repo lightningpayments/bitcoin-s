@@ -103,8 +103,7 @@ object CliReaders {
         EnumEventDescriptorV0TLV.fromHex
     }
 
-  implicit val digitDecompEventDescriptorReads: Read[
-    DigitDecompositionEventDescriptorV0TLV] =
+  implicit val digitDecompEventDescriptorReads: Read[DigitDecompositionEventDescriptorV0TLV] =
     new Read[DigitDecompositionEventDescriptorV0TLV] {
       override def arity: Int = 1
 
@@ -123,8 +122,7 @@ object CliReaders {
     new Read[ContractDescriptorTLV] {
       override def arity: Int = 1
       override def reads: String => ContractDescriptorTLV = { str =>
-        upickle.default.read[ContractDescriptorV0TLV](str)(
-          Picklers.contractDescriptorV0)
+        upickle.default.read[ContractDescriptorV0TLV](str)(Picklers.contractDescriptorV0)
       }
     }
   }
@@ -183,8 +181,7 @@ object CliReaders {
     new Read[SatoshisPerVirtualByte] {
       val arity: Int = 1
 
-      val reads: String => SatoshisPerVirtualByte = str =>
-        SatoshisPerVirtualByte(Satoshis(BigInt(str)))
+      val reads: String => SatoshisPerVirtualByte = str => SatoshisPerVirtualByte(Satoshis(BigInt(str)))
     }
 
   implicit val uInt32Reads: Read[UInt32] = new Read[UInt32] {
@@ -239,14 +236,7 @@ object CliReaders {
 
       val reads: String => BlockStamp = {
         case dateRe(year, month, day) =>
-          val time = ZonedDateTime.of(year.toInt,
-                                      month.toInt,
-                                      day.toInt,
-                                      0,
-                                      0,
-                                      0,
-                                      0,
-                                      ZoneId.of("UTC"))
+          val time = ZonedDateTime.of(year.toInt, month.toInt, day.toInt, 0, 0, 0, 0, ZoneId.of("UTC"))
           BlockTime(time)
         case str => BlockStamp.fromString(str)
       }
@@ -310,8 +300,7 @@ object CliReaders {
       val reads: String => Sha256DigestBE = Sha256DigestBE.fromHex
     }
 
-  implicit val lockUnspentOutputParametersReads: Read[
-    Vector[LockUnspentOutputParameter]] =
+  implicit val lockUnspentOutputParametersReads: Read[Vector[LockUnspentOutputParameter]] =
     new Read[Vector[LockUnspentOutputParameter]] {
       override val arity: Int = 1
 

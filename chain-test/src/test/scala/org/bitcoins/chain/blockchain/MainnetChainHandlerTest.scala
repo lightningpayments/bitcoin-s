@@ -4,11 +4,7 @@ import org.bitcoins.chain.config.ChainAppConfig
 import org.bitcoins.chain.pow.Pow
 import org.bitcoins.core.api.chain.db.{BlockHeaderDb, BlockHeaderDbHelper}
 import org.bitcoins.core.protocol.blockchain.BlockHeader
-import org.bitcoins.testkit.chain.{
-  ChainDbUnitTest,
-  ChainTestUtil,
-  ChainUnitTest
-}
+import org.bitcoins.testkit.chain.{ChainDbUnitTest, ChainTestUtil, ChainUnitTest}
 import org.bitcoins.testkit.chain.fixture.ChainFixtureTag
 import org.bitcoins.testkit.util.FileUtil
 import org.scalatest.FutureOutcome
@@ -41,78 +37,64 @@ class MainnetChainHandlerTest extends ChainDbUnitTest {
 
   behavior of "MainnetChainHandler"
 
-  it must "benchmark ChainHandler.processHeaders()" in {
-    chainHandler: ChainHandlerCached =>
-      val blockHeaders =
-        headersResult.drop(
-          ChainUnitTest.FIRST_POW_CHANGE - ChainUnitTest.FIRST_BLOCK_HEIGHT)
+  it must "benchmark ChainHandler.processHeaders()" in { chainHandler: ChainHandlerCached =>
+    val blockHeaders =
+      headersResult.drop(ChainUnitTest.FIRST_POW_CHANGE - ChainUnitTest.FIRST_BLOCK_HEIGHT)
 
-      val firstBlockHeaderDb =
-        BlockHeaderDbHelper.fromBlockHeader(
-          ChainUnitTest.FIRST_POW_CHANGE - 2,
-          Pow.getBlockProof(ChainTestUtil.blockHeader562462),
-          ChainTestUtil.blockHeader562462)
+    val firstBlockHeaderDb =
+      BlockHeaderDbHelper.fromBlockHeader(ChainUnitTest.FIRST_POW_CHANGE - 2,
+                                          Pow.getBlockProof(ChainTestUtil.blockHeader562462),
+                                          ChainTestUtil.blockHeader562462)
 
-      val secondBlockHeaderDb = {
-        val chainWork = firstBlockHeaderDb.chainWork + Pow.getBlockProof(
-          ChainTestUtil.blockHeader562463)
-        BlockHeaderDbHelper.fromBlockHeader(ChainUnitTest.FIRST_POW_CHANGE - 1,
-                                            chainWork,
-                                            ChainTestUtil.blockHeader562463)
-      }
+    val secondBlockHeaderDb = {
+      val chainWork = firstBlockHeaderDb.chainWork + Pow.getBlockProof(ChainTestUtil.blockHeader562463)
+      BlockHeaderDbHelper.fromBlockHeader(ChainUnitTest.FIRST_POW_CHANGE - 1,
+                                          chainWork,
+                                          ChainTestUtil.blockHeader562463)
+    }
 
-      val thirdBlockHeaderDb = {
-        val chainWork = secondBlockHeaderDb.chainWork + Pow.getBlockProof(
-          ChainTestUtil.blockHeader562464)
-        BlockHeaderDbHelper.fromBlockHeader(ChainUnitTest.FIRST_POW_CHANGE,
-                                            chainWork,
-                                            ChainTestUtil.blockHeader562464)
-      }
+    val thirdBlockHeaderDb = {
+      val chainWork = secondBlockHeaderDb.chainWork + Pow.getBlockProof(ChainTestUtil.blockHeader562464)
+      BlockHeaderDbHelper.fromBlockHeader(ChainUnitTest.FIRST_POW_CHANGE, chainWork, ChainTestUtil.blockHeader562464)
+    }
 
-      /*
-       * We need to insert one block before the first POW check because it is used on the next
-       * POW check. We then need to insert the next to blocks to circumvent a POW check since
-       * that would require we have an old block in the Blockchain that we don't have.
-       */
-      val firstThreeBlocks =
-        Vector(firstBlockHeaderDb, secondBlockHeaderDb, thirdBlockHeaderDb)
+    /*
+     * We need to insert one block before the first POW check because it is used on the next
+     * POW check. We then need to insert the next to blocks to circumvent a POW check since
+     * that would require we have an old block in the Blockchain that we don't have.
+     */
+    val firstThreeBlocks =
+      Vector(firstBlockHeaderDb, secondBlockHeaderDb, thirdBlockHeaderDb)
 
-      val createdF = chainHandler.blockHeaderDAO.createAll(firstThreeBlocks)
+    val createdF = chainHandler.blockHeaderDAO.createAll(firstThreeBlocks)
 
-      createdF.flatMap { _ =>
-        val blockchain = Blockchain.fromHeaders(firstThreeBlocks.reverse)
-        val handler = chainHandler.copy(blockchains = Vector(blockchain))
+    createdF.flatMap { _ =>
+      val blockchain = Blockchain.fromHeaders(firstThreeBlocks.reverse)
+      val handler = chainHandler.copy(blockchains = Vector(blockchain))
 
-        // Takes way too long to do all blocks
-        val blockHeadersToTest = blockHeaders.tail
-          .take(
-            (2 * chainHandler.chainConfig.chain.difficultyChangeInterval + 1))
+      // Takes way too long to do all blocks
+      val blockHeadersToTest = blockHeaders.tail
+        .take((2 * chainHandler.chainConfig.chain.difficultyChangeInterval + 1))
 
-        val processedF = handler.processHeaders(blockHeadersToTest)
+      val processedF = handler.processHeaders(blockHeadersToTest)
 
-        for {
-          ch <- processedF
-          bestHash <- ch.getBestBlockHash()
-        } yield assert(bestHash == blockHeadersToTest.last.hashBE)
-      }
+      for {
+        ch <- processedF
+        bestHash <- ch.getBestBlockHash()
+      } yield assert(bestHash == blockHeadersToTest.last.hashBE)
+    }
   }
 
   it must "have getBestBlockHash return the header with the most work, not the highest" in {
     tempHandler: ChainHandlerCached =>
       val dummyHeader =
-        BlockHeaderDbHelper.fromBlockHeader(1,
-                                            BigInt(0),
-                                            ChainTestUtil.blockHeader562462)
+        BlockHeaderDbHelper.fromBlockHeader(1, BigInt(0), ChainTestUtil.blockHeader562462)
 
       val highestHeader =
-        BlockHeaderDbHelper.fromBlockHeader(2,
-                                            BigInt(0),
-                                            ChainTestUtil.blockHeader562463)
+        BlockHeaderDbHelper.fromBlockHeader(2, BigInt(0), ChainTestUtil.blockHeader562463)
 
       val headerWithMostWork =
-        BlockHeaderDbHelper.fromBlockHeader(1,
-                                            BigInt(1000),
-                                            ChainTestUtil.blockHeader562464)
+        BlockHeaderDbHelper.fromBlockHeader(1, BigInt(1000), ChainTestUtil.blockHeader562464)
 
       val tallestBlockchain =
         Blockchain(Vector(highestHeader, dummyHeader, genesis))
@@ -128,96 +110,82 @@ class MainnetChainHandlerTest extends ChainDbUnitTest {
       }
   }
 
-  it must "be able to process and fetch real headers from mainnet" in {
-    chainHandler: ChainHandlerCached =>
-      val blockHeaders =
-        headersResult.drop(
-          ChainUnitTest.FIRST_POW_CHANGE - ChainUnitTest.FIRST_BLOCK_HEIGHT)
+  it must "be able to process and fetch real headers from mainnet" in { chainHandler: ChainHandlerCached =>
+    val blockHeaders =
+      headersResult.drop(ChainUnitTest.FIRST_POW_CHANGE - ChainUnitTest.FIRST_BLOCK_HEIGHT)
 
-      val firstBlockHeaderDb =
-        BlockHeaderDbHelper.fromBlockHeader(ChainUnitTest.FIRST_POW_CHANGE - 2,
-                                            BigInt(0),
-                                            ChainTestUtil.blockHeader562462)
+    val firstBlockHeaderDb =
+      BlockHeaderDbHelper.fromBlockHeader(ChainUnitTest.FIRST_POW_CHANGE - 2,
+                                          BigInt(0),
+                                          ChainTestUtil.blockHeader562462)
 
-      val secondBlockHeaderDb =
-        BlockHeaderDbHelper.fromBlockHeader(ChainUnitTest.FIRST_POW_CHANGE - 1,
-                                            BigInt(0),
-                                            ChainTestUtil.blockHeader562463)
+    val secondBlockHeaderDb =
+      BlockHeaderDbHelper.fromBlockHeader(ChainUnitTest.FIRST_POW_CHANGE - 1,
+                                          BigInt(0),
+                                          ChainTestUtil.blockHeader562463)
 
-      val thirdBlockHeaderDb =
-        BlockHeaderDbHelper.fromBlockHeader(ChainUnitTest.FIRST_POW_CHANGE,
-                                            BigInt(0),
-                                            ChainTestUtil.blockHeader562464)
+    val thirdBlockHeaderDb =
+      BlockHeaderDbHelper.fromBlockHeader(ChainUnitTest.FIRST_POW_CHANGE, BigInt(0), ChainTestUtil.blockHeader562464)
 
-      /*
-       * We need to insert one block before the first POW check because it is used on the next
-       * POW check. We then need to insert the next to blocks to circumvent a POW check since
-       * that would require we have an old block in the Blockchain that we don't have.
-       */
-      val firstThreeBlocks =
-        Vector(firstBlockHeaderDb, secondBlockHeaderDb, thirdBlockHeaderDb)
+    /*
+     * We need to insert one block before the first POW check because it is used on the next
+     * POW check. We then need to insert the next to blocks to circumvent a POW check since
+     * that would require we have an old block in the Blockchain that we don't have.
+     */
+    val firstThreeBlocks =
+      Vector(firstBlockHeaderDb, secondBlockHeaderDb, thirdBlockHeaderDb)
 
-      val createdF = chainHandler.blockHeaderDAO.createAll(firstThreeBlocks)
+    val createdF = chainHandler.blockHeaderDAO.createAll(firstThreeBlocks)
 
-      createdF.flatMap { _ =>
-        val blockchain = Blockchain.fromHeaders(firstThreeBlocks.reverse)
-        val handler = ChainHandlerCached(chainHandler.blockHeaderDAO,
-                                         chainHandler.filterHeaderDAO,
-                                         chainHandler.filterDAO,
-                                         Vector(blockchain),
-                                         Map.empty)
-        val processorF = Future.successful(handler)
-        // Takes way too long to do all blocks
-        val blockHeadersToTest = blockHeaders.tail
-          .take(
-            (2 * chainHandler.chainConfig.chain.difficultyChangeInterval + 1).toInt)
+    createdF.flatMap { _ =>
+      val blockchain = Blockchain.fromHeaders(firstThreeBlocks.reverse)
+      val handler = ChainHandlerCached(chainHandler.blockHeaderDAO,
+                                       chainHandler.filterHeaderDAO,
+                                       chainHandler.filterDAO,
+                                       Vector(blockchain),
+                                       Map.empty)
+      val processorF = Future.successful(handler)
+      // Takes way too long to do all blocks
+      val blockHeadersToTest = blockHeaders.tail
+        .take((2 * chainHandler.chainConfig.chain.difficultyChangeInterval + 1).toInt)
 
-        processHeaders(processorF = processorF,
-                       headers = blockHeadersToTest,
-                       height = ChainUnitTest.FIRST_POW_CHANGE + 1)
-      }
+      processHeaders(processorF = processorF, headers = blockHeadersToTest, height = ChainUnitTest.FIRST_POW_CHANGE + 1)
+    }
   }
 
-  it must "properly recalculate chain work" in {
-    tempHandler: ChainHandlerCached =>
-      val headersWithNoWork = Vector(
-        BlockHeaderDbHelper.fromBlockHeader(3,
-                                            BigInt(0),
-                                            ChainTestUtil.blockHeader562464),
-        BlockHeaderDbHelper.fromBlockHeader(2,
-                                            BigInt(0),
-                                            ChainTestUtil.blockHeader562463),
-        BlockHeaderDbHelper.fromBlockHeader(1,
-                                            BigInt(0),
-                                            ChainTestUtil.blockHeader562462)
-      )
+  it must "properly recalculate chain work" in { tempHandler: ChainHandlerCached =>
+    val headersWithNoWork = Vector(
+      BlockHeaderDbHelper.fromBlockHeader(3, BigInt(0), ChainTestUtil.blockHeader562464),
+      BlockHeaderDbHelper.fromBlockHeader(2, BigInt(0), ChainTestUtil.blockHeader562463),
+      BlockHeaderDbHelper.fromBlockHeader(1, BigInt(0), ChainTestUtil.blockHeader562462)
+    )
 
-      val noWorkGenesis = genesis.copy(chainWork = BigInt(0))
+    val noWorkGenesis = genesis.copy(chainWork = BigInt(0))
 
-      val blockchain =
-        Blockchain(headersWithNoWork :+ noWorkGenesis)
+    val blockchain =
+      Blockchain(headersWithNoWork :+ noWorkGenesis)
 
-      val chainHandler = tempHandler.copy(blockchains = Vector(blockchain))
+    val chainHandler = tempHandler.copy(blockchains = Vector(blockchain))
 
-      for {
-        _ <- chainHandler.blockHeaderDAO.update(noWorkGenesis)
-        _ <- chainHandler.blockHeaderDAO.createAll(headersWithNoWork)
-        lowestNoWork <- chainHandler.blockHeaderDAO.getLowestNoWorkHeight
-        _ = assert(lowestNoWork == 0)
-        isMissingWork <- chainHandler.isMissingChainWork
-        _ = assert(isMissingWork)
-        newHandler <- chainHandler.recalculateChainWork
-        blockchains <- chainHandler.blockHeaderDAO.getBlockchains()
-        headerDb <- newHandler.getBestBlockHeader()
-      } yield {
-        assert(headerDb.height == headersWithNoWork.head.height)
-        val grouped = blockchains.head.groupBy(_.hashBE)
-        assert(
-          grouped
-            .forall(_._2.size == 1))
-        assert(headerDb.hashBE == headersWithNoWork.head.hashBE)
-        assert(headerDb.chainWork == BigInt(12885098501L))
-      }
+    for {
+      _ <- chainHandler.blockHeaderDAO.update(noWorkGenesis)
+      _ <- chainHandler.blockHeaderDAO.createAll(headersWithNoWork)
+      lowestNoWork <- chainHandler.blockHeaderDAO.getLowestNoWorkHeight
+      _ = assert(lowestNoWork == 0)
+      isMissingWork <- chainHandler.isMissingChainWork
+      _ = assert(isMissingWork)
+      newHandler <- chainHandler.recalculateChainWork
+      blockchains <- chainHandler.blockHeaderDAO.getBlockchains()
+      headerDb <- newHandler.getBestBlockHeader()
+    } yield {
+      assert(headerDb.height == headersWithNoWork.head.height)
+      val grouped = blockchains.head.groupBy(_.hashBE)
+      assert(
+        grouped
+          .forall(_._2.size == 1))
+      assert(headerDb.hashBE == headersWithNoWork.head.hashBE)
+      assert(headerDb.chainWork == BigInt(12885098501L))
+    }
   }
 
 }

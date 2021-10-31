@@ -18,8 +18,7 @@ sealed abstract class CLightningJsonModel
 
 object CLightningJsonModels {
 
-  case class CLightningAddress(`type`: String, `address`: String, port: Int)
-      extends CLightningJsonModel
+  case class CLightningAddress(`type`: String, `address`: String, port: Int) extends CLightningJsonModel
 
   case class CLightningInfo(
       id: NodeId,
@@ -92,10 +91,7 @@ object CLightningJsonModels {
       short_channel_id: Option[ShortChannelId]
   ) extends CLightningJsonModel
 
-  case class ListFundsResult(
-      outputs: Vector[Output],
-      channels: Vector[ChannelFunds])
-      extends CLightningJsonModel
+  case class ListFundsResult(outputs: Vector[Output], channels: Vector[ChannelFunds]) extends CLightningJsonModel
 
   case class Channel(
       source: NodeId,
@@ -112,8 +108,7 @@ object CLightningJsonModels {
       delay: Int
   ) extends CLightningJsonModel
 
-  case class ListChannelsResult(channels: Vector[Channel])
-      extends CLightningJsonModel
+  case class ListChannelsResult(channels: Vector[Channel]) extends CLightningJsonModel
 
   case class ConnectResult(
       id: NodeId,
@@ -162,8 +157,7 @@ object CLightningJsonModels {
       channels: Vector[CLightningPeerChannel])
       extends CLightningJsonModel
 
-  case class CLightningPeers(peers: Vector[CLightningPeer])
-      extends CLightningJsonModel
+  case class CLightningPeers(peers: Vector[CLightningPeer]) extends CLightningJsonModel
 
   sealed abstract class LocalOrRemote extends CLightningJsonModel {
     def isLocal: Boolean
@@ -227,9 +221,7 @@ object CLightningJsonModels {
       expires_at: UInt64
   ) extends CLightningJsonModel
 
-  case class CLightningListInvoicesResult(
-      invoices: Vector[CLightningLookupInvoiceResult])
-      extends CLightningJsonModel
+  case class CLightningListInvoicesResult(invoices: Vector[CLightningLookupInvoiceResult]) extends CLightningJsonModel
 
   case class CLightningPsbtResult(signed_psbt: PSBT) extends CLightningJsonModel
 
@@ -283,8 +275,7 @@ object CLightningJsonModels {
       reserved_to_block: Long
   ) extends CLightningJsonModel
 
-  case class InputReservations(reservations: Vector[InputReservation])
-      extends CLightningJsonModel
+  case class InputReservations(reservations: Vector[InputReservation]) extends CLightningJsonModel
 
   case class CloseChannelResult(
       `type`: ClosedChannelType,

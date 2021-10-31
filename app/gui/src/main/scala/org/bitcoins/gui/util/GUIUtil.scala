@@ -31,10 +31,9 @@ object GUIUtil {
   val numberFormatter: NumberFormat = java.text.NumberFormat.getIntegerInstance
 
   def setNumericInput(textField: TextField): Unit = {
-    textField.text.addListener {
-      (_: ObservableValue[_ <: String], _: String, newVal: String) =>
-        if (!newVal.matches(numericRegex.regex))
-          textField.setText(newVal.replaceAll(numericRegex.regex, ""))
+    textField.text.addListener { (_: ObservableValue[_ <: String], _: String, newVal: String) =>
+      if (!newVal.matches(numericRegex.regex))
+        textField.setText(newVal.replaceAll(numericRegex.regex, ""))
     }
   }
 
@@ -68,10 +67,7 @@ object GUIUtil {
     new ExtensionFilter("Text Files", "*.txt")
   private lazy val allExtensionFilter = new ExtensionFilter("All Files", "*")
 
-  def showSaveDialog(
-      filename: String,
-      bytesOpt: Option[String],
-      handleFileOpt: Option[File => Unit]): Unit = {
+  def showSaveDialog(filename: String, bytesOpt: Option[String], handleFileOpt: Option[File => Unit]): Unit = {
     fileChooser.initialFileName = filename
     val chosenFileOpt = Option(fileChooser.showSaveDialog(null))
     chosenFileOpt match {
@@ -105,17 +101,14 @@ object GUIUtil {
     chosenFileOpt
   }
 
-  def getFileChooserButton(handleFile: File => Unit): Button = new Button(
-    "Browse...") {
+  def getFileChooserButton(handleFile: File => Unit): Button = new Button("Browse...") {
     onAction = _ => {
       val _ = GUIUtil.showOpenDialog(handleFile)
     }
   }
 
-  def getFileSaveButton(
-      filename: String,
-      bytes: Option[String],
-      handleFile: Option[File => Unit]): Button = new Button("Browse...") {
+  def getFileSaveButton(filename: String, bytes: Option[String], handleFile: Option[File => Unit]): Button = new Button(
+    "Browse...") {
     onAction = _ => {
       val _ = GUIUtil.showSaveDialog(filename, bytes, handleFile)
     }
@@ -151,11 +144,7 @@ object GUIUtil {
 
   def getVSpacer(): Region = new Region { vgrow = Priority.Always }
 
-  def getWindow(
-      windowTitle: String,
-      width: Double,
-      height: Double,
-      rootView: Parent): Stage = {
+  def getWindow(windowTitle: String, width: Double, height: Double, rootView: Parent): Stage = {
     val windowScene = new Scene(width, height) {
       root = rootView
       stylesheets = GlobalData.currentStyleSheets
@@ -166,21 +155,15 @@ object GUIUtil {
       // Icon?
     }
     if (Properties.isMac || Properties.isLinux) {
-      windowScene.accelerators.put(
-        new KeyCodeCombination(KeyCode.W, KeyCombination.ShortcutDown),
-        () => stage.close())
+      windowScene.accelerators.put(new KeyCodeCombination(KeyCode.W, KeyCombination.ShortcutDown), () => stage.close())
     }
     if (Properties.isWin || Properties.isLinux) {
-      windowScene.accelerators.put(
-        new KeyCodeCombination(KeyCode.F4, KeyCombination.AltDown),
-        () => stage.close())
+      windowScene.accelerators.put(new KeyCodeCombination(KeyCode.F4, KeyCombination.AltDown), () => stage.close())
     }
     stage
   }
 
-  def getAnnouncementUrl(
-      network: BitcoinNetwork,
-      primaryOracle: OracleAnnouncementTLV): String = {
+  def getAnnouncementUrl(network: BitcoinNetwork, primaryOracle: OracleAnnouncementTLV): String = {
     val baseUrl =
       ExplorerEnv.fromBitcoinNetwork(network).siteUrl
     s"${baseUrl}announcement/${primaryOracle.sha256.hex}"

@@ -15,10 +15,7 @@ case class DLCPayoutCurve(points: Vector[OutcomePayoutPoint]) {
 
   def toTLV: PayoutFunctionV0TLV = {
     PayoutFunctionV0TLV(points.map { point =>
-      TLVPoint(point.outcome,
-               point.roundedPayout,
-               point.extraPrecision,
-               point.isEndpoint)
+      TLVPoint(point.outcome, point.roundedPayout, point.extraPrecision, point.isEndpoint)
     })
   }
 
@@ -46,9 +43,7 @@ case class DLCPayoutCurve(points: Vector[OutcomePayoutPoint]) {
     val endpointIndex = NumberUtil.search(outcomes, outcome)
     val Indexed(endpoint, _) = endpoints(endpointIndex)
 
-    if (
-      endpoint.outcome == outcome && endpointIndex != functionComponents.length
-    ) {
+    if (endpoint.outcome == outcome && endpointIndex != functionComponents.length) {
       Indexed(functionComponents(endpointIndex), endpointIndex)
     } else {
       Indexed(functionComponents(endpointIndex - 1), endpointIndex - 1)
@@ -65,10 +60,7 @@ case class DLCPayoutCurve(points: Vector[OutcomePayoutPoint]) {
     func(outcome, rounding)
   }
 
-  def getPayout(
-      outcome: Long,
-      rounding: RoundingIntervals,
-      totalCollateral: Satoshis): Satoshis = {
+  def getPayout(outcome: Long, rounding: RoundingIntervals, totalCollateral: Satoshis): Satoshis = {
     val Indexed(func, _) = componentFor(outcome)
     func(outcome, rounding, totalCollateral)
   }
@@ -78,10 +70,7 @@ case class DLCPayoutCurve(points: Vector[OutcomePayoutPoint]) {
   def apply(outcome: Long, rounding: RoundingIntervals): Satoshis =
     getPayout(outcome, rounding)
 
-  def apply(
-      outcome: Long,
-      rounding: RoundingIntervals,
-      totalCollateral: Satoshis): Satoshis =
+  def apply(outcome: Long, rounding: RoundingIntervals, totalCollateral: Satoshis): Satoshis =
     getPayout(outcome, rounding, totalCollateral)
 }
 
@@ -116,9 +105,7 @@ sealed trait OutcomePayoutPoint {
     shifted.setScale(0, RoundingMode.FLOOR).toIntExact
   }
 
-  def copy(
-      outcome: Long = this.outcome,
-      payout: BigDecimal = this.payout): OutcomePayoutPoint = {
+  def copy(outcome: Long = this.outcome, payout: BigDecimal = this.payout): OutcomePayoutPoint = {
     this match {
       case OutcomePayoutEndpoint(_, _) => OutcomePayoutEndpoint(outcome, payout)
       case OutcomePayoutMidpoint(_, _) => OutcomePayoutMidpoint(outcome, payout)
@@ -128,10 +115,7 @@ sealed trait OutcomePayoutPoint {
 
 object OutcomePayoutPoint {
 
-  def apply(
-      outcome: Long,
-      payout: BigDecimal,
-      isEndpoint: Boolean): OutcomePayoutPoint = {
+  def apply(outcome: Long, payout: BigDecimal, isEndpoint: Boolean): OutcomePayoutPoint = {
     if (isEndpoint) {
       OutcomePayoutEndpoint(outcome, payout)
     } else {
@@ -139,16 +123,12 @@ object OutcomePayoutPoint {
     }
   }
 
-  def apply(
-      outcome: Long,
-      payout: Satoshis,
-      isEndpoint: Boolean): OutcomePayoutPoint = {
+  def apply(outcome: Long, payout: Satoshis, isEndpoint: Boolean): OutcomePayoutPoint = {
     OutcomePayoutPoint(outcome, payout.toLong, isEndpoint)
   }
 }
 
-case class OutcomePayoutEndpoint(outcome: Long, payout: BigDecimal)
-    extends OutcomePayoutPoint {
+case class OutcomePayoutEndpoint(outcome: Long, payout: BigDecimal) extends OutcomePayoutPoint {
   override val isEndpoint: Boolean = true
 
   def toMidpoint: OutcomePayoutMidpoint = OutcomePayoutMidpoint(outcome, payout)
@@ -161,8 +141,7 @@ object OutcomePayoutEndpoint {
   }
 }
 
-case class OutcomePayoutMidpoint(outcome: Long, payout: BigDecimal)
-    extends OutcomePayoutPoint {
+case class OutcomePayoutMidpoint(outcome: Long, payout: BigDecimal) extends OutcomePayoutPoint {
   override val isEndpoint: Boolean = false
 
   def toEndpoint: OutcomePayoutEndpoint = OutcomePayoutEndpoint(outcome, payout)
@@ -183,17 +162,14 @@ sealed trait DLCPayoutCurvePiece {
 
   midpoints.headOption match {
     case Some(firstMidpoint) =>
-      require(leftEndpoint.outcome < firstMidpoint.outcome,
-              s"Points must be ascending: $this")
+      require(leftEndpoint.outcome < firstMidpoint.outcome, s"Points must be ascending: $this")
       require(midpoints.init.zip(midpoints.tail).forall { case (m1, m2) =>
                 m1.outcome < m2.outcome
               },
               s"Points must be ascending: $this")
-      require(rightEndpoint.outcome > midpoints.last.outcome,
-              s"Points must be ascending: $this")
+      require(rightEndpoint.outcome > midpoints.last.outcome, s"Points must be ascending: $this")
     case None =>
-      require(leftEndpoint.outcome < rightEndpoint.outcome,
-              s"Points must be ascending: $this")
+      require(leftEndpoint.outcome < rightEndpoint.outcome, s"Points must be ascending: $this")
   }
 
   def apply(outcome: Long): Satoshis
@@ -202,10 +178,7 @@ sealed trait DLCPayoutCurvePiece {
     rounding.round(outcome, apply(outcome))
   }
 
-  def apply(
-      outcome: Long,
-      rounding: RoundingIntervals,
-      totalCollateral: Satoshis): Satoshis = {
+  def apply(outcome: Long, rounding: RoundingIntervals, totalCollateral: Satoshis): Satoshis = {
     val rounded = rounding.round(outcome, apply(outcome)).toLong
     val modified = math.min(math.max(rounded, 0), totalCollateral.toLong)
 
@@ -224,10 +197,8 @@ sealed trait DLCPayoutCurvePiece {
 object DLCPayoutCurvePiece {
 
   def apply(points: Vector[OutcomePayoutPoint]): DLCPayoutCurvePiece = {
-    require(points.head.isEndpoint && points.last.isEndpoint,
-            s"First and last points must be endpoints, $points")
-    require(points.tail.init.forall(!_.isEndpoint),
-            s"Endpoint detected in middle, $points")
+    require(points.head.isEndpoint && points.last.isEndpoint, s"First and last points must be endpoints, $points")
+    require(points.tail.init.forall(!_.isEndpoint), s"Endpoint detected in middle, $points")
 
     points match {
       case Vector(left: OutcomePayoutEndpoint, right: OutcomePayoutEndpoint) =>
@@ -236,9 +207,7 @@ object DLCPayoutCurvePiece {
         } else {
           OutcomePayoutLine(left, right)
         }
-      case Vector(left: OutcomePayoutEndpoint,
-                  mid: OutcomePayoutMidpoint,
-                  right: OutcomePayoutEndpoint) =>
+      case Vector(left: OutcomePayoutEndpoint, mid: OutcomePayoutMidpoint, right: OutcomePayoutEndpoint) =>
         OutcomePayoutQuadratic(left, mid, right)
       case Vector(left: OutcomePayoutEndpoint,
                   mid1: OutcomePayoutMidpoint,
@@ -250,12 +219,9 @@ object DLCPayoutCurvePiece {
   }
 }
 
-case class OutcomePayoutConstant(
-    leftEndpoint: OutcomePayoutEndpoint,
-    rightEndpoint: OutcomePayoutEndpoint)
+case class OutcomePayoutConstant(leftEndpoint: OutcomePayoutEndpoint, rightEndpoint: OutcomePayoutEndpoint)
     extends DLCPayoutCurvePiece {
-  require(leftEndpoint.payout == rightEndpoint.payout,
-          "Constant function must have same values on endpoints")
+  require(leftEndpoint.payout == rightEndpoint.payout, "Constant function must have same values on endpoints")
 
   override lazy val midpoints: Vector[OutcomePayoutMidpoint] = Vector.empty
 
@@ -264,9 +230,7 @@ case class OutcomePayoutConstant(
 }
 
 /** A Line between left and right endpoints defining a piece of a larger payout curve */
-case class OutcomePayoutLine(
-    leftEndpoint: OutcomePayoutEndpoint,
-    rightEndpoint: OutcomePayoutEndpoint)
+case class OutcomePayoutLine(leftEndpoint: OutcomePayoutEndpoint, rightEndpoint: OutcomePayoutEndpoint)
     extends DLCPayoutCurvePiece {
   override lazy val midpoints: Vector[OutcomePayoutMidpoint] = Vector.empty
 
@@ -338,16 +302,11 @@ case class OutcomePayoutCubic(
   private lazy val (x10, x20, x30, x21, x31, x32) =
     (-x01, -x02, -x03, -x12, -x13, -x23)
 
-  private lazy val (y0, y1, y2, y3) = (leftEndpoint.payout,
-                                       leftMidpoint.payout,
-                                       rightMidpoint.payout,
-                                       rightEndpoint.payout)
+  private lazy val (y0, y1, y2, y3) =
+    (leftEndpoint.payout, leftMidpoint.payout, rightMidpoint.payout, rightEndpoint.payout)
 
   private lazy val (c0, c1, c2, c3) =
-    (y0 / (x01 * x02 * x03),
-     y1 / (x10 * x12 * x13),
-     y2 / (x20 * x21 * x23),
-     y3 / (x30 * x31 * x32))
+    (y0 / (x01 * x02 * x03), y1 / (x10 * x12 * x13), y2 / (x20 * x21 * x23), y3 / (x30 * x31 * x32))
 
   override def apply(outcome: Long): Satoshis = {
     val x0 = outcome - leftEndpoint.outcome
@@ -363,12 +322,9 @@ case class OutcomePayoutCubic(
 }
 
 /** A polynomial interpolating points and defining a piece of a larger payout curve */
-case class OutcomePayoutPolynomial(points: Vector[OutcomePayoutPoint])
-    extends DLCPayoutCurvePiece {
-  require(points.head.isEndpoint && points.last.isEndpoint,
-          s"First and last points must be endpoints, $points")
-  require(points.tail.init.forall(!_.isEndpoint),
-          s"Endpoint detected in middle, $points")
+case class OutcomePayoutPolynomial(points: Vector[OutcomePayoutPoint]) extends DLCPayoutCurvePiece {
+  require(points.head.isEndpoint && points.last.isEndpoint, s"First and last points must be endpoints, $points")
+  require(points.tail.init.forall(!_.isEndpoint), s"Endpoint detected in middle, $points")
 
   override lazy val leftEndpoint: OutcomePayoutEndpoint =
     points.head.asInstanceOf[OutcomePayoutEndpoint]
@@ -402,14 +358,12 @@ case class OutcomePayoutPolynomial(points: Vector[OutcomePayoutPoint])
     points.find(_.outcome == outcome) match {
       case Some(point) => bigDecimalSats(point.payout)
       case None =>
-        val allProd = points.foldLeft(BigDecimal(1)) {
-          case (prodSoFar, point) =>
-            prodSoFar * (outcome - point.outcome)
+        val allProd = points.foldLeft(BigDecimal(1)) { case (prodSoFar, point) =>
+          prodSoFar * (outcome - point.outcome)
         }
 
-        val value = coefficients.zipWithIndex.foldLeft(BigDecimal(0)) {
-          case (sumSoFar, (coefficientI, i)) =>
-            sumSoFar + (coefficientI * allProd / (outcome - points(i).outcome))
+        val value = coefficients.zipWithIndex.foldLeft(BigDecimal(0)) { case (sumSoFar, (coefficientI, i)) =>
+          sumSoFar + (coefficientI * allProd / (outcome - points(i).outcome))
         }
 
         bigDecimalSats(value)

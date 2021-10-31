@@ -17,37 +17,28 @@ import scala.concurrent.Future
   */
 trait V17LabelRpc { self: Client =>
 
-  def getAddressesByLabel(
-      label: String): Future[Map[BitcoinAddress, LabelResult]] = {
-    bitcoindCall[Map[BitcoinAddress, LabelResult]]("getaddressesbylabel",
-                                                   List(JsString(label)))
+  def getAddressesByLabel(label: String): Future[Map[BitcoinAddress, LabelResult]] = {
+    bitcoindCall[Map[BitcoinAddress, LabelResult]]("getaddressesbylabel", List(JsString(label)))
   }
 
-  def getReceivedByLabel(
-      account: String,
-      confirmations: Int = 1): Future[Bitcoins] = {
-    bitcoindCall[Bitcoins]("getreceivedbylabel",
-                           List(JsString(account), JsNumber(confirmations)))
+  def getReceivedByLabel(account: String, confirmations: Int = 1): Future[Bitcoins] = {
+    bitcoindCall[Bitcoins]("getreceivedbylabel", List(JsString(account), JsNumber(confirmations)))
   }
 
   def setLabel(address: BitcoinAddress, label: String): Future[Unit] = {
-    bitcoindCall[Unit]("setlabel",
-                       List(JsString(address.value), JsString(label)))
+    bitcoindCall[Unit]("setlabel", List(JsString(address.value), JsString(label)))
   }
 
-  def listLabels(
-      purpose: Option[LabelPurpose] = None): Future[Vector[String]] = {
-    bitcoindCall[Vector[String]]("listlabels",
-                                 List(JsString(purpose.getOrElse("").toString)))
+  def listLabels(purpose: Option[LabelPurpose] = None): Future[Vector[String]] = {
+    bitcoindCall[Vector[String]]("listlabels", List(JsString(purpose.getOrElse("").toString)))
   }
 
   def listReceivedByLabel(
       confirmations: Int = 1,
       includeEmpty: Boolean = false,
       includeWatchOnly: Boolean = false): Future[Vector[ReceivedLabel]] = {
-    bitcoindCall[Vector[ReceivedLabel]]("listreceivedbylabel",
-                                        List(JsNumber(confirmations),
-                                             JsBoolean(includeEmpty),
-                                             JsBoolean(includeWatchOnly)))
+    bitcoindCall[Vector[ReceivedLabel]](
+      "listreceivedbylabel",
+      List(JsNumber(confirmations), JsBoolean(includeEmpty), JsBoolean(includeWatchOnly)))
   }
 }

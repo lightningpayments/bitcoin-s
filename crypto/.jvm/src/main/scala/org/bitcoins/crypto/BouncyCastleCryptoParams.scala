@@ -9,8 +9,5 @@ object BouncyCastleCryptoParams {
 
   /** The curve that bitcoin uses. */
   val curve =
-    new ECDomainParameters(params.getCurve,
-                           params.getG,
-                           params.getN,
-                           params.getH)
+    new ECDomainParameters(params.getCurve, params.getG, params.getN, params.getH)
 }

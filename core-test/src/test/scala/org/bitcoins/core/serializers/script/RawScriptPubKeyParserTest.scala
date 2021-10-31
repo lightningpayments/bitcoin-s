@@ -17,8 +17,7 @@ class RawScriptPubKeyParserTest extends BitcoinSUnitTest {
   "RawScriptPubKeyParser" must "read then write the scriptPubKey and get the original scriptPubKey" in {
     val scriptPubKey: ScriptPubKey =
       RawScriptPubKeyParser.read(TestUtil.rawScriptPubKey)
-    encode(RawScriptPubKeyParser.write(scriptPubKey)) must be(
-      TestUtil.rawScriptPubKey)
+    encode(RawScriptPubKeyParser.write(scriptPubKey)) must be(TestUtil.rawScriptPubKey)
   }
 
   it must "read an EmptyScriptPubKey" in {

@@ -30,9 +30,7 @@ class BroadcastTransactionTest extends NodeTestWithCachedBitcoindNewest {
     val outcome: Future[Outcome] = for {
       _ <- torClientF
       bitcoind <- cachedBitcoindWithFundsF
-      outcome = withSpvNodeConnectedToBitcoindCached(test, bitcoind)(
-        system,
-        getFreshConfig)
+      outcome = withSpvNodeConnectedToBitcoindCached(test, bitcoind)(system, getFreshConfig)
       f <- outcome.toFuture
     } yield f
     new FutureOutcome(outcome)
@@ -78,8 +76,7 @@ class BroadcastTransactionTest extends NodeTestWithCachedBitcoindNewest {
           case BitcoindException.InvalidAddressOrKey(_) =>
             false
           case other =>
-            logger.error(
-              s"Received unexpected error on getrawtransaction: $other")
+            logger.error(s"Received unexpected error on getrawtransaction: $other")
             throw other
         }
     }
@@ -88,12 +85,8 @@ class BroadcastTransactionTest extends NodeTestWithCachedBitcoindNewest {
       for {
         _ <- node.broadcastTransaction(tx)
         txOpt <- node.txDAO.findByHash(tx.txId)
-        _ = assert(
-          txOpt.isDefined,
-          "Transaction was not added to BroadcastableTransaction database")
-        _ <- TestAsyncUtil.awaitConditionF(() => hasSeenTx(tx),
-                                           interval = 1.second,
-                                           maxTries = 25)
+        _ = assert(txOpt.isDefined, "Transaction was not added to BroadcastableTransaction database")
+        _ <- TestAsyncUtil.awaitConditionF(() => hasSeenTx(tx), interval = 1.second, maxTries = 25)
       } yield ()
     }
 

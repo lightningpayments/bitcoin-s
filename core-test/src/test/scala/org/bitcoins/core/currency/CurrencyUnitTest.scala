@@ -78,15 +78,14 @@ class CurrencyUnitTest extends BitcoinSUnitTest {
   }
 
   it must "subtract satoshis" in {
-    forAll(CurrencyUnitGenerator.satoshis, CurrencyUnitGenerator.satoshis) {
-      (num1: Satoshis, num2: Satoshis) =>
-        val result: Try[Int64] = Try(Int64(num1.toBigInt - num2.toBigInt))
-        if (
-          result.isSuccess && result.get >= Int64(Satoshis.min.toLong) &&
-          result.get <= Int64(Satoshis.max.toLong)
-        )
-          assert(num1 - num2 == Satoshis(result.get))
-        else assert(Try(num1 - num2).isFailure)
+    forAll(CurrencyUnitGenerator.satoshis, CurrencyUnitGenerator.satoshis) { (num1: Satoshis, num2: Satoshis) =>
+      val result: Try[Int64] = Try(Int64(num1.toBigInt - num2.toBigInt))
+      if (
+        result.isSuccess && result.get >= Int64(Satoshis.min.toLong) &&
+        result.get <= Int64(Satoshis.max.toLong)
+      )
+        assert(num1 - num2 == Satoshis(result.get))
+      else assert(Try(num1 - num2).isFailure)
     }
   }
 
@@ -103,15 +102,14 @@ class CurrencyUnitTest extends BitcoinSUnitTest {
   }
 
   it must "multiply satoshis" in {
-    forAll(CurrencyUnitGenerator.satoshis, CurrencyUnitGenerator.satoshis) {
-      (num1, num2) =>
-        val result: Try[Int64] = Try(Int64(num1.toBigInt * num2.toBigInt))
-        if (
-          result.isSuccess && result.get >= Int64(Satoshis.min.toLong) &&
-          result.get <= Int64(Satoshis.max.toLong)
-        )
-          num1 * num2 == Satoshis(result.get)
-        else Try(num1 * num2).isFailure
+    forAll(CurrencyUnitGenerator.satoshis, CurrencyUnitGenerator.satoshis) { (num1, num2) =>
+      val result: Try[Int64] = Try(Int64(num1.toBigInt * num2.toBigInt))
+      if (
+        result.isSuccess && result.get >= Int64(Satoshis.min.toLong) &&
+        result.get <= Int64(Satoshis.max.toLong)
+      )
+        num1 * num2 == Satoshis(result.get)
+      else Try(num1 * num2).isFailure
     }
   }
 
@@ -124,9 +122,7 @@ class CurrencyUnitTest extends BitcoinSUnitTest {
     forAll(satoshiWithInt) { case (sat, int) =>
       val safeProduct = sat.multiplySafe(int)
       val underlyingProduct = sat.toBigInt * int
-      if (
-        underlyingProduct < Satoshis.max.toBigInt && underlyingProduct > Satoshis.min.toBigInt
-      ) {
+      if (underlyingProduct < Satoshis.max.toBigInt && underlyingProduct > Satoshis.min.toBigInt) {
         assert(safeProduct.isSuccess)
         assert(safeProduct.get.satoshis.toBigInt == underlyingProduct)
       } else {
@@ -136,23 +132,20 @@ class CurrencyUnitTest extends BitcoinSUnitTest {
   }
 
   it must "have '< & >=' property" in {
-    forAll(CurrencyUnitGenerator.satoshis, CurrencyUnitGenerator.satoshis) {
-      (num1, num2) =>
-        assert((num1 < num2) || (num1 >= num2))
+    forAll(CurrencyUnitGenerator.satoshis, CurrencyUnitGenerator.satoshis) { (num1, num2) =>
+      assert((num1 < num2) || (num1 >= num2))
     }
   }
 
   it must "have '<= & >' property" in {
-    forAll(CurrencyUnitGenerator.satoshis, CurrencyUnitGenerator.satoshis) {
-      (num1, num2) =>
-        assert((num1 <= num2) || (num1 > num2))
+    forAll(CurrencyUnitGenerator.satoshis, CurrencyUnitGenerator.satoshis) { (num1, num2) =>
+      assert((num1 <= num2) || (num1 > num2))
     }
   }
 
   it must "have '== & !=' property" in {
-    forAll(CurrencyUnitGenerator.satoshis, CurrencyUnitGenerator.satoshis) {
-      (num1, num2) =>
-        assert((num1 == num2) || (num1 != num2))
+    forAll(CurrencyUnitGenerator.satoshis, CurrencyUnitGenerator.satoshis) { (num1, num2) =>
+      assert((num1 == num2) || (num1 != num2))
     }
   }
 
@@ -165,26 +158,24 @@ class CurrencyUnitTest extends BitcoinSUnitTest {
   }
 
   it must "be able to add two unique currency unit types" in {
-    forAll(CurrencyUnitGenerator.satoshis, CurrencyUnitGenerator.bitcoins) {
-      (sats: Satoshis, btc: Bitcoins) =>
-        val result =
-          Try(Satoshis(sats.toBigInt + btc.satoshis.toBigInt))
-        val expected = result.map(Bitcoins(_))
-        val actual: Try[CurrencyUnit] = Try(sats + btc)
-        if (actual.isSuccess && expected.isSuccess) actual.get == expected.get
-        else actual.isFailure && expected.isFailure
+    forAll(CurrencyUnitGenerator.satoshis, CurrencyUnitGenerator.bitcoins) { (sats: Satoshis, btc: Bitcoins) =>
+      val result =
+        Try(Satoshis(sats.toBigInt + btc.satoshis.toBigInt))
+      val expected = result.map(Bitcoins(_))
+      val actual: Try[CurrencyUnit] = Try(sats + btc)
+      if (actual.isSuccess && expected.isSuccess) actual.get == expected.get
+      else actual.isFailure && expected.isFailure
     }
   }
 
   it must "correctly compare two currency units" in {
-    forAll(CurrencyUnitGenerator.satoshis, CurrencyUnitGenerator.satoshis) {
-      (num1, num2) =>
-        if (num1 > num2)
-          assert(num1.compare(num2) == 1)
-        else if (num1 < num2)
-          assert(num1.compare(num2) == -1)
-        else
-          assert(num1.compare(num2) == 0)
+    forAll(CurrencyUnitGenerator.satoshis, CurrencyUnitGenerator.satoshis) { (num1, num2) =>
+      if (num1 > num2)
+        assert(num1.compare(num2) == 1)
+      else if (num1 < num2)
+        assert(num1.compare(num2) == -1)
+      else
+        assert(num1.compare(num2) == 0)
     }
   }
 

@@ -63,26 +63,18 @@ trait DLCWalletApi { self: WalletApi =>
   def broadcastDLCFundingTx(contractId: ByteVector): Future[Transaction]
 
   /** Creates the CET for the given contractId and oracle signature, does not broadcast it */
-  def executeDLC(
-      contractId: ByteVector,
-      oracleSig: OracleAttestmentTLV): Future[Transaction] =
+  def executeDLC(contractId: ByteVector, oracleSig: OracleAttestmentTLV): Future[Transaction] =
     executeDLC(contractId, Vector(oracleSig))
 
   /** Creates the CET for the given contractId and oracle signature, does not broadcast it */
-  def executeDLC(
-      contractId: ByteVector,
-      oracleSigs: Seq[OracleAttestmentTLV]): Future[Transaction]
+  def executeDLC(contractId: ByteVector, oracleSigs: Seq[OracleAttestmentTLV]): Future[Transaction]
 
   /** Creates the CET for the given contractId and oracle signature, does not broadcast it */
-  def executeDLC(
-      contractId: ByteVector,
-      oracleSig: OracleSignatures): Future[Transaction] =
+  def executeDLC(contractId: ByteVector, oracleSig: OracleSignatures): Future[Transaction] =
     executeDLC(contractId, Vector(oracleSig))
 
   /** Creates the CET for the given contractId and oracle signature, does not broadcast it */
-  def executeDLC(
-      contractId: ByteVector,
-      oracleSigs: Vector[OracleSignatures]): Future[Transaction]
+  def executeDLC(contractId: ByteVector, oracleSigs: Vector[OracleSignatures]): Future[Transaction]
 
   /** Creates the refund transaction for the given contractId, does not broadcast it */
   def executeDLCRefund(contractId: ByteVector): Future[Transaction]
@@ -98,8 +90,4 @@ trait DLCWalletApi { self: WalletApi =>
 }
 
 /** An HDWallet that supports DLCs and both Neutrino and SPV methods of syncing */
-trait AnyDLCHDWalletApi
-    extends HDWalletApi
-    with DLCWalletApi
-    with NeutrinoWalletApi
-    with SpvWalletApi
+trait AnyDLCHDWalletApi extends HDWalletApi with DLCWalletApi with NeutrinoWalletApi with SpvWalletApi

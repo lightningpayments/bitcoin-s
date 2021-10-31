@@ -1,26 +1,17 @@
 package org.bitcoins.core.script.bitwise
 
 import org.bitcoins.core.script.constant._
-import org.bitcoins.core.script.control.{
-  ControlOperationsInterpreter,
-  OP_VERIFY
-}
+import org.bitcoins.core.script.control.{ControlOperationsInterpreter, OP_VERIFY}
 import org.bitcoins.core.script.result._
-import org.bitcoins.core.script.{
-  ExecutedScriptProgram,
-  ExecutionInProgressScriptProgram,
-  StartedScriptProgram
-}
+import org.bitcoins.core.script.{ExecutedScriptProgram, ExecutionInProgressScriptProgram, StartedScriptProgram}
 
 /** Created by chris on 1/6/16.
   */
 sealed abstract class BitwiseInterpreter {
 
   /** Returns 1 if the inputs are exactly equal, 0 otherwise. */
-  def opEqual(
-      program: ExecutionInProgressScriptProgram): StartedScriptProgram = {
-    require(program.script.headOption.contains(OP_EQUAL),
-            "Script operation must be OP_EQUAL")
+  def opEqual(program: ExecutionInProgressScriptProgram): StartedScriptProgram = {
+    require(program.script.headOption.contains(OP_EQUAL), "Script operation must be OP_EQUAL")
     if (program.stack.size < 2) {
       program.failExecution(ScriptErrorInvalidStackOperation)
     } else {
@@ -38,18 +29,15 @@ sealed abstract class BitwiseInterpreter {
         case _ => h.bytes == h1.bytes
       }
       val scriptBoolean = if (result) OP_TRUE else OP_FALSE
-      program.updateStackAndScript(scriptBoolean :: program.stack.tail.tail,
-                                   program.script.tail)
+      program.updateStackAndScript(scriptBoolean :: program.stack.tail.tail, program.script.tail)
     }
   }
 
   /** Same as [[org.bitcoins.core.script.bitwise.OP_EQUAL OP_EQUAL]], but runs
     * [[org.bitcoins.core.script.control.OP_VERIFY OP_VERIFY]] afterward.
     */
-  def opEqualVerify(
-      program: ExecutionInProgressScriptProgram): StartedScriptProgram = {
-    require(program.script.headOption.contains(OP_EQUALVERIFY),
-            "Script operation must be OP_EQUALVERIFY")
+  def opEqualVerify(program: ExecutionInProgressScriptProgram): StartedScriptProgram = {
+    require(program.script.headOption.contains(OP_EQUALVERIFY), "Script operation must be OP_EQUALVERIFY")
     if (program.stack.size > 1) {
       //first replace OP_EQUALVERIFY with OP_EQUAL and OP_VERIFY
       val simpleScript = OP_EQUAL :: OP_VERIFY :: program.script.tail

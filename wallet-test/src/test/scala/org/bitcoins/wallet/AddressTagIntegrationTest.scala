@@ -5,12 +5,7 @@ import org.bitcoins.core.hd.HDChainType
 import org.bitcoins.core.protocol.transaction.TransactionOutput
 import org.bitcoins.core.wallet.builder.RawTxSigner
 import org.bitcoins.core.wallet.utxo.{InternalAddressTag, StorageLocationTag}
-import org.bitcoins.testkit.wallet.{
-  BitcoinSWalletTest,
-  WalletTestUtil,
-  WalletWithBitcoind,
-  WalletWithBitcoindRpc
-}
+import org.bitcoins.testkit.wallet.{BitcoinSWalletTest, WalletTestUtil, WalletWithBitcoind, WalletWithBitcoindRpc}
 import org.scalatest.FutureOutcome
 
 class AddressTagIntegrationTest extends BitcoinSWalletTest {
@@ -35,8 +30,7 @@ class AddressTagIntegrationTest extends BitcoinSWalletTest {
     for {
       addr <- wallet.getNewAddress()
       taggedAddr <- wallet.getNewAddress(Vector(exampleTag))
-      txId <- bitcoind.sendMany(
-        Map(addr -> valueFromBitcoind, taggedAddr -> valueFromBitcoind))
+      txId <- bitcoind.sendMany(Map(addr -> valueFromBitcoind, taggedAddr -> valueFromBitcoind))
       tx <- bitcoind.getRawTransactionRaw(txId)
 
       // before processing TX, wallet should be completely empty
@@ -93,8 +87,7 @@ class AddressTagIntegrationTest extends BitcoinSWalletTest {
     } yield {
       // One change one external
       assert(utxos.size == 2)
-      assert(
-        utxos.exists(_.privKeyPath.chain.chainType == HDChainType.External))
+      assert(utxos.exists(_.privKeyPath.chain.chainType == HDChainType.External))
       assert(utxos.exists(_.privKeyPath.chain.chainType == HDChainType.Change))
 
       // untagged balance should be untouched
@@ -106,10 +99,7 @@ class AddressTagIntegrationTest extends BitcoinSWalletTest {
 
       val feePaid =
         utxoInfos.map(_.output.value).sum - signedTx.outputs.map(_.value).sum
-      assert(
-        WalletTestUtil.isCloseEnough(tagBalancePostSend,
-                                     valueFromBitcoind - valueToBitcoind,
-                                     delta = feePaid))
+      assert(WalletTestUtil.isCloseEnough(tagBalancePostSend, valueFromBitcoind - valueToBitcoind, delta = feePaid))
     }
   }
 }

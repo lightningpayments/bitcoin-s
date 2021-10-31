@@ -2,12 +2,7 @@ package org.bitcoins.core.api.wallet.db
 
 import org.bitcoins.core.hd._
 import org.bitcoins.core.protocol.script.{ScriptPubKey, ScriptWitness}
-import org.bitcoins.core.protocol.{
-  Bech32Address,
-  BitcoinAddress,
-  P2PKHAddress,
-  P2SHAddress
-}
+import org.bitcoins.core.protocol.{Bech32Address, BitcoinAddress, P2PKHAddress, P2SHAddress}
 import org.bitcoins.crypto.{ECPublicKey, Sha256Hash160Digest}
 
 case class AddressRecord(
@@ -44,15 +39,9 @@ case class AddressRecord(
                                 accountIndex = accountIndex,
                                 chainType = accountChain,
                                 addressIndex = addressIndex)
-        LegacyAddressDb(path,
-                        pubKey,
-                        hashedPubKey,
-                        legacyAddr,
-                        scriptPubKey = scriptPubKey)
+        LegacyAddressDb(path, pubKey, hashedPubKey, legacyAddr, scriptPubKey = scriptPubKey)
 
-      case (HDPurposes.NestedSegWit,
-            address: P2SHAddress,
-            Some(scriptWitness)) =>
+      case (HDPurposes.NestedSegWit, address: P2SHAddress, Some(scriptWitness)) =>
         val path = NestedSegWitHDPath(coinType = accountCoin,
                                       accountIndex = accountIndex,
                                       chainType = accountChain,
@@ -74,12 +63,7 @@ object AddressRecord {
 
   def fromAddressDb(addressDb: AddressDb, scriptPubKeyId: Long): AddressRecord =
     addressDb match {
-      case SegWitAddressDb(path,
-                           pubKey,
-                           hashedPubKey,
-                           address,
-                           scriptWitness,
-                           _) =>
+      case SegWitAddressDb(path, pubKey, hashedPubKey, address, scriptWitness, _) =>
         AddressRecord(
           path.purpose,
           path.coin.coinType,
@@ -105,12 +89,7 @@ object AddressRecord {
           scriptPubKeyId,
           None // scriptwitness
         )
-      case NestedSegWitAddressDb(path,
-                                 pubKey,
-                                 hashedPubKey,
-                                 address,
-                                 scriptWitness,
-                                 _) =>
+      case NestedSegWitAddressDb(path, pubKey, hashedPubKey, address, scriptWitness, _) =>
         AddressRecord(
           path.purpose,
           path.coin.coinType,

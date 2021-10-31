@@ -8,8 +8,7 @@ import scodec.bits.ByteVector
 
 import scala.annotation.tailrec
 
-trait RawGetHeadersMessageSerializer
-    extends RawBitcoinSerializer[GetHeadersMessage] {
+trait RawGetHeadersMessageSerializer extends RawBitcoinSerializer[GetHeadersMessage] {
 
   override def read(bytes: ByteVector): GetHeadersMessage = {
     val version = ProtocolVersion(bytes.take(4))
@@ -35,16 +34,12 @@ trait RawGetHeadersMessageSerializer
     * @param numHashes the number of hases that need to be parsed
     * @return the parsed hases and the remaining bytes in the network message
     */
-  private def parseHashes(
-      bytes: ByteVector,
-      numHashes: CompactSizeUInt): (List[DoubleSha256Digest], ByteVector) = {
+  private def parseHashes(bytes: ByteVector, numHashes: CompactSizeUInt): (List[DoubleSha256Digest], ByteVector) = {
     @tailrec
     def loop(
         remainingBytes: ByteVector,
         remainingHashes: Long,
-        accum: List[DoubleSha256Digest]): (
-        List[DoubleSha256Digest],
-        ByteVector) = {
+        accum: List[DoubleSha256Digest]): (List[DoubleSha256Digest], ByteVector) = {
       if (remainingHashes <= 0) (accum, remainingBytes)
       else {
         val hash = DoubleSha256Digest(remainingBytes.take(32))

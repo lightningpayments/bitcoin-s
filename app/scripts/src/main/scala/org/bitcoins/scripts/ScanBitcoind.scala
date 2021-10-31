@@ -17,9 +17,7 @@ import scala.concurrent.Future
   * between bitcoin-s and bitcoind inside of bitcoin-s.conf
   * @see https://bitcoin-s.org/docs/config/configuration#example-configuration-file
   */
-class ScanBitcoind()(implicit
-    override val system: ActorSystem,
-    rpcAppConfig: BitcoindRpcAppConfig)
+class ScanBitcoind()(implicit override val system: ActorSystem, rpcAppConfig: BitcoindRpcAppConfig)
     extends BitcoinSRunner {
 
   override def start(): Future[Unit] = {
@@ -49,8 +47,7 @@ class ScanBitcoind()(implicit
       bitcoind: BitcoindRpcClient,
       source: Source[Int, NotUsed],
       f: Block => T,
-      numParallelism: Int =
-        Runtime.getRuntime.availableProcessors() * 2): Future[Seq[T]] = {
+      numParallelism: Int = Runtime.getRuntime.availableProcessors() * 2): Future[Seq[T]] = {
     source
       .mapAsync(parallelism = numParallelism) { height =>
         bitcoind
@@ -59,8 +56,7 @@ class ScanBitcoind()(implicit
           .map(b => (b, height))
       }
       .mapAsync(numParallelism) { case (block, height) =>
-        logger.info(
-          s"Searching block at height=$height hashBE=${block.blockHeader.hashBE.hex}")
+        logger.info(s"Searching block at height=$height hashBE=${block.blockHeader.hashBE.hex}")
         Future {
           f(block)
         }
@@ -69,10 +65,7 @@ class ScanBitcoind()(implicit
       .run()
   }
 
-  def countSegwitTxs(
-      bitcoind: BitcoindRpcClient,
-      startHeight: Int,
-      endHeight: Int): Future[Unit] = {
+  def countSegwitTxs(bitcoind: BitcoindRpcClient, startHeight: Int, endHeight: Int): Future[Unit] = {
     val startTime = System.currentTimeMillis()
     val source: Source[Int, NotUsed] = Source(startHeight.to(endHeight))
 

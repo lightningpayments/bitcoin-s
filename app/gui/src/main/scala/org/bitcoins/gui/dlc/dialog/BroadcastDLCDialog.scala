@@ -20,9 +20,7 @@ import java.nio.file.Files
 import scala.collection._
 import scala.util.{Failure, Success, Try}
 
-object BroadcastDLCDialog
-    extends Logging
-    with CliCommandProducer[AddDLCSigsAndBroadcastCliCommand] {
+object BroadcastDLCDialog extends Logging with CliCommandProducer[AddDLCSigsAndBroadcastCliCommand] {
 
   override def getCliCommand(): AddDLCSigsAndBroadcastCliCommand = {
     DLCDialog.signDLCFile match {
@@ -35,12 +33,9 @@ object BroadcastDLCDialog
     }
   }
 
-  private var dialogOpt: Option[
-    Dialog[Option[AddDLCSigsAndBroadcastCliCommand]]] = None
+  private var dialogOpt: Option[Dialog[Option[AddDLCSigsAndBroadcastCliCommand]]] = None
 
-  def showAndWait(
-      parentWindow: Window,
-      hex: String = ""): Option[AddDLCSigsAndBroadcastCliCommand] = {
+  def showAndWait(parentWindow: Window, hex: String = ""): Option[AddDLCSigsAndBroadcastCliCommand] = {
     val dialog = new Dialog[Option[AddDLCSigsAndBroadcastCliCommand]]() {
       initOwner(parentWindow)
       title = "Add DLC Signatures"
@@ -244,13 +239,12 @@ object BroadcastDLCDialog
       nextRow += 1
 
       gridPane.add(new Label("Refund Date"), 0, nextRow)
-      gridPane.add(
-        new TextField() {
-          text = GUIUtil.epochToDateString(status.timeouts.contractTimeout)
-          editable = false
-        },
-        1,
-        nextRow)
+      gridPane.add(new TextField() {
+                     text = GUIUtil.epochToDateString(status.timeouts.contractTimeout)
+                     editable = false
+                   },
+                   1,
+                   nextRow)
       nextRow += 1
     }
 
@@ -258,9 +252,7 @@ object BroadcastDLCDialog
 
     def onSignKeyTyped() = {
       if (!dlcDetailsShown) {
-        Try(
-          LnMessageFactory(DLCSignTLV).fromHex(
-            signTLVTF.text.value.trim)) match {
+        Try(LnMessageFactory(DLCSignTLV).fromHex(signTLVTF.text.value.trim)) match {
           case Failure(_) => ()
           case Success(lnMessage) =>
             showDetails(lnMessage, isFromFile = false)
@@ -268,9 +260,7 @@ object BroadcastDLCDialog
       }
     }
 
-    def showDetails(
-        lnMessage: LnMessage[DLCSignTLV],
-        isFromFile: Boolean): Unit = {
+    def showDetails(lnMessage: LnMessage[DLCSignTLV], isFromFile: Boolean): Unit = {
       val tempId = lnMessage.tlv.contractId
       dlcs.find(getContractId(_).contains(tempId)) match {
         case Some(dlc) =>

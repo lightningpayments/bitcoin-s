@@ -40,8 +40,7 @@ class Bech32Test extends BitcoinSUnitTest {
 
   it must "follow the example in BIP173" in {
     //https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki#examples
-    val key = ECPublicKey(
-      "0279BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798".toLowerCase)
+    val key = ECPublicKey("0279BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798".toLowerCase)
     val p2wpkh = P2WPKHWitnessSPKV0(key)
     val addr = Bech32Address(p2wpkh, TestNet3)
     addr.value must be("tb1qw508d6qejxtdg4y5r3zarvary0c5xw7kxpjzsx")
@@ -59,37 +58,25 @@ class Bech32Test extends BitcoinSUnitTest {
     val p2pk = P2PKScriptPubKey(key)
     val p2wsh = P2WSHWitnessSPKV0(p2pk)
     val addr1 = Bech32Address(p2wsh, TestNet3)
-    addr1.value must be(
-      "tb1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3q0sl5k7")
+    addr1.value must be("tb1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3q0sl5k7")
 
     //decode
     val decoded1 = Bech32Address.fromStringToWitSPK(addr1.value)
     decoded1 must be(Success(p2wsh))
 
     val p2wshMain = Bech32Address(p2wsh, MainNet)
-    p2wshMain.value must be(
-      "bc1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3qccfmv3")
+    p2wshMain.value must be("bc1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3qccfmv3")
     val mp2wshDecoded = Bech32Address.fromStringToWitSPK(p2wshMain.value)
     mp2wshDecoded must be(Success(p2wsh))
   }
 
   it must "expand the human readable part correctly - BTC" in {
-    BtcHumanReadablePart.bc.expand must be(
-      Vector(UInt5(3), UInt5(3), UInt5(0), UInt5(2), UInt5(3)))
+    BtcHumanReadablePart.bc.expand must be(Vector(UInt5(3), UInt5(3), UInt5(0), UInt5(2), UInt5(3)))
 
-    BtcHumanReadablePart.tb.expand must be(
-      Vector(UInt5(3), UInt5(3), UInt5(0), UInt5(20), UInt5(2)))
+    BtcHumanReadablePart.tb.expand must be(Vector(UInt5(3), UInt5(3), UInt5(0), UInt5(20), UInt5(2)))
 
     BtcHumanReadablePart.bcrt.expand must be(
-      Vector(UInt5(3),
-             UInt5(3),
-             UInt5(3),
-             UInt5(3),
-             UInt5(0),
-             UInt5(2),
-             UInt5(3),
-             UInt5(18),
-             UInt5(20)))
+      Vector(UInt5(3), UInt5(3), UInt5(3), UInt5(3), UInt5(0), UInt5(2), UInt5(3), UInt5(18), UInt5(20)))
 
   }
   it must "expand the human readable part correctly - LN no amount" in {
@@ -200,20 +187,15 @@ class Bech32Test extends BitcoinSUnitTest {
       Bech32.from8bitTo5bit(Vector(255, 255).map(i => UInt8(i.toShort)))
     encoded3 must be(Seq(31, 31, 31, 16).map(i => UInt5(i.toByte)))
 
-    val encoded4 = Bech32.from8bitTo5bit(
-      Vector(255, 255, 255, 255).map(i => UInt8(i.toShort)))
+    val encoded4 = Bech32.from8bitTo5bit(Vector(255, 255, 255, 255).map(i => UInt8(i.toShort)))
     encoded4 must be(Seq(31, 31, 31, 31, 31, 31, 24).map(i => UInt5(i.toByte)))
 
-    val encoded5 = Bech32.from8bitTo5bit(
-      Vector(255, 255, 255, 255, 255).map(i => UInt8(i.toShort)))
-    encoded5 must be(
-      Seq(31, 31, 31, 31, 31, 31, 31, 31).map(i => UInt5(i.toByte)))
+    val encoded5 = Bech32.from8bitTo5bit(Vector(255, 255, 255, 255, 255).map(i => UInt8(i.toShort)))
+    encoded5 must be(Seq(31, 31, 31, 31, 31, 31, 31, 31).map(i => UInt5(i.toByte)))
 
-    val encoded6 = Bech32.from8bitTo5bit(
-      Vector(255, 255, 255, 255, 255, 255).map(i => UInt8(i.toByte)))
+    val encoded6 = Bech32.from8bitTo5bit(Vector(255, 255, 255, 255, 255, 255).map(i => UInt8(i.toByte)))
 
-    encoded6 must be(
-      Seq(31, 31, 31, 31, 31, 31, 31, 31, 31, 28).map(i => UInt5(i.toByte)))
+    encoded6 must be(Seq(31, 31, 31, 31, 31, 31, 31, 31, 31, 28).map(i => UInt5(i.toByte)))
   }
 
   it must "encode from 8 bit to 5 bit and back" in {
@@ -232,8 +214,7 @@ class Bech32Test extends BitcoinSUnitTest {
     "bc1q3qwt6j7yr9nzhskdh36eh6ktesy93ggwjfs9p"
   )
   it must "fail to find the bech32 weakness" in {
-    val failsAll = invalidBech32.forall(invalid =>
-      Bech32.splitToHrpAndData(invalid, Bech32Encoding.Bech32).isSuccess)
+    val failsAll = invalidBech32.forall(invalid => Bech32.splitToHrpAndData(invalid, Bech32Encoding.Bech32).isSuccess)
     assert(failsAll)
   }
 
@@ -253,14 +234,12 @@ class Bech32Test extends BitcoinSUnitTest {
   it must "fail to read a segwitV1 bech32 address" in {
     assert(
       Bech32Address
-        .fromStringT(
-          "tb1prp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3q0sl5k7")
+        .fromStringT("tb1prp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3q0sl5k7")
         .isFailure)
 
     assert(
       Bech32Address
-        .fromStringT(
-          "bc1prp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3q0sl5k7")
+        .fromStringT("bc1prp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3q0sl5k7")
         .isFailure)
   }
 

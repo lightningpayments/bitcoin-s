@@ -12,8 +12,7 @@ import scala.util._
 
 abstract class CLightningUnixSocketHandler { self: CLightningRpcClient =>
 
-  def clightningCall[T](command: String, parameters: JsValue = JsArray.empty)(
-      implicit reader: Reads[T]): Future[T] = {
+  def clightningCall[T](command: String, parameters: JsValue = JsArray.empty)(implicit reader: Reads[T]): Future[T] = {
     logger.trace(s"clightning rpc call $command")
     val responseF = sendRequest(command, parameters)
 
@@ -22,8 +21,7 @@ abstract class CLightningUnixSocketHandler { self: CLightningRpcClient =>
     }
   }
 
-  private def parseResult[T](payload: RpcResult, commandName: String)(implicit
-      reader: Reads[T]): T = {
+  private def parseResult[T](payload: RpcResult, commandName: String)(implicit reader: Reads[T]): T = {
     payload.result match {
       case Some(result) =>
         result.validate[T] match {
@@ -45,12 +43,10 @@ abstract class CLightningUnixSocketHandler { self: CLightningRpcClient =>
                 logger.error(errMsg)
                 throw new RuntimeException(err.message)
               case JsError(_) =>
-                throw new RuntimeException(
-                  s"Could not parse error for command: $commandName, json: $errJs")
+                throw new RuntimeException(s"Could not parse error for command: $commandName, json: $errJs")
             }
           case None =>
-            throw new RuntimeException(
-              s"Did not get result or error for command: $commandName")
+            throw new RuntimeException(s"Did not get result or error for command: $commandName")
         }
     }
   }
@@ -67,14 +63,10 @@ abstract class CLightningUnixSocketHandler { self: CLightningRpcClient =>
       }
   }
 
-  private def sendRequest(
-      methodName: String,
-      params: JsValue): Future[RpcResult] = {
+  private def sendRequest(methodName: String, params: JsValue): Future[RpcResult] = {
     val uuid = UUID.randomUUID().toString
-    val map: Map[String, JsValue] = Map("jsonrpc" -> JsString("2.0"),
-                                        "id" -> JsString(uuid),
-                                        "method" -> JsString(methodName),
-                                        "params" -> params)
+    val map: Map[String, JsValue] =
+      Map("jsonrpc" -> JsString("2.0"), "id" -> JsString(uuid), "method" -> JsString(methodName), "params" -> params)
 
     val request: ByteString =
       HttpEntity(ContentTypes.`application/json`, JsObject(map).toString()).data
@@ -129,11 +121,7 @@ abstract class CLightningUnixSocketHandler { self: CLightningRpcClient =>
   }
 }
 
-private[clightning] case class RpcResult(
-    jsonrpc: String,
-    id: String,
-    result: Option[JsValue],
-    error: Option[JsValue])
+private[clightning] case class RpcResult(jsonrpc: String, id: String, result: Option[JsValue], error: Option[JsValue])
 
 private[clightning] case class RpcError(code: Long, message: String)
 

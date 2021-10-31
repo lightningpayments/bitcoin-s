@@ -53,8 +53,7 @@ class WalletAppConfigTest extends BitcoinSAsyncTest {
     val otherConf = ConfigFactory.parseString(
       s"bitcoin-s.wallet.defaultAccountType = segwit"
     )
-    val thirdConf = ConfigFactory.parseString(
-      s"bitcoin-s.wallet.defaultAccountType = nested-segwit")
+    val thirdConf = ConfigFactory.parseString(s"bitcoin-s.wallet.defaultAccountType = nested-segwit")
 
     val overriden = config.withOverrides(otherConf)
 

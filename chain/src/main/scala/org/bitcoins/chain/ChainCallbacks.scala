@@ -8,23 +8,16 @@ import scala.concurrent.{ExecutionContext, Future}
 
 trait ChainCallbacks {
 
-  def onBlockHeaderConnected: CallbackHandler[
-    (Int, BlockHeader),
-    OnBlockHeaderConnected]
+  def onBlockHeaderConnected: CallbackHandler[(Int, BlockHeader), OnBlockHeaderConnected]
 
   def +(other: ChainCallbacks): ChainCallbacks
 
-  def executeOnBlockHeaderConnectedCallbacks(
-      logger: Logger,
-      height: Int,
-      header: BlockHeader)(implicit ec: ExecutionContext): Future[Unit] = {
+  def executeOnBlockHeaderConnectedCallbacks(logger: Logger, height: Int, header: BlockHeader)(implicit
+      ec: ExecutionContext): Future[Unit] = {
 
     onBlockHeaderConnected.execute(
       (height, header),
-      (err: Throwable) =>
-        logger.error(
-          s"${onBlockHeaderConnected.name} Callback failed with error: ",
-          err))
+      (err: Throwable) => logger.error(s"${onBlockHeaderConnected.name} Callback failed with error: ", err))
   }
 
 }
@@ -35,14 +28,11 @@ trait OnBlockHeaderConnected extends Callback2[Int, BlockHeader]
 object ChainCallbacks {
 
   private case class ChainCallbacksImpl(
-      onBlockHeaderConnected: CallbackHandler[
-        (Int, BlockHeader),
-        OnBlockHeaderConnected])
+      onBlockHeaderConnected: CallbackHandler[(Int, BlockHeader), OnBlockHeaderConnected])
       extends ChainCallbacks {
 
     override def +(other: ChainCallbacks): ChainCallbacks =
-      copy(onBlockHeaderConnected =
-        onBlockHeaderConnected ++ other.onBlockHeaderConnected)
+      copy(onBlockHeaderConnected = onBlockHeaderConnected ++ other.onBlockHeaderConnected)
   }
 
   /** Constructs a set of callbacks that only acts on block headers connected */
@@ -52,11 +42,7 @@ object ChainCallbacks {
   lazy val empty: ChainCallbacks =
     ChainCallbacks(onBlockHeaderConnected = Vector.empty)
 
-  def apply(
-      onBlockHeaderConnected: Vector[OnBlockHeaderConnected] =
-        Vector.empty): ChainCallbacks =
+  def apply(onBlockHeaderConnected: Vector[OnBlockHeaderConnected] = Vector.empty): ChainCallbacks =
     ChainCallbacksImpl(onBlockHeaderConnected =
-      CallbackHandler[(Int, BlockHeader), OnBlockHeaderConnected](
-        "onBlockHeaderConnected",
-        onBlockHeaderConnected))
+      CallbackHandler[(Int, BlockHeader), OnBlockHeaderConnected]("onBlockHeaderConnected", onBlockHeaderConnected))
 }

@@ -1,10 +1,6 @@
 package org.bitcoins.core.protocol.dlc.models
 
-import org.bitcoins.core.protocol.tlv.{
-  EnumEventDescriptorV0TLV,
-  EnumOutcome,
-  NumericEventDescriptorTLV
-}
+import org.bitcoins.core.protocol.tlv.{EnumEventDescriptorV0TLV, EnumOutcome, NumericEventDescriptorTLV}
 
 /** A pair of [[ContractDescriptor]] and [[OracleInfo]]
   * This type is meant to ensure consistentcy between various
@@ -18,9 +14,7 @@ sealed trait ContractOraclePair {
 
 object ContractOraclePair {
 
-  case class EnumPair(
-      contractDescriptor: EnumContractDescriptor,
-      oracleInfo: EnumOracleInfo)
+  case class EnumPair(contractDescriptor: EnumContractDescriptor, oracleInfo: EnumOracleInfo)
       extends ContractOraclePair {
 
     private val descriptorOutcomes =
@@ -40,9 +34,7 @@ object ContractOraclePair {
     require(isValid, s"OracleInfo did not match ContractDescriptor: $this")
   }
 
-  case class NumericPair(
-      contractDescriptor: NumericContractDescriptor,
-      oracleInfo: NumericOracleInfo)
+  case class NumericPair(contractDescriptor: NumericContractDescriptor, oracleInfo: NumericOracleInfo)
       extends ContractOraclePair {
 
     private val isValid = oracleInfo.singleOracleInfos.forall { singleInfo =>
@@ -58,9 +50,7 @@ object ContractOraclePair {
   /** Returns a valid [[ContractOraclePair]] if the
     * [[ContractDescriptor]] and [[OracleInfo]] are of the same type
     */
-  def fromDescriptorOracleOpt(
-      descriptor: ContractDescriptor,
-      oracleInfo: OracleInfo): Option[ContractOraclePair] = {
+  def fromDescriptorOracleOpt(descriptor: ContractDescriptor, oracleInfo: OracleInfo): Option[ContractOraclePair] = {
     (descriptor, oracleInfo) match {
       case (e: EnumContractDescriptor, o: EnumOracleInfo) =>
         Some(EnumPair(e, o))
@@ -76,14 +66,11 @@ object ContractOraclePair {
   /** Returns a valid [[ContractOraclePair]] if the
     * [[ContractDescriptor]] and [[OracleInfo]] are of the same type
     */
-  def fromDescriptorOracle(
-      descriptor: ContractDescriptor,
-      oracleInfo: OracleInfo): ContractOraclePair = {
+  def fromDescriptorOracle(descriptor: ContractDescriptor, oracleInfo: OracleInfo): ContractOraclePair = {
     fromDescriptorOracleOpt(descriptor, oracleInfo) match {
       case Some(pair) => pair
       case None =>
-        sys.error(
-          s"You passed in an incompatible contract/oracle pair, contract=$descriptor, oracle=$oracleInfo")
+        sys.error(s"You passed in an incompatible contract/oracle pair, contract=$descriptor, oracle=$oracleInfo")
     }
   }
 }

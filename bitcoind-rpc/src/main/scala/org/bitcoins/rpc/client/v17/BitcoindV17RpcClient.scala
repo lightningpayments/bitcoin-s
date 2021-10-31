@@ -1,11 +1,7 @@
 package org.bitcoins.rpc.client.v17
 
 import akka.actor.ActorSystem
-import org.bitcoins.commons.jsonmodels.bitcoind.{
-  RpcOpts,
-  SignRawTransactionResult,
-  TestMempoolAcceptResult
-}
+import org.bitcoins.commons.jsonmodels.bitcoind.{RpcOpts, SignRawTransactionResult, TestMempoolAcceptResult}
 import org.bitcoins.commons.serializers.JsonSerializers._
 import org.bitcoins.commons.serializers.JsonWriters._
 import org.bitcoins.core.api.chain.ChainQueryApi
@@ -30,8 +26,7 @@ import scala.util.Try
   *                   in the Bitcoin Core wallet or a manually provided private key.
   *                   These RPC calls are now separated out into two distinct calls.
   */
-class BitcoindV17RpcClient(override val instance: BitcoindInstance)(implicit
-    actorSystem: ActorSystem)
+class BitcoindV17RpcClient(override val instance: BitcoindInstance)(implicit actorSystem: ActorSystem)
     extends BitcoindRpcClient(instance)
     with V17LabelRpc {
 
@@ -47,22 +42,18 @@ class BitcoindV17RpcClient(override val instance: BitcoindInstance)(implicit
 
   override def getFilterHeaderCount(): Future[Int] = filtersUnsupported
 
-  override def getFilterHeadersAtHeight(
-      height: Int): Future[Vector[CompactFilterHeaderDb]] = filtersUnsupported
+  override def getFilterHeadersAtHeight(height: Int): Future[Vector[CompactFilterHeaderDb]] = filtersUnsupported
 
   override def getBestFilterHeader(): Future[Option[CompactFilterHeaderDb]] =
     filtersUnsupported
 
-  override def getFilterHeader(
-      blockHash: DoubleSha256DigestBE): Future[Option[CompactFilterHeaderDb]] =
+  override def getFilterHeader(blockHash: DoubleSha256DigestBE): Future[Option[CompactFilterHeaderDb]] =
     filtersUnsupported
 
-  override def getFilter(
-      hash: DoubleSha256DigestBE): Future[Option[CompactFilterDb]] =
+  override def getFilter(hash: DoubleSha256DigestBE): Future[Option[CompactFilterDb]] =
     filtersUnsupported
 
-  override def getFiltersAtHeight(
-      height: Int): Future[Vector[CompactFilterDb]] = filtersUnsupported
+  override def getFiltersAtHeight(height: Int): Future[Vector[CompactFilterDb]] = filtersUnsupported
 
   /** $signRawTx
     *
@@ -71,14 +62,11 @@ class BitcoindV17RpcClient(override val instance: BitcoindInstance)(implicit
     */
   def signRawTransactionWithWallet(
       transaction: Transaction,
-      utxoDeps: Vector[RpcOpts.SignRawTransactionOutputParameter] =
-        Vector.empty,
+      utxoDeps: Vector[RpcOpts.SignRawTransactionOutputParameter] = Vector.empty,
       sigHash: HashType = HashType.sigHashAll
   ): Future[SignRawTransactionResult] =
     bitcoindCall[SignRawTransactionResult]("signrawtransactionwithwallet",
-                                           List(JsString(transaction.hex),
-                                                Json.toJson(utxoDeps),
-                                                Json.toJson(sigHash)))
+                                           List(JsString(transaction.hex), Json.toJson(utxoDeps), Json.toJson(sigHash)))
 
   /** $signRawTx
     *
@@ -88,21 +76,16 @@ class BitcoindV17RpcClient(override val instance: BitcoindInstance)(implicit
   def signRawTransactionWithKey(
       transaction: Transaction,
       keys: Vector[ECPrivateKey],
-      utxoDeps: Vector[RpcOpts.SignRawTransactionOutputParameter] =
-        Vector.empty,
+      utxoDeps: Vector[RpcOpts.SignRawTransactionOutputParameter] = Vector.empty,
       sigHash: HashType = HashType.sigHashAll
   ): Future[SignRawTransactionResult] =
-    bitcoindCall[SignRawTransactionResult]("signrawtransactionwithkey",
-                                           List(JsString(transaction.hex),
-                                                Json.toJson(keys),
-                                                Json.toJson(utxoDeps),
-                                                Json.toJson(sigHash)))
+    bitcoindCall[SignRawTransactionResult](
+      "signrawtransactionwithkey",
+      List(JsString(transaction.hex), Json.toJson(keys), Json.toJson(utxoDeps), Json.toJson(sigHash)))
 
   // testmempoolaccept expects (and returns) a list of txes,
   // but currently only lists of length 1 is supported
-  def testMempoolAccept(
-      transaction: Transaction,
-      allowHighFees: Boolean = false): Future[TestMempoolAcceptResult] = {
+  def testMempoolAccept(transaction: Transaction, allowHighFees: Boolean = false): Future[TestMempoolAcceptResult] = {
     bitcoindCall[Vector[TestMempoolAcceptResult]](
       "testmempoolaccept",
       List(JsArray(Vector(Json.toJson(transaction))), JsBoolean(allowHighFees)))
@@ -128,12 +111,10 @@ object BitcoindV17RpcClient {
     * advanced users, where you need fine grained control
     * over the RPC client.
     */
-  def withActorSystem(instance: BitcoindInstance)(implicit
-      system: ActorSystem): BitcoindV17RpcClient =
+  def withActorSystem(instance: BitcoindInstance)(implicit system: ActorSystem): BitcoindV17RpcClient =
     new BitcoindV17RpcClient(instance)
 
-  def fromUnknownVersion(
-      rpcClient: BitcoindRpcClient): Try[BitcoindV17RpcClient] =
+  def fromUnknownVersion(rpcClient: BitcoindRpcClient): Try[BitcoindV17RpcClient] =
     Try {
       new BitcoindV17RpcClient(rpcClient.instance)(rpcClient.system)
     }

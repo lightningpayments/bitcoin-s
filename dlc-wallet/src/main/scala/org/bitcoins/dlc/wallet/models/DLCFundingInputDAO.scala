@@ -3,10 +3,7 @@ package org.bitcoins.dlc.wallet.models
 import org.bitcoins.core.api.dlc.wallet.db.DLCDb
 import org.bitcoins.core.number._
 import org.bitcoins.core.protocol.script.{ScriptPubKey, ScriptWitness}
-import org.bitcoins.core.protocol.transaction.{
-  TransactionOutPoint,
-  TransactionOutput
-}
+import org.bitcoins.core.protocol.transaction.{TransactionOutPoint, TransactionOutput}
 import org.bitcoins.crypto.Sha256Digest
 import org.bitcoins.db.{CRUD, SlickUtil}
 import org.bitcoins.dlc.wallet.DLCAppConfig
@@ -14,9 +11,7 @@ import slick.lifted.{ForeignKeyQuery, ProvenShape}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-case class DLCFundingInputDAO()(implicit
-    val ec: ExecutionContext,
-    override val appConfig: DLCAppConfig)
+case class DLCFundingInputDAO()(implicit val ec: ExecutionContext, override val appConfig: DLCAppConfig)
     extends CRUD[DLCFundingInputDb, TransactionOutPoint]
     with SlickUtil[DLCFundingInputDb, TransactionOutPoint] {
   private val mappers = new org.bitcoins.db.DbCommonsColumnMappers(profile)
@@ -30,29 +25,19 @@ case class DLCFundingInputDAO()(implicit
     DLCDAO().table
   }
 
-  override def createAll(
-      ts: Vector[DLCFundingInputDb]): Future[Vector[DLCFundingInputDb]] =
+  override def createAll(ts: Vector[DLCFundingInputDb]): Future[Vector[DLCFundingInputDb]] =
     createAllNoAutoInc(ts, safeDatabase)
 
   override protected def findByPrimaryKeys(
-      outPoints: Vector[TransactionOutPoint]): Query[
-    DLCFundingInputsTable,
-    DLCFundingInputDb,
-    Seq] =
+      outPoints: Vector[TransactionOutPoint]): Query[DLCFundingInputsTable, DLCFundingInputDb, Seq] =
     table.filter(_.outPoint.inSet(outPoints))
 
-  override def findByPrimaryKey(outPoint: TransactionOutPoint): Query[
-    DLCFundingInputsTable,
-    DLCFundingInputDb,
-    Seq] = {
+  override def findByPrimaryKey(outPoint: TransactionOutPoint): Query[DLCFundingInputsTable, DLCFundingInputDb, Seq] = {
     table
       .filter(_.outPoint === outPoint)
   }
 
-  override def findAll(dlcs: Vector[DLCFundingInputDb]): Query[
-    DLCFundingInputsTable,
-    DLCFundingInputDb,
-    Seq] =
+  override def findAll(dlcs: Vector[DLCFundingInputDb]): Query[DLCFundingInputsTable, DLCFundingInputDb, Seq] =
     findByPrimaryKeys(dlcs.map(_.outPoint))
 
   def deleteByDLCId(dlcId: Sha256Digest): Future[Int] = {
@@ -66,9 +51,7 @@ case class DLCFundingInputDAO()(implicit
     safeDatabase.run(q.result).map(_.toVector)
   }
 
-  def findByDLCId(
-      dlcId: Sha256Digest,
-      isInitiator: Boolean): Future[Vector[DLCFundingInputDb]] = {
+  def findByDLCId(dlcId: Sha256Digest, isInitiator: Boolean): Future[Vector[DLCFundingInputDb]] = {
     val q = table
       .filter(_.dlcId === dlcId)
       .filter(_.isInitiator === isInitiator)
@@ -76,8 +59,7 @@ case class DLCFundingInputDAO()(implicit
     safeDatabase.run(q.result).map(_.toVector)
   }
 
-  class DLCFundingInputsTable(tag: Tag)
-      extends Table[DLCFundingInputDb](tag, schemaName, "funding_inputs") {
+  class DLCFundingInputsTable(tag: Tag) extends Table[DLCFundingInputDb](tag, schemaName, "funding_inputs") {
 
     def outPoint: Rep[TransactionOutPoint] = column("out_point", O.PrimaryKey)
 
@@ -113,8 +95,6 @@ case class DLCFundingInputDAO()(implicit
        witnessScriptOpt).<>(DLCFundingInputDb.tupled, DLCFundingInputDb.unapply)
 
     def fk: ForeignKeyQuery[_, DLCDb] =
-      foreignKey("fk_dlc_id",
-                 sourceColumns = dlcId,
-                 targetTableQuery = dlcTable)(_.dlcId)
+      foreignKey("fk_dlc_id", sourceColumns = dlcId, targetTableQuery = dlcTable)(_.dlcId)
   }
 }

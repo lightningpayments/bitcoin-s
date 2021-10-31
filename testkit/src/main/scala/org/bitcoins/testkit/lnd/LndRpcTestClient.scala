@@ -5,11 +5,7 @@ import org.bitcoins.asyncutil.AsyncUtil
 import org.bitcoins.lnd.rpc._
 import org.bitcoins.lnd.rpc.config.LndInstance
 import org.bitcoins.rpc.client.common.BitcoindRpcClient
-import org.bitcoins.testkit.util.{
-  RpcBinaryUtil,
-  SbtBinaryFactory,
-  TestkitBinaries
-}
+import org.bitcoins.testkit.util.{RpcBinaryUtil, SbtBinaryFactory, TestkitBinaries}
 
 import java.io.File
 import java.nio.file.{Files, Path}
@@ -18,12 +14,10 @@ import scala.concurrent.duration.DurationInt
 import scala.util.Properties
 
 /** Helper class to start a bitcoind client with the given binary */
-case class LndRpcTestClient(
-    override val binary: Path,
-    bitcoindOpt: Option[BitcoindRpcClient])(implicit system: ActorSystem)
+case class LndRpcTestClient(override val binary: Path, bitcoindOpt: Option[BitcoindRpcClient])(implicit
+    system: ActorSystem)
     extends RpcBinaryUtil[LndRpcClient] {
-  require(Files.exists(binary),
-          s"Path did not exist! got=${binary.toAbsolutePath.toString}")
+  require(Files.exists(binary), s"Path did not exist! got=${binary.toAbsolutePath.toString}")
   import system.dispatcher
 
   /** Cached client. This is defined if start() has been called
@@ -60,9 +54,7 @@ case class LndRpcTestClient(
           _ <- AsyncUtil.nonBlockingSleep(1.second)
 
           // Wait for it to be ready
-          _ <- AsyncUtil.awaitConditionF(() => lnd.isStarted,
-                                         interval = 500.milliseconds,
-                                         maxTries = 100)
+          _ <- AsyncUtil.awaitConditionF(() => lnd.isStarted, interval = 500.milliseconds, maxTries = 100)
         } yield {
           clientOpt = Some(lnd)
           lnd
@@ -85,23 +77,17 @@ object LndRpcTestClient extends SbtBinaryFactory {
   override val sbtBinaryDirectory: Path =
     TestkitBinaries.baseBinaryDirectory.resolve("lnd")
 
-  def fromSbtDownloadOpt(
-      bitcoindRpcClientOpt: Option[BitcoindRpcClient],
-      lndVersionOpt: Option[String] = None)(implicit
+  def fromSbtDownloadOpt(bitcoindRpcClientOpt: Option[BitcoindRpcClient], lndVersionOpt: Option[String] = None)(implicit
       system: ActorSystem): Option[LndRpcTestClient] = {
     val fileOpt =
-      getBinary(lndVersionOpt = lndVersionOpt,
-                binaryDirectory = sbtBinaryDirectory)
+      getBinary(lndVersionOpt = lndVersionOpt, binaryDirectory = sbtBinaryDirectory)
 
     fileOpt.map(f => LndRpcTestClient(binary = f.toPath, bitcoindRpcClientOpt))
   }
 
-  def fromSbtDownload(
-      bitcoindRpcClientOpt: Option[BitcoindRpcClient],
-      lndVersionOpt: Option[String] = None)(implicit
+  def fromSbtDownload(bitcoindRpcClientOpt: Option[BitcoindRpcClient], lndVersionOpt: Option[String] = None)(implicit
       system: ActorSystem): LndRpcTestClient = {
-    val lndOpt = fromSbtDownloadOpt(lndVersionOpt = lndVersionOpt,
-                                    bitcoindRpcClientOpt = bitcoindRpcClientOpt)
+    val lndOpt = fromSbtDownloadOpt(lndVersionOpt = lndVersionOpt, bitcoindRpcClientOpt = bitcoindRpcClientOpt)
     lndOpt match {
       case Some(client) => client
       case None =>
@@ -113,9 +99,7 @@ object LndRpcTestClient extends SbtBinaryFactory {
   }
 
   /** Path to executable downloaded for lnd, if it exists */
-  def getBinary(
-      lndVersionOpt: Option[String],
-      binaryDirectory: Path): Option[File] = {
+  def getBinary(lndVersionOpt: Option[String], binaryDirectory: Path): Option[File] = {
     val versionStr = lndVersionOpt.getOrElse(LndRpcClient.version)
 
     val platform =

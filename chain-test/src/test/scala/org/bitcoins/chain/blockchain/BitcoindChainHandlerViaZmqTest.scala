@@ -36,9 +36,7 @@ class BitcoindChainHandlerViaZmqTest extends ChainDbUnitTest {
           //can't monitor processing flow for zmq
           //so we just need to await until we
           //have fully processed the header
-          AsyncUtil.awaitConditionF(
-            () => chainHandler.getHeader(hash).map(_.isDefined),
-            interval = 250.millis)
+          AsyncUtil.awaitConditionF(() => chainHandler.getHeader(hash).map(_.isDefined), interval = 250.millis)
         }
         header <- chainHandler.getHeader(hash)
       } yield assert(header.get.hashBE == hash)

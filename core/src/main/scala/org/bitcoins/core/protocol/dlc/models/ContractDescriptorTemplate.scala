@@ -10,13 +10,11 @@ sealed trait ContractDescriptorTemplate {
 
   def toContractDescriptor: ContractDescriptor
 
-  require(
-    individualCollateral >= Satoshis.zero,
-    s"individualCollateral must be greater than or equal to zero, got $individualCollateral")
+  require(individualCollateral >= Satoshis.zero,
+          s"individualCollateral must be greater than or equal to zero, got $individualCollateral")
 
-  require(
-    totalCollateral > Satoshis.zero,
-    s"totalCollateral must be greater than or equal to zero, got $totalCollateral")
+  require(totalCollateral > Satoshis.zero,
+          s"totalCollateral must be greater than or equal to zero, got $totalCollateral")
 
   require(
     individualCollateral <= totalCollateral,
@@ -36,11 +34,8 @@ sealed trait CFDTemplate extends ContractDescriptorTemplate {
 
   def numDigits: Int
 
-  require(numDigits > 0,
-          s"Num digits must be greater than zero, got $numDigits")
-  require(
-    strikePrice >= 0,
-    s"Strike price must be greater than or equal to zero, got $strikePrice")
+  require(numDigits > 0, s"Num digits must be greater than zero, got $numDigits")
+  require(strikePrice >= 0, s"Strike price must be greater than or equal to zero, got $strikePrice")
 
   override val toContractDescriptor: NumericContractDescriptor = {
     val func: Long => Long = { outcome =>
@@ -92,27 +87,19 @@ sealed trait OptionTemplate extends ContractDescriptorTemplate {
 
   def roundingIntervals: RoundingIntervals
 
-  require(premium >= Satoshis.zero,
-          s"Premium must be greater than or equal to zero, got $premium")
+  require(premium >= Satoshis.zero, s"Premium must be greater than or equal to zero, got $premium")
 
-  require(numDigits > 0,
-          s"Num digits must be greater than zero, got $numDigits")
-  require(
-    strikePrice >= 0,
-    s"Strike price must be greater than or equal to zero, got $strikePrice")
+  require(numDigits > 0, s"Num digits must be greater than zero, got $numDigits")
+  require(strikePrice >= 0, s"Strike price must be greater than or equal to zero, got $strikePrice")
 
   override val toContractDescriptor: NumericContractDescriptor = {
     val maxNum: Long = (BigInt(2).pow(numDigits) - 1).toLong
 
     val curve = this match {
       case _: CallOption =>
-        val pointA = OutcomePayoutEndpoint(
-          0L,
-          individualCollateral.satoshis - premium.satoshis)
+        val pointA = OutcomePayoutEndpoint(0L, individualCollateral.satoshis - premium.satoshis)
 
-        val pointB = OutcomePayoutEndpoint(
-          strikePrice,
-          individualCollateral.satoshis - premium.satoshis)
+        val pointB = OutcomePayoutEndpoint(strikePrice, individualCollateral.satoshis - premium.satoshis)
 
         val pointC =
           OutcomePayoutEndpoint(maxNum, totalCollateral)
@@ -120,14 +107,10 @@ sealed trait OptionTemplate extends ContractDescriptorTemplate {
       case _: PutOption =>
         val pointA = OutcomePayoutEndpoint(0L, totalCollateral)
 
-        val pointB = OutcomePayoutEndpoint(
-          strikePrice,
-          individualCollateral.satoshis - premium.satoshis)
+        val pointB = OutcomePayoutEndpoint(strikePrice, individualCollateral.satoshis - premium.satoshis)
 
         val pointC =
-          OutcomePayoutEndpoint(
-            maxNum,
-            individualCollateral.satoshis - premium.satoshis)
+          OutcomePayoutEndpoint(maxNum, individualCollateral.satoshis - premium.satoshis)
         DLCPayoutCurve(Vector(pointA, pointB, pointC))
     }
 

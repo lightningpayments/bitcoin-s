@@ -5,10 +5,7 @@ import org.bitcoins.commons.config.AppConfigFactory
 import org.bitcoins.core.api.dlcoracle.db.EventOutcomeDbHelper
 import org.bitcoins.core.config._
 import org.bitcoins.core.hd.HDPurpose
-import org.bitcoins.core.protocol.blockchain.{
-  BitcoinChainParams,
-  TestNetChainParams
-}
+import org.bitcoins.core.protocol.blockchain.{BitcoinChainParams, TestNetChainParams}
 import org.bitcoins.core.protocol.tlv.EnumEventDescriptorV0TLV
 import org.bitcoins.core.wallet.keymanagement.KeyManagerParams
 import org.bitcoins.crypto.AesPassword
@@ -20,13 +17,13 @@ import org.bitcoins.dlc.oracle.DLCOracle
 import org.bitcoins.dlc.oracle.storage._
 import org.bitcoins.keymanager.bip39.BIP39KeyManager
 import org.bitcoins.keymanager.config.KeyManagerAppConfig
+import zio.{Task, ZIO}
 
 import java.nio.file.{Files, Path}
 import scala.concurrent.{ExecutionContext, Future}
 
-case class DLCOracleAppConfig(
-    private val directory: Path,
-    private val confs: Config*)(implicit val ec: ExecutionContext)
+case class DLCOracleAppConfig(private val directory: Path, private val confs: Config*)(implicit
+    val ec: ExecutionContext)
     extends DbAppConfig
     with DbManagement
     with JdbcProfileComponent[DLCOracleAppConfig]
@@ -40,8 +37,7 @@ case class DLCOracleAppConfig(
 
   override type ConfigType = DLCOracleAppConfig
 
-  override def newConfigOfType(
-      configOverrides: Seq[Config]): DLCOracleAppConfig =
+  override def newConfigOfType(configOverrides: Seq[Config]): DLCOracleAppConfig =
     DLCOracleAppConfig(directory, configOverrides: _*)
 
   /** DLC oracles are not network specific, so just hard code the testnet chain params */
@@ -66,7 +62,7 @@ case class DLCOracleAppConfig(
 
   override def start(): Future[Unit] = {
     logger.debug(s"Initializing dlc oracle setup")
-    val migrationsF = for {
+    lazy val migrationsF = for {
       _ <- super.start()
       _ <- kmConf.start()
       numMigrations = migrate()
@@ -126,44 +122,36 @@ case class DLCOracleAppConfig(
   }
 
   lazy val kmParams: KeyManagerParams =
-    KeyManagerParams(kmConf.seedPath,
-                     HDPurpose(DLCOracle.R_VALUE_PURPOSE),
-                     network)
+    KeyManagerParams(kmConf.seedPath, HDPurpose(DLCOracle.R_VALUE_PURPOSE), network)
 
   lazy val aesPasswordOpt: Option[AesPassword] = kmConf.aesPasswordOpt
   lazy val bip39PasswordOpt: Option[String] = kmConf.bip39PasswordOpt
 
-  def exists(): Future[Boolean] = {
+  def exists(): Task[Boolean] = {
     lazy val hasDb = this.driver match {
       case PostgreSQL => true
       case SQLite     => Files.exists(dbPath)
     }
-    seedExists().map(bool => bool && hasDb)
+    seedExists().map(_ && hasDb)
   }
 
   /** Insert the master xpub for the oracle */
-  private def initializeKeyManager(): Future[Unit] = {
-    val initF = seedExists().flatMap { bool =>
-      if (!bool) {
-        BIP39KeyManager.fromParams(kmParams = kmParams,
-                                   passwordOpt = aesPasswordOpt,
-                                   bip39PasswordOpt = bip39PasswordOpt) match {
+  private def initializeKeyManager(): Task[Unit] =
+    seedExists().flatMap { predicate =>
+      ZIO.ifM(ZIO.succeed(!predicate))(
+        onTrue = BIP39KeyManager.fromParams(kmParams, aesPasswordOpt, bip39PasswordOpt) match {
           case Left(err) => sys.error(err.toString)
           case Right(km) =>
             logger.info("Successfully generated a seed and key manager")
             masterXPubDAO
               .create(km.getRootXPub)
               .map(_ => ())
-        }
-      } else {
-        logger.info(s"Not initializing key manager, seed already exists")
-        Future.unit
-      }
+        },
+        onFalse = Task(logger.info(s"Not initializing key manager, seed already exists"))
+      )
     }
-    initF
-  }
 
-  private val masterXPubDAO: MasterXPubDAO = MasterXPubDAO()(ec, this)
+  private val masterXPubDAO: MasterXPubDAO = MasterXPubDAO()(this)
 
   private lazy val rValueTable: TableQuery[Table[_]] = {
     RValueDAO()(ec, appConfig).table
@@ -217,7 +205,6 @@ object DLCOracleAppConfig extends AppConfigFactory[DLCOracleAppConfig] {
 
   override val moduleName: String = "oracle"
 
-  override def fromDatadir(datadir: Path, confs: Vector[Config])(implicit
-      ec: ExecutionContext): DLCOracleAppConfig =
+  override def fromDatadir(datadir: Path, confs: Vector[Config])(implicit ec: ExecutionContext): DLCOracleAppConfig =
     DLCOracleAppConfig(datadir, confs: _*)
 }

@@ -22,13 +22,11 @@ import scala.util.Properties
   * expose those that are of relevance when making RPC
   * requests.
   */
-case class LndConfig(private[bitcoins] val lines: Seq[String], datadir: File)
-    extends Logging {
+case class LndConfig(private[bitcoins] val lines: Seq[String], datadir: File) extends Logging {
 
   //create datadir and config if it DNE on disk
   if (!datadir.exists()) {
-    logger.debug(
-      s"datadir=${datadir.getAbsolutePath} does not exist, creating now")
+    logger.debug(s"datadir=${datadir.getAbsolutePath} does not exist, creating now")
     datadir.mkdirs()
     LndConfig.writeConfigToFile(this, datadir)
   }
@@ -37,8 +35,7 @@ case class LndConfig(private[bitcoins] val lines: Seq[String], datadir: File)
 
   //create lnd.conf file in datadir if it does not exist
   if (!Files.exists(confFile)) {
-    logger.debug(
-      s"lnd.conf in datadir=${datadir.getAbsolutePath} does not exist, creating now")
+    logger.debug(s"lnd.conf in datadir=${datadir.getAbsolutePath} does not exist, creating now")
     LndConfig.writeConfigToFile(this, datadir)
   }
 
@@ -51,8 +48,7 @@ case class LndConfig(private[bitcoins] val lines: Seq[String], datadir: File)
     * based on `=`, and then applies the provided
     * `collect` function on those pairs
     */
-  private def collectFrom(lines: Seq[String])(
-      collect: PartialFunction[(String, String), String]): Seq[String] = {
+  private def collectFrom(lines: Seq[String])(collect: PartialFunction[(String, String), String]): Seq[String] = {
 
     val splittedPairs = {
       val splitLines = lines.map(
@@ -142,8 +138,7 @@ case class LndConfig(private[bitcoins] val lines: Seq[String], datadir: File)
     val newLine = s"$key=$value"
     val lines = newLine +: ourLines
     val newConfig = LndConfig(lines, datadir)
-    logger.debug(
-      s"Appending new config with $key=$value to datadir=${datadir.getAbsolutePath}")
+    logger.debug(s"Appending new config with $key=$value to datadir=${datadir.getAbsolutePath}")
     LndConfig.writeConfigToFile(newConfig, datadir)
 
     newConfig
@@ -182,9 +177,7 @@ object LndConfig extends ConfigFactory[LndConfig] with Logging {
     apply(config.toFile, config.getParent.toFile)
 
   /** Reads the given file and construct a `lnd` config from it */
-  override def apply(
-      config: File,
-      datadir: File = DEFAULT_DATADIR): LndConfig = {
+  override def apply(config: File, datadir: File = DEFAULT_DATADIR): LndConfig = {
     import org.bitcoins.core.compat.JavaConverters._
     val lines = Files
       .readAllLines(config.toPath)
@@ -242,8 +235,7 @@ object LndConfig extends ConfigFactory[LndConfig] with Logging {
     val confFile = datadir.toPath.resolve("lnd.conf")
 
     if (datadir == DEFAULT_DATADIR && confFile == DEFAULT_CONF_FILE.toPath) {
-      logger.warn(
-        s"We will not overwrite the existing lnd.conf in default datadir")
+      logger.warn(s"We will not overwrite the existing lnd.conf in default datadir")
     } else {
       Files.write(confFile, confStr.getBytes)
     }

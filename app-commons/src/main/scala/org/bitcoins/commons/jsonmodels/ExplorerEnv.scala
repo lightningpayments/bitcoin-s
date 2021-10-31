@@ -1,12 +1,6 @@
 package org.bitcoins.commons.jsonmodels
 
-import org.bitcoins.core.config.{
-  BitcoinNetwork,
-  MainNet,
-  RegTest,
-  SigNet,
-  TestNet3
-}
+import org.bitcoins.core.config.{BitcoinNetwork, MainNet, RegTest, SigNet, TestNet3}
 import org.bitcoins.crypto.StringFactory
 
 sealed trait ExplorerEnv {

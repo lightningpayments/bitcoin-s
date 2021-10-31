@@ -24,11 +24,7 @@ case class RpcTransaction(
     hex: Option[Transaction])
     extends RawTransactionResult
 
-case class RpcTransactionOutput(
-    value: Bitcoins,
-    n: Int,
-    scriptPubKey: RpcScriptPubKey)
-    extends RawTransactionResult
+case class RpcTransactionOutput(value: Bitcoins, n: Int, scriptPubKey: RpcScriptPubKey) extends RawTransactionResult
 
 case class RpcScriptPubKey(
     asm: String,
@@ -46,11 +42,7 @@ case class DecodeScriptResult(
     p2sh: P2SHAddress)
     extends RawTransactionResult
 
-case class FundRawTransactionResult(
-    hex: Transaction,
-    fee: Bitcoins,
-    changepos: Int)
-    extends RawTransactionResult
+case class FundRawTransactionResult(hex: Transaction, fee: Bitcoins, changepos: Int) extends RawTransactionResult
 
 case class SignRawTransactionWithWalletResult(
     hex: Transaction,
@@ -82,8 +74,7 @@ case class GetRawTransactionVin(
     txinwitness: Option[Vector[String]] // Should be TransactionWitness?
 ) extends RawTransactionResult
 
-case class GetRawTransactionScriptSig(asm: String, hex: ScriptSignature)
-    extends RawTransactionResult
+case class GetRawTransactionScriptSig(asm: String, hex: ScriptSignature) extends RawTransactionResult
 
 case class SignRawTransactionResult(
     hex: Transaction,

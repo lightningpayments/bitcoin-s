@@ -12,8 +12,7 @@ class ScriptProgramTest extends BitcoinSUnitTest {
     val stack = List(ScriptNumber(1))
     val script = List()
     val program =
-      TestUtil.testProgramExecutionInProgress.updateStackAndScript(stack,
-                                                                   script)
+      TestUtil.testProgramExecutionInProgress.updateStackAndScript(stack, script)
     program.stackTopIsTrue must be(true)
   }
 
@@ -21,8 +20,7 @@ class ScriptProgramTest extends BitcoinSUnitTest {
     val stack = List(ScriptNumber.zero)
     val script = List()
     val program =
-      TestUtil.testProgramExecutionInProgress.updateStackAndScript(stack,
-                                                                   script)
+      TestUtil.testProgramExecutionInProgress.updateStackAndScript(stack, script)
     program.stackTopIsTrue must be(false)
 
     val program2 = program.updateStack(List(OP_0))

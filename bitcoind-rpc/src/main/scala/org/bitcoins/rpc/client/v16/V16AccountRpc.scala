@@ -21,11 +21,8 @@ trait V16AccountRpc { self: Client =>
     bitcoindCall[BitcoinAddress]("getaccountaddress", List(JsString(account)))
   }
 
-  def getReceivedByAccount(
-      account: String,
-      confirmations: Int = 1): Future[Bitcoins] = {
-    bitcoindCall[Bitcoins]("getreceivedbyaccount",
-                           List(JsString(account), JsNumber(confirmations)))
+  def getReceivedByAccount(account: String, confirmations: Int = 1): Future[Bitcoins] = {
+    bitcoindCall[Bitcoins]("getreceivedbyaccount", List(JsString(account), JsNumber(confirmations)))
   }
 
   def getAccount(address: BitcoinAddress): Future[String] = {
@@ -33,30 +30,23 @@ trait V16AccountRpc { self: Client =>
   }
 
   def getAddressesByAccount(account: String): Future[Vector[BitcoinAddress]] = {
-    bitcoindCall[Vector[BitcoinAddress]]("getaddressesbyaccount",
-                                         List(JsString(account)))
+    bitcoindCall[Vector[BitcoinAddress]]("getaddressesbyaccount", List(JsString(account)))
   }
 
-  def listAccounts(
-      confirmations: Int = 1,
-      includeWatchOnly: Boolean = false): Future[Map[String, Bitcoins]] = {
-    bitcoindCall[Map[String, Bitcoins]](
-      "listaccounts",
-      List(JsNumber(confirmations), JsBoolean(includeWatchOnly)))
+  def listAccounts(confirmations: Int = 1, includeWatchOnly: Boolean = false): Future[Map[String, Bitcoins]] = {
+    bitcoindCall[Map[String, Bitcoins]]("listaccounts", List(JsNumber(confirmations), JsBoolean(includeWatchOnly)))
   }
 
   def setAccount(address: BitcoinAddress, account: String): Future[Unit] = {
-    bitcoindCall[Unit]("setaccount",
-                       List(JsString(address.value), JsString(account)))
+    bitcoindCall[Unit]("setaccount", List(JsString(address.value), JsString(account)))
   }
 
   def listReceivedByAccount(
       confirmations: Int = 1,
       includeEmpty: Boolean = false,
       includeWatchOnly: Boolean = false): Future[Vector[ReceivedAccount]] = {
-    bitcoindCall[Vector[ReceivedAccount]]("listreceivedbyaccount",
-                                          List(JsNumber(confirmations),
-                                               JsBoolean(includeEmpty),
-                                               JsBoolean(includeWatchOnly)))
+    bitcoindCall[Vector[ReceivedAccount]](
+      "listreceivedbyaccount",
+      List(JsNumber(confirmations), JsBoolean(includeEmpty), JsBoolean(includeWatchOnly)))
   }
 }

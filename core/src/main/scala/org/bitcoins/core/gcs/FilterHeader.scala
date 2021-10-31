@@ -1,18 +1,12 @@
 package org.bitcoins.core.gcs
 
-import org.bitcoins.crypto.{
-  CryptoUtil,
-  DoubleSha256Digest,
-  DoubleSha256DigestBE
-}
+import org.bitcoins.crypto.{CryptoUtil, DoubleSha256Digest, DoubleSha256DigestBE}
 
 /** Bip 157 Block Filter Headers which commit to a chain of block filters,
   * much in the same way that block headers commit to a block chain
   * @see [[https://github.com/bitcoin/bips/blob/master/bip-0157.mediawiki#filter-headers]]
   */
-case class FilterHeader(
-    filterHash: DoubleSha256Digest,
-    prevHeaderHash: DoubleSha256Digest) {
+case class FilterHeader(filterHash: DoubleSha256Digest, prevHeaderHash: DoubleSha256Digest) {
 
   val hash: DoubleSha256Digest = {
     CryptoUtil.doubleSHA256(filterHash.bytes ++ prevHeaderHash.bytes)
@@ -35,9 +29,7 @@ case class FilterHeader(
 
 object FilterHeader {
 
-  def apply(
-      filterHash: DoubleSha256DigestBE,
-      prevHeaderHash: DoubleSha256DigestBE): FilterHeader = {
+  def apply(filterHash: DoubleSha256DigestBE, prevHeaderHash: DoubleSha256DigestBE): FilterHeader = {
     new FilterHeader(filterHash.flip, prevHeaderHash.flip)
   }
 }

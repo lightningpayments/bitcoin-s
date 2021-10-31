@@ -2,12 +2,7 @@ package org.bitcoins.commons.jsonmodels.bitcoind
 
 import java.nio.file.Path
 
-import org.bitcoins.core.api.chain.db.{
-  BlockHeaderDb,
-  BlockHeaderDbHelper,
-  CompactFilterDb,
-  CompactFilterDbHelper
-}
+import org.bitcoins.core.api.chain.db.{BlockHeaderDb, BlockHeaderDbHelper, CompactFilterDb, CompactFilterDbHelper}
 import org.bitcoins.core.config.NetworkParameters
 import org.bitcoins.core.currency.Bitcoins
 import org.bitcoins.core.gcs.GolombFilter
@@ -19,11 +14,7 @@ import scodec.bits.ByteVector
 
 sealed abstract class BlockchainResult
 
-case class DumpTxOutSetResult(
-    coins_written: Int,
-    base_hash: DoubleSha256DigestBE,
-    base_height: Int,
-    path: Path)
+case class DumpTxOutSetResult(coins_written: Int, base_hash: DoubleSha256DigestBE, base_height: Int, path: Path)
     extends BlockchainResult
 
 case class GetBlockResult(
@@ -133,28 +124,16 @@ case class SoftforkProgressPreV19(
     window: Option[Int])
     extends BlockchainResult
 
-case class Bip9SoftforkPreV19(
-    status: String,
-    bit: Option[Int],
-    startTime: Int,
-    timeout: BigInt,
-    since: Int)
+case class Bip9SoftforkPreV19(status: String, bit: Option[Int], startTime: Int, timeout: BigInt, since: Int)
     extends BlockchainResult
 
 sealed trait SoftforkPostV19 extends BlockchainResult
 
-case class BuriedSoftforkPostV19(active: Boolean, height: Long)
-    extends SoftforkPostV19
+case class BuriedSoftforkPostV19(active: Boolean, height: Long) extends SoftforkPostV19
 
-case class Bip9SoftforkPostV19(active: Boolean, bip9: Bip9SoftforkDetails)
-    extends SoftforkPostV19
+case class Bip9SoftforkPostV19(active: Boolean, bip9: Bip9SoftforkDetails) extends SoftforkPostV19
 
-case class Bip9SoftforkDetails(
-    status: String,
-    bit: Option[Int],
-    start_time: Int,
-    timeout: BigInt,
-    since: Int)
+case class Bip9SoftforkDetails(status: String, bit: Option[Int], start_time: Int, timeout: BigInt, since: Int)
     extends BlockchainResult
 
 case class GetBlockHeaderResult(
@@ -200,12 +179,7 @@ case class GetBlockHeaderResult(
   }
 }
 
-case class ChainTip(
-    height: Int,
-    hash: DoubleSha256DigestBE,
-    branchlen: Int,
-    status: String)
-    extends BlockchainResult
+case class ChainTip(height: Int, hash: DoubleSha256DigestBE, branchlen: Int, status: String) extends BlockchainResult
 
 case class GetChainTxStatsResult(
     time: UInt32,
@@ -359,10 +333,7 @@ case class GetTxOutSetInfoResult(
     total_amount: Bitcoins)
     extends BlockchainResult
 
-case class GetBlockFilterResult(
-    filter: GolombFilter,
-    header: DoubleSha256DigestBE)
-    extends BlockchainResult {
+case class GetBlockFilterResult(filter: GolombFilter, header: DoubleSha256DigestBE) extends BlockchainResult {
 
   def filterDb(height: Int): CompactFilterDb = {
     CompactFilterDbHelper.fromGolombFilter(filter, header, height)

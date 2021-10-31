@@ -9,9 +9,7 @@ import slick.lifted.ProvenShape
 
 import scala.concurrent.{ExecutionContext, Future}
 
-case class OracleAnnouncementDataDAO()(implicit
-    val ec: ExecutionContext,
-    override val appConfig: DLCAppConfig)
+case class OracleAnnouncementDataDAO()(implicit val ec: ExecutionContext, override val appConfig: DLCAppConfig)
     extends CRUDAutoInc[OracleAnnouncementDataDb] {
   private val mappers = new org.bitcoins.db.DbCommonsColumnMappers(profile)
   import mappers._
@@ -20,16 +18,14 @@ case class OracleAnnouncementDataDAO()(implicit
   override val table: TableQuery[OracleAnnouncementsTable] =
     TableQuery[OracleAnnouncementsTable]
 
-  def findByPublicKey(
-      publicKey: SchnorrPublicKey): Future[Vector[OracleAnnouncementDataDb]] = {
+  def findByPublicKey(publicKey: SchnorrPublicKey): Future[Vector[OracleAnnouncementDataDb]] = {
     val query = table.filter(_.publicKey === publicKey)
 
     safeDatabase.runVec(query.result)
   }
 
   def findByAnnouncementSignatures(
-      signatures: Vector[SchnorrDigitalSignature]): Future[
-    Vector[OracleAnnouncementDataDb]] = {
+      signatures: Vector[SchnorrDigitalSignature]): Future[Vector[OracleAnnouncementDataDb]] = {
     val query = table.filter(_.announcementSignature.inSet(signatures))
 
     safeDatabase
@@ -43,13 +39,9 @@ case class OracleAnnouncementDataDAO()(implicit
   }
 
   class OracleAnnouncementsTable(tag: Tag)
-      extends TableAutoInc[OracleAnnouncementDataDb](
-        tag,
-        schemaName,
-        "oracle_announcement_data") {
+      extends TableAutoInc[OracleAnnouncementDataDb](tag, schemaName, "oracle_announcement_data") {
 
-    def announcementSignature: Rep[SchnorrDigitalSignature] = column(
-      "announcement_signature")
+    def announcementSignature: Rep[SchnorrDigitalSignature] = column("announcement_signature")
 
     def publicKey: Rep[SchnorrPublicKey] = column("pub_key")
 
@@ -62,13 +54,7 @@ case class OracleAnnouncementDataDAO()(implicit
     def eventMaturity: Rep[UInt32] = column("event_maturity")
 
     override def * : ProvenShape[OracleAnnouncementDataDb] =
-      (id.?,
-       announcementSignature,
-       publicKey,
-       signingPublicKey,
-       eventId,
-       eventDescriptor,
-       eventMaturity)
+      (id.?, announcementSignature, publicKey, signingPublicKey, eventId, eventDescriptor, eventMaturity)
         .<>(OracleAnnouncementDataDb.tupled, OracleAnnouncementDataDb.unapply)
   }
 }

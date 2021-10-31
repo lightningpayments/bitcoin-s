@@ -12,10 +12,7 @@ import org.bitcoins.core.protocol.transaction.TransactionOutput
 import org.bitcoins.dlc.wallet.DLCWallet
 import org.bitcoins.rpc.client.common.BitcoindRpcClient
 import org.bitcoins.server.{BitcoinSAppConfig, BitcoindRpcBackendUtil}
-import org.bitcoins.testkit.wallet.FundWalletUtil.{
-  FundedTestWallet,
-  FundedWallet
-}
+import org.bitcoins.testkit.wallet.FundWalletUtil.{FundedTestWallet, FundedWallet}
 import org.bitcoins.testkitcore.util.TransactionTestUtil
 import org.bitcoins.wallet.Wallet
 import org.bitcoins.wallet.config.WalletAppConfig
@@ -24,10 +21,8 @@ import scala.concurrent.{ExecutionContext, Future}
 
 trait FundWalletUtil extends Logging {
 
-  def fundAccountForWallet(
-      amts: Vector[CurrencyUnit],
-      account: HDAccount,
-      wallet: Wallet)(implicit ec: ExecutionContext): Future[Wallet] = {
+  def fundAccountForWallet(amts: Vector[CurrencyUnit], account: HDAccount, wallet: Wallet)(implicit
+      ec: ExecutionContext): Future[Wallet] = {
 
     val addressesF: Future[Vector[BitcoinAddress]] = Future.sequence {
       Vector.fill(3)(wallet.getNewAddress(account))
@@ -56,8 +51,7 @@ trait FundWalletUtil extends Logging {
       amts: Vector[CurrencyUnit],
       account: HDAccount,
       wallet: Wallet,
-      bitcoind: BitcoindRpcClient)(implicit
-      ec: ExecutionContext): Future[Wallet] = {
+      bitcoind: BitcoindRpcClient)(implicit ec: ExecutionContext): Future[Wallet] = {
 
     val addressesF: Future[Vector[BitcoinAddress]] = Future.sequence {
       Vector.fill(3)(wallet.getNewAddress(account))
@@ -77,8 +71,7 @@ trait FundWalletUtil extends Logging {
   }
 
   /** Funds a bitcoin-s wallet with 3 utxos with 1, 2 and 3 bitcoin in the utxos */
-  def fundWallet(wallet: Wallet)(implicit
-      ec: ExecutionContext): Future[FundedTestWallet] = {
+  def fundWallet(wallet: Wallet)(implicit ec: ExecutionContext): Future[FundedTestWallet] = {
 
     val defaultAccount = wallet.walletConfig.defaultAccount
     val fundedDefaultAccountWalletF = FundWalletUtil.fundAccountForWallet(
@@ -157,11 +150,10 @@ object FundWalletUtil extends FundWalletUtil {
 
     import system.dispatcher
     for {
-      wallet <- BitcoinSWalletTest.createWallet2Accounts(
-        nodeApi = nodeApi,
-        chainQueryApi = chainQueryApi,
-        bip39PasswordOpt = bip39PasswordOpt,
-        extraConfig = extraConfig)
+      wallet <- BitcoinSWalletTest.createWallet2Accounts(nodeApi = nodeApi,
+                                                         chainQueryApi = chainQueryApi,
+                                                         bip39PasswordOpt = bip39PasswordOpt,
+                                                         extraConfig = extraConfig)
       funded <- FundWalletUtil.fundWallet(wallet)
     } yield FundedWallet(funded.wallet)
   }
@@ -175,11 +167,10 @@ object FundWalletUtil extends FundWalletUtil {
       system: ActorSystem): Future[FundedDLCWallet] = {
     import system.dispatcher
     for {
-      wallet <- BitcoinSWalletTest.createDLCWallet2Accounts(
-        nodeApi = nodeApi,
-        chainQueryApi = chainQueryApi,
-        bip39PasswordOpt = bip39PasswordOpt,
-        extraConfig = extraConfig)
+      wallet <- BitcoinSWalletTest.createDLCWallet2Accounts(nodeApi = nodeApi,
+                                                            chainQueryApi = chainQueryApi,
+                                                            bip39PasswordOpt = bip39PasswordOpt,
+                                                            extraConfig = extraConfig)
       funded <- FundWalletUtil.fundWallet(wallet)
     } yield {
       FundedDLCWallet(funded.wallet.asInstanceOf[DLCWallet])
@@ -194,27 +185,20 @@ object FundWalletUtil extends FundWalletUtil {
       system: ActorSystem): Future[FundedDLCWallet] = {
     import system.dispatcher
     for {
-      tmp <- BitcoinSWalletTest.createDLCWallet2Accounts(
-        nodeApi = bitcoind,
-        chainQueryApi = bitcoind,
-        bip39PasswordOpt = bip39PasswordOpt,
-        extraConfig = extraConfig)
+      tmp <- BitcoinSWalletTest.createDLCWallet2Accounts(nodeApi = bitcoind,
+                                                         chainQueryApi = bitcoind,
+                                                         bip39PasswordOpt = bip39PasswordOpt,
+                                                         extraConfig = extraConfig)
 
-      wallet = BitcoindRpcBackendUtil.createDLCWalletWithBitcoindCallbacks(
-        bitcoind,
-        tmp)
+      wallet = BitcoindRpcBackendUtil.createDLCWalletWithBitcoindCallbacks(bitcoind, tmp)
 
-      funded1 <- fundAccountForWalletWithBitcoind(
-        BitcoinSWalletTest.defaultAcctAmts,
-        wallet.walletConfig.defaultAccount,
-        wallet,
-        bitcoind)
+      funded1 <- fundAccountForWalletWithBitcoind(BitcoinSWalletTest.defaultAcctAmts,
+                                                  wallet.walletConfig.defaultAccount,
+                                                  wallet,
+                                                  bitcoind)
 
       hdAccount1 = WalletTestUtil.getHdAccount1(wallet.walletConfig)
-      funded <- fundAccountForWalletWithBitcoind(BitcoinSWalletTest.account1Amt,
-                                                 hdAccount1,
-                                                 funded1,
-                                                 bitcoind)
+      funded <- fundAccountForWalletWithBitcoind(BitcoinSWalletTest.account1Amt, hdAccount1, funded1, bitcoind)
     } yield FundedDLCWallet(funded.asInstanceOf[DLCWallet])
   }
 }

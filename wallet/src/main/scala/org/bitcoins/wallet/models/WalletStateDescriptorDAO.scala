@@ -1,11 +1,7 @@
 package org.bitcoins.wallet.models
 
 import org.bitcoins.commons.jsonmodels.wallet.WalletStateDescriptorType._
-import org.bitcoins.commons.jsonmodels.wallet.{
-  SyncHeightDescriptor,
-  WalletStateDescriptor,
-  WalletStateDescriptorType
-}
+import org.bitcoins.commons.jsonmodels.wallet.{SyncHeightDescriptor, WalletStateDescriptor, WalletStateDescriptorType}
 import org.bitcoins.crypto.DoubleSha256DigestBE
 import org.bitcoins.db.{CRUD, SlickUtil}
 import org.bitcoins.wallet.config.WalletAppConfig
@@ -13,15 +9,11 @@ import slick.lifted.ProvenShape
 
 import scala.concurrent.{ExecutionContext, Future}
 
-case class WalletStateDescriptorDb(
-    tpe: WalletStateDescriptorType,
-    descriptor: WalletStateDescriptor) {
+case class WalletStateDescriptorDb(tpe: WalletStateDescriptorType, descriptor: WalletStateDescriptor) {
   require(descriptor.descriptorType == tpe)
 }
 
-case class WalletStateDescriptorDAO()(implicit
-    val ec: ExecutionContext,
-    override val appConfig: WalletAppConfig)
+case class WalletStateDescriptorDAO()(implicit val ec: ExecutionContext, override val appConfig: WalletAppConfig)
     extends CRUD[WalletStateDescriptorDb, WalletStateDescriptorType]
     with SlickUtil[WalletStateDescriptorDb, WalletStateDescriptorType] {
   import profile.api._
@@ -31,28 +23,19 @@ case class WalletStateDescriptorDAO()(implicit
   override val table: profile.api.TableQuery[WalletStateDescriptorTable] =
     TableQuery[WalletStateDescriptorTable]
 
-  override def createAll(ts: Vector[WalletStateDescriptorDb]): Future[
-    Vector[WalletStateDescriptorDb]] =
+  override def createAll(ts: Vector[WalletStateDescriptorDb]): Future[Vector[WalletStateDescriptorDb]] =
     createAllNoAutoInc(ts, safeDatabase)
 
-  override def findByPrimaryKeys(ids: Vector[WalletStateDescriptorType]): Query[
-    WalletStateDescriptorTable,
-    WalletStateDescriptorDb,
-    Seq] = {
+  override def findByPrimaryKeys(
+      ids: Vector[WalletStateDescriptorType]): Query[WalletStateDescriptorTable, WalletStateDescriptorDb, Seq] = {
     table.filter(_.tpe.inSet(ids))
   }
 
-  override def findByPrimaryKey(id: WalletStateDescriptorType): Query[
-    Table[_],
-    WalletStateDescriptorDb,
-    Seq] = {
+  override def findByPrimaryKey(id: WalletStateDescriptorType): Query[Table[_], WalletStateDescriptorDb, Seq] = {
     table.filter(_.tpe === id)
   }
 
-  override def findAll(ts: Vector[WalletStateDescriptorDb]): Query[
-    Table[_],
-    WalletStateDescriptorDb,
-    Seq] =
+  override def findAll(ts: Vector[WalletStateDescriptorDb]): Query[Table[_], WalletStateDescriptorDb, Seq] =
     findByPrimaryKeys(ts.map(_.tpe))
 
   def getSyncDescriptorOpt: Future[Option[SyncHeightDescriptor]] = {
@@ -64,9 +47,7 @@ case class WalletStateDescriptorDAO()(implicit
     }
   }
 
-  def updateSyncHeight(
-      hash: DoubleSha256DigestBE,
-      height: Int): Future[WalletStateDescriptorDb] =
+  def updateSyncHeight(hash: DoubleSha256DigestBE, height: Int): Future[WalletStateDescriptorDb] =
     getSyncDescriptorOpt.flatMap {
       case Some(old) =>
         if (old.height > height) {
@@ -94,8 +75,7 @@ case class WalletStateDescriptorDAO()(implicit
     def descriptor: Rep[WalletStateDescriptor] = column("descriptor")
 
     override def * : ProvenShape[WalletStateDescriptorDb] =
-      (tpe, descriptor).<>(WalletStateDescriptorDb.tupled,
-                           WalletStateDescriptorDb.unapply)
+      (tpe, descriptor).<>(WalletStateDescriptorDb.tupled, WalletStateDescriptorDb.unapply)
 
   }
 }

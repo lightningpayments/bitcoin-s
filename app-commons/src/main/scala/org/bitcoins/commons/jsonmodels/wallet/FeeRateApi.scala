@@ -1,9 +1,6 @@
 package org.bitcoins.commons.jsonmodels.wallet
 
-import org.bitcoins.core.wallet.fee.{
-  SatoshisPerKiloByte,
-  SatoshisPerVirtualByte
-}
+import org.bitcoins.core.wallet.fee.{SatoshisPerKiloByte, SatoshisPerVirtualByte}
 
 sealed abstract class FeeRateApiResult
 

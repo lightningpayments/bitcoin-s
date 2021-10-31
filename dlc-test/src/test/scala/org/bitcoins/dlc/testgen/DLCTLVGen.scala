@@ -5,11 +5,7 @@ import org.bitcoins.core.currency.{CurrencyUnit, CurrencyUnits, Satoshis}
 import org.bitcoins.core.number.{UInt16, UInt32, UInt64}
 import org.bitcoins.core.protocol._
 import org.bitcoins.core.protocol.dlc.build.DLCTxBuilder
-import org.bitcoins.core.protocol.dlc.models.DLCMessage.{
-  DLCAccept,
-  DLCOffer,
-  DLCSign
-}
+import org.bitcoins.core.protocol.dlc.models.DLCMessage.{DLCAccept, DLCOffer, DLCSign}
 import org.bitcoins.core.protocol.dlc.models._
 import org.bitcoins.core.protocol.script._
 import org.bitcoins.core.protocol.tlv._
@@ -44,13 +40,9 @@ object DLCTLVGen {
   def genOracleInfo(
       oraclePrivKey: ECPrivateKey = ECPrivateKey.freshPrivateKey,
       oracleRValue: SchnorrNonce = ECPublicKey.freshPublicKey.schnorrNonce,
-      events: Vector[String] =
-        Vector("dummy1", "dummy2")): EnumSingleOracleInfo = {
+      events: Vector[String] = Vector("dummy1", "dummy2")): EnumSingleOracleInfo = {
     EnumSingleOracleInfo(
-      OracleAnnouncementV0TLV.dummyForEventsAndKeys(
-        oraclePrivKey,
-        oracleRValue,
-        events.map(EnumOutcome.apply)))
+      OracleAnnouncementV0TLV.dummyForEventsAndKeys(oraclePrivKey, oracleRValue, events.map(EnumOutcome.apply)))
   }
 
   def genEnumContractOraclePair(
@@ -69,10 +61,7 @@ object DLCTLVGen {
       oracleRValue: SchnorrNonce = ECPublicKey.freshPublicKey.schnorrNonce,
       outcomes: Vector[String] = DLCTestUtil.genOutcomes(3),
       totalInput: CurrencyUnit = defaultAmt * 2): ContractInfo = {
-    val pair = genEnumContractOraclePair(oraclePrivKey,
-                                         oracleRValue,
-                                         outcomes,
-                                         totalInput)
+    val pair = genEnumContractOraclePair(oraclePrivKey, oracleRValue, outcomes, totalInput)
 
     //this doesn't ever try numeric contracts?
     ContractInfo(totalInput.satoshis, pair)
@@ -83,27 +72,21 @@ object DLCTLVGen {
       oracleRValue: SchnorrNonce = ECPublicKey.freshPublicKey.schnorrNonce,
       outcomes: Vector[String] = DLCTestUtil.genOutcomes(3),
       totalInput: CurrencyUnit = defaultAmt * 2): DLCParsingTestVector = {
-    DLCParsingTestVector(
-      genContractInfo(oraclePrivKey, oracleRValue, outcomes, totalInput).toTLV)
+    DLCParsingTestVector(genContractInfo(oraclePrivKey, oracleRValue, outcomes, totalInput).toTLV)
   }
 
   def oracleInfoParsingTestVector(
       oraclePrivKey: ECPrivateKey = ECPrivateKey.freshPrivateKey,
       oracleRValue: SchnorrNonce = ECPublicKey.freshPublicKey.schnorrNonce,
-      events: Vector[String] =
-        Vector("dummy1", "dummy2")): DLCParsingTestVector = {
-    DLCParsingTestVector(
-      genOracleInfo(oraclePrivKey, oracleRValue, events).toTLV)
+      events: Vector[String] = Vector("dummy1", "dummy2")): DLCParsingTestVector = {
+    DLCParsingTestVector(genOracleInfo(oraclePrivKey, oracleRValue, events).toTLV)
   }
 
-  def p2wpkh(
-      pubKey: ECPublicKey = ECPublicKey.freshPublicKey): P2WPKHWitnessSPKV0 = {
+  def p2wpkh(pubKey: ECPublicKey = ECPublicKey.freshPublicKey): P2WPKHWitnessSPKV0 = {
     P2WPKHWitnessSPKV0(pubKey)
   }
 
-  def address(
-      spk: ScriptPubKey = p2wpkh(),
-      network: NetworkParameters = RegTest): BitcoinAddress = {
+  def address(spk: ScriptPubKey = p2wpkh(), network: NetworkParameters = RegTest): BitcoinAddress = {
     spk match {
       case wspk: WitnessScriptPubKey => Bech32Address(wspk, network)
       case p2sh: P2SHScriptPubKey    => P2SHAddress(p2sh, network)
@@ -113,9 +96,7 @@ object DLCTLVGen {
     }
   }
 
-  def inputTransaction(
-      input: CurrencyUnit = defaultAmt,
-      spk: ScriptPubKey = p2wpkh()): Transaction = {
+  def inputTransaction(input: CurrencyUnit = defaultAmt, spk: ScriptPubKey = p2wpkh()): Transaction = {
     BaseTransaction(
       TransactionConstants.validLockVersion,
       Vector.empty,
@@ -126,11 +107,9 @@ object DLCTLVGen {
 
   def outputReference(
       input: CurrencyUnit = defaultAmt,
-      spk: ScriptPubKey =
-        P2WPKHWitnessSPKV0(ECPublicKey.freshPublicKey)): OutputReference = {
+      spk: ScriptPubKey = P2WPKHWitnessSPKV0(ECPublicKey.freshPublicKey)): OutputReference = {
     val tx = inputTransaction(input, spk)
-    OutputReference(TransactionOutPoint(tx.txIdBE, UInt32.zero),
-                    tx.outputs.head)
+    OutputReference(TransactionOutPoint(tx.txIdBE, UInt32.zero), tx.outputs.head)
   }
 
   def fundingInput(
@@ -140,12 +119,7 @@ object DLCTLVGen {
       sequence: UInt32 = TransactionConstants.enableRBFSequence,
       maxWitnessLen: UInt16 = UInt16(107),
       redeemScriptOpt: Option[WitnessScriptPubKey] = None): DLCFundingInput = {
-    DLCFundingInput(inputSerialId,
-                    prevTx,
-                    prevTxVout,
-                    sequence,
-                    maxWitnessLen,
-                    redeemScriptOpt)
+    DLCFundingInput(inputSerialId, prevTx, prevTxVout, sequence, maxWitnessLen, redeemScriptOpt)
   }
 
   def fundingInputParsingTestVector(
@@ -154,15 +128,9 @@ object DLCTLVGen {
       prevTxVout: UInt32 = UInt32.zero,
       sequence: UInt32 = TransactionConstants.enableRBFSequence,
       maxWitnessLen: UInt16 = UInt16(107),
-      redeemScriptOpt: Option[WitnessScriptPubKey] =
-        None): DLCParsingTestVector = {
+      redeemScriptOpt: Option[WitnessScriptPubKey] = None): DLCParsingTestVector = {
     DLCParsingTestVector(
-      fundingInput(inputSerialId,
-                   prevTx,
-                   prevTxVout,
-                   sequence,
-                   maxWitnessLen,
-                   redeemScriptOpt).toTLV)
+      fundingInput(inputSerialId, prevTx, prevTxVout, sequence, maxWitnessLen, redeemScriptOpt).toTLV)
   }
 
   def adaptorSig: ECAdaptorSignature = {
@@ -176,9 +144,8 @@ object DLCTLVGen {
   }
 
   def ecdsaSig(sigHashByte: Boolean = true): ECDigitalSignature = {
-    val sigWithoutSigHash = ECDigitalSignature.fromRS(
-      ECPrivateKey.freshPrivateKey.fieldElement.toBigInteger,
-      ECPrivateKey.freshPrivateKey.fieldElement.toBigInteger)
+    val sigWithoutSigHash = ECDigitalSignature.fromRS(ECPrivateKey.freshPrivateKey.fieldElement.toBigInteger,
+                                                      ECPrivateKey.freshPrivateKey.fieldElement.toBigInteger)
 
     if (sigHashByte) {
       ECDigitalSignature(sigWithoutSigHash.bytes :+ 0x01)
@@ -187,9 +154,7 @@ object DLCTLVGen {
     }
   }
 
-  def partialSig(
-      pubKey: ECPublicKey = ECPublicKey.freshPublicKey,
-      sigHashByte: Boolean = true): PartialSignature = {
+  def partialSig(pubKey: ECPublicKey = ECPublicKey.freshPublicKey, sigHashByte: Boolean = true): PartialSignature = {
     PartialSignature(pubKey, ecdsaSig(sigHashByte))
   }
 
@@ -200,31 +165,23 @@ object DLCTLVGen {
   }
 
   def cetSigs(
-      outcomes: Vector[EnumOutcome] =
-        DLCTestUtil.genOutcomes(3).map(EnumOutcome.apply),
+      outcomes: Vector[EnumOutcome] = DLCTestUtil.genOutcomes(3).map(EnumOutcome.apply),
       oracleInfo: EnumSingleOracleInfo = genOracleInfo(),
-      fundingPubKey: ECPublicKey =
-        ECPublicKey.freshPublicKey): CETSignatures = {
-    CETSignatures(
-      outcomes.map(outcome =>
-        EnumOracleOutcome(Vector(oracleInfo), outcome).sigPoint -> adaptorSig),
-      partialSig(fundingPubKey, sigHashByte = false))
+      fundingPubKey: ECPublicKey = ECPublicKey.freshPublicKey): CETSignatures = {
+    CETSignatures(outcomes.map(outcome => EnumOracleOutcome(Vector(oracleInfo), outcome).sigPoint -> adaptorSig),
+                  partialSig(fundingPubKey, sigHashByte = false))
   }
 
   def cetSigsParsingTestVector(numOutcomes: Int = 3): DLCParsingTestVector = {
-    DLCParsingTestVector(
-      CETSignaturesV0TLV((0 until numOutcomes).toVector.map(_ => adaptorSig)))
+    DLCParsingTestVector(CETSignaturesV0TLV((0 until numOutcomes).toVector.map(_ => adaptorSig)))
   }
 
-  def fundingSigs(
-      outPoints: Vector[TransactionOutPoint] = Vector(
-        outputReference().outPoint)): FundingSignatures = {
+  def fundingSigs(outPoints: Vector[TransactionOutPoint] = Vector(outputReference().outPoint)): FundingSignatures = {
     FundingSignatures(outPoints.map(outpoint => outpoint -> p2wpkhWitnessV0()))
   }
 
   def fundingSigsParsingTestVector(
-      outPoints: Vector[TransactionOutPoint] = Vector(
-        outputReference().outPoint)): DLCParsingTestVector = {
+      outPoints: Vector[TransactionOutPoint] = Vector(outputReference().outPoint)): DLCParsingTestVector = {
     DLCParsingTestVector(fundingSigs(outPoints).toTLV)
   }
 
@@ -296,8 +253,7 @@ object DLCTLVGen {
       fundOutputSerialId: UInt64 = DLCMessage.genSerialId(),
       feeRate: SatoshisPerVirtualByte = SatoshisPerVirtualByte.one,
       contractMaturityBound: BlockTimeStamp = BlockTimeStamp(100),
-      contractTimeout: BlockTimeStamp =
-        BlockTimeStamp(200)): DLCParsingTestVector = {
+      contractTimeout: BlockTimeStamp = BlockTimeStamp(200)): DLCParsingTestVector = {
     DLCParsingTestVector(
       dlcOfferTLV(
         contractInfo,
@@ -395,8 +351,7 @@ object DLCTLVGen {
 
     val cetSignatures =
       cetSigs(
-        offer.contractInfo.allOutcomes.map(
-          _.asInstanceOf[EnumOracleOutcome].outcome),
+        offer.contractInfo.allOutcomes.map(_.asInstanceOf[EnumOracleOutcome].outcome),
         offer.contractInfo.oracleInfo.asInstanceOf[EnumSingleOracleInfo],
         fundingPubKey
       )
@@ -453,17 +408,13 @@ object DLCTLVGen {
       cetSignatures: CETSignatures = cetSigs(),
       fundingSignatures: FundingSignatures = fundingSigs(),
       contractId: ByteVector = hash().bytes): DLCParsingTestVector = {
-    DLCParsingTestVector(
-      dlcSignTLV(cetSignatures, fundingSignatures, contractId))
+    DLCParsingTestVector(dlcSignTLV(cetSignatures, fundingSignatures, contractId))
   }
 
-  def dlcSignFromOffer(
-      offer: DLCOffer,
-      contractId: ByteVector = hash().bytes): DLCSign = {
+  def dlcSignFromOffer(offer: DLCOffer, contractId: ByteVector = hash().bytes): DLCSign = {
     val cetSignatures =
       cetSigs(
-        offer.contractInfo.allOutcomes.map(
-          _.asInstanceOf[EnumOracleOutcome].outcome),
+        offer.contractInfo.allOutcomes.map(_.asInstanceOf[EnumOracleOutcome].outcome),
         offer.oracleInfo.asInstanceOf[EnumSingleOracleInfo],
         offer.pubKeys.fundingKey
       )
@@ -471,9 +422,7 @@ object DLCTLVGen {
     DLCSign(cetSignatures, fundingSignatures, contractId)
   }
 
-  def dlcSignTLVFromOffer(
-      offer: DLCOffer,
-      contractId: ByteVector = hash().bytes): DLCSignTLV = {
+  def dlcSignTLVFromOffer(offer: DLCOffer, contractId: ByteVector = hash().bytes): DLCSignTLV = {
     dlcSignFromOffer(offer, contractId).toTLV
   }
 
@@ -485,9 +434,7 @@ object DLCTLVGen {
     dlcSignFromOffer(offer, contractId)
   }
 
-  def dlcSignTLVFromOfferAndAccept(
-      offer: DLCOffer,
-      accept: DLCAccept): DLCSignTLV = {
+  def dlcSignTLVFromOfferAndAccept(offer: DLCOffer, accept: DLCAccept): DLCSignTLV = {
     dlcSignFromOfferAndAccept(offer, accept).toTLV
   }
 }

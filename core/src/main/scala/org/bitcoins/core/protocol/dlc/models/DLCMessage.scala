@@ -40,9 +40,7 @@ object DLCMessage {
   }
 
   @tailrec
-  def genSerialIds(
-      size: Int,
-      notEqualTo: Vector[UInt64] = Vector.empty): Vector[UInt64] = {
+  def genSerialIds(size: Int, notEqualTo: Vector[UInt64] = Vector.empty): Vector[UInt64] = {
     val ids = 0.until(size).toVector.map(_ => genSerialId(notEqualTo))
 
     if (ids.distinct.size != size)
@@ -59,9 +57,7 @@ object DLCMessage {
 
     def changeAddress: BitcoinAddress
 
-    require(
-      totalCollateral >= Satoshis.zero,
-      s"Cannot have a negative totalCollateral, got: ${totalCollateral.toLong}")
+    require(totalCollateral >= Satoshis.zero, s"Cannot have a negative totalCollateral, got: ${totalCollateral.toLong}")
   }
 
   /** The initiating party starts the protocol by sending an offer message to the other party.
@@ -89,13 +85,11 @@ object DLCMessage {
       timeouts: DLCTimeouts)
       extends DLCSetupMessage {
 
-    require(
-      fundingInputs.map(_.inputSerialId).distinct.size == fundingInputs.size,
-      "All funding input serial ids must be unique")
+    require(fundingInputs.map(_.inputSerialId).distinct.size == fundingInputs.size,
+            "All funding input serial ids must be unique")
 
-    require(
-      changeSerialId != fundOutputSerialId,
-      s"changeSerialId ($changeSerialId) cannot be equal to fundOutputSerialId ($fundOutputSerialId)")
+    require(changeSerialId != fundOutputSerialId,
+            s"changeSerialId ($changeSerialId) cannot be equal to fundOutputSerialId ($fundOutputSerialId)")
 
     val oracleInfo: OracleInfo = contractInfo.oracleInfo
     val contractDescriptor: ContractDescriptor = contractInfo.contractDescriptor
@@ -141,21 +135,17 @@ object DLCMessage {
 
       DLCOffer(
         contractInfo = contractInfo,
-        pubKeys = DLCPublicKeys(
-          offer.fundingPubKey,
-          BitcoinAddress.fromScriptPubKey(offer.payoutSPK, network)),
+        pubKeys = DLCPublicKeys(offer.fundingPubKey, BitcoinAddress.fromScriptPubKey(offer.payoutSPK, network)),
         totalCollateral = offer.totalCollateralSatoshis,
-        fundingInputs = offer.fundingInputs.map {
-          case input: FundingInputV0TLV => DLCFundingInput.fromTLV(input)
+        fundingInputs = offer.fundingInputs.map { case input: FundingInputV0TLV =>
+          DLCFundingInput.fromTLV(input)
         },
-        changeAddress =
-          BitcoinAddress.fromScriptPubKey(offer.changeSPK, network),
+        changeAddress = BitcoinAddress.fromScriptPubKey(offer.changeSPK, network),
         payoutSerialId = offer.payoutSerialId,
         changeSerialId = offer.changeSerialId,
         fundOutputSerialId = offer.fundOutputSerialId,
         feeRate = offer.feeRate,
-        timeouts =
-          DLCTimeouts(offer.contractMaturityBound, offer.contractTimeout)
+        timeouts = DLCTimeouts(offer.contractMaturityBound, offer.contractTimeout)
       )
     }
 
@@ -201,9 +191,8 @@ object DLCMessage {
       tempContractId: Sha256Digest)
       extends DLCSetupMessage {
 
-    require(
-      fundingInputs.map(_.inputSerialId).distinct.size == fundingInputs.size,
-      "All funding input serial ids must be unique")
+    require(fundingInputs.map(_.inputSerialId).distinct.size == fundingInputs.size,
+            "All funding input serial ids must be unique")
 
     def toTLV: DLCAcceptTLV = {
       DLCAcceptTLV(
@@ -216,8 +205,7 @@ object DLCMessage {
         changeSPK = changeAddress.scriptPubKey,
         changeSerialId = changeSerialId,
         cetSignatures = CETSignaturesV0TLV(cetSigs.adaptorSigs),
-        refundSignature = ECDigitalSignature.fromFrontOfBytes(
-          cetSigs.refundSig.signature.bytes),
+        refundSignature = ECDigitalSignature.fromFrontOfBytes(cetSigs.refundSig.signature.bytes),
         negotiationFields = negotiationFields.toTLV
       )
     }
@@ -244,9 +232,7 @@ object DLCMessage {
 
     sealed trait NegotiationFields extends TLVSerializable[NegotiationFieldsTLV]
 
-    case object NoNegotiationFields
-        extends TLVSerializable[NoNegotiationFieldsTLV.type]
-        with NegotiationFields {
+    case object NoNegotiationFields extends TLVSerializable[NoNegotiationFieldsTLV.type] with NegotiationFields {
       override def toTLV: NoNegotiationFieldsTLV.type = NoNegotiationFieldsTLV
     }
 
@@ -269,10 +255,7 @@ object DLCMessage {
       }
     }
 
-    def fromTLV(
-        accept: DLCAcceptTLV,
-        network: NetworkParameters,
-        adaptorPoints: Vector[ECPublicKey]): DLCAccept = {
+    def fromTLV(accept: DLCAcceptTLV, network: NetworkParameters, adaptorPoints: Vector[ECPublicKey]): DLCAccept = {
       val outcomeSigs = accept.cetSignatures match {
         case CETSignaturesV0TLV(sigs) =>
           adaptorPoints.zip(sigs)
@@ -280,31 +263,23 @@ object DLCMessage {
 
       DLCAccept(
         totalCollateral = accept.totalCollateralSatoshis,
-        pubKeys = DLCPublicKeys(
-          accept.fundingPubKey,
-          BitcoinAddress.fromScriptPubKey(accept.payoutSPK, network)),
-        fundingInputs = accept.fundingInputs.map {
-          case input: FundingInputV0TLV => DLCFundingInput.fromTLV(input)
+        pubKeys = DLCPublicKeys(accept.fundingPubKey, BitcoinAddress.fromScriptPubKey(accept.payoutSPK, network)),
+        fundingInputs = accept.fundingInputs.map { case input: FundingInputV0TLV =>
+          DLCFundingInput.fromTLV(input)
         },
-        changeAddress =
-          BitcoinAddress.fromScriptPubKey(accept.changeSPK, network),
+        changeAddress = BitcoinAddress.fromScriptPubKey(accept.changeSPK, network),
         payoutSerialId = accept.payoutSerialId,
         changeSerialId = accept.changeSerialId,
-        cetSigs = CETSignatures(
-          outcomeSigs,
-          PartialSignature(
-            accept.fundingPubKey,
-            ECDigitalSignature(
-              accept.refundSignature.bytes :+ HashType.sigHashAll.byte))),
+        cetSigs =
+          CETSignatures(outcomeSigs,
+                        PartialSignature(accept.fundingPubKey,
+                                         ECDigitalSignature(accept.refundSignature.bytes :+ HashType.sigHashAll.byte))),
         negotiationFields = NegotiationFields.fromTLV(accept.negotiationFields),
         tempContractId = accept.tempContractId
       )
     }
 
-    def fromTLV(
-        accept: DLCAcceptTLV,
-        network: NetworkParameters,
-        contractInfo: ContractInfo): DLCAccept = {
+    def fromTLV(accept: DLCAcceptTLV, network: NetworkParameters, contractInfo: ContractInfo): DLCAccept = {
       fromTLV(accept, network, contractInfo.adaptorPoints)
     }
 
@@ -312,25 +287,19 @@ object DLCMessage {
       fromTLV(accept, offer.changeAddress.networkParameters, offer.contractInfo)
     }
 
-    def fromMessage(
-        accept: LnMessage[DLCAcceptTLV],
-        offer: DLCOffer): DLCAccept = {
+    def fromMessage(accept: LnMessage[DLCAcceptTLV], offer: DLCOffer): DLCAccept = {
       fromTLV(accept.tlv, offer)
     }
   }
 
-  case class DLCSign(
-      cetSigs: CETSignatures,
-      fundingSigs: FundingSignatures,
-      contractId: ByteVector)
+  case class DLCSign(cetSigs: CETSignatures, fundingSigs: FundingSignatures, contractId: ByteVector)
       extends DLCMessage {
 
     def toTLV: DLCSignTLV = {
       DLCSignTLV(
         contractId = contractId,
         cetSignatures = CETSignaturesV0TLV(cetSigs.adaptorSigs),
-        refundSignature = ECDigitalSignature.fromFrontOfBytes(
-          cetSigs.refundSig.signature.bytes),
+        refundSignature = ECDigitalSignature.fromFrontOfBytes(cetSigs.refundSig.signature.bytes),
         fundingSignatures = fundingSigs.toTLV
       )
     }
@@ -361,20 +330,14 @@ object DLCMessage {
       DLCSign(
         cetSigs = CETSignatures(
           outcomeSigs,
-          PartialSignature(
-            fundingPubKey,
-            ECDigitalSignature(
-              sign.refundSignature.bytes :+ HashType.sigHashAll.byte))),
+          PartialSignature(fundingPubKey, ECDigitalSignature(sign.refundSignature.bytes :+ HashType.sigHashAll.byte))),
         fundingSigs = FundingSignatures(fundingSigs),
         contractId = sign.contractId
       )
     }
 
     def fromTLV(sign: DLCSignTLV, offer: DLCOffer): DLCSign = {
-      fromTLV(sign,
-              offer.pubKeys.fundingKey,
-              offer.contractInfo.adaptorPoints,
-              offer.fundingInputs.map(_.outPoint))
+      fromTLV(sign, offer.pubKeys.fundingKey, offer.contractInfo.adaptorPoints, offer.fundingInputs.map(_.outPoint))
     }
 
     def fromMessage(sign: LnMessage[DLCSignTLV], offer: DLCOffer): DLCSign = {

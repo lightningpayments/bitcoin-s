@@ -87,11 +87,9 @@ final case class HikariLogging(
   private lazy val poolName = hikariDataSource.getPoolName
   private lazy val mBeanServer = ManagementFactory.getPlatformMBeanServer
 
-  lazy val aeBeanName = new ObjectName(
-    s"slick:type=AsyncExecutor,name=$poolName")
+  lazy val aeBeanName = new ObjectName(s"slick:type=AsyncExecutor,name=$poolName")
 
-  lazy val poolBeanName = new ObjectName(
-    s"com.zaxxer.hikari:type=Pool ($poolName)")
+  lazy val poolBeanName = new ObjectName(s"com.zaxxer.hikari:type=Pool ($poolName)")
 
   lazy val poolConfigBeanName = new ObjectName(
     s"com.zaxxer.hikari:type=PoolConfig ($poolName)"
@@ -179,11 +177,10 @@ final case class HikariLogging(
       mBeanServer.getMBeanInfo(poolConfigBeanName)
 
       hikariDataSource.setMetricRegistry(metricRegistry)
-      val future = HikariLogging.scheduler.scheduleAtFixedRate(
-        logHikariStats,
-        interval.toMillis,
-        interval.toMillis,
-        TimeUnit.MILLISECONDS)
+      val future = HikariLogging.scheduler.scheduleAtFixedRate(logHikariStats,
+                                                               interval.toMillis,
+                                                               interval.toMillis,
+                                                               TimeUnit.MILLISECONDS)
       cancelOpt = Some(future)
       started = true
       this

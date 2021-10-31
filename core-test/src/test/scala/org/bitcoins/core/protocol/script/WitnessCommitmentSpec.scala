@@ -7,8 +7,7 @@ import org.scalacheck.{Prop, Properties}
   */
 class WitnessCommitmentSpec extends Properties("WitnessCommitmentSpec") {
 
-  property("serialization symmetry") =
-    Prop.forAll(ScriptGenerators.witnessCommitment) { case (commitment, _) =>
-      WitnessCommitment(commitment.hex) == commitment
-    }
+  property("serialization symmetry") = Prop.forAll(ScriptGenerators.witnessCommitment) { case (commitment, _) =>
+    WitnessCommitment(commitment.hex) == commitment
+  }
 }

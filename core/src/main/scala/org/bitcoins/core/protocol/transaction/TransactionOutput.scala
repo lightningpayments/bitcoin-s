@@ -6,8 +6,7 @@ import org.bitcoins.core.serializers.transaction.RawTransactionOutputParser
 import org.bitcoins.crypto.{Factory, NetworkElement}
 import scodec.bits.ByteVector
 
-case class TransactionOutput(value: CurrencyUnit, scriptPubKey: ScriptPubKey)
-    extends NetworkElement {
+case class TransactionOutput(value: CurrencyUnit, scriptPubKey: ScriptPubKey) extends NetworkElement {
 
   //https://bitcoin.org/en/developer-reference#txout
   override lazy val byteSize: Long = scriptPubKey.byteSize + 8
@@ -15,9 +14,7 @@ case class TransactionOutput(value: CurrencyUnit, scriptPubKey: ScriptPubKey)
   override lazy val bytes: ByteVector = RawTransactionOutputParser.write(this)
 }
 
-final object EmptyTransactionOutput
-    extends TransactionOutput(CurrencyUnits.negativeSatoshi,
-                              ScriptPubKey.empty) {
+final object EmptyTransactionOutput extends TransactionOutput(CurrencyUnits.negativeSatoshi, ScriptPubKey.empty) {
   override def toString(): String = "EmptyTransactionOutput"
 }
 

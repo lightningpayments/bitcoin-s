@@ -15,9 +15,8 @@ sealed abstract class Pow {
   /** Gets the next proof of work requirement for a block
     * @see [[https://github.com/bitcoin/bitcoin/blob/35477e9e4e3f0f207ac6fa5764886b15bf9af8d0/src/pow.cpp#L13 Mimics bitcoin core implementation]]
     */
-  def getNetworkWorkRequired(
-      newPotentialTip: BlockHeader,
-      blockchain: Blockchain)(implicit config: ChainAppConfig): UInt32 = {
+  def getNetworkWorkRequired(newPotentialTip: BlockHeader, blockchain: Blockchain)(implicit
+      config: ChainAppConfig): UInt32 = {
     val chainParams = config.chain
     val tip = blockchain.tip
     val currentHeight = tip.height
@@ -28,9 +27,7 @@ sealed abstract class Pow {
           // Special difficulty rule for testnet:
           // If the new block's timestamp is more than 2* 10 minutes
           // then allow mining of a min-difficulty block.
-          if (
-            newPotentialTip.time.toLong > tip.blockHeader.time.toLong + chainParams.powTargetSpacing.toSeconds * 2
-          ) {
+          if (newPotentialTip.time.toLong > tip.blockHeader.time.toLong + chainParams.powTargetSpacing.toSeconds * 2) {
             chainParams.compressedPowLimit
           } else {
             // Return the last non-special-min-difficulty-rules-block
@@ -46,8 +43,7 @@ sealed abstract class Pow {
                 config.chain match {
                   case RegTestNetChainParams =>
                     RegTestNetChainParams.compressedPowLimit
-                  case TestNetChainParams | MainNetChainParams |
-                      SigNetChainParams(_) =>
+                  case TestNetChainParams | MainNetChainParams | SigNetChainParams(_) =>
                     //if we can't find a non min difficulty block, let's just fail
                     throw new RuntimeException(
                       s"Could not find non mindifficulty block in chain of size=${blockchain.length}! hash=${tip.hashBE.hex} height=${currentHeight}")
@@ -62,18 +58,14 @@ sealed abstract class Pow {
         val firstHeight: Int =
           currentHeight - (chainParams.difficultyChangeInterval - 1)
 
-        require(
-          firstHeight >= 0,
-          s"We must have our first height be positive, got=${firstHeight}")
+        require(firstHeight >= 0, s"We must have our first height be positive, got=${firstHeight}")
 
         val firstBlockAtIntervalOpt: Option[BlockHeaderDb] =
           blockchain.findAtHeight(firstHeight)
 
         firstBlockAtIntervalOpt match {
           case Some(firstBlockAtInterval) =>
-            calculateNextWorkRequired(currentTip = tip,
-                                      firstBlockAtInterval,
-                                      chainParams)
+            calculateNextWorkRequired(currentTip = tip, firstBlockAtInterval, chainParams)
           case None =>
             throw new RuntimeException(
               s"Could not find block at height=$firstHeight out of ${blockchain.length} headers to calculate pow difficulty change")

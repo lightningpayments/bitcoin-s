@@ -9,9 +9,7 @@ import scala.util.Try
 sealed trait ECKeyBytes extends NetworkElement
 
 /** Represents a serialization sensitive ECPrivateKey (such as is used in WIF). */
-case class ECPrivateKeyBytes(bytes: ByteVector, isCompressed: Boolean = true)
-    extends ECKeyBytes
-    with MaskedToString {
+case class ECPrivateKeyBytes(bytes: ByteVector, isCompressed: Boolean = true) extends ECKeyBytes with MaskedToString {
   val toPrivateKey: ECPrivateKey = ECPrivateKey(bytes)
 
   /** Returns the raw ECPublicKeyBytes serialized using isCompressed. */
@@ -109,9 +107,7 @@ sealed trait PublicKey extends NetworkElement {
 }
 
 /** Wraps raw ECPublicKey bytes without doing any validation or deserialization (may be invalid). */
-case class ECPublicKeyBytes(bytes: ByteVector)
-    extends ECKeyBytes
-    with PublicKey {
+case class ECPublicKeyBytes(bytes: ByteVector) extends ECKeyBytes with PublicKey {
 
   /** Parse these bytes into the bitcoin-s internal public key type. */
   def toPublicKey: ECPublicKey = ECPublicKey(bytes)
@@ -143,10 +139,7 @@ sealed abstract class BaseECKey extends NetworkElement
   * as there is in Wallet Import Format (WIF), if dealing with
   * external wallets then ECPrivateKeyBytes may be needed.
   */
-case class ECPrivateKey(bytes: ByteVector)
-    extends BaseECKey
-    with AdaptorSign
-    with MaskedToString {
+case class ECPrivateKey(bytes: ByteVector) extends BaseECKey with AdaptorSign with MaskedToString {
   require(CryptoUtil.secKeyVerify(bytes), s"Invalid key, hex: ${bytes.toHex}")
 
   /** Signs a given sequence of bytes with the signingKey
@@ -159,9 +152,7 @@ case class ECPrivateKey(bytes: ByteVector)
 
   def sign(hash: HashDigest): ECDigitalSignature = sign(hash.bytes)
 
-  override def signWithEntropy(
-      bytes: ByteVector,
-      entropy: ByteVector): ECDigitalSignature = {
+  override def signWithEntropy(bytes: ByteVector, entropy: ByteVector): ECDigitalSignature = {
     CryptoUtil.signWithEntropy(this, bytes, entropy)
   }
 
@@ -170,33 +161,23 @@ case class ECPrivateKey(bytes: ByteVector)
     schnorrSign(dataToSign, auxRand)
   }
 
-  def schnorrSign(
-      dataToSign: ByteVector,
-      auxRand: ByteVector): SchnorrDigitalSignature = {
+  def schnorrSign(dataToSign: ByteVector, auxRand: ByteVector): SchnorrDigitalSignature = {
     CryptoUtil.schnorrSign(dataToSign, this, auxRand)
   }
 
-  def schnorrSignWithNonce(
-      dataToSign: ByteVector,
-      nonce: ECPrivateKey): SchnorrDigitalSignature = {
+  def schnorrSignWithNonce(dataToSign: ByteVector, nonce: ECPrivateKey): SchnorrDigitalSignature = {
     CryptoUtil.schnorrSignWithNonce(dataToSign, this, nonce)
   }
 
-  override def adaptorSign(
-      adaptorPoint: ECPublicKey,
-      msg: ByteVector,
-      auxRand: ByteVector): ECAdaptorSignature = {
+  override def adaptorSign(adaptorPoint: ECPublicKey, msg: ByteVector, auxRand: ByteVector): ECAdaptorSignature = {
     CryptoUtil.adaptorSign(this, adaptorPoint, msg, auxRand)
   }
 
-  def completeAdaptorSignature(
-      adaptorSignature: ECAdaptorSignature): ECDigitalSignature = {
+  def completeAdaptorSignature(adaptorSignature: ECAdaptorSignature): ECDigitalSignature = {
     CryptoUtil.adaptorComplete(this, adaptorSignature)
   }
 
-  def completeAdaptorSignature(
-      adaptorSignature: ECAdaptorSignature,
-      hashTypeByte: Byte): ECDigitalSignature = {
+  def completeAdaptorSignature(adaptorSignature: ECAdaptorSignature, hashTypeByte: Byte): ECDigitalSignature = {
     val completedSig = completeAdaptorSignature(adaptorSignature)
     ECDigitalSignature(completedSig.bytes ++ ByteVector.fromByte(hashTypeByte))
   }
@@ -287,9 +268,7 @@ object ECPrivateKey extends Factory[ECPrivateKey] {
   * doing computations on public key (points) that may have intermediate 0x00 values, then you
   * should convert using toPoint, do computation, and then convert back toPublicKey in the end.
   */
-case class ECPublicKey(private val _bytes: ByteVector)
-    extends BaseECKey
-    with PublicKey {
+case class ECPublicKey(private val _bytes: ByteVector) extends BaseECKey with PublicKey {
   require(isFullyValid, s"Invalid public key: ${_bytes}: $decompressedBytesT")
 
   /** Converts this public key into the raw underlying point on secp256k1 for computation. */
@@ -299,15 +278,11 @@ case class ECPublicKey(private val _bytes: ByteVector)
     ECPublicKey.fromBytes(bytes).asInstanceOf[this.type]
   }
 
-  def schnorrVerify(
-      data: ByteVector,
-      signature: SchnorrDigitalSignature): Boolean = {
+  def schnorrVerify(data: ByteVector, signature: SchnorrDigitalSignature): Boolean = {
     schnorrPublicKey.verify(data, signature)
   }
 
-  def schnorrComputePoint(
-      data: ByteVector,
-      nonce: SchnorrNonce): ECPublicKey = {
+  def schnorrComputePoint(data: ByteVector, nonce: SchnorrNonce): ECPublicKey = {
     schnorrPublicKey.computeSigPoint(data, nonce)
   }
 
@@ -315,16 +290,11 @@ case class ECPublicKey(private val _bytes: ByteVector)
 
   def schnorrNonce: SchnorrNonce = SchnorrNonce(bytes)
 
-  def adaptorVerify(
-      msg: ByteVector,
-      adaptorPoint: ECPublicKey,
-      adaptorSignature: ECAdaptorSignature): Boolean = {
+  def adaptorVerify(msg: ByteVector, adaptorPoint: ECPublicKey, adaptorSignature: ECAdaptorSignature): Boolean = {
     CryptoUtil.adaptorVerify(adaptorSignature, this, msg, adaptorPoint)
   }
 
-  def extractAdaptorSecret(
-      adaptorSignature: ECAdaptorSignature,
-      signature: ECDigitalSignature): ECPrivateKey = {
+  def extractAdaptorSecret(adaptorSignature: ECAdaptorSignature, signature: ECDigitalSignature): ECPrivateKey = {
     CryptoUtil.extractAdaptorSecret(signature, adaptorSignature, this)
   }
 

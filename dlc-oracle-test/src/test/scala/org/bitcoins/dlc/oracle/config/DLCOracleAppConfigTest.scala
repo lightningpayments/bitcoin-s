@@ -11,18 +11,17 @@ class DLCOracleAppConfigTest extends DLCOracleAppConfigFixture {
 
   behavior of "DLCOracleAppConfig"
 
-  it must "start the same oracle twice" in {
-    dlcOracleAppConfig: DLCOracleAppConfig =>
-      val started1F = dlcOracleAppConfig.start()
-      val started2F = started1F.flatMap(_ => dlcOracleAppConfig.start())
-      for {
-        _ <- started1F
-        _ <- started2F
-        dlcOracle1 = new DLCOracle()(dlcOracleAppConfig)
-        dlcOracle2 = new DLCOracle()(dlcOracleAppConfig)
-      } yield {
-        assert(dlcOracle1.publicKey == dlcOracle2.publicKey)
-      }
+  it must "start the same oracle twice" in { dlcOracleAppConfig: DLCOracleAppConfig =>
+    val started1F = dlcOracleAppConfig.start()
+    val started2F = started1F.flatMap(_ => dlcOracleAppConfig.start())
+    for {
+      _ <- started1F
+      _ <- started2F
+      dlcOracle1 = new DLCOracle()(dlcOracleAppConfig)
+      dlcOracle2 = new DLCOracle()(dlcOracleAppConfig)
+    } yield {
+      assert(dlcOracle1.publicKey == dlcOracle2.publicKey)
+    }
   }
 
   it must "initialize the oracle, move the seed somewhere else, and then start the oracle again and get the same pubkeys" in {

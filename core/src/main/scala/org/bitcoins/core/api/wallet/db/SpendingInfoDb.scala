@@ -4,18 +4,9 @@ import org.bitcoins.core.api.db.DbRowAutoInc
 import org.bitcoins.core.api.keymanager.BIP39KeyManagerApi
 import org.bitcoins.core.hd._
 import org.bitcoins.core.protocol.script.{ScriptPubKey, ScriptWitness}
-import org.bitcoins.core.protocol.transaction.{
-  Transaction,
-  TransactionOutPoint,
-  TransactionOutput
-}
+import org.bitcoins.core.protocol.transaction.{Transaction, TransactionOutPoint, TransactionOutput}
 import org.bitcoins.core.script.crypto.HashType
-import org.bitcoins.core.wallet.utxo.{
-  ConditionalPath,
-  InputInfo,
-  ScriptSignatureParams,
-  TxoState
-}
+import org.bitcoins.core.wallet.utxo.{ConditionalPath, InputInfo, ScriptSignatureParams, TxoState}
 import org.bitcoins.crypto.{DoubleSha256DigestBE, Sign}
 
 /** DB representation of a native V0
@@ -44,8 +35,7 @@ case class SegwitV0SpendingInfo(
     copy(id = Some(id))
 
   /** Updates the `spendingTxId` field */
-  override def copyWithSpendingTxId(
-      txId: DoubleSha256DigestBE): SegwitV0SpendingInfo =
+  override def copyWithSpendingTxId(txId: DoubleSha256DigestBE): SegwitV0SpendingInfo =
     copy(spendingTxIdOpt = Some(txId))
 }
 
@@ -74,8 +64,7 @@ case class LegacySpendingInfo(
     copy(state = state)
 
   /** Updates the `spendingTxId` field */
-  override def copyWithSpendingTxId(
-      txId: DoubleSha256DigestBE): LegacySpendingInfo =
+  override def copyWithSpendingTxId(txId: DoubleSha256DigestBE): LegacySpendingInfo =
     copy(spendingTxIdOpt = Some(txId))
 }
 
@@ -106,8 +95,7 @@ case class NestedSegwitV0SpendingInfo(
     copy(id = Some(id))
 
   /** Updates the `spendingTxId` field */
-  override def copyWithSpendingTxId(
-      txId: DoubleSha256DigestBE): NestedSegwitV0SpendingInfo =
+  override def copyWithSpendingTxId(txId: DoubleSha256DigestBE): NestedSegwitV0SpendingInfo =
     copy(spendingTxIdOpt = Some(txId))
 }
 
@@ -121,9 +109,8 @@ case class NestedSegwitV0SpendingInfo(
 sealed trait SpendingInfoDb extends DbRowAutoInc[SpendingInfoDb] {
 
   if (TxoState.spentStates.contains(state)) {
-    require(
-      spendingTxIdOpt.isDefined,
-      s"If we have spent a spendinginfodb, the spendingTxId must be defined. Outpoint=${outPoint.toString}")
+    require(spendingTxIdOpt.isDefined,
+            s"If we have spent a spendinginfodb, the spendingTxId must be defined. Outpoint=${outPoint.toString}")
   }
 
   protected type PathType <: HDPath
@@ -166,18 +153,14 @@ sealed trait SpendingInfoDb extends DbRowAutoInc[SpendingInfoDb] {
   /** Converts a non-sensitive DB representation of a UTXO into
     * a signable (and sensitive) real-world UTXO
     */
-  def toUTXOInfo(
-      keyManager: BIP39KeyManagerApi,
-      prevTransaction: Transaction): ScriptSignatureParams[InputInfo] = {
+  def toUTXOInfo(keyManager: BIP39KeyManagerApi, prevTransaction: Transaction): ScriptSignatureParams[InputInfo] = {
 
     val sign: Sign = keyManager.toSign(privKeyPath = privKeyPath)
 
     toUTXOInfo(sign = sign, prevTransaction)
   }
 
-  def toUTXOInfo(
-      sign: Sign,
-      prevTransaction: Transaction): ScriptSignatureParams[InputInfo] = {
+  def toUTXOInfo(sign: Sign, prevTransaction: Transaction): ScriptSignatureParams[InputInfo] = {
     ScriptSignatureParams(
       InputInfo(
         outPoint,

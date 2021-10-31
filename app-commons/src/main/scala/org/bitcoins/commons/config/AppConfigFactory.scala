@@ -18,14 +18,11 @@ trait AppConfigFactoryBase[C <: AppConfig, I] {
     fromConfig(ConfigFactory.load())
   }
 
-  def fromDefaultDatadir(confs: Vector[Config] = Vector.empty)(implicit
-      i: I): C = {
+  def fromDefaultDatadir(confs: Vector[Config] = Vector.empty)(implicit i: I): C = {
     fromDatadir(AppConfig.DEFAULT_BITCOIN_S_DATADIR, confs)
   }
 
-  def fromDatadir(datadir: Path, confs: Vector[Config] = Vector.empty)(implicit
-      i: I): C
+  def fromDatadir(datadir: Path, confs: Vector[Config] = Vector.empty)(implicit i: I): C
 }
 
-trait AppConfigFactory[C <: AppConfig]
-    extends AppConfigFactoryBase[C, ExecutionContext]
+trait AppConfigFactory[C <: AppConfig] extends AppConfigFactoryBase[C, ExecutionContext]

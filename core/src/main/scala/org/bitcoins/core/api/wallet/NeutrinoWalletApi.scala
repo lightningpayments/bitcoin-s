@@ -16,14 +16,10 @@ trait NeutrinoWalletApi { self: WalletApi =>
     */
   def processBlock(block: Block): Future[WalletApi]
 
-  def processCompactFilter(
-      blockHash: DoubleSha256Digest,
-      blockFilter: GolombFilter): Future[WalletApi] =
+  def processCompactFilter(blockHash: DoubleSha256Digest, blockFilter: GolombFilter): Future[WalletApi] =
     processCompactFilters(Vector((blockHash, blockFilter)))
 
-  def processCompactFilters(
-      blockFilters: Vector[(DoubleSha256Digest, GolombFilter)]): Future[
-    WalletApi]
+  def processCompactFilters(blockFilters: Vector[(DoubleSha256Digest, GolombFilter)]): Future[WalletApi]
 
   /** Iterates over the block filters in order to find filters that match to the given addresses
     *
@@ -78,12 +74,8 @@ trait NeutrinoWalletApi { self: WalletApi =>
       useCreationTime: Boolean)(implicit ec: ExecutionContext): Future[Unit]
 
   /** Helper method to rescan the ENTIRE blockchain. */
-  def fullRescanNeutrinoWallet(addressBatchSize: Int)(implicit
-      ec: ExecutionContext): Future[Unit] =
-    rescanNeutrinoWallet(startOpt = None,
-                         endOpt = None,
-                         addressBatchSize = addressBatchSize,
-                         useCreationTime = false)
+  def fullRescanNeutrinoWallet(addressBatchSize: Int)(implicit ec: ExecutionContext): Future[Unit] =
+    rescanNeutrinoWallet(startOpt = None, endOpt = None, addressBatchSize = addressBatchSize, useCreationTime = false)
 
   def discoveryBatchSize(): Int = 25
 
@@ -91,8 +83,6 @@ trait NeutrinoWalletApi { self: WalletApi =>
 
 object NeutrinoWalletApi {
 
-  case class BlockMatchingResponse(
-      blockHash: DoubleSha256DigestBE,
-      blockHeight: Int)
+  case class BlockMatchingResponse(blockHash: DoubleSha256DigestBE, blockHeight: Int)
 
 }

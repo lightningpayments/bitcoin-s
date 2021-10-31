@@ -80,18 +80,10 @@ object NetworkIpAddress extends Factory[NetworkIpAddress] {
     } else bytes
   }
 
-  private case class NetworkIpAddressImpl(
-      time: UInt32,
-      services: ServiceIdentifier,
-      address: InetAddress,
-      port: Int)
+  private case class NetworkIpAddressImpl(time: UInt32, services: ServiceIdentifier, address: InetAddress, port: Int)
       extends NetworkIpAddress
 
-  def apply(
-      time: UInt32,
-      services: ServiceIdentifier,
-      address: InetAddress,
-      port: Int): NetworkIpAddress = {
+  def apply(time: UInt32, services: ServiceIdentifier, address: InetAddress, port: Int): NetworkIpAddress = {
     NetworkIpAddressImpl(time, services, address, port)
   }
 

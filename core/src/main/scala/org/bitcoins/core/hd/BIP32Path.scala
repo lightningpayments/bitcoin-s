@@ -130,8 +130,7 @@ object BIP32Path extends Factory[BIP32Path] with StringFactory[BIP32Path] {
       .map(_.trim)
 
     val head +: rest = parts
-    require(head == "m",
-            """The first element in a BIP32 path string must be "m"""")
+    require(head == "m", """The first element in a BIP32 path string must be "m"""")
 
     val path = rest.map { str =>
       val (index: String, hardened: Boolean) =
@@ -151,14 +150,12 @@ object BIP32Path extends Factory[BIP32Path] with StringFactory[BIP32Path] {
     */
   def fromHardenedString(string: String): BIP32Path = {
     val path = BIP32Path.fromString(string)
-    require(path.forall(_.hardened),
-            s"Found non hardened path in string=$string")
+    require(path.forall(_.hardened), s"Found non hardened path in string=$string")
     path
   }
 
   private def fromBytes(bytes: ByteVector, littleEndian: Boolean): BIP32Path = {
-    require(bytes.size % 4 == 0,
-            s"ByteVector is not suited for KeyPath, got=${bytes.length}")
+    require(bytes.size % 4 == 0, s"ByteVector is not suited for KeyPath, got=${bytes.length}")
 
     val parts: Vector[ByteVector] = bytes.grouped(4).toVector
 

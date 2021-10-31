@@ -42,8 +42,7 @@ trait TransactionRpc { self: Client =>
       case None => optionsNoFee
     }
 
-    bitcoindCall[BumpFeeResult]("bumpfee",
-                                List(JsString(txid.hex), JsObject(options)))
+    bitcoindCall[BumpFeeResult]("bumpfee", List(JsString(txid.hex), JsObject(options)))
   }
 
   def bumpFee(
@@ -58,30 +57,21 @@ trait TransactionRpc { self: Client =>
   // Needs manual testing!
   def estimateSmartFee(
       blocks: Int,
-      mode: FeeEstimationMode = FeeEstimationMode.Ecnomical): Future[
-    EstimateSmartFeeResult] = {
-    bitcoindCall[EstimateSmartFeeResult](
-      "estimatesmartfee",
-      List(JsNumber(blocks), JsString(mode.toString)))
+      mode: FeeEstimationMode = FeeEstimationMode.Ecnomical): Future[EstimateSmartFeeResult] = {
+    bitcoindCall[EstimateSmartFeeResult]("estimatesmartfee", List(JsNumber(blocks), JsString(mode.toString)))
   }
 
   def getTransaction(
       txid: DoubleSha256DigestBE,
       watchOnly: Boolean = false,
       walletNameOpt: Option[String] = None): Future[GetTransactionResult] = {
-    bitcoindCall[GetTransactionResult](
-      "gettransaction",
-      List(JsString(txid.hex), JsBoolean(watchOnly)),
-      uriExtensionOpt = walletNameOpt.map(walletExtension))
+    bitcoindCall[GetTransactionResult]("gettransaction",
+                                       List(JsString(txid.hex), JsBoolean(watchOnly)),
+                                       uriExtensionOpt = walletNameOpt.map(walletExtension))
   }
 
-  def getTxOut(
-      txid: DoubleSha256DigestBE,
-      vout: Int,
-      includeMemPool: Boolean = true): Future[GetTxOutResult] = {
-    bitcoindCall[GetTxOutResult](
-      "gettxout",
-      List(JsString(txid.hex), JsNumber(vout), JsBoolean(includeMemPool)))
+  def getTxOut(txid: DoubleSha256DigestBE, vout: Int, includeMemPool: Boolean = true): Future[GetTxOutResult] = {
+    bitcoindCall[GetTxOutResult]("gettxout", List(JsString(txid.hex), JsNumber(vout), JsBoolean(includeMemPool)))
   }
 
   private def getTxOutProof(
@@ -101,20 +91,14 @@ trait TransactionRpc { self: Client =>
   def getTxOutProof(txids: Vector[DoubleSha256DigestBE]): Future[MerkleBlock] =
     getTxOutProof(txids, None)
 
-  def getTxOutProof(
-      txids: Vector[DoubleSha256Digest],
-      headerHash: DoubleSha256Digest): Future[MerkleBlock] =
+  def getTxOutProof(txids: Vector[DoubleSha256Digest], headerHash: DoubleSha256Digest): Future[MerkleBlock] =
     getTxOutProof(txids.map(_.flip), Some(headerHash.flip))
 
-  def getTxOutProof(
-      txids: Vector[DoubleSha256DigestBE],
-      headerHash: DoubleSha256DigestBE): Future[MerkleBlock] =
+  def getTxOutProof(txids: Vector[DoubleSha256DigestBE], headerHash: DoubleSha256DigestBE): Future[MerkleBlock] =
     getTxOutProof(txids, Some(headerHash))
 
-  def verifyTxOutProof(
-      proof: MerkleBlock): Future[Vector[DoubleSha256DigestBE]] = {
-    bitcoindCall[Vector[DoubleSha256DigestBE]]("verifytxoutproof",
-                                               List(JsString(proof.hex)))
+  def verifyTxOutProof(proof: MerkleBlock): Future[Vector[DoubleSha256DigestBE]] = {
+    bitcoindCall[Vector[DoubleSha256DigestBE]]("verifytxoutproof", List(JsString(proof.hex)))
   }
 
   def getTxOutSetInfo: Future[GetTxOutSetInfoResult] = {

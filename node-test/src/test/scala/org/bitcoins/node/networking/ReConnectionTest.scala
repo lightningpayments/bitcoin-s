@@ -4,11 +4,7 @@ import org.bitcoins.asyncutil.AsyncUtil
 import org.bitcoins.asyncutil.AsyncUtil.RpcRetryException
 import org.bitcoins.node.models.Peer
 import org.bitcoins.node.networking.peer.PeerHandler
-import org.bitcoins.testkit.node.{
-  CachedBitcoinSAppConfig,
-  NodeTestUtil,
-  NodeUnitTest
-}
+import org.bitcoins.testkit.node.{CachedBitcoinSAppConfig, NodeTestUtil, NodeUnitTest}
 import org.bitcoins.testkit.rpc.BitcoindRpcTestUtil
 import org.bitcoins.testkit.util.{AkkaUtil, BitcoindRpcTest}
 
@@ -49,10 +45,9 @@ class ReConnectionTest extends BitcoindRpcTest with CachedBitcoinSAppConfig {
       _ <- AkkaUtil.nonBlockingSleep(3.seconds)
       _ <- bitcoindRpc.start()
       //now we should eventually automatically reconnect
-      _ <- AsyncUtil.retryUntilSatisfiedF(
-        conditionF = () => peerHandler.p2pClient.isConnected(),
-        interval = 500.millis,
-        maxTries = 60)
+      _ <- AsyncUtil.retryUntilSatisfiedF(conditionF = () => peerHandler.p2pClient.isConnected(),
+                                          interval = 500.millis,
+                                          maxTries = 60)
     } yield succeed
 
     connectedF

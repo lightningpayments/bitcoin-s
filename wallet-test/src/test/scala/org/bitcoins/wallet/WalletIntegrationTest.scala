@@ -27,10 +27,7 @@ class WalletIntegrationTest extends BitcoinSWalletTestCachedBitcoindNewest {
   override def withFixture(test: OneArgAsyncTest): FutureOutcome = {
     val f: Future[Outcome] = for {
       bitcoind <- cachedBitcoindWithFundsF
-      futOutcome = withNewWalletAndBitcoindCached(
-        test,
-        getBIP39PasswordOpt(),
-        bitcoind)(getFreshWalletAppConfig)
+      futOutcome = withNewWalletAndBitcoindCached(test, getBIP39PasswordOpt(), bitcoind)(getFreshWalletAppConfig)
       fut <- futOutcome.toFuture
     } yield fut
     new FutureOutcome(f)
@@ -149,9 +146,8 @@ class WalletIntegrationTest extends BitcoinSWalletTestCachedBitcoindNewest {
       assert(balancePostSend > 0.sats)
       assert(balancePostSend < valueFromBitcoind)
       assert(
-        WalletTestUtil.isCloseEnough(balancePostSend,
-                                     valueFromBitcoind - valueToBitcoind,
-                                     delta = outgoingTx.get.actualFee))
+        WalletTestUtil
+          .isCloseEnough(balancePostSend, valueFromBitcoind - valueToBitcoind, delta = outgoingTx.get.actualFee))
       assert(tx.confirmations.exists(_ > 0))
     }
   }
@@ -194,8 +190,7 @@ class WalletIntegrationTest extends BitcoinSWalletTestCachedBitcoindNewest {
       _ <- bitcoind.sendRawTransaction(replacementTx)
 
       // After replacement tx is broadcast, old tx should be gone
-      _ <- recoverToSucceededIf[InvalidAddressOrKey](
-        bitcoind.getRawTransaction(tx1.txIdBE))
+      _ <- recoverToSucceededIf[InvalidAddressOrKey](bitcoind.getRawTransaction(tx1.txIdBE))
 
       // Check we didn't send extra to bitcoind
       bitcoindBal2 <- bitcoind.getUnconfirmedBalance
@@ -291,75 +286,71 @@ class WalletIntegrationTest extends BitcoinSWalletTestCachedBitcoindNewest {
     } yield assert(walletBal1 > walletBal2)
   }
 
-  it should "correctly handle spending coinbase utxos" in {
-    walletWithBitcoind =>
-      val WalletWithBitcoindRpc(wallet, bitcoind) = walletWithBitcoind
+  it should "correctly handle spending coinbase utxos" in { walletWithBitcoind =>
+    val WalletWithBitcoindRpc(wallet, bitcoind) = walletWithBitcoind
 
-      // Makes fee rate for tx ~5 sat/vbyte
-      val amountToSend = Bitcoins(49.99999000)
+    // Makes fee rate for tx ~5 sat/vbyte
+    val amountToSend = Bitcoins(49.99999000)
 
-      for {
-        // Mine to wallet
-        addr <- wallet.getNewAddress()
-        hash <- bitcoind.generateToAddress(1, addr).map(_.head)
-        block <- bitcoind.getBlockRaw(hash)
+    for {
+      // Mine to wallet
+      addr <- wallet.getNewAddress()
+      hash <- bitcoind.generateToAddress(1, addr).map(_.head)
+      block <- bitcoind.getBlockRaw(hash)
 
-        // Assert we mined to our address
-        coinbaseTx = block.transactions.head
-        _ = assert(
-          coinbaseTx.outputs.exists(_.scriptPubKey == addr.scriptPubKey))
+      // Assert we mined to our address
+      coinbaseTx = block.transactions.head
+      _ = assert(coinbaseTx.outputs.exists(_.scriptPubKey == addr.scriptPubKey))
 
-        _ <- wallet.processBlock(block)
+      _ <- wallet.processBlock(block)
 
-        // Verify we funded the wallet
-        allUtxos <- wallet.spendingInfoDAO.findAllSpendingInfos()
-        _ = assert(allUtxos.size == 1)
-        utxos <- wallet.listUtxos(TxoState.ImmatureCoinbase)
-        _ = assert(utxos.size == 1)
+      // Verify we funded the wallet
+      allUtxos <- wallet.spendingInfoDAO.findAllSpendingInfos()
+      _ = assert(allUtxos.size == 1)
+      utxos <- wallet.listUtxos(TxoState.ImmatureCoinbase)
+      _ = assert(utxos.size == 1)
 
-        bitcoindAddr <- bitcoind.getNewAddress
+      bitcoindAddr <- bitcoind.getNewAddress
 
-        // Attempt to spend utxo
-        _ <- recoverToSucceededIf[RuntimeException](
-          wallet.sendToAddress(bitcoindAddr, valueToBitcoind, None))
+      // Attempt to spend utxo
+      _ <- recoverToSucceededIf[RuntimeException](wallet.sendToAddress(bitcoindAddr, valueToBitcoind, None))
 
-        spendingTx = {
-          val inputs = utxos.map { db =>
-            TransactionInput(db.outPoint, EmptyScriptSignature, UInt32.zero)
-          }
-          val outputs =
-            Vector(TransactionOutput(amountToSend, bitcoindAddr.scriptPubKey))
-          BaseTransaction(Int32.two, inputs, outputs, UInt32.zero)
+      spendingTx = {
+        val inputs = utxos.map { db =>
+          TransactionInput(db.outPoint, EmptyScriptSignature, UInt32.zero)
         }
+        val outputs =
+          Vector(TransactionOutput(amountToSend, bitcoindAddr.scriptPubKey))
+        BaseTransaction(Int32.two, inputs, outputs, UInt32.zero)
+      }
 
-        _ <- recoverToSucceededIf[RuntimeException](
-          wallet.processTransaction(spendingTx, None))
+      _ <- recoverToSucceededIf[RuntimeException](wallet.processTransaction(spendingTx, None))
 
-        // Make coinbase mature
-        _ <- bitcoind.generateToAddress(101, bitcoindAddr)
-        _ <- wallet.updateUtxoPendingStates()
+      // Make coinbase mature
+      _ <- bitcoind.generateToAddress(101, bitcoindAddr)
+      _ <- wallet.updateUtxoPendingStates()
 
-        // Create valid spending tx
-        psbt = PSBT.fromUnsignedTx(spendingTx)
-        signedPSBT <- wallet.signPSBT(psbt)
-        signedTx = signedPSBT.finalizePSBT
-          .flatMap(_.extractTransactionAndValidate)
-          .get
+      // Create valid spending tx
+      psbt = PSBT.fromUnsignedTx(spendingTx)
+      signedPSBT <- wallet.signPSBT(psbt)
+      signedTx = signedPSBT.finalizePSBT
+        .flatMap(_.extractTransactionAndValidate)
+        .get
 
-        // Process tx, validate correctly moved to
-        _ <- wallet.processTransaction(signedTx, None)
-        newCoinbaseUtxos <- wallet.listUtxos(TxoState.ImmatureCoinbase)
-        _ = assert(newCoinbaseUtxos.isEmpty)
-        spentUtxos <- wallet.listUtxos(TxoState.BroadcastSpent)
-        _ = assert(spentUtxos.size == 1)
+      // Process tx, validate correctly moved to
+      _ <- wallet.processTransaction(signedTx, None)
+      newCoinbaseUtxos <- wallet.listUtxos(TxoState.ImmatureCoinbase)
+      _ = assert(newCoinbaseUtxos.isEmpty)
+      spentUtxos <- wallet.listUtxos(TxoState.BroadcastSpent)
+      _ = assert(spentUtxos.size == 1)
 
-        // Assert spending tx valid to bitcoind
-        oldBalance <- bitcoind.getBalance
+      // Assert spending tx valid to bitcoind
+      oldBalance <- bitcoind.getBalance
 
-        _ <- bitcoind.sendRawTransaction(signedTx)
-        _ <- bitcoind.generateToAddress(1, bitcoindAddr)
+      _ <- bitcoind.sendRawTransaction(signedTx)
+      _ <- bitcoind.generateToAddress(1, bitcoindAddr)
 
-        newBalance <- bitcoind.getBalance
-      } yield assert(newBalance == oldBalance + amountToSend + Bitcoins(50))
+      newBalance <- bitcoind.getBalance
+    } yield assert(newBalance == oldBalance + amountToSend + Bitcoins(50))
   }
 }

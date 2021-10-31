@@ -22,10 +22,7 @@ sealed abstract class NetworkMessage extends NetworkElement {
 
 object NetworkMessage extends Factory[NetworkMessage] {
 
-  private case class NetworkMessageImpl(
-      header: NetworkHeader,
-      payload: NetworkPayload)
-      extends NetworkMessage
+  private case class NetworkMessageImpl(header: NetworkHeader, payload: NetworkPayload) extends NetworkMessage
 
   def fromBytes(bytes: ByteVector): NetworkMessage =
     RawNetworkMessageSerializer.read(bytes)
@@ -44,9 +41,7 @@ object NetworkMessage extends Factory[NetworkMessage] {
     * @param payload the payload that needs to be sent across the network
     * @return
     */
-  def apply(
-      network: NetworkParameters,
-      payload: NetworkPayload): NetworkMessage = {
+  def apply(network: NetworkParameters, payload: NetworkPayload): NetworkMessage = {
     val header = NetworkHeader(network, payload)
     NetworkMessage(header, payload)
   }

@@ -11,9 +11,7 @@ trait DLCNodeApi extends StartStopAsync[Unit] {
 
   def wallet: DLCWalletApi
 
-  def acceptDLCOffer(
-      peerAddress: InetSocketAddress,
-      dlcOffer: LnMessage[DLCOfferTLV]): Future[Unit]
+  def acceptDLCOffer(peerAddress: InetSocketAddress, dlcOffer: LnMessage[DLCOfferTLV]): Future[Unit]
 
   def getHostAddress: Future[InetSocketAddress]
 }

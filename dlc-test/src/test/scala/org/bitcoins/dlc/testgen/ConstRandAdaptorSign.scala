@@ -8,9 +8,7 @@ import scodec.bits.ByteVector
   */
 case class ConstRandAdaptorSign(privKey: ECPrivateKey) extends AdaptorSign {
 
-  override def adaptorSign(
-      adaptorPoint: ECPublicKey,
-      msg: ByteVector): ECAdaptorSignature = {
+  override def adaptorSign(adaptorPoint: ECPublicKey, msg: ByteVector): ECAdaptorSignature = {
     adaptorSign(adaptorPoint, msg, ConstRandAdaptorSign.constRand)
   }
 
@@ -22,16 +20,11 @@ case class ConstRandAdaptorSign(privKey: ECPrivateKey) extends AdaptorSign {
     privKey.publicKey
   }
 
-  override def signWithEntropy(
-      bytes: ByteVector,
-      entropy: ByteVector): ECDigitalSignature = {
+  override def signWithEntropy(bytes: ByteVector, entropy: ByteVector): ECDigitalSignature = {
     privKey.signWithEntropy(bytes, entropy)
   }
 
-  override def adaptorSign(
-      adaptorPoint: ECPublicKey,
-      msg: ByteVector,
-      auxRand: ByteVector): ECAdaptorSignature = {
+  override def adaptorSign(adaptorPoint: ECPublicKey, msg: ByteVector, auxRand: ByteVector): ECAdaptorSignature = {
     privKey.adaptorSign(adaptorPoint, msg, auxRand)
   }
 }

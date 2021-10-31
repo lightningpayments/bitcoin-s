@@ -2,10 +2,7 @@ package org.bitcoins.dlc.oracle
 
 import org.bitcoins.core.api.dlcoracle.OracleEvent
 import org.bitcoins.core.protocol.dlc.compute.SigningVersion
-import org.bitcoins.core.protocol.tlv.{
-  OracleAnnouncementV0TLV,
-  OracleAttestmentV0TLV
-}
+import org.bitcoins.core.protocol.tlv.{OracleAnnouncementV0TLV, OracleAttestmentV0TLV}
 import org.bitcoins.crypto.FieldElement
 import org.bitcoins.testkitcore.util.BitcoinSUnitTest
 
@@ -23,8 +20,7 @@ class AttestationVerificationTest extends BitcoinSUnitTest {
     "fdd868690474657374545aa0024da81c3fec63e56e07ee141cbefbd2c6e7d4dede124fe856ea453a8500013168cb6d4c4e52aeb5bb75ce141cd9e1aa40e1d9123134d9aa390cffb338d51e323d991dadb52f32d0541027f973c363c0b746bb40dd1d42686f172d88ddef380161")
 
   val invalidEnumAttestation: OracleAttestmentV0TLV =
-    validEnumAttestation.copy(sigs =
-      validEnumAttestation.sigs.map(_.copy(sig = FieldElement.one)))
+    validEnumAttestation.copy(sigs = validEnumAttestation.sigs.map(_.copy(sig = FieldElement.one)))
 
   val unsignedDigitDecompAnnouncement: OracleAnnouncementV0TLV =
     OracleAnnouncementV0TLV(
@@ -37,8 +33,7 @@ class AttestationVerificationTest extends BitcoinSUnitTest {
   // this one was generated with the same public key
   val invalidUnsignedDigitDecompAttestation: OracleAttestmentV0TLV =
     validUnsignedDigitDecompAttestation.copy(sigs =
-      validUnsignedDigitDecompAttestation.sigs.map(
-        _.copy(sig = FieldElement.one)))
+      validUnsignedDigitDecompAttestation.sigs.map(_.copy(sig = FieldElement.one)))
 
   // this one was generated with a different public key
   val invalidUnsignedDigitDecompAttestation1: OracleAttestmentV0TLV =
@@ -55,8 +50,7 @@ class AttestationVerificationTest extends BitcoinSUnitTest {
 
   val invalidSignedDigitDecompAttestation: OracleAttestmentV0TLV =
     validSignedDigitDecompAttestation.copy(sigs =
-      validSignedDigitDecompAttestation.sigs.map(
-        _.copy(sig = FieldElement.one)))
+      validSignedDigitDecompAttestation.sigs.map(_.copy(sig = FieldElement.one)))
 
   val invalidSignedDigitDecompAttestation1: OracleAttestmentV0TLV =
     OracleAttestmentV0TLV(
@@ -65,64 +59,44 @@ class AttestationVerificationTest extends BitcoinSUnitTest {
   it should "validate valid enum attestations" in {
     assert(
       OracleEvent
-        .verifyAttestations(enumAnnouncement,
-                            validEnumAttestation,
-                            signingVersion))
+        .verifyAttestations(enumAnnouncement, validEnumAttestation, signingVersion))
   }
 
   it should "not validate invalid enum attestations" in {
     assert(
       !OracleEvent
-        .verifyAttestations(enumAnnouncement,
-                            invalidEnumAttestation,
-                            signingVersion))
-    assert(
-      !OracleEvent.verifyAttestations(enumAnnouncement,
-                                      validUnsignedDigitDecompAttestation,
-                                      signingVersion))
+        .verifyAttestations(enumAnnouncement, invalidEnumAttestation, signingVersion))
+    assert(!OracleEvent.verifyAttestations(enumAnnouncement, validUnsignedDigitDecompAttestation, signingVersion))
   }
 
   it should "validate valid unsigned digit decomp attestations" in {
     assert(
-      OracleEvent.verifyAttestations(unsignedDigitDecompAnnouncement,
-                                     validUnsignedDigitDecompAttestation,
-                                     signingVersion))
+      OracleEvent
+        .verifyAttestations(unsignedDigitDecompAnnouncement, validUnsignedDigitDecompAttestation, signingVersion))
   }
 
   it should "not validate invalid unsigned digit decomp attestations" in {
+    assert(!OracleEvent.verifyAttestations(unsignedDigitDecompAnnouncement, validEnumAttestation, signingVersion))
     assert(
-      !OracleEvent.verifyAttestations(unsignedDigitDecompAnnouncement,
-                                      validEnumAttestation,
-                                      signingVersion))
+      !OracleEvent
+        .verifyAttestations(unsignedDigitDecompAnnouncement, invalidUnsignedDigitDecompAttestation, signingVersion))
     assert(
-      !OracleEvent.verifyAttestations(unsignedDigitDecompAnnouncement,
-                                      invalidUnsignedDigitDecompAttestation,
-                                      signingVersion))
-    assert(
-      !OracleEvent.verifyAttestations(unsignedDigitDecompAnnouncement,
-                                      invalidUnsignedDigitDecompAttestation1,
-                                      signingVersion))
+      !OracleEvent
+        .verifyAttestations(unsignedDigitDecompAnnouncement, invalidUnsignedDigitDecompAttestation1, signingVersion))
   }
 
   it should "validate valid signed digit decomp attestations" in {
     assert(
-      OracleEvent.verifyAttestations(signedDigitDecompAnnouncement,
-                                     validSignedDigitDecompAttestation,
-                                     signingVersion))
+      OracleEvent.verifyAttestations(signedDigitDecompAnnouncement, validSignedDigitDecompAttestation, signingVersion))
   }
 
   it should "not validate invalid signed digit decomp attestations" in {
+    assert(!OracleEvent.verifyAttestations(signedDigitDecompAnnouncement, validEnumAttestation, signingVersion))
     assert(
-      !OracleEvent.verifyAttestations(signedDigitDecompAnnouncement,
-                                      validEnumAttestation,
-                                      signingVersion))
+      !OracleEvent
+        .verifyAttestations(signedDigitDecompAnnouncement, invalidSignedDigitDecompAttestation, signingVersion))
     assert(
-      !OracleEvent.verifyAttestations(signedDigitDecompAnnouncement,
-                                      invalidSignedDigitDecompAttestation,
-                                      signingVersion))
-    assert(
-      !OracleEvent.verifyAttestations(signedDigitDecompAnnouncement,
-                                      invalidSignedDigitDecompAttestation1,
-                                      signingVersion))
+      !OracleEvent
+        .verifyAttestations(signedDigitDecompAnnouncement, invalidSignedDigitDecompAttestation1, signingVersion))
   }
 }

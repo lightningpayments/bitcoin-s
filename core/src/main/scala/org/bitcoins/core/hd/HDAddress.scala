@@ -29,19 +29,10 @@ sealed abstract class HDAddress extends BIP32Path {
 
 object HDAddress {
 
-  private case class HDAddressImpl(
-      coin: HDCoin,
-      account: HDAccount,
-      chain: HDChain,
-      index: Int,
-      purpose: HDPurpose)
+  private case class HDAddressImpl(coin: HDCoin, account: HDAccount, chain: HDChain, index: Int, purpose: HDPurpose)
       extends HDAddress
 
   def apply(chain: HDChain, index: Int): HDAddress =
-    HDAddressImpl(coin = chain.coin,
-                  account = chain.account,
-                  chain = chain,
-                  index = index,
-                  purpose = chain.purpose)
+    HDAddressImpl(coin = chain.coin, account = chain.account, chain = chain, index = index, purpose = chain.purpose)
 
 }

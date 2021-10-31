@@ -27,15 +27,13 @@ class MultiWalletTest extends BitcoinSAsyncTest with EmbeddedPg {
     val configA = BitcoinSAppConfig(dir, walletNameConfA.withFallback(dbConf))
     val configB = BitcoinSAppConfig(dir, walletNameConfB.withFallback(dbConf))
 
-    val walletAF = BitcoinSWalletTest.createDefaultWallet(
-      MockNodeApi,
-      MockChainQueryApi,
-      bip39PasswordOpt)(configA.walletConf, system.dispatcher)
+    val walletAF =
+      BitcoinSWalletTest.createDefaultWallet(MockNodeApi, MockChainQueryApi, bip39PasswordOpt)(configA.walletConf,
+                                                                                               system.dispatcher)
 
-    val walletBF = BitcoinSWalletTest.createDefaultWallet(
-      MockNodeApi,
-      MockChainQueryApi,
-      bip39PasswordOpt)(configB.walletConf, system.dispatcher)
+    val walletBF =
+      BitcoinSWalletTest.createDefaultWallet(MockNodeApi, MockChainQueryApi, bip39PasswordOpt)(configB.walletConf,
+                                                                                               system.dispatcher)
 
     val assertionF: Future[Assertion] = for {
       walletA <- walletAF

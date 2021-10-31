@@ -59,8 +59,7 @@ object ByteVectorWrapper {
     }
   }
 
-  case class MultiElement(elements: Vector[ByteVectorWrapper])
-      extends ByteVectorWrapper {
+  case class MultiElement(elements: Vector[ByteVectorWrapper]) extends ByteVectorWrapper {
 
     override def toString: String = {
       s"MultiElement(${elements.mkString(",")})"
@@ -78,8 +77,7 @@ object ByteVectorWrapper {
     }
   }
 
-  case class NamedMultiElement(elements: Vector[(String, ByteVectorWrapper)])
-      extends ByteVectorWrapper {
+  case class NamedMultiElement(elements: Vector[(String, ByteVectorWrapper)]) extends ByteVectorWrapper {
 
     override def toString: String = {
       s"NamedMultiElement(${elements
@@ -124,16 +122,10 @@ object ByteVectorWrapper {
   }
 }
 
-case class DLCTLVTestVector(
-    input: TLV,
-    tpeName: String,
-    fields: Vector[(String, ByteVectorWrapper)])
+case class DLCTLVTestVector(input: TLV, tpeName: String, fields: Vector[(String, ByteVectorWrapper)])
     extends DLCParsingTestVector
 
-case class DLCMessageTestVector(
-    input: LnMessage[TLV],
-    tpeName: String,
-    fields: Vector[(String, ByteVectorWrapper)])
+case class DLCMessageTestVector(input: LnMessage[TLV], tpeName: String, fields: Vector[(String, ByteVectorWrapper)])
     extends DLCParsingTestVector
 
 object DLCParsingTestVector extends TestVectorParser[DLCParsingTestVector] {
@@ -159,12 +151,11 @@ object DLCParsingTestVector extends TestVectorParser[DLCParsingTestVector] {
           "tpe" -> Element(RoundingIntervalsV0TLV.tpe),
           "length" -> Element(tlv.length),
           "numIntervals" -> Element(UInt16(intervalStarts.length)),
-          "intervals" -> MultiElement(intervalStarts.map {
-            case (intervalStart, roundingMod) =>
-              NamedMultiElement(
-                "beginInterval" -> Element(BigSizeUInt(intervalStart)),
-                "roundingMod" -> Element(BigSizeUInt(roundingMod.toLong))
-              )
+          "intervals" -> MultiElement(intervalStarts.map { case (intervalStart, roundingMod) =>
+            NamedMultiElement(
+              "beginInterval" -> Element(BigSizeUInt(intervalStart)),
+              "roundingMod" -> Element(BigSizeUInt(roundingMod.toLong))
+            )
           })
         )
         DLCTLVTestVector(tlv, "rounding_intervals_v0", fields)
@@ -173,14 +164,11 @@ object DLCParsingTestVector extends TestVectorParser[DLCParsingTestVector] {
           "tpe" -> Element(ContractDescriptorV0TLV.tpe),
           "length" -> Element(tlv.length),
           "outcomes" -> MultiElement(outcomes.map { case (outcome, amt) =>
-            NamedMultiElement("outcome" -> CryptoUtil.sha256(outcome).bytes,
-                              "localPayout" -> amt.toUInt64.bytes)
+            NamedMultiElement("outcome" -> CryptoUtil.sha256(outcome).bytes, "localPayout" -> amt.toUInt64.bytes)
           })
         )
         DLCTLVTestVector(tlv, "contract_descriptor_v0", fields)
-      case ContractDescriptorV1TLV(numDigits,
-                                   payoutFunction,
-                                   roundingIntervals) =>
+      case ContractDescriptorV1TLV(numDigits, payoutFunction, roundingIntervals) =>
         val fields = Vector(
           "tpe" -> Element(ContractDescriptorV1TLV.tpe),
           "length" -> Element(tlv.length),
@@ -197,8 +185,7 @@ object DLCParsingTestVector extends TestVectorParser[DLCParsingTestVector] {
         )
         DLCTLVTestVector(tlv, "oracle_info_v0", fields)
       case OracleParamsV0TLV(maxErrorExp, minFailExp, maximizeCoverage) =>
-        val maximizeCoverageBytes = ByteVector(
-          if (maximizeCoverage) TLV.TRUE_BYTE else TLV.FALSE_BYTE)
+        val maximizeCoverageBytes = ByteVector(if (maximizeCoverage) TLV.TRUE_BYTE else TLV.FALSE_BYTE)
 
         val fields = Vector(
           "tpe" -> Element(OracleParamsV0TLV.tpe),
@@ -213,8 +200,7 @@ object DLCParsingTestVector extends TestVectorParser[DLCParsingTestVector] {
           "tpe" -> Element(OracleInfoV1TLV.tpe),
           "length" -> Element(tlv.length),
           "threshold" -> Element(UInt16(threshold)),
-          "announcements" -> MultiElement(
-            announcements.toVector.map(Element(_)))
+          "announcements" -> MultiElement(announcements.toVector.map(Element(_)))
         )
         DLCTLVTestVector(tlv, "oracle_info_v1", fields)
       case OracleInfoV2TLV(threshold, oracles, params) =>
@@ -235,12 +221,7 @@ object DLCParsingTestVector extends TestVectorParser[DLCParsingTestVector] {
           "oracleInfo" -> Element(oracleInfo)
         )
         DLCTLVTestVector(tlv, "contract_info_v0", fields)
-      case FundingInputV0TLV(inputSerialId,
-                             prevTx,
-                             prevTxVout,
-                             sequence,
-                             maxWitnessLen,
-                             redeemScriptOpt) =>
+      case FundingInputV0TLV(inputSerialId, prevTx, prevTxVout, sequence, maxWitnessLen, redeemScriptOpt) =>
         val redeemScript =
           redeemScriptOpt.getOrElse(EmptyScriptPubKey)
 
@@ -262,9 +243,7 @@ object DLCParsingTestVector extends TestVectorParser[DLCParsingTestVector] {
           "tpe" -> Element(CETSignaturesV0TLV.tpe),
           "length" -> Element(tlv.length),
           "sigs" -> MultiElement(
-            sigs.map(sig =>
-              NamedMultiElement("encryptedSig" -> sig.adaptedSig,
-                                "dleqProof" -> sig.dleqProof)))
+            sigs.map(sig => NamedMultiElement("encryptedSig" -> sig.adaptedSig, "dleqProof" -> sig.dleqProof)))
         )
         DLCTLVTestVector(tlv, "cet_adaptor_signatures_v0", fields)
       case FundingSignaturesV0TLV(witnesses) =>
@@ -275,11 +254,8 @@ object DLCParsingTestVector extends TestVectorParser[DLCParsingTestVector] {
           "witnesses" -> MultiElement(witnesses.map { witness =>
             NamedMultiElement(
               "stackLen" -> Element(UInt16(witness.stack.length)),
-              "stack" -> MultiElement(witness.stack.toVector.reverse.map {
-                stackElem =>
-                  NamedMultiElement(
-                    "stackElementLen" -> Element(UInt16(stackElem.length)),
-                    "stackElement" -> stackElem)
+              "stack" -> MultiElement(witness.stack.toVector.reverse.map { stackElem =>
+                NamedMultiElement("stackElementLen" -> Element(UInt16(stackElem.length)), "stackElement" -> stackElem)
               })
             )
           })
@@ -308,11 +284,9 @@ object DLCParsingTestVector extends TestVectorParser[DLCParsingTestVector] {
           "payoutSPKLen" -> Element(UInt16(payoutSPK.asmBytes.length)),
           "payoutSPK" -> Element(payoutSPK.asmBytes),
           "payoutSerialId" -> Element(payoutSerialId),
-          "totalCollateralSatoshis" -> Element(
-            totalCollateralSatoshis.toUInt64),
+          "totalCollateralSatoshis" -> Element(totalCollateralSatoshis.toUInt64),
           "fundingInputsLen" -> Element(UInt16(fundingInputs.length)),
-          "fundingInputs" -> new MultiElement(
-            fundingInputs.map(input => Element(input.bytes))),
+          "fundingInputs" -> new MultiElement(fundingInputs.map(input => Element(input.bytes))),
           "changeSPKLen" -> Element(UInt16(changeSPK.asmBytes.length)),
           "changeSPK" -> Element(changeSPK.asmBytes),
           "changeSerialId" -> Element(changeSerialId),
@@ -349,15 +323,13 @@ object DLCParsingTestVector extends TestVectorParser[DLCParsingTestVector] {
         val fields = Vector(
           "tpe" -> Element(UInt16(DLCAcceptTLV.tpe.toInt)),
           "tempContractId" -> Element(tempContractId),
-          "totalCollateralSatoshis" -> Element(
-            totalCollateralSatoshis.toUInt64),
+          "totalCollateralSatoshis" -> Element(totalCollateralSatoshis.toUInt64),
           "fundingPubKey" -> Element(fundingPubKey),
           "payoutSPKLen" -> Element(UInt16(payoutSPK.asmBytes.length)),
           "payoutSPK" -> Element(payoutSPK.asmBytes),
           "payoutSerialId" -> Element(payoutSerialId),
           "fundingInputsLen" -> Element(UInt16(fundingInputs.length)),
-          "fundingInputs" -> new MultiElement(
-            fundingInputs.map(input => Element(input.bytes))),
+          "fundingInputs" -> new MultiElement(fundingInputs.map(input => Element(input.bytes))),
           "changeSPKLen" -> Element(UInt16(changeSPK.asmBytes.length)),
           "changeSPK" -> Element(changeSPK.asmBytes),
           "changeSerialId" -> Element(changeSerialId),
@@ -366,10 +338,7 @@ object DLCParsingTestVector extends TestVectorParser[DLCParsingTestVector] {
           "negotiationFields" -> Element(negotiationFields)
         )
         DLCMessageTestVector(LnMessage(tlv), "accept_dlc_v0", fields)
-      case DLCSignTLV(contractId,
-                      cetSignatures,
-                      refundSignature,
-                      fundingSignatures) =>
+      case DLCSignTLV(contractId, cetSignatures, refundSignature, fundingSignatures) =>
         val fields = Vector(
           "tpe" -> Element(UInt16(DLCSignTLV.tpe.toInt)),
           "contractId" -> Element(contractId),
@@ -385,17 +354,12 @@ object DLCParsingTestVector extends TestVectorParser[DLCParsingTestVector] {
           "numOutcomes" -> Element(UInt16(outcomes.size)),
           "outcomes" -> MultiElement(outcomes.map { outcome =>
             val outcomeBytes = CryptoUtil.serializeForHash(outcome)
-            NamedMultiElement(
-              "outcomeLen" -> Element(UInt16(outcomeBytes.length)),
-              "outcome" -> Element(outcomeBytes))
+            NamedMultiElement("outcomeLen" -> Element(UInt16(outcomeBytes.length)), "outcome" -> Element(outcomeBytes))
           })
         )
 
         DLCTLVTestVector(tlv, "enum_event_descriptor_v0", fields)
-      case SignedDigitDecompositionEventDescriptor(base,
-                                                   numDigits,
-                                                   units,
-                                                   precision) =>
+      case SignedDigitDecompositionEventDescriptor(base, numDigits, units, precision) =>
         val fields = Vector(
           "tpe" -> Element(DigitDecompositionEventDescriptorV0TLV.tpe),
           "length" -> Element(tlv.length),
@@ -407,10 +371,7 @@ object DLCParsingTestVector extends TestVectorParser[DLCParsingTestVector] {
         )
 
         DLCTLVTestVector(tlv, "digit_decomp_event_descriptor_v0", fields)
-      case UnsignedDigitDecompositionEventDescriptor(base,
-                                                     numDigits,
-                                                     units,
-                                                     precision) =>
+      case UnsignedDigitDecompositionEventDescriptor(base, numDigits, units, precision) =>
         val fields = Vector(
           "tpe" -> Element(DigitDecompositionEventDescriptorV0TLV.tpe),
           "length" -> Element(tlv.length),
@@ -455,19 +416,17 @@ object DLCParsingTestVector extends TestVectorParser[DLCParsingTestVector] {
 
         DLCMessageTestVector(LnMessage(tlv), "oracle_attestment_v0", fields)
       case _: UnknownTLV | _: ErrorTLV | _: PingTLV | _: PongTLV | _: InitTLV =>
-        throw new IllegalArgumentException(
-          s"DLCParsingTestVector is only defined for DLC messages and TLVs, got $tlv")
+        throw new IllegalArgumentException(s"DLCParsingTestVector is only defined for DLC messages and TLVs, got $tlv")
     }
   }
 
   def flattenJsResult[T](vec: Vector[JsResult[T]]): JsResult[Vector[T]] = {
-    vec.foldLeft[JsResult[Vector[T]]](JsSuccess(Vector.empty)) {
-      case (vecResult, elemResult) =>
-        vecResult.flatMap { vec =>
-          elemResult.map { elem =>
-            vec :+ elem
-          }
+    vec.foldLeft[JsResult[Vector[T]]](JsSuccess(Vector.empty)) { case (vecResult, elemResult) =>
+      vecResult.flatMap { vec =>
+        elemResult.map { elem =>
+          vec :+ elem
         }
+      }
     }
   }
 

@@ -180,11 +180,7 @@ class MnemonicCodeTest extends BitcoinSUnitTest {
     }
   }
 
-  private case class RawTrezorTestVector(
-      entropy: String,
-      words: String,
-      seed: String,
-      xpriv: String)
+  private case class RawTrezorTestVector(entropy: String, words: String, seed: String, xpriv: String)
 
   private case class TrezorTestVector(
       entropy: ByteVector,
@@ -222,17 +218,16 @@ class MnemonicCodeTest extends BitcoinSUnitTest {
       )
     }
 
-    implicit val trezorReads: Reader[RawTrezorTestVector] = reader[Value].map {
-      value =>
-        val resOpt = for {
-          arr <- value.arrOpt
-          entropy <- arr(0).strOpt
-          words <- arr(1).strOpt
-          seed <- arr(2).strOpt
-          xpriv <- arr(3).strOpt
-        } yield RawTrezorTestVector(entropy, words, seed, xpriv)
+    implicit val trezorReads: Reader[RawTrezorTestVector] = reader[Value].map { value =>
+      val resOpt = for {
+        arr <- value.arrOpt
+        entropy <- arr(0).strOpt
+        words <- arr(1).strOpt
+        seed <- arr(2).strOpt
+        xpriv <- arr(3).strOpt
+      } yield RawTrezorTestVector(entropy, words, seed, xpriv)
 
-        resOpt.get
+      resOpt.get
     }
 
     val rawJson = TrezorBIP39Vectors.str

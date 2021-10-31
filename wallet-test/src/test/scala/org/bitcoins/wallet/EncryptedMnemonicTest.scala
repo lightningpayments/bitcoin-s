@@ -26,15 +26,14 @@ class EncryptedMnemonicTest extends BitcoinSUnitTest {
   }
 
   it must "have encryption/decryption symmetry" in {
-    forAll(CryptoGenerators.mnemonicCode, CryptoGenerators.aesPassword) {
-      (mnemonicCode, password) =>
-        val mnemonic = DecryptedMnemonic(mnemonicCode, TimeUtil.now)
-        val encrypted = mnemonic.encrypt(password)
-        val decrypted = encrypted.toMnemonic(password) match {
-          case Success(clear) => clear
-          case Failure(exc)   => fail(exc)
-        }
-        assert(decrypted == mnemonicCode)
+    forAll(CryptoGenerators.mnemonicCode, CryptoGenerators.aesPassword) { (mnemonicCode, password) =>
+      val mnemonic = DecryptedMnemonic(mnemonicCode, TimeUtil.now)
+      val encrypted = mnemonic.encrypt(password)
+      val decrypted = encrypted.toMnemonic(password) match {
+        case Success(clear) => clear
+        case Failure(exc)   => fail(exc)
+      }
+      assert(decrypted == mnemonicCode)
     }
   }
 }

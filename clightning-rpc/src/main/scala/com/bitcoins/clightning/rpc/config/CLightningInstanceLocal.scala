@@ -19,8 +19,7 @@ case class CLightningInstanceLocal(
     bitcoindAuthCredentials: PasswordBased,
     bitcoindRpcUri: URI)
 
-object CLightningInstanceLocal
-    extends InstanceFactoryLocal[CLightningInstanceLocal, ActorSystem] {
+object CLightningInstanceLocal extends InstanceFactoryLocal[CLightningInstanceLocal, ActorSystem] {
 
   override val DEFAULT_DATADIR: Path =
     Paths.get(Properties.userHome, ".lightning")

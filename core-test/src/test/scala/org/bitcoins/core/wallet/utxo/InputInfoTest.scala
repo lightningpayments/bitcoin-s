@@ -6,12 +6,7 @@ import org.bitcoins.core.protocol.script._
 import org.bitcoins.core.protocol.transaction._
 import org.bitcoins.core.wallet.signer.BitcoinSigner
 import org.bitcoins.crypto.{ECPrivateKey, ECPublicKey}
-import org.bitcoins.testkitcore.gen.{
-  CreditingTxGen,
-  GenUtil,
-  ScriptGenerators,
-  TransactionGenerators
-}
+import org.bitcoins.testkitcore.gen.{CreditingTxGen, GenUtil, ScriptGenerators, TransactionGenerators}
 import org.bitcoins.testkitcore.util.BitcoinSUnitTest
 
 class InputInfoTest extends BitcoinSUnitTest {
@@ -57,8 +52,7 @@ class InputInfoTest extends BitcoinSUnitTest {
 
     val p2sh = P2SHScriptPubKey(P2WPKHWitnessSPKV0(pubKey))
     val creditingOutput = TransactionOutput(CurrencyUnits.zero, p2sh)
-    val creditingTx = BaseTransaction(version =
-                                        TransactionConstants.validLockVersion,
+    val creditingTx = BaseTransaction(version = TransactionConstants.validLockVersion,
                                       inputs = Nil,
                                       outputs = Vector(creditingOutput),
                                       lockTime = TransactionConstants.lockTime)
@@ -81,8 +75,7 @@ class InputInfoTest extends BitcoinSUnitTest {
 
     val p2sh = P2SHScriptPubKey(P2WPKHWitnessSPKV0(pubKey))
     val creditingOutput = TransactionOutput(CurrencyUnits.zero, p2sh)
-    val creditingTx = BaseTransaction(version =
-                                        TransactionConstants.validLockVersion,
+    val creditingTx = BaseTransaction(version = TransactionConstants.validLockVersion,
                                       inputs = Nil,
                                       outputs = Vector(creditingOutput),
                                       lockTime = TransactionConstants.lockTime)
@@ -100,8 +93,7 @@ class InputInfoTest extends BitcoinSUnitTest {
   }
 
   it should "fail given UnassignedWitnessScriptPubKey redeemScript" in {
-    val unassingedWitnessSPK = UnassignedWitnessScriptPubKey.fromAsm(
-      P2WPKHWitnessSPKV0(ECPublicKey.freshPublicKey).asm)
+    val unassingedWitnessSPK = UnassignedWitnessScriptPubKey.fromAsm(P2WPKHWitnessSPKV0(ECPublicKey.freshPublicKey).asm)
 
     val privKey = ECPrivateKey.freshPrivateKey
     val pubKey = privKey.publicKey
@@ -161,8 +153,7 @@ class InputInfoTest extends BitcoinSUnitTest {
   }
 
   it should "successfully return UnassignedSegwitNativeUTXOSpendingInfoFull" in {
-    val unassingedWitnessSPK = UnassignedWitnessScriptPubKey.fromAsm(
-      P2WPKHWitnessSPKV0(ECPublicKey.freshPublicKey).asm)
+    val unassingedWitnessSPK = UnassignedWitnessScriptPubKey.fromAsm(P2WPKHWitnessSPKV0(ECPublicKey.freshPublicKey).asm)
 
     val privKey = ECPrivateKey.freshPrivateKey
     val pubKey = privKey.publicKey
@@ -217,10 +208,7 @@ class InputInfoTest extends BitcoinSUnitTest {
     forAll(CreditingTxGen.output) { scriptSigParams =>
       val dummyTx = BaseTransaction(
         TransactionConstants.validLockVersion,
-        Vector(
-          TransactionInput(scriptSigParams.inputInfo.outPoint,
-                           EmptyScriptSignature,
-                           UInt32.zero)),
+        Vector(TransactionInput(scriptSigParams.inputInfo.outPoint, EmptyScriptSignature, UInt32.zero)),
         Vector(TransactionOutput(Satoshis.zero, EmptyScriptPubKey)),
         UInt32.zero
       )
@@ -240,10 +228,7 @@ class InputInfoTest extends BitcoinSUnitTest {
     forAll(CreditingTxGen.output) { scriptSigParams =>
       val dummyTx = BaseTransaction(
         TransactionConstants.validLockVersion,
-        Vector(
-          TransactionInput(scriptSigParams.inputInfo.outPoint,
-                           EmptyScriptSignature,
-                           UInt32.zero)),
+        Vector(TransactionInput(scriptSigParams.inputInfo.outPoint, EmptyScriptSignature, UInt32.zero)),
         Vector(TransactionOutput(Satoshis.zero, EmptyScriptPubKey)),
         UInt32.zero
       )
@@ -255,9 +240,7 @@ class InputInfoTest extends BitcoinSUnitTest {
         .head
         .scriptSignature
 
-      assert(InputInfo.maxScriptSigLen(
-               scriptSigParams.inputInfo) == maxScriptSig.byteSize,
-             maxScriptSig.hex)
+      assert(InputInfo.maxScriptSigLen(scriptSigParams.inputInfo) == maxScriptSig.byteSize, maxScriptSig.hex)
     }
   }
 }

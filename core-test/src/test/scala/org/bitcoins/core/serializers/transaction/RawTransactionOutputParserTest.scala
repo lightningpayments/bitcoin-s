@@ -1,10 +1,7 @@
 package org.bitcoins.core.serializers.transaction
 
 import org.bitcoins.core.currency.Satoshis
-import org.bitcoins.core.protocol.transaction.{
-  EmptyTransactionOutput,
-  TransactionOutput
-}
+import org.bitcoins.core.protocol.transaction.{EmptyTransactionOutput, TransactionOutput}
 import org.bitcoins.core.script.bitwise.OP_EQUAL
 import org.bitcoins.core.script.constant.{BytesToPushOntoStack, ScriptConstant}
 import org.bitcoins.core.script.crypto.OP_HASH160
@@ -27,10 +24,7 @@ class RawTransactionOutputParserTest extends BitcoinSUnitTest {
       RawTransactionOutputParser.read(rawTxOutput)
     txOutput.value must be(Satoshis(20000))
     txOutput.scriptPubKey.asm must be(
-      Seq(OP_HASH160,
-          BytesToPushOntoStack(20),
-          ScriptConstant("eda8ae08b5c9f973f49543e90a7c292367b3337c"),
-          OP_EQUAL))
+      Seq(OP_HASH160, BytesToPushOntoStack(20), ScriptConstant("eda8ae08b5c9f973f49543e90a7c292367b3337c"), OP_EQUAL))
   }
 
   it must "seralialize a transaction output" in {
@@ -53,8 +47,7 @@ class RawTransactionOutputParserTest extends BitcoinSUnitTest {
   }
 
   it must "serialize the empty transaction output correctly" in {
-    encode(RawTransactionOutputParser.write(EmptyTransactionOutput)) must be(
-      "ffffffffffffffff00")
+    encode(RawTransactionOutputParser.write(EmptyTransactionOutput)) must be("ffffffffffffffff00")
 
   }
 }

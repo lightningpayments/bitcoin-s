@@ -2,11 +2,7 @@ package org.bitcoins.core.crypto
 
 import org.bitcoins.core.config.{MainNet, RegTest, SigNet, TestNet3}
 import org.bitcoins.crypto.{ECPrivateKey, ECPrivateKeyBytes}
-import org.bitcoins.testkitcore.gen.{
-  ChainParamsGenerator,
-  CryptoGenerators,
-  NumberGenerator
-}
+import org.bitcoins.testkitcore.gen.{ChainParamsGenerator, CryptoGenerators, NumberGenerator}
 import org.bitcoins.testkitcore.util.BitcoinSUnitTest
 
 class WIFEncodingTest extends BitcoinSUnitTest {
@@ -43,11 +39,9 @@ class WIFEncodingTest extends BitcoinSUnitTest {
   }
 
   it must "correctly decode a private key from WIF" in {
-    val privateKey = ECPrivateKeyUtil.fromWIFToPrivateKey(
-      "cTPg4Zc5Jis2EZXy3NXShgbn487GWBTapbU63BerLDZM3w2hQSjC")
+    val privateKey = ECPrivateKeyUtil.fromWIFToPrivateKey("cTPg4Zc5Jis2EZXy3NXShgbn487GWBTapbU63BerLDZM3w2hQSjC")
     //derived hex on bitcore's playground
-    privateKey.hex must be(
-      "ad59fb6aadf617fb0f93469741fcd9a9f48700f1d1f465ddc0f26fa7f7bfa1ac")
+    privateKey.hex must be("ad59fb6aadf617fb0f93469741fcd9a9f48700f1d1f465ddc0f26fa7f7bfa1ac")
   }
 
   it must "decode a WIF private key corresponding to uncompressed public key" in {
@@ -58,30 +52,25 @@ class WIFEncodingTest extends BitcoinSUnitTest {
   }
 
   it must "have serialization symmetry for WIF format" in {
-    forAll(CryptoGenerators.privateKey,
-           ChainParamsGenerator.networkParams,
-           NumberGenerator.bool) { (privKey, network, compressed) =>
-      val wif =
-        ECPrivateKeyUtil.toWIF(privKey.toPrivateKeyBytes(compressed), network)
-      assert(ECPrivateKeyUtil.isCompressed(wif) == compressed)
-      network match {
-        case MainNet =>
-          assert(ECPrivateKeyUtil.parseNetworkFromWIF(wif).get == MainNet)
-        case TestNet3 | RegTest | SigNet =>
-          assert(ECPrivateKeyUtil.parseNetworkFromWIF(wif).get == TestNet3)
-      }
-      assert(
-        ECPrivateKeyUtil.fromWIFToPrivateKey(wif) == privKey.toPrivateKeyBytes(
-          compressed))
+    forAll(CryptoGenerators.privateKey, ChainParamsGenerator.networkParams, NumberGenerator.bool) {
+      (privKey, network, compressed) =>
+        val wif =
+          ECPrivateKeyUtil.toWIF(privKey.toPrivateKeyBytes(compressed), network)
+        assert(ECPrivateKeyUtil.isCompressed(wif) == compressed)
+        network match {
+          case MainNet =>
+            assert(ECPrivateKeyUtil.parseNetworkFromWIF(wif).get == MainNet)
+          case TestNet3 | RegTest | SigNet =>
+            assert(ECPrivateKeyUtil.parseNetworkFromWIF(wif).get == TestNet3)
+        }
+        assert(ECPrivateKeyUtil.fromWIFToPrivateKey(wif) == privKey.toPrivateKeyBytes(compressed))
     }
   }
 
   it must "have serialization symmetry for WIF format when private key ends in 0x01" in {
-    val privKey = ECPrivateKey(
-      "710ed6c96012015f02e352cddd6f5a5b32499f2926ac7752b57d93b38be8c701")
+    val privKey = ECPrivateKey("710ed6c96012015f02e352cddd6f5a5b32499f2926ac7752b57d93b38be8c701")
     val wif =
-      ECPrivateKeyUtil.toWIF(privKey.toPrivateKeyBytes(isCompressed = false),
-                             TestNet3)
+      ECPrivateKeyUtil.toWIF(privKey.toPrivateKeyBytes(isCompressed = false), TestNet3)
     assert(!ECPrivateKeyUtil.isCompressed(wif))
     assert(ECPrivateKeyUtil.parseNetworkFromWIF(wif).get == TestNet3)
     assert(

@@ -32,10 +32,8 @@ class MultiWalletDLCTest extends BitcoinSWalletTest {
 
     val walletA = fundedWallet.wallet
 
-    val walletBF = BitcoinSWalletTest.createDLCWallet2Accounts(
-      MockNodeApi,
-      MockChainQueryApi,
-      bip39PasswordOpt)(configB, system)
+    val walletBF =
+      BitcoinSWalletTest.createDLCWallet2Accounts(MockNodeApi, MockChainQueryApi, bip39PasswordOpt)(configB, system)
 
     for {
       accountA <- walletA.getDefaultAccount()
@@ -45,11 +43,7 @@ class MultiWalletDLCTest extends BitcoinSWalletTest {
 
       _ = assert(accountA.xpub != accountB.xpub)
 
-      _ <- walletA.createDLCOffer(sampleContractInfo,
-                                  half,
-                                  Some(SatoshisPerVirtualByte.one),
-                                  UInt32.zero,
-                                  UInt32.one)
+      _ <- walletA.createDLCOffer(sampleContractInfo, half, Some(SatoshisPerVirtualByte.one), UInt32.zero, UInt32.one)
       dlcsA <- walletA.listDLCs()
       dlcsB <- walletB.listDLCs()
 

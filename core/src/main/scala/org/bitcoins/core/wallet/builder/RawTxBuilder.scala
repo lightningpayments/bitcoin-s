@@ -39,29 +39,21 @@ import scala.collection.mutable
 case class RawTxBuilder() {
   private var version: Int32 = TransactionConstants.validLockVersion
 
-  private val inputsBuilder: mutable.Builder[
-    TransactionInput,
-    Vector[TransactionInput]] = Vector.newBuilder
+  private val inputsBuilder: mutable.Builder[TransactionInput, Vector[TransactionInput]] = Vector.newBuilder
 
-  private val outputsBuilder: mutable.Builder[
-    TransactionOutput,
-    Vector[TransactionOutput]] = Vector.newBuilder
+  private val outputsBuilder: mutable.Builder[TransactionOutput, Vector[TransactionOutput]] = Vector.newBuilder
 
   private var lockTime: UInt32 = TransactionConstants.lockTime
 
   /** Returns a RawTxBuilderResult ready for a RawTxFinalizer. */
   def result(): RawTxBuilderResult = {
-    RawTxBuilderResult(version,
-                       inputsBuilder.result(),
-                       outputsBuilder.result(),
-                       lockTime)
+    RawTxBuilderResult(version, inputsBuilder.result(), outputsBuilder.result(), lockTime)
   }
 
   /** Returns a RawTxBuilderWithFinalizer where building can continue
     * and where buildTx can be called once building is completed.
     */
-  def setFinalizer[F <: RawTxFinalizer](
-      finalizer: F): RawTxBuilderWithFinalizer[F] = {
+  def setFinalizer[F <: RawTxFinalizer](finalizer: F): RawTxBuilderWithFinalizer[F] = {
     RawTxBuilderWithFinalizer(this, finalizer)
   }
 
@@ -109,8 +101,7 @@ case class RawTxBuilder() {
   /** Adds a collection of inputs and/or outputs to the
     * input and/or output lists
     */
-  @inline final def ++=[T >: TransactionInput with TransactionOutput](
-      inputsOrOutputs: Iterable[T]): this.type = {
+  @inline final def ++=[T >: TransactionInput with TransactionOutput](inputsOrOutputs: Iterable[T]): this.type = {
     val vec = inputsOrOutputs.iterator.toVector
     val inputs = vec.collect { case input: TransactionInput =>
       input
@@ -143,9 +134,7 @@ case class RawTxBuilder() {
   * access to the RawTxFinalizer's buildTx method which
   * completes the RawTxBuilder and then finalized the result.
   */
-case class RawTxBuilderWithFinalizer[F <: RawTxFinalizer](
-    builder: RawTxBuilder,
-    finalizer: F) {
+case class RawTxBuilderWithFinalizer[F <: RawTxFinalizer](builder: RawTxBuilder, finalizer: F) {
 
   /** Completes the builder and finalizes the result */
   def buildTx(): Transaction = {
@@ -166,8 +155,7 @@ case class RawTxBuilderWithFinalizer[F <: RawTxFinalizer](
     this
   }
 
-  @inline final def ++=[T >: TransactionInput with TransactionOutput](
-      inputsOrOutputs: Iterable[T]): this.type = {
+  @inline final def ++=[T >: TransactionInput with TransactionOutput](inputsOrOutputs: Iterable[T]): this.type = {
     builder ++= inputsOrOutputs
     this
   }

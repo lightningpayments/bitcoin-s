@@ -24,54 +24,50 @@ class BlockchainTest extends ChainUnitTest {
       BlockHeaderHelper.buildNextHeader(genesis)
     val chain = Blockchain(Vector(headerDb, genesis))
 
-    assert(
-      chain.toString == s"BaseBlockchain(tip=$headerDb,last=$genesis,length=2)")
+    assert(chain.toString == s"BaseBlockchain(tip=$headerDb,last=$genesis,length=2)")
   }
 
-  it must "connect a new header to the current tip of a blockchain" inFixtured {
-    case ChainFixture.Empty =>
-      val blockchain = Blockchain.fromHeaders(
-        headers = Vector(ChainUnitTest.genesisHeaderDb)
-      )
+  it must "connect a new header to the current tip of a blockchain" inFixtured { case ChainFixture.Empty =>
+    val blockchain = Blockchain.fromHeaders(
+      headers = Vector(ChainUnitTest.genesisHeaderDb)
+    )
 
-      val newHeader =
-        BlockHeaderHelper.buildNextHeader(ChainUnitTest.genesisHeaderDb)
+    val newHeader =
+      BlockHeaderHelper.buildNextHeader(ChainUnitTest.genesisHeaderDb)
 
-      val connectTip =
-        Blockchain.connectTip(header = newHeader.blockHeader, blockchain)
+    val connectTip =
+      Blockchain.connectTip(header = newHeader.blockHeader, blockchain)
 
-      connectTip match {
-        case ConnectTipResult.ExtendChain(_, newChain) =>
-          assert(newHeader == newChain.tip)
+    connectTip match {
+      case ConnectTipResult.ExtendChain(_, newChain) =>
+        assert(newHeader == newChain.tip)
 
-        case _ @(_: ConnectTipResult.Reorg | _: ConnectTipResult.BadTip) =>
-          fail()
-      }
+      case _ @(_: ConnectTipResult.Reorg | _: ConnectTipResult.BadTip) =>
+        fail()
+    }
   }
 
-  it must "reconstruct a blockchain given a child header correctly" inFixtured {
-    case ChainFixture.Empty =>
-      val accum = new mutable.ArrayBuffer[BlockHeaderDb](5)
-      accum.+=(ChainUnitTest.genesisHeaderDb)
-      //generate 4 headers
-      0.until(4).foreach { _ =>
-        val newHeader = BlockHeaderHelper.buildNextHeader(accum.last)
-        accum.+=(newHeader)
-      }
+  it must "reconstruct a blockchain given a child header correctly" inFixtured { case ChainFixture.Empty =>
+    val accum = new mutable.ArrayBuffer[BlockHeaderDb](5)
+    accum.+=(ChainUnitTest.genesisHeaderDb)
+    //generate 4 headers
+    0.until(4).foreach { _ =>
+      val newHeader = BlockHeaderHelper.buildNextHeader(accum.last)
+      accum.+=(newHeader)
+    }
 
-      //now given the last header, and the other headers we should reconstruct the blockchain
-      val headers = accum.dropRight(1).toVector
-      val tip = accum.last
+    //now given the last header, and the other headers we should reconstruct the blockchain
+    val headers = accum.dropRight(1).toVector
+    val tip = accum.last
 
-      val reconstructed = Blockchain.reconstructFromHeaders(childHeader = tip,
-                                                            ancestors = headers)
+    val reconstructed = Blockchain.reconstructFromHeaders(childHeader = tip, ancestors = headers)
 
-      assert(reconstructed.length == 1)
-      val chain = reconstructed.head
-      assert(chain.toVector.length == 5)
-      assert(chain.tip == accum.last)
-      assert(chain.last == ChainUnitTest.genesisHeaderDb)
-      assert(chain.toVector == accum.reverse.toVector)
+    assert(reconstructed.length == 1)
+    val chain = reconstructed.head
+    assert(chain.toVector.length == 5)
+    assert(chain.tip == accum.last)
+    assert(chain.last == ChainUnitTest.genesisHeaderDb)
+    assert(chain.toVector == accum.reverse.toVector)
   }
 
   it must "fail to reconstruct a blockchain if we do not have validly connected headers" inFixtured {
@@ -82,8 +78,7 @@ class BlockchainTest extends ChainUnitTest {
       val thirdHeader = BlockHeaderHelper.buildNextHeader(missingHeader)
 
       val reconstructed =
-        Blockchain.reconstructFromHeaders(thirdHeader,
-                                          Vector(ChainUnitTest.genesisHeaderDb))
+        Blockchain.reconstructFromHeaders(thirdHeader, Vector(ChainUnitTest.genesisHeaderDb))
 
       assert(reconstructed.isEmpty)
   }
@@ -102,15 +97,14 @@ class BlockchainTest extends ChainUnitTest {
       }
   }
 
-  it must "correctly calculate a BlockchainUpdate.Success's height" inFixtured {
-    case ChainFixture.Empty =>
-      val genesis = ChainUnitTest.genesisHeaderDb
-      val second = BlockHeaderHelper.buildNextHeader(genesis)
-      val chain = Blockchain(Vector(second, genesis))
+  it must "correctly calculate a BlockchainUpdate.Success's height" inFixtured { case ChainFixture.Empty =>
+    val genesis = ChainUnitTest.genesisHeaderDb
+    val second = BlockHeaderHelper.buildNextHeader(genesis)
+    val chain = Blockchain(Vector(second, genesis))
 
-      val updated = BlockchainUpdate.Successful(chain, chain.toVector)
+    val updated = BlockchainUpdate.Successful(chain, chain.toVector)
 
-      assert(updated.height == chain.height)
+    assert(updated.height == chain.height)
   }
 
   it must "correctly identify a bad tip" inFixtured { case ChainFixture.Empty =>

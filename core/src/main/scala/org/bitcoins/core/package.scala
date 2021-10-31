@@ -1,9 +1,6 @@
 package org.bitcoins
 
-import org.bitcoins.core.protocol.transaction.{
-  TransactionInput,
-  TransactionOutput
-}
+import org.bitcoins.core.protocol.transaction.{TransactionInput, TransactionOutput}
 import org.bitcoins.core.wallet.fee.SatoshisPerKiloByte
 import scodec.bits._
 
@@ -48,9 +45,7 @@ package object core {
   implicit val satoshisPerKiloByteOrdering: Ordering[SatoshisPerKiloByte] =
     new Ordering[SatoshisPerKiloByte] {
 
-      override def compare(
-          x: SatoshisPerKiloByte,
-          y: SatoshisPerKiloByte): Int = x.toLong compare y.toLong
+      override def compare(x: SatoshisPerKiloByte, y: SatoshisPerKiloByte): Int = x.toLong compare y.toLong
     }
 
   implicit val byteVectorOrdering: Ordering[ByteVector] =

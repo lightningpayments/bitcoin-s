@@ -16,10 +16,7 @@ class RawAddrV2MessageSerializerTest extends BitcoinSUnitTest {
       services <- NumberGenerator.compactSizeUInts
       addrBytes <- NumberGenerator.bytevector(AddrV2Message.IPV4_ADDR_LENGTH)
       port <- NumberGenerator.uInt16
-    } yield IPv4AddrV2Message(time,
-                              services,
-                              InetAddress.getByAddress(addrBytes.toArray),
-                              port)
+    } yield IPv4AddrV2Message(time, services, InetAddress.getByAddress(addrBytes.toArray), port)
   }
 
   def ipv6AddrV2MessageGen: Gen[IPv6AddrV2Message] = {
@@ -28,10 +25,7 @@ class RawAddrV2MessageSerializerTest extends BitcoinSUnitTest {
       services <- NumberGenerator.compactSizeUInts
       addrBytes <- NumberGenerator.bytevector(AddrV2Message.IPV6_ADDR_LENGTH)
       port <- NumberGenerator.uInt16
-    } yield IPv6AddrV2Message(time,
-                              services,
-                              InetAddress.getByAddress(addrBytes.toArray),
-                              port)
+    } yield IPv6AddrV2Message(time, services, InetAddress.getByAddress(addrBytes.toArray), port)
   }
 
   def torV2AddrV2MessageGen: Gen[TorV2AddrV2Message] = {
@@ -68,25 +62,17 @@ class RawAddrV2MessageSerializerTest extends BitcoinSUnitTest {
       addrBytes <-
         NumberGenerator.bytevector(AddrV2Message.CJDNS_ADDR_LENGTH - 1)
       port <- NumberGenerator.uInt16
-    } yield CJDNSAddrV2Message(time,
-                               services,
-                               ByteVector.fromByte(0xfc.toByte) ++ addrBytes,
-                               port)
+    } yield CJDNSAddrV2Message(time, services, ByteVector.fromByte(0xfc.toByte) ++ addrBytes, port)
   }
 
   def unknownAddrV2MessageGen: Gen[UnknownNetworkAddrV2Message] = {
     for {
       time <- NumberGenerator.uInt32s
       services <- NumberGenerator.compactSizeUInts
-      networkId <- NumberGenerator.byte.suchThat(byte =>
-        !AddrV2Message.knownNetworkBytes.contains(byte))
+      networkId <- NumberGenerator.byte.suchThat(byte => !AddrV2Message.knownNetworkBytes.contains(byte))
       addrBytes <- NumberGenerator.bytevector
       port <- NumberGenerator.uInt16
-    } yield UnknownNetworkAddrV2Message(time,
-                                        services,
-                                        networkId,
-                                        addrBytes,
-                                        port)
+    } yield UnknownNetworkAddrV2Message(time, services, networkId, addrBytes, port)
   }
 
   "IPv4AddrV2Message" must "have serialization symmetry" in {
@@ -112,14 +98,12 @@ class RawAddrV2MessageSerializerTest extends BitcoinSUnitTest {
   }
 
   it must "parse an IPv6AddrV2Message" in {
-    val msg = IPv6AddrV2Message(
-      UInt32(4523),
-      CompactSizeUInt(UInt64(53453453L)),
-      InetAddress.getByAddress(hex"00000000000000000000000000000000".toArray),
-      UInt16(8333))
+    val msg = IPv6AddrV2Message(UInt32(4523),
+                                CompactSizeUInt(UInt64(53453453L)),
+                                InetAddress.getByAddress(hex"00000000000000000000000000000000".toArray),
+                                UInt16(8333))
 
-    assert(
-      "000011abfe8da22f030200000000000000000000000000000000208d" == msg.hex)
+    assert("000011abfe8da22f030200000000000000000000000000000000208d" == msg.hex)
   }
 
   "TorV2AddrV2Message" must "have serialization symmetry" in {
@@ -129,10 +113,8 @@ class RawAddrV2MessageSerializerTest extends BitcoinSUnitTest {
   }
 
   it must "parse a TorV2AddrV2Message" in {
-    val msg = TorV2AddrV2Message(UInt32(4523),
-                                 CompactSizeUInt(UInt64(53453453L)),
-                                 hex"00000000000000000000",
-                                 UInt16(8333))
+    val msg =
+      TorV2AddrV2Message(UInt32(4523), CompactSizeUInt(UInt64(53453453L)), hex"00000000000000000000", UInt16(8333))
 
     assert("000011abfe8da22f030300000000000000000000208d" == msg.hex)
   }
@@ -144,14 +126,12 @@ class RawAddrV2MessageSerializerTest extends BitcoinSUnitTest {
   }
 
   it must "parse a TorV3AddrV2Message" in {
-    val msg = TorV3AddrV2Message(
-      UInt32(4523),
-      CompactSizeUInt(UInt64(53453453L)),
-      hex"0000000000000000000000000000000000000000000000000000000000000000",
-      UInt16(8333))
+    val msg = TorV3AddrV2Message(UInt32(4523),
+                                 CompactSizeUInt(UInt64(53453453L)),
+                                 hex"0000000000000000000000000000000000000000000000000000000000000000",
+                                 UInt16(8333))
 
-    assert(
-      "000011abfe8da22f03040000000000000000000000000000000000000000000000000000000000000000208d" == msg.hex)
+    assert("000011abfe8da22f03040000000000000000000000000000000000000000000000000000000000000000208d" == msg.hex)
   }
 
   "I2PAddrV2Message" must "have serialization symmetry" in {
@@ -161,14 +141,12 @@ class RawAddrV2MessageSerializerTest extends BitcoinSUnitTest {
   }
 
   it must "parse an I2PAddrV2Message" in {
-    val msg = I2PAddrV2Message(
-      UInt32(4523),
-      CompactSizeUInt(UInt64(53453453L)),
-      hex"0000000000000000000000000000000000000000000000000000000000000000",
-      UInt16(8333))
+    val msg = I2PAddrV2Message(UInt32(4523),
+                               CompactSizeUInt(UInt64(53453453L)),
+                               hex"0000000000000000000000000000000000000000000000000000000000000000",
+                               UInt16(8333))
 
-    assert(
-      "000011abfe8da22f03050000000000000000000000000000000000000000000000000000000000000000208d" == msg.hex)
+    assert("000011abfe8da22f03050000000000000000000000000000000000000000000000000000000000000000208d" == msg.hex)
   }
 
   "CJDNSAddrV2Message" must "have serialization symmetry" in {
@@ -183,8 +161,7 @@ class RawAddrV2MessageSerializerTest extends BitcoinSUnitTest {
                                  hex"fc000000000000000000000000000000",
                                  UInt16(8333))
 
-    assert(
-      "000011abfe8da22f0306fc000000000000000000000000000000208d" == msg.hex)
+    assert("000011abfe8da22f0306fc000000000000000000000000000000208d" == msg.hex)
   }
 
   "UnknownNetworkAddrV2Message" must "have serialization symmetry" in {
@@ -200,7 +177,6 @@ class RawAddrV2MessageSerializerTest extends BitcoinSUnitTest {
                                           hex"00000000000000000000000000000000",
                                           UInt16(8333))
 
-    assert(
-      "000011abfe8da22f030700000000000000000000000000000000208d" == msg.hex)
+    assert("000011abfe8da22f030700000000000000000000000000000000208d" == msg.hex)
   }
 }

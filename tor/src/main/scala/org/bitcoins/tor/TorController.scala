@@ -1,14 +1,6 @@
 package org.bitcoins.tor
 
-import akka.actor.{
-  Actor,
-  ActorLogging,
-  ActorSystem,
-  OneForOneStrategy,
-  Props,
-  SupervisorStrategy,
-  Terminated
-}
+import akka.actor.{Actor, ActorLogging, ActorSystem, OneForOneStrategy, Props, SupervisorStrategy, Terminated}
 import akka.io.{IO, Tcp}
 import akka.util.ByteString
 import org.bitcoins.tor.TorProtocolHandler.Authentication
@@ -23,9 +15,7 @@ import scala.concurrent.{Future, Promise}
   * @param protocolHandlerProps Tor protocol handler props
   * @param ec                   execution context
   */
-class TorController(address: InetSocketAddress, protocolHandlerProps: Props)
-    extends Actor
-    with ActorLogging {
+class TorController(address: InetSocketAddress, protocolHandlerProps: Props) extends Actor with ActorLogging {
 
   import Tcp._
   import TorController._
@@ -53,8 +43,7 @@ class TorController(address: InetSocketAddress, protocolHandlerProps: Props)
         case c @ CommandFailed(_: Write) =>
           // O/S buffer was full
           protocolHandler ! SendFailed
-          log.error("Tor command failed",
-                    c.cause.getOrElse(new RuntimeException("Unknown error")))
+          log.error("Tor command failed", c.cause.getOrElse(new RuntimeException("Unknown error")))
         case Received(data) =>
           protocolHandler ! data
         case _: ConnectionClosed =>
@@ -67,8 +56,8 @@ class TorController(address: InetSocketAddress, protocolHandlerProps: Props)
   }
 
   // we should not restart a failing tor session
-  override val supervisorStrategy = OneForOneStrategy(loggingEnabled = true) {
-    case _ => SupervisorStrategy.Escalate
+  override val supervisorStrategy = OneForOneStrategy(loggingEnabled = true) { case _ =>
+    SupervisorStrategy.Escalate
   }
 
 }
@@ -96,8 +85,7 @@ object TorController {
       authentication: Authentication,
       privateKeyPath: Path,
       virtualPort: Int,
-      targets: Seq[String] = Seq())(implicit
-      system: ActorSystem): Future[InetSocketAddress] = {
+      targets: Seq[String] = Seq())(implicit system: ActorSystem): Future[InetSocketAddress] = {
 
     val promiseTorAddress = Promise[InetSocketAddress]()
 
@@ -111,8 +99,7 @@ object TorController {
     )
 
     val _ = system.actorOf(
-      TorController.props(address = controlAddress,
-                          protocolHandlerProps = protocolHandlerProps),
+      TorController.props(address = controlAddress, protocolHandlerProps = protocolHandlerProps),
       s"tor-${System.currentTimeMillis()}"
     )
 

@@ -11,8 +11,7 @@ sealed trait PSBTKeyId {
   type RecordType <: PSBTRecord
 }
 
-sealed trait PSBTKeyIdFactory[KeyIdType <: PSBTKeyId]
-    extends Factory[KeyIdType] {
+sealed trait PSBTKeyIdFactory[KeyIdType <: PSBTKeyId] extends Factory[KeyIdType] {
   def fromByte(byte: Byte): KeyIdType
   def unknownKey: KeyIdType
 

@@ -9,9 +9,7 @@ import slick.lifted.{ForeignKeyQuery, ProvenShape}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-case class EventOutcomeDAO()(implicit
-    val ec: ExecutionContext,
-    override val appConfig: DLCOracleAppConfig)
+case class EventOutcomeDAO()(implicit val ec: ExecutionContext, override val appConfig: DLCOracleAppConfig)
     extends CRUD[EventOutcomeDb, (SchnorrNonce, String)]
     with SlickUtil[EventOutcomeDb, (SchnorrNonce, String)] {
 
@@ -27,20 +25,16 @@ case class EventOutcomeDAO()(implicit
   private lazy val eventTable: TableQuery[EventDAO#EventTable] =
     EventDAO().table
 
-  override def createAll(
-      ts: Vector[EventOutcomeDb]): Future[Vector[EventOutcomeDb]] =
+  override def createAll(ts: Vector[EventOutcomeDb]): Future[Vector[EventOutcomeDb]] =
     createAllNoAutoInc(ts, safeDatabase)
 
-  override protected def findByPrimaryKeys(ids: Vector[
-    (SchnorrNonce, String)]): Query[EventOutcomeTable, EventOutcomeDb, Seq] =
+  override protected def findByPrimaryKeys(
+      ids: Vector[(SchnorrNonce, String)]): Query[EventOutcomeTable, EventOutcomeDb, Seq] =
     table
       .filter(_.nonce.inSet(ids.map(_._1)))
       .filter(_.message.inSet(ids.map(_._2)))
 
-  override protected def findAll(ts: Vector[EventOutcomeDb]): Query[
-    EventOutcomeTable,
-    EventOutcomeDb,
-    Seq] = {
+  override protected def findAll(ts: Vector[EventOutcomeDb]): Query[EventOutcomeTable, EventOutcomeDb, Seq] = {
     val ids = ts.map(t => (t.nonce, t.message))
     findByPrimaryKeys(ids)
   }
@@ -49,23 +43,19 @@ case class EventOutcomeDAO()(implicit
     findByNonces(Vector(nonce))
   }
 
-  def findByNonces(
-      nonces: Vector[SchnorrNonce]): Future[Vector[EventOutcomeDb]] = {
+  def findByNonces(nonces: Vector[SchnorrNonce]): Future[Vector[EventOutcomeDb]] = {
     val action = table.filter(_.nonce.inSet(nonces)).result.transactionally
     safeDatabase.runVec(action)
   }
 
-  def find(
-      nonce: SchnorrNonce,
-      hash: ByteVector): Future[Option[EventOutcomeDb]] = {
+  def find(nonce: SchnorrNonce, hash: ByteVector): Future[Option[EventOutcomeDb]] = {
     val query =
       table.filter(item => item.nonce === nonce && item.hashedMessage === hash)
 
     safeDatabase.run(query.result.transactionally).map(_.headOption)
   }
 
-  class EventOutcomeTable(tag: Tag)
-      extends Table[EventOutcomeDb](tag, schemaName, "event_outcomes") {
+  class EventOutcomeTable(tag: Tag) extends Table[EventOutcomeDb](tag, schemaName, "event_outcomes") {
 
     def nonce: Rep[SchnorrNonce] = column("nonce")
 
@@ -74,13 +64,10 @@ case class EventOutcomeDAO()(implicit
     def hashedMessage: Rep[ByteVector] = column("hashed_message")
 
     def * : ProvenShape[EventOutcomeDb] =
-      (nonce, message, hashedMessage).<>(EventOutcomeDb.tupled,
-                                         EventOutcomeDb.unapply)
+      (nonce, message, hashedMessage).<>(EventOutcomeDb.tupled, EventOutcomeDb.unapply)
 
     def fk: ForeignKeyQuery[_, EventDb] = {
-      foreignKey("fk_nonce",
-                 sourceColumns = nonce,
-                 targetTableQuery = eventTable)(_.nonce)
+      foreignKey("fk_nonce", sourceColumns = nonce, targetTableQuery = eventTable)(_.nonce)
     }
   }
 }

@@ -1,20 +1,10 @@
 package org.bitcoins.core.protocol.ln
 
 import org.bitcoins.core.number.{UInt32, UInt64, UInt8}
-import org.bitcoins.core.protocol.ln.LnParams.{
-  LnBitcoinMainNet,
-  LnBitcoinTestNet
-}
+import org.bitcoins.core.protocol.ln.LnParams.{LnBitcoinMainNet, LnBitcoinTestNet}
 import org.bitcoins.core.protocol.ln.channel.ShortChannelId
-import org.bitcoins.core.protocol.ln.currency.{
-  MicroBitcoins,
-  MilliBitcoins,
-  MilliSatoshis
-}
-import org.bitcoins.core.protocol.ln.fee.{
-  FeeBaseMSat,
-  FeeProportionalMillionths
-}
+import org.bitcoins.core.protocol.ln.currency.{MicroBitcoins, MilliBitcoins, MilliSatoshis}
+import org.bitcoins.core.protocol.ln.fee.{FeeBaseMSat, FeeProportionalMillionths}
 import org.bitcoins.core.protocol.ln.node.NodeId
 import org.bitcoins.core.protocol.ln.routing.LnRoute
 import org.bitcoins.core.protocol.{Bech32Address, P2PKHAddress, P2SHAddress}
@@ -40,8 +30,7 @@ class LnInvoiceUnitTest extends BitcoinSUnitTest {
     LnHumanReadablePart(LnBitcoinTestNet, Some(MilliBitcoins(20)))
   val time = UInt64(1496314658)
 
-  val paymentHash = Sha256Digest.fromHex(
-    "0001020304050607080900010203040506070809000102030405060708090102")
+  val paymentHash = Sha256Digest.fromHex("0001020304050607080900010203040506070809000102030405060708090102")
   val paymentTag = LnTag.PaymentHashTag(paymentHash)
 
   val description = {
@@ -58,8 +47,7 @@ class LnInvoiceUnitTest extends BitcoinSUnitTest {
 
     val descriptionTagE =
       Left(LnTag.DescriptionTag("Please consider supporting this project"))
-    val lnTags = LnTaggedFields(paymentHash = paymentTag,
-                                descriptionOrHash = descriptionTagE)
+    val lnTags = LnTaggedFields(paymentHash = paymentTag, descriptionOrHash = descriptionTagE)
 
     val sigData =
       "6c6e62630b25fe64410d00004080c1014181c20240004080c1014181c20240004080c1014181c202404081a1fa83632b0b9b29031b7b739b4b232b91039bab83837b93a34b733903a3434b990383937b532b1ba0"
@@ -89,9 +77,7 @@ class LnInvoiceUnitTest extends BitcoinSUnitTest {
 
     val descriptionTagE = Left(LnTag.DescriptionTag("1 cup coffee"))
     val expiryTimeTag = LnTag.ExpiryTimeTag(UInt32(60))
-    val lnTags = LnTaggedFields(paymentTag,
-                                descriptionOrHash = descriptionTagE,
-                                expiryTime = Some(expiryTimeTag))
+    val lnTags = LnTaggedFields(paymentTag, descriptionOrHash = descriptionTagE, expiryTime = Some(expiryTimeTag))
 
     val signature = ECDigitalSignature.fromRS(
       "e89639ba6814e36689d4b91bf125f10351b55da057b00647a8dabaeb8a90c95f160f9d5a6e0f79d1fc2b964238b944e2fa4aa677c6f020d466472ab842bd750e")
@@ -147,16 +133,10 @@ class LnInvoiceUnitTest extends BitcoinSUnitTest {
   it must "parse BOLT11 example 4" in {
     //BOLT11 Example #4
 
-    val descriptionHash = Sha256Digest.fromHex(
-      "3925b6f67e2c340036ed12093dd44e0368df1b6ea26c53dbe4811f58fd5db8c1")
+    val descriptionHash = Sha256Digest.fromHex("3925b6f67e2c340036ed12093dd44e0368df1b6ea26c53dbe4811f58fd5db8c1")
     val descriptionHashTagE = Right(LnTag.DescriptionHashTag(descriptionHash))
-    val lnTags = LnTaggedFields(paymentHash = paymentTag,
-                                descriptionOrHash = descriptionHashTagE,
-                                None,
-                                None,
-                                None,
-                                None,
-                                None)
+    val lnTags =
+      LnTaggedFields(paymentHash = paymentTag, descriptionOrHash = descriptionHashTagE, None, None, None, None, None)
 
     val signature = ECDigitalSignature.fromRS(
       "c63486e81f8c878a105bc9d959af1973854c4dc552c4f0e0e0c7389603d6bdc67707bf6be992a8ce7bf50016bb41d8a9b5358652c4960445a170d049ced4558c")
@@ -178,11 +158,9 @@ class LnInvoiceUnitTest extends BitcoinSUnitTest {
   it must "parse BOLT11 example 5" in {
     //BOLT11 Example #5
 
-    val descriptionHash = Sha256Digest.fromHex(
-      "3925b6f67e2c340036ed12093dd44e0368df1b6ea26c53dbe4811f58fd5db8c1")
+    val descriptionHash = Sha256Digest.fromHex("3925b6f67e2c340036ed12093dd44e0368df1b6ea26c53dbe4811f58fd5db8c1")
     val descriptionHashTagE = Right(LnTag.DescriptionHashTag(descriptionHash))
-    val fallbackAddr = LnTag.FallbackAddressTag(
-      P2PKHAddress.fromString("mk2QpYatsKicvFVuTAQLBryyccRXMUaGHP"))
+    val fallbackAddr = LnTag.FallbackAddressTag(P2PKHAddress.fromString("mk2QpYatsKicvFVuTAQLBryyccRXMUaGHP"))
 
     val lnTags = LnTaggedFields(paymentHash = paymentTag,
                                 descriptionOrHash = descriptionHashTagE,
@@ -211,8 +189,7 @@ class LnInvoiceUnitTest extends BitcoinSUnitTest {
     val expected =
       "lnbc20m1pvjluezpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqhp58yjmdan79s6qqdhdzgynm4zwqd5d7xmw5fk98klysy043l2ahrqsfpp3qjmp7lwpagxun9pygexvgpjdc4jdj85fr9yq20q82gphp2nflc7jtzrcazrra7wwgzxqc8u7754cdlpfrmccae92qgzqvzq2ps8pqqqqqqpqqqqq9qqqvpeuqafqxu92d8lr6fvg0r5gv0heeeqgcrqlnm6jhphu9y00rrhy4grqszsvpcgpy9qqqqqqgqqqqq7qqzqj9n4evl6mr5aj9f58zp6fyjzup6ywn3x6sk8akg5v4tgn2q8g4fhx05wf6juaxu9760yp46454gpg5mtzgerlzezqcqvjnhjh8z3g2qqdhhwkj"
 
-    val fallbackAddr = LnTag.FallbackAddressTag(
-      P2PKHAddress.fromString("1RustyRX2oai4EYYDpQGWvEL62BBGqN9T"))
+    val fallbackAddr = LnTag.FallbackAddressTag(P2PKHAddress.fromString("1RustyRX2oai4EYYDpQGWvEL62BBGqN9T"))
 
     val signature = ECDigitalSignature.fromRS(
       "91675cb3fad8e9d915343883a49242e074474e26d42c7ed914655689a8074553733e8e4ea5ce9b85f69e40d755a55014536b12323f8b220600c94ef2b9c51428")
@@ -220,8 +197,7 @@ class LnInvoiceUnitTest extends BitcoinSUnitTest {
       LnInvoiceSignature(recoverId = UInt8.zero, signature = signature)
 
     val route1 = LnRoute(
-      pubkey = ECPublicKey.fromHex(
-        "029e03a901b85534ff1e92c43c74431f7ce72046060fcf7a95c37e148f78c77255"),
+      pubkey = ECPublicKey.fromHex("029e03a901b85534ff1e92c43c74431f7ce72046060fcf7a95c37e148f78c77255"),
       shortChannelID = ShortChannelId.fromHex("0102030405060708"),
       feeBaseMsat = FeeBaseMSat(MilliSatoshis.one),
       feePropMilli = FeeProportionalMillionths(UInt32(20)),
@@ -229,8 +205,7 @@ class LnInvoiceUnitTest extends BitcoinSUnitTest {
     )
 
     val route2 = LnRoute(
-      pubkey = ECPublicKey.fromHex(
-        "039e03a901b85534ff1e92c43c74431f7ce72046060fcf7a95c37e148f78c77255"),
+      pubkey = ECPublicKey.fromHex("039e03a901b85534ff1e92c43c74431f7ce72046060fcf7a95c37e148f78c77255"),
       shortChannelID = ShortChannelId.fromHex("030405060708090a"),
       feeBaseMsat = FeeBaseMSat(MilliSatoshis(2)),
       feePropMilli = FeeProportionalMillionths(UInt32(30)),
@@ -244,10 +219,7 @@ class LnInvoiceUnitTest extends BitcoinSUnitTest {
                                 fallbackAddress = Some(fallbackAddr),
                                 routingInfo = Some(route))
 
-    val lnInvoice = LnInvoice(hrp = hrpMilli,
-                              timestamp = time,
-                              lnTags = lnTags,
-                              signature = lnInvoiceSig)
+    val lnInvoice = LnInvoice(hrp = hrpMilli, timestamp = time, lnTags = lnTags, signature = lnInvoiceSig)
 
     val serialized = lnInvoice.toString
     serialized must be(expected)
@@ -264,8 +236,7 @@ class LnInvoiceUnitTest extends BitcoinSUnitTest {
         "dph2q7z9kmrgvr7xlaqm47apw3d48zm203kzcq357a4ls9al2ea73r8jcceyjtya6fu5wzzpe50zrge6ulk" +
         "4nvjcpxlekvmxl6qcs9j3tz0469gqsjurz5"
 
-    val fallbackAddr = LnTag.FallbackAddressTag(
-      P2SHAddress.fromString("3EktnHQD7RiAE6uzMj2ZifT9YgRrkSgzQX"))
+    val fallbackAddr = LnTag.FallbackAddressTag(P2SHAddress.fromString("3EktnHQD7RiAE6uzMj2ZifT9YgRrkSgzQX"))
 
     val lnTags = LnTaggedFields(paymentHash = paymentTag,
                                 descriptionOrHash = descpriptionHashTag,
@@ -275,10 +246,7 @@ class LnInvoiceUnitTest extends BitcoinSUnitTest {
       "b6c6860fc6ff41bafba1745b538b6a7c6c2c0234f76bf817bf567be88cf2c632492c9dd279470841cd1e21a33ae7ed59b25809bf9b3366fe81881651589f5d15")
     val lnInvoiceSig =
       LnInvoiceSignature(signature = signature, recoverId = UInt8.zero)
-    val lnInvoice = LnInvoice(hrp = hrpMilli,
-                              timestamp = time,
-                              lnTags = lnTags,
-                              signature = lnInvoiceSig)
+    val lnInvoice = LnInvoice(hrp = hrpMilli, timestamp = time, lnTags = lnTags, signature = lnInvoiceSig)
 
     val serialized = lnInvoice.toString
 
@@ -313,10 +281,7 @@ class LnInvoiceUnitTest extends BitcoinSUnitTest {
     val lnInvoiceSig =
       LnInvoiceSignature(signature = signature, recoverId = UInt8.zero)
 
-    val lnInvoice = LnInvoice(hrp = hrpMilli,
-                              timestamp = time,
-                              lnTags = lnTags,
-                              signature = lnInvoiceSig)
+    val lnInvoice = LnInvoice(hrp = hrpMilli, timestamp = time, lnTags = lnTags, signature = lnInvoiceSig)
 
     val serialized = lnInvoice.toString
 
@@ -337,8 +302,7 @@ class LnInvoiceUnitTest extends BitcoinSUnitTest {
 
     val fallbackAddr = LnTag.FallbackAddressTag(
       Bech32Address
-        .fromString(
-          "bc1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3qccfmv3"))
+        .fromString("bc1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3qccfmv3"))
 
     val lnTags = LnTaggedFields(paymentHash = paymentTag,
                                 descriptionOrHash = descpriptionHashTag,
@@ -350,10 +314,7 @@ class LnInvoiceUnitTest extends BitcoinSUnitTest {
     val lnInvoiceSig =
       LnInvoiceSignature(signature = signature, recoverId = UInt8.zero)
 
-    val lnInvoice = LnInvoice(hrp = hrpMilli,
-                              timestamp = time,
-                              lnTags = lnTags,
-                              signature = lnInvoiceSig)
+    val lnInvoice = LnInvoice(hrp = hrpMilli, timestamp = time, lnTags = lnTags, signature = lnInvoiceSig)
 
     val serialized = lnInvoice.toString
 
@@ -375,23 +336,17 @@ class LnInvoiceUnitTest extends BitcoinSUnitTest {
 
     val descriptionTag = LnTag.DescriptionTag("coffee beans")
 
-    val paymentSecret = Some(
-      LnTag.SecretTag(PaymentSecret.fromHex(
-        "1111111111111111111111111111111111111111111111111111111111111111")))
+    val paymentSecret =
+      Some(LnTag.SecretTag(PaymentSecret.fromHex("1111111111111111111111111111111111111111111111111111111111111111")))
 
-    val features = Some(
-      LnTag.FeaturesTag(ByteVector.fromValidHex("800000000000000000000800")))
+    val features = Some(LnTag.FeaturesTag(ByteVector.fromValidHex("800000000000000000000800")))
 
-    val lnTags = LnTaggedFields(
-      Vector(paymentTag, descriptionTag, paymentSecret.get, features.get))
+    val lnTags = LnTaggedFields(Vector(paymentTag, descriptionTag, paymentSecret.get, features.get))
 
     val hrpMilli =
       LnHumanReadablePart(LnBitcoinMainNet, Some(MilliBitcoins(25)))
 
-    val lnInvoice = LnInvoice(hrp = hrpMilli,
-                              timestamp = time,
-                              lnTags = lnTags,
-                              signature = lnInvoiceSig)
+    val lnInvoice = LnInvoice(hrp = hrpMilli, timestamp = time, lnTags = lnTags, signature = lnInvoiceSig)
 
     val serialized = lnInvoice.toString
     // TODO uncomment when https://github.com/bitcoin-s/bitcoin-s/issues/1064 is fixed
@@ -431,14 +386,9 @@ class LnInvoiceUnitTest extends BitcoinSUnitTest {
     intercept[IllegalArgumentException] {
       val sig = EmptyDigitalSignature
       val tags =
-        LnTaggedFields(paymentHash = paymentTag,
-                       descriptionOrHash =
-                         Right(LnTag.DescriptionHashTag(descriptionHash)))
+        LnTaggedFields(paymentHash = paymentTag, descriptionOrHash = Right(LnTag.DescriptionHashTag(descriptionHash)))
       val lnSig = LnInvoiceSignature(recoverId = UInt8.zero, signature = sig)
-      LnInvoice(hrp = hrpEmpty,
-                timestamp = UInt64.zero,
-                lnTags = tags,
-                signature = lnSig)
+      LnInvoice(hrp = hrpEmpty, timestamp = UInt64.zero, lnTags = tags, signature = lnSig)
     }
   }
 
@@ -446,9 +396,7 @@ class LnInvoiceUnitTest extends BitcoinSUnitTest {
     val privKey = ECPrivateKey.freshPrivateKey
 
     val tags =
-      LnTaggedFields(paymentHash = paymentTag,
-                     descriptionOrHash =
-                       Right(LnTag.DescriptionHashTag(descriptionHash)))
+      LnTaggedFields(paymentHash = paymentTag, descriptionOrHash = Right(LnTag.DescriptionHashTag(descriptionHash)))
 
     val invoice =
       LnInvoice.build(hrp = hrpEmpty, lnTags = tags, privateKey = privKey)
@@ -498,10 +446,8 @@ class LnInvoiceUnitTest extends BitcoinSUnitTest {
       "lnbcrt10n1p0px7lfpp5ghc2y7ttnwy58jx0dfcsdxy7ey0qfryn0wcmm04ckud0qw73kt9sdq9vehk7xqrrss9qypqqqsp5qlf6efygd26y03y66jdqqfmlxthplnu5cc8648fgn88twhpyvmgqg9k5kd0k8vv3xvvqpkhkt9chdl579maq45gvck4g0yd0eggmvfkzgvjmwn29r99p57tgyl3l3s82hlc4e97at55xl5lyzpfk6n36yyqqxeem8q"
     val invoice = LnInvoice.fromStringT(serialized).get
     invoice.lnTags.secret must be(
-      Some(LnTag.SecretTag(PaymentSecret.fromHex(
-        "07d3aca4886ab447c49ad49a00277f32ee1fcf94c60faa9d2899ceb75c2466d0"))))
-    invoice.lnTags.features must be(
-      Some(LnTag.FeaturesTag(ByteVector.fromValidHex("0800"))))
+      Some(LnTag.SecretTag(PaymentSecret.fromHex("07d3aca4886ab447c49ad49a00277f32ee1fcf94c60faa9d2899ceb75c2466d0"))))
+    invoice.lnTags.features must be(Some(LnTag.FeaturesTag(ByteVector.fromValidHex("0800"))))
     invoice.toString must be(serialized)
   }
 
@@ -517,9 +463,8 @@ class LnInvoiceUnitTest extends BitcoinSUnitTest {
       "180cb41c7c600be951b5d3d0a7334acc7506173875834f7a6c4c786a28fcbb19"
     val key: ECPrivateKey = ECPrivateKey(privateKeyHex)
 
-    val unknownTag = LnTag.UnknownTag(
-      LnTagPrefix.Unknown('z'),
-      Bech32.from8bitTo5bit(ByteVector.fromValidHex("cafebabe")))
+    val unknownTag =
+      LnTag.UnknownTag(LnTagPrefix.Unknown('z'), Bech32.from8bitTo5bit(ByteVector.fromValidHex("cafebabe")))
 
     val descriptionTag =
       LnTag.DescriptionTag("Please consider supporting this project")

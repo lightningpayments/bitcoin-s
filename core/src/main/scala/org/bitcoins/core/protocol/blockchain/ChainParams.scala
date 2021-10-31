@@ -7,11 +7,7 @@ import org.bitcoins.core.config._
 import org.bitcoins.core.consensus.Merkle
 import org.bitcoins.core.currency.{Bitcoins, CurrencyUnit, Satoshis}
 import org.bitcoins.core.number.{Int32, UInt32}
-import org.bitcoins.core.protocol.script.{
-  EmptyScriptPubKey,
-  ScriptPubKey,
-  ScriptSignature
-}
+import org.bitcoins.core.protocol.script.{EmptyScriptPubKey, ScriptPubKey, ScriptSignature}
 import org.bitcoins.core.protocol.transaction._
 import org.bitcoins.core.script.constant.{BytesToPushOntoStack, ScriptConstant}
 import org.bitcoins.core.script.crypto.OP_CHECKSIG
@@ -79,12 +75,7 @@ sealed abstract class ChainParams {
     * @param amount the block reward for the genesis block (50 BTC in Bitcoin)
     * @return the newly minted genesis block
     */
-  def createGenesisBlock(
-      time: UInt32,
-      nonce: UInt32,
-      nBits: UInt32,
-      version: Int32,
-      amount: CurrencyUnit): Block = {
+  def createGenesisBlock(time: UInt32, nonce: UInt32, nBits: UInt32, version: Int32, amount: CurrencyUnit): Block = {
     val timestamp =
       "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks"
     val asm = Seq(
@@ -94,13 +85,7 @@ sealed abstract class ChainParams {
       OP_CHECKSIG
     )
     val genesisOutputScript = ScriptPubKey.fromAsm(asm)
-    createGenesisBlock(timestamp,
-                       genesisOutputScript,
-                       time,
-                       nonce,
-                       nBits,
-                       version,
-                       amount)
+    createGenesisBlock(timestamp, genesisOutputScript, time, nonce, nBits, version, amount)
   }
 
   /** @param timestamp a piece of data to signify when this block was first created - satoshi used an article headline
@@ -126,10 +111,7 @@ sealed abstract class ChainParams {
     val const = ScriptConstant(timestampBytes)
 
     val asm = {
-      List(BytesToPushOntoStack(4),
-           ScriptConstant("ffff001d"),
-           BytesToPushOntoStack(1),
-           ScriptConstant("04")) ++
+      List(BytesToPushOntoStack(4), ScriptConstant("ffff001d"), BytesToPushOntoStack(1), ScriptConstant("04")) ++
         BitcoinScriptUtil.calculatePushOp(const) ++
         List(const)
     }
@@ -138,12 +120,8 @@ sealed abstract class ChainParams {
 
     val input = CoinbaseInput(scriptSignature, TransactionConstants.sequence)
     val output = TransactionOutput(amount, scriptPubKey)
-    val tx = BaseTransaction(TransactionConstants.version,
-                             Seq(input),
-                             Seq(output),
-                             TransactionConstants.lockTime)
-    val prevBlockHash = DoubleSha256Digest(
-      "0000000000000000000000000000000000000000000000000000000000000000")
+    val tx = BaseTransaction(TransactionConstants.version, Seq(input), Seq(output), TransactionConstants.lockTime)
+    val prevBlockHash = DoubleSha256Digest("0000000000000000000000000000000000000000000000000000000000000000")
     val merkleRootHash = Merkle.computeMerkleRoot(Seq(tx))
     val genesisBlockHeader =
       BlockHeader(version, prevBlockHash, merkleRootHash, time, nBits, nonce)
@@ -240,11 +218,7 @@ object MainNetChainParams extends BitcoinChainParams {
   override lazy val networkId = "main"
 
   override lazy val genesisBlock: Block =
-    createGenesisBlock(UInt32(1231006505),
-                       UInt32(2083236893),
-                       UInt32(0x1d00ffff),
-                       Int32.one,
-                       Satoshis(5000000000L))
+    createGenesisBlock(UInt32(1231006505), UInt32(2083236893), UInt32(0x1d00ffff), Int32.one, Satoshis(5000000000L))
 
   override lazy val base58Prefixes: Map[Base58Type, ByteVector] =
     Map(
@@ -302,11 +276,7 @@ object TestNetChainParams extends BitcoinChainParams {
   override lazy val networkId = "test"
 
   override lazy val genesisBlock: Block =
-    createGenesisBlock(UInt32(1296688602),
-                       UInt32(414098458),
-                       UInt32(0x1d00ffff),
-                       Int32.one,
-                       Satoshis(5000000000L))
+    createGenesisBlock(UInt32(1296688602), UInt32(414098458), UInt32(0x1d00ffff), Int32.one, Satoshis(5000000000L))
 
   override lazy val base58Prefixes: Map[Base58Type, ByteVector] =
     Map(
@@ -356,11 +326,7 @@ object RegTestNetChainParams extends BitcoinChainParams {
   override lazy val networkId = "regtest"
 
   override lazy val genesisBlock: Block =
-    createGenesisBlock(UInt32(1296688602),
-                       UInt32(2),
-                       UInt32(0x207fffff),
-                       Int32.one,
-                       Satoshis(5000000000L))
+    createGenesisBlock(UInt32(1296688602), UInt32(2), UInt32(0x207fffff), Int32.one, Satoshis(5000000000L))
 
   override lazy val base58Prefixes: Map[Base58Type, ByteVector] =
     TestNetChainParams.base58Prefixes
@@ -403,18 +369,13 @@ object RegTestNetChainParams extends BitcoinChainParams {
   override def signetChallenge: ScriptPubKey = EmptyScriptPubKey
 }
 
-case class SigNetChainParams(
-    signetChallenge: ScriptPubKey = ScriptPubKey.fromAsmHex(
-      "512103ad5e0edad18cb1f0fc0d28a3d4f1f3e445640337489abb10404f2d1e086be430210359ef5021964fe22d6f8e05b2463c9540ce96883fe3b278760f048f5189f2e6c452ae"))
+case class SigNetChainParams(signetChallenge: ScriptPubKey = ScriptPubKey.fromAsmHex(
+  "512103ad5e0edad18cb1f0fc0d28a3d4f1f3e445640337489abb10404f2d1e086be430210359ef5021964fe22d6f8e05b2463c9540ce96883fe3b278760f048f5189f2e6c452ae"))
     extends BitcoinChainParams {
   override lazy val networkId = "signet"
 
   override lazy val genesisBlock: Block =
-    createGenesisBlock(UInt32(1598918400),
-                       UInt32(52613770),
-                       UInt32(0x1e0377ae),
-                       Int32.one,
-                       Bitcoins(50))
+    createGenesisBlock(UInt32(1598918400), UInt32(52613770), UInt32(0x1e0377ae), Int32.one, Bitcoins(50))
 
   require(
     genesisBlock.blockHeader.hashBE == DoubleSha256DigestBE(

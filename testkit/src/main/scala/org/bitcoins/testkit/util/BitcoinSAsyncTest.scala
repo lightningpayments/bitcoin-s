@@ -49,6 +49,4 @@ trait BitcoinSAsyncTest extends AsyncFlatSpec with BitcoinSAkkaAsyncTest
   * This is different than [[BitcoinSAsyncTest BitcoinSAsyncTest]] as you can use a fixture
   * with this test suite.
   */
-trait BitcoinSAsyncFixtureTest
-    extends FixtureAsyncFlatSpec
-    with BitcoinSAkkaAsyncTest
+trait BitcoinSAsyncFixtureTest extends FixtureAsyncFlatSpec with BitcoinSAkkaAsyncTest

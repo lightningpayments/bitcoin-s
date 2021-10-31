@@ -4,10 +4,7 @@ import org.bitcoins.core.currency.Bitcoins
 import org.bitcoins.core.number.UInt32
 import org.bitcoins.core.protocol.BitcoinAddress
 import org.bitcoins.core.protocol.script.{ScriptPubKey, WitnessScriptPubKey}
-import org.bitcoins.core.protocol.transaction.{
-  TransactionInput,
-  TransactionOutPoint
-}
+import org.bitcoins.core.protocol.transaction.{TransactionInput, TransactionOutPoint}
 import org.bitcoins.commons.serializers.JsonWriters._
 import org.bitcoins.crypto.{DoubleSha256DigestBE, ECPrivateKeyBytes}
 import play.api.libs.json.{Json, Writes}
@@ -69,8 +66,8 @@ object RpcOpts {
     }
   }
 
-  implicit val fundRawTransactionOptionsWrites: Writes[
-    FundRawTransactionOptions] = Json.writes[FundRawTransactionOptions]
+  implicit val fundRawTransactionOptionsWrites: Writes[FundRawTransactionOptions] =
+    Json.writes[FundRawTransactionOptions]
 
   case class SignRawTransactionOutputParameter(
       txid: DoubleSha256DigestBE,
@@ -80,8 +77,7 @@ object RpcOpts {
       witnessScript: Option[WitnessScriptPubKey] = None,
       amount: Option[Bitcoins] = None)
 
-  implicit val signRawTransactionOutputParameterWrites: Writes[
-    SignRawTransactionOutputParameter] =
+  implicit val signRawTransactionOutputParameterWrites: Writes[SignRawTransactionOutputParameter] =
     Json.writes[SignRawTransactionOutputParameter]
 
   object SignRawTransactionOutputParameter {
@@ -204,10 +200,7 @@ object RpcOpts {
     }
   }
 
-  case class BlockTemplateRequest(
-      mode: String,
-      capabilities: Vector[String],
-      rules: Vector[String])
+  case class BlockTemplateRequest(mode: String, capabilities: Vector[String], rules: Vector[String])
 
   implicit val blockTemplateRequest: Writes[BlockTemplateRequest] =
     Json.writes[BlockTemplateRequest]

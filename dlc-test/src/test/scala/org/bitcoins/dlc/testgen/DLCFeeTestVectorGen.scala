@@ -8,11 +8,9 @@ import play.api.libs.json.{JsResult, JsValue}
 
 import scala.concurrent.Future
 
-object DLCFeeTestVectorGen
-    extends TestVectorGen[DLCFeeTestVector, DLCFeeTestVectorInput] {
+object DLCFeeTestVectorGen extends TestVectorGen[DLCFeeTestVector, DLCFeeTestVectorInput] {
 
-  override val defaultTestFile: File = new File(
-    "dlc-test/src/test/scala/org/bitcoins/dlc/testgen/dlc_fee_test.json")
+  override val defaultTestFile: File = new File("dlc-test/src/test/scala/org/bitcoins/dlc/testgen/dlc_fee_test.json")
 
   override val testVectorParser: DLCFeeTestVector.type =
     DLCFeeTestVector
@@ -22,8 +20,7 @@ object DLCFeeTestVectorGen
 
   override val inputStr: String = "inputs"
 
-  override def generateFromInput: DLCFeeTestVectorInput => Future[
-    DLCFeeTestVector] = { input =>
+  override def generateFromInput: DLCFeeTestVectorInput => Future[DLCFeeTestVector] = { input =>
     Future.successful(DLCFeeTestVector(input))
   }
 
@@ -37,9 +34,7 @@ object DLCFeeTestVectorGen
     val twoInputs = Vector(feeFundingInfo2, feeFundingInfo3)
     val feeFundingInfos = redeemScriptLens.flatMap { redeemScriptLen =>
       maxWitnessLens.flatMap { maxWitnessLen =>
-        if (
-          redeemScriptLen == 22 && (maxWitnessLen != 107 || maxWitnessLen != 108)
-        ) {
+        if (redeemScriptLen == 22 && (maxWitnessLen != 107 || maxWitnessLen != 108)) {
           None
         } else {
           Some(FundingFeeInfo(redeemScriptLen, maxWitnessLen))

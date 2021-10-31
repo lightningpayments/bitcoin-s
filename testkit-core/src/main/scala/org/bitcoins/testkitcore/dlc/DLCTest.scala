@@ -33,8 +33,7 @@ trait DLCTest {
   val oraclePubKey: SchnorrPublicKey = oraclePubKeys.head
 
   val preCommittedKsPerOracle: Vector[Vector[ECPrivateKey]] =
-    oraclePrivKeys.map(_ =>
-      (0 until 50).toVector.map(_ => ECPrivateKey.freshPrivateKey))
+    oraclePrivKeys.map(_ => (0 until 50).toVector.map(_ => ECPrivateKey.freshPrivateKey))
 
   val preCommittedRsPerOracle: Vector[Vector[SchnorrNonce]] =
     preCommittedKsPerOracle.map(_.map(_.schnorrNonce))
@@ -60,25 +59,20 @@ trait DLCTest {
   val inputPubKeyAccept2A: ECPublicKey = inputPrivKeyAccept2A.publicKey
   val inputPubKeyAccept2B: ECPublicKey = inputPrivKeyAccept2B.publicKey
 
-  val blockTimeToday: BlockTime = BlockTime(
-    UInt32(System.currentTimeMillis() / 1000))
+  val blockTimeToday: BlockTime = BlockTime(UInt32(System.currentTimeMillis() / 1000))
 
   val offerFundingTx: Transaction = BaseTransaction(
     TransactionConstants.validLockVersion,
     Vector.empty,
-    Vector(
-      TransactionOutput(offerInput,
-                        P2WPKHWitnessSPKV0(inputPrivKeyOffer.publicKey))),
+    Vector(TransactionOutput(offerInput, P2WPKHWitnessSPKV0(inputPrivKeyOffer.publicKey))),
     UInt32.zero
   )
 
   val offerAddress: BitcoinAddress =
-    BitcoinAddress.fromScriptPubKey(P2WPKHWitnessSPKV0(inputPubKeyOffer),
-                                    RegTest)
+    BitcoinAddress.fromScriptPubKey(P2WPKHWitnessSPKV0(inputPubKeyOffer), RegTest)
 
   val offerNestedSPK: IfConditionalScriptPubKey =
-    NonStandardIfConditionalScriptPubKey(P2PKScriptPubKey(inputPubKeyOffer2A),
-                                         P2PKScriptPubKey(inputPubKeyOffer2B))
+    NonStandardIfConditionalScriptPubKey(P2PKScriptPubKey(inputPubKeyOffer2A), P2PKScriptPubKey(inputPubKeyOffer2B))
 
   val offerAddress2: BitcoinAddress =
     BitcoinAddress.fromScriptPubKey(P2WSHWitnessSPKV0(offerNestedSPK), RegTest)
@@ -93,8 +87,7 @@ trait DLCTest {
   val offerFundingUtxos = Vector(
     SpendingInfoWithSerialId(
       ScriptSignatureParams(
-        P2WPKHV0InputInfo(outPoint = TransactionOutPoint(offerFundingTx.txId,
-                                                         UInt32.zero),
+        P2WPKHV0InputInfo(outPoint = TransactionOutPoint(offerFundingTx.txId, UInt32.zero),
                           amount = offerInput,
                           pubKey = inputPubKeyOffer),
         prevTransaction = offerFundingTx,
@@ -121,55 +114,41 @@ trait DLCTest {
 
   val offerFundingInputs: Vector[DLCFundingInput] =
     Vector(
-      DLCFundingInputP2WPKHV0(UInt64.zero,
-                              offerFundingTx,
-                              UInt32.zero,
-                              TransactionConstants.enableRBFSequence),
-      DLCFundingInputP2WSHV0(
-        UInt64.one,
-        offerFundingTx2,
-        UInt32.zero,
-        TransactionConstants.enableRBFSequence,
-        maxWitnessLen =
-          UInt16(offerFundingUtxos.last.spendingInfo.maxWitnessLen))
+      DLCFundingInputP2WPKHV0(UInt64.zero, offerFundingTx, UInt32.zero, TransactionConstants.enableRBFSequence),
+      DLCFundingInputP2WSHV0(UInt64.one,
+                             offerFundingTx2,
+                             UInt32.zero,
+                             TransactionConstants.enableRBFSequence,
+                             maxWitnessLen = UInt16(offerFundingUtxos.last.spendingInfo.maxWitnessLen))
     )
 
   val acceptFundingTx: Transaction = BaseTransaction(
     TransactionConstants.validLockVersion,
     Vector.empty,
-    Vector(
-      TransactionOutput(acceptInput,
-                        P2WPKHWitnessSPKV0(inputPrivKeyAccept.publicKey))),
+    Vector(TransactionOutput(acceptInput, P2WPKHWitnessSPKV0(inputPrivKeyAccept.publicKey))),
     UInt32.zero
   )
 
   val acceptAddress: BitcoinAddress =
-    BitcoinAddress.fromScriptPubKey(P2WPKHWitnessSPKV0(inputPubKeyAccept),
-                                    RegTest)
+    BitcoinAddress.fromScriptPubKey(P2WPKHWitnessSPKV0(inputPubKeyAccept), RegTest)
 
   val acceptNestedSPK: MultiSignatureScriptPubKey =
-    MultiSignatureScriptPubKey(2,
-                               Vector(inputPubKeyAccept2A, inputPubKeyAccept2B))
+    MultiSignatureScriptPubKey(2, Vector(inputPubKeyAccept2A, inputPubKeyAccept2B))
 
   val acceptAddress2: BitcoinAddress =
-    BitcoinAddress.fromScriptPubKey(
-      P2SHScriptPubKey(P2WSHWitnessSPKV0(acceptNestedSPK)),
-      RegTest)
+    BitcoinAddress.fromScriptPubKey(P2SHScriptPubKey(P2WSHWitnessSPKV0(acceptNestedSPK)), RegTest)
 
   val acceptFundingTx2: Transaction = BaseTransaction(
     TransactionConstants.validLockVersion,
     Vector.empty,
-    Vector(
-      TransactionOutput(acceptInput,
-                        P2SHScriptPubKey(P2WSHWitnessSPKV0(acceptNestedSPK)))),
+    Vector(TransactionOutput(acceptInput, P2SHScriptPubKey(P2WSHWitnessSPKV0(acceptNestedSPK)))),
     UInt32.zero
   )
 
   val acceptFundingUtxos = Vector(
     SpendingInfoWithSerialId(
       ScriptSignatureParams(
-        P2WPKHV0InputInfo(outPoint = TransactionOutPoint(acceptFundingTx.txId,
-                                                         UInt32.zero),
+        P2WPKHV0InputInfo(outPoint = TransactionOutPoint(acceptFundingTx.txId, UInt32.zero),
                           amount = acceptInput,
                           pubKey = inputPubKeyAccept),
         prevTransaction = acceptFundingTx,
@@ -196,28 +175,22 @@ trait DLCTest {
 
   val acceptFundingInputs: Vector[DLCFundingInput] =
     Vector(
-      DLCFundingInputP2WPKHV0(UInt64(3),
-                              acceptFundingTx,
-                              UInt32.zero,
-                              TransactionConstants.enableRBFSequence),
+      DLCFundingInputP2WPKHV0(UInt64(3), acceptFundingTx, UInt32.zero, TransactionConstants.enableRBFSequence),
       DLCFundingInputP2SHSegwit(
         inputSerialId = UInt64(4),
         prevTx = acceptFundingTx2,
         prevTxVout = UInt32.zero,
         sequence = TransactionConstants.enableRBFSequence,
-        maxWitnessLen =
-          UInt16(acceptFundingUtxos.last.spendingInfo.maxWitnessLen),
+        maxWitnessLen = UInt16(acceptFundingUtxos.last.spendingInfo.maxWitnessLen),
         redeemScript = P2WSHWitnessSPKV0(acceptNestedSPK)
       )
     )
 
-  val offerChangeSPK: P2WPKHWitnessSPKV0 = P2WPKHWitnessSPKV0(
-    ECPublicKey.freshPublicKey)
+  val offerChangeSPK: P2WPKHWitnessSPKV0 = P2WPKHWitnessSPKV0(ECPublicKey.freshPublicKey)
 
   val offerChangeSerialId: UInt64 = UInt64.one
 
-  val acceptChangeSPK: P2WPKHWitnessSPKV0 = P2WPKHWitnessSPKV0(
-    ECPublicKey.freshPublicKey)
+  val acceptChangeSPK: P2WPKHWitnessSPKV0 = P2WPKHWitnessSPKV0(ECPublicKey.freshPublicKey)
 
   val acceptChangeSerialId: UInt64 = UInt64(2)
 
@@ -236,8 +209,7 @@ trait DLCTest {
   val acceptPayoutSerialId: UInt64 = UInt64.one
 
   val timeouts: DLCTimeouts =
-    DLCTimeouts(blockTimeToday,
-                BlockTime(UInt32(blockTimeToday.time.toLong + 1)))
+    DLCTimeouts(blockTimeToday, BlockTime(UInt32(blockTimeToday.time.toLong + 1)))
 
   val feeRate: SatoshisPerVirtualByte = SatoshisPerVirtualByte(Satoshis(10))
 
@@ -248,24 +220,19 @@ trait DLCTest {
       offerPayoutPrivKey: ECPrivateKey = this.offerPayoutPrivKey,
       acceptFundingPrivKey: ECPrivateKey = this.acceptFundingPrivKey,
       acceptPayoutPrivKey: ECPrivateKey = this.acceptPayoutPrivKey,
-      offerFundingUtxos: Vector[SpendingInfoWithSerialId] =
-        this.offerFundingUtxos,
+      offerFundingUtxos: Vector[SpendingInfoWithSerialId] = this.offerFundingUtxos,
       offerFundingInputs: Vector[DLCFundingInput] = this.offerFundingInputs,
-      acceptFundingUtxos: Vector[SpendingInfoWithSerialId] =
-        this.acceptFundingUtxos,
+      acceptFundingUtxos: Vector[SpendingInfoWithSerialId] = this.acceptFundingUtxos,
       acceptFundingInputs: Vector[DLCFundingInput] = this.acceptFundingInputs,
       feeRate: SatoshisPerVirtualByte = this.feeRate,
-      timeouts: DLCTimeouts = this.timeouts)(implicit
-      ec: ExecutionContext): (TestDLCClient, TestDLCClient) = {
+      timeouts: DLCTimeouts = this.timeouts)(implicit ec: ExecutionContext): (TestDLCClient, TestDLCClient) = {
     val offerDLC = TestDLCClient(
       outcomes = offerInfo,
       isInitiator = true,
       fundingPrivKey = offerFundingPrivKey,
       payoutPrivKey = offerPayoutPrivKey,
       payoutSerialId = offerPayoutSerialId,
-      remotePubKeys = DLCPublicKeys.fromPrivKeys(acceptFundingPrivKey,
-                                                 acceptPayoutPrivKey,
-                                                 RegTest),
+      remotePubKeys = DLCPublicKeys.fromPrivKeys(acceptFundingPrivKey, acceptPayoutPrivKey, RegTest),
       remotePayoutSerialId = acceptPayoutSerialId,
       input = offerInput,
       remoteInput = acceptInput,
@@ -288,9 +255,7 @@ trait DLCTest {
       fundingPrivKey = acceptFundingPrivKey,
       payoutPrivKey = acceptPayoutPrivKey,
       payoutSerialId = acceptPayoutSerialId,
-      remotePubKeys = DLCPublicKeys.fromPrivKeys(offerFundingPrivKey,
-                                                 offerPayoutPrivKey,
-                                                 RegTest),
+      remotePubKeys = DLCPublicKeys.fromPrivKeys(offerFundingPrivKey, offerPayoutPrivKey, RegTest),
       remotePayoutSerialId = offerPayoutSerialId,
       input = acceptInput,
       remoteInput = offerInput,
@@ -318,24 +283,19 @@ trait DLCTest {
       offerPayoutPrivKey: ECPrivateKey = this.offerPayoutPrivKey,
       acceptFundingPrivKey: ECPrivateKey = this.acceptFundingPrivKey,
       acceptPayoutPrivKey: ECPrivateKey = this.acceptPayoutPrivKey,
-      offerFundingUtxos: Vector[SpendingInfoWithSerialId] =
-        this.offerFundingUtxos,
+      offerFundingUtxos: Vector[SpendingInfoWithSerialId] = this.offerFundingUtxos,
       offerFundingInputs: Vector[DLCFundingInput] = this.offerFundingInputs,
-      acceptFundingUtxos: Vector[SpendingInfoWithSerialId] =
-        this.acceptFundingUtxos,
+      acceptFundingUtxos: Vector[SpendingInfoWithSerialId] = this.acceptFundingUtxos,
       acceptFundingInputs: Vector[DLCFundingInput] = this.acceptFundingInputs,
       feeRate: SatoshisPerVirtualByte = this.feeRate,
-      timeouts: DLCTimeouts = this.timeouts)(implicit ec: ExecutionContext): (
-      TestDLCClient,
-      TestDLCClient,
-      Vector[EnumOutcome]) = {
+      timeouts: DLCTimeouts = this.timeouts)(implicit
+      ec: ExecutionContext): (TestDLCClient, TestDLCClient, Vector[EnumOutcome]) = {
     val outcomeStrs = DLCTestUtil.genOutcomes(numOutcomes)
     val outcomes = outcomeStrs.map(EnumOutcome.apply)
 
     val announcements =
-      oraclePrivKeys.take(numOracles).zip(preCommittedRs.take(numOracles)).map {
-        case (privKey, rVal) =>
-          OracleAnnouncementV0TLV.dummyForEventsAndKeys(privKey, rVal, outcomes)
+      oraclePrivKeys.take(numOracles).zip(preCommittedRs.take(numOracles)).map { case (privKey, rVal) =>
+        OracleAnnouncementV0TLV.dummyForEventsAndKeys(privKey, rVal, outcomes)
       }
 
     val orderedAnnouncements = OrderedAnnouncements(announcements)
@@ -379,21 +339,15 @@ trait DLCTest {
       offerPayoutPrivKey: ECPrivateKey = this.offerPayoutPrivKey,
       acceptFundingPrivKey: ECPrivateKey = this.acceptFundingPrivKey,
       acceptPayoutPrivKey: ECPrivateKey = this.acceptPayoutPrivKey,
-      offerFundingUtxos: Vector[SpendingInfoWithSerialId] =
-        this.offerFundingUtxos,
+      offerFundingUtxos: Vector[SpendingInfoWithSerialId] = this.offerFundingUtxos,
       offerFundingInputs: Vector[DLCFundingInput] = this.offerFundingInputs,
-      acceptFundingUtxos: Vector[SpendingInfoWithSerialId] =
-        this.acceptFundingUtxos,
+      acceptFundingUtxos: Vector[SpendingInfoWithSerialId] = this.acceptFundingUtxos,
       acceptFundingInputs: Vector[DLCFundingInput] = this.acceptFundingInputs,
       feeRate: SatoshisPerVirtualByte = this.feeRate,
-      timeouts: DLCTimeouts = this.timeouts)(implicit ec: ExecutionContext): (
-      TestDLCClient,
-      TestDLCClient,
-      Vector[UnsignedNumericOutcome]) = {
+      timeouts: DLCTimeouts = this.timeouts)(implicit
+      ec: ExecutionContext): (TestDLCClient, TestDLCClient, Vector[UnsignedNumericOutcome]) = {
     val (offerDesc, acceptDesc) =
-      DLCTestUtil.genMultiDigitContractInfo(numDigits,
-                                            totalInput,
-                                            numRounds = 4)
+      DLCTestUtil.genMultiDigitContractInfo(numDigits, totalInput, numRounds = 4)
 
     val announcements =
       oraclePrivKeys
@@ -452,17 +406,13 @@ trait DLCTest {
       offerPayoutPrivKey: ECPrivateKey = this.offerPayoutPrivKey,
       acceptFundingPrivKey: ECPrivateKey = this.acceptFundingPrivKey,
       acceptPayoutPrivKey: ECPrivateKey = this.acceptPayoutPrivKey,
-      offerFundingUtxos: Vector[SpendingInfoWithSerialId] =
-        this.offerFundingUtxos,
+      offerFundingUtxos: Vector[SpendingInfoWithSerialId] = this.offerFundingUtxos,
       offerFundingInputs: Vector[DLCFundingInput] = this.offerFundingInputs,
-      acceptFundingUtxos: Vector[SpendingInfoWithSerialId] =
-        this.acceptFundingUtxos,
+      acceptFundingUtxos: Vector[SpendingInfoWithSerialId] = this.acceptFundingUtxos,
       acceptFundingInputs: Vector[DLCFundingInput] = this.acceptFundingInputs,
       feeRate: SatoshisPerVirtualByte = this.feeRate,
-      timeouts: DLCTimeouts = this.timeouts)(implicit ec: ExecutionContext): (
-      TestDLCClient,
-      TestDLCClient,
-      Vector[DLCOutcomeType]) = {
+      timeouts: DLCTimeouts = this.timeouts)(implicit
+      ec: ExecutionContext): (TestDLCClient, TestDLCClient, Vector[DLCOutcomeType]) = {
     if (isNumeric) {
       constructNumericDLCClients(
         numOutcomesOrDigits,
@@ -507,8 +457,7 @@ trait DLCTest {
       dlcOffer: TestDLCClient,
       dlcAccept: TestDLCClient,
       fundingTxF: Future[SetupDLC] => Future[Transaction],
-      publishTransaction: Transaction => Future[_])(implicit
-      ec: ExecutionContext): Future[(SetupDLC, SetupDLC)] = {
+      publishTransaction: Transaction => Future[_])(implicit ec: ExecutionContext): Future[(SetupDLC, SetupDLC)] = {
     val offerSigReceiveP =
       Promise[CETSignatures]()
     val sendAcceptSigs = { sigs: CETSignatures =>
@@ -518,20 +467,16 @@ trait DLCTest {
 
     val acceptSigReceiveP =
       Promise[(CETSignatures, FundingSignatures)]()
-    val sendOfferSigs = {
-      (cetSigs: CETSignatures, fundingSigs: FundingSignatures) =>
-        val _ = acceptSigReceiveP.success((cetSigs, fundingSigs))
-        FutureUtil.unit
+    val sendOfferSigs = { (cetSigs: CETSignatures, fundingSigs: FundingSignatures) =>
+      val _ = acceptSigReceiveP.success((cetSigs, fundingSigs))
+      FutureUtil.unit
     }
 
-    val acceptSetupF = dlcAccept.setupDLCAccept(sendSigs = sendAcceptSigs,
-                                                getSigs =
-                                                  acceptSigReceiveP.future)
+    val acceptSetupF = dlcAccept.setupDLCAccept(sendSigs = sendAcceptSigs, getSigs = acceptSigReceiveP.future)
 
     val offerSetupF = dlcOffer.setupDLCOffer(getSigs = offerSigReceiveP.future,
                                              sendSigs = sendOfferSigs,
-                                             getFundingTx =
-                                               fundingTxF(acceptSetupF))
+                                             getFundingTx = fundingTxF(acceptSetupF))
 
     for {
       acceptSetup <- acceptSetupF
@@ -578,18 +523,14 @@ trait DLCTest {
     }
   }
 
-  def genEnumOracleSignatures(
-      outcome: EnumOracleOutcome): Vector[EnumOracleSignature] = {
+  def genEnumOracleSignatures(outcome: EnumOracleOutcome): Vector[EnumOracleSignature] = {
     outcome.oracles.map { oracle =>
       val index = oraclePubKeys.zipWithIndex
         .find(_._1 == oracle.publicKey)
         .get
         ._2
 
-      genEnumOracleSignature(oracle,
-                             outcome.outcome.outcome,
-                             oraclePrivKeys(index),
-                             preCommittedKs(index))
+      genEnumOracleSignature(oracle, outcome.outcome.outcome, oraclePrivKeys(index), preCommittedKs(index))
     }
   }
 
@@ -608,8 +549,7 @@ trait DLCTest {
   def computeNumericOracleSignatures(
       digits: Vector[Int],
       privKey: ECPrivateKey = oraclePrivKey,
-      kVals: Vector[ECPrivateKey] = preCommittedKs): Vector[
-    SchnorrDigitalSignature] = {
+      kVals: Vector[ECPrivateKey] = preCommittedKs): Vector[SchnorrDigitalSignature] = {
     digits.zip(kVals.take(digits.length)).map { case (digit, kValue) =>
       privKey.schnorrSignWithNonce(CryptoUtil
                                      .sha256DLCAttestation(digit.toString)
@@ -652,8 +592,7 @@ trait DLCTest {
       case ContractOraclePair.NumericPair(_, oracleInfo) =>
         lazy val possibleOutcomesOpt = paramsOpt.map { _ =>
           contractInfo.allOutcomes
-            .map(
-              _.asInstanceOf[NumericOracleOutcome].oraclesAndOutcomes.map(_._2))
+            .map(_.asInstanceOf[NumericOracleOutcome].oraclesAndOutcomes.map(_._2))
             .filter(_.head.digits == digits)
             .map(_.apply(1).digits)
             .sorted(NumberUtil.lexicographicalOrdering[Int])
@@ -696,15 +635,11 @@ trait DLCTest {
       case ContractOraclePair.NumericPair(descriptor, _) =>
         val digits =
           computeNumericOutcome(numDigits, descriptor, outcomes, outcomeIndex)
-        genNumericOracleOutcome(chosenOracles,
-                                dlcOffer.offer.contractInfo,
-                                digits,
-                                paramsOpt)
+        genNumericOracleOutcome(chosenOracles, dlcOffer.offer.contractInfo, digits, paramsOpt)
     }
   }
 
-  def genNumericOracleSignatures(
-      outcome: NumericOracleOutcome): Vector[NumericOracleSignatures] = {
+  def genNumericOracleSignatures(outcome: NumericOracleOutcome): Vector[NumericOracleSignatures] = {
     outcome.oraclesAndOutcomes.map { case (singleOracleInfo, digitsToSign) =>
       val index = oraclePubKeys.zipWithIndex
         .find(_._1 == singleOracleInfo.publicKey)
@@ -712,9 +647,7 @@ trait DLCTest {
         ._2
 
       val sigs =
-        computeNumericOracleSignatures(digitsToSign.digits,
-                                       oraclePrivKeys(index),
-                                       preCommittedKsPerOracle(index))
+        computeNumericOracleSignatures(digitsToSign.digits, oraclePrivKeys(index), preCommittedKsPerOracle(index))
 
       NumericOracleSignatures(singleOracleInfo, sigs)
     }
@@ -727,12 +660,7 @@ trait DLCTest {
       outcomes: Vector[DLCOutcomeType],
       outcomeIndex: Long,
       paramsOpt: Option[OracleParamsV0TLV]): Vector[NumericOracleSignatures] = {
-    val outcome = genNumericOracleOutcome(numDigits,
-                                          chosenOracles,
-                                          dlcOffer,
-                                          outcomes,
-                                          outcomeIndex,
-                                          paramsOpt)
+    val outcome = genNumericOracleOutcome(numDigits, chosenOracles, dlcOffer, outcomes, outcomeIndex, paramsOpt)
     genNumericOracleSignatures(outcome)
   }
 
@@ -753,12 +681,7 @@ trait DLCTest {
     if (!isNumeric) {
       genEnumOracleOutcome(chosenOracles, dlcOffer, outcomes, outcomeIndex)
     } else {
-      genNumericOracleOutcome(numOutcomesOrDigits,
-                              chosenOracles,
-                              dlcOffer,
-                              outcomes,
-                              outcomeIndex,
-                              paramsOpt)
+      genNumericOracleOutcome(numOutcomesOrDigits, chosenOracles, dlcOffer, outcomes, outcomeIndex, paramsOpt)
     }
   }
 
@@ -768,15 +691,8 @@ trait DLCTest {
       dlcOffer: TestDLCClient,
       outcomes: Vector[DLCOutcomeType],
       outcomeIndex: Long,
-      paramsOpt: Option[OracleParamsV0TLV]): (
-      OracleOutcome,
-      Vector[OracleSignatures]) = {
-    val outcome = genOracleOutcome(numOutcomesOrDigits,
-                                   isNumeric,
-                                   dlcOffer,
-                                   outcomes,
-                                   outcomeIndex,
-                                   paramsOpt)
+      paramsOpt: Option[OracleParamsV0TLV]): (OracleOutcome, Vector[OracleSignatures]) = {
+    val outcome = genOracleOutcome(numOutcomesOrDigits, isNumeric, dlcOffer, outcomes, outcomeIndex, paramsOpt)
     val sigs = genOracleSignatures(outcome)
 
     (outcome, sigs)
@@ -796,24 +712,18 @@ trait DLCTest {
       outcomes: Vector[DLCOutcomeType],
       outcomeIndex: Long,
       paramsOpt: Option[OracleParamsV0TLV]): Vector[OracleSignatures] = {
-    val (_, sigs) = genOracleOutcomeAndSignatures(numOutcomesOrDigits,
-                                                  isNumeric,
-                                                  dlcOffer,
-                                                  outcomes,
-                                                  outcomeIndex,
-                                                  paramsOpt)
+    val (_, sigs) =
+      genOracleOutcomeAndSignatures(numOutcomesOrDigits, isNumeric, dlcOffer, outcomes, outcomeIndex, paramsOpt)
     sigs
   }
 
   /** Synchronously runs the test function on each paramsToTest in turn. */
-  def runTestsForParam[T](paramsToTest: Vector[T])(
-      test: T => Future[Assertion])(implicit
+  def runTestsForParam[T](paramsToTest: Vector[T])(test: T => Future[Assertion])(implicit
       ec: ExecutionContext): Future[Assertion] = {
-    paramsToTest.foldLeft(Future.successful(Assertions.succeed)) {
-      case (fut, param) =>
-        fut.flatMap { _ =>
-          test(param)
-        }
+    paramsToTest.foldLeft(Future.successful(Assertions.succeed)) { case (fut, param) =>
+      fut.flatMap { _ =>
+        test(param)
+      }
     }
   }
 }

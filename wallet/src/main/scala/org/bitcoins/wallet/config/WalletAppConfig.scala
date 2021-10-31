@@ -31,9 +31,8 @@ import scala.concurrent.{Await, ExecutionContext, Future}
   * @param directory The data directory of the wallet
   * @param conf Optional sequence of configuration overrides
   */
-case class WalletAppConfig(
-    private val directory: Path,
-    private val conf: Config*)(implicit override val ec: ExecutionContext)
+case class WalletAppConfig(private val directory: Path, private val conf: Config*)(implicit
+    override val ec: ExecutionContext)
     extends DbAppConfig
     with WalletDbManagement
     with JdbcProfileComponent[WalletAppConfig]
@@ -45,8 +44,7 @@ case class WalletAppConfig(
 
   override protected[bitcoins] type ConfigType = WalletAppConfig
 
-  override protected[bitcoins] def newConfigOfType(
-      configs: Seq[Config]): WalletAppConfig =
+  override protected[bitcoins] def newConfigOfType(configs: Seq[Config]): WalletAppConfig =
     WalletAppConfig(directory, configs: _*)
 
   protected[bitcoins] def baseDatadir: Path = directory
@@ -59,8 +57,7 @@ case class WalletAppConfig(
   private[wallet] lazy val scheduler: ScheduledExecutorService = {
     Executors.newScheduledThreadPool(
       1,
-      AsyncUtil.getNewThreadFactory(
-        s"bitcoin-s-wallet-scheduler-${System.currentTimeMillis()}"))
+      AsyncUtil.getNewThreadFactory(s"bitcoin-s-wallet-scheduler-${System.currentTimeMillis()}"))
   }
 
   private lazy val rescanThreadFactory: ThreadFactory =
@@ -68,8 +65,7 @@ case class WalletAppConfig(
 
   /** Threads for rescanning the wallet */
   private[wallet] lazy val rescanThreadPool: ExecutorService =
-    Executors.newFixedThreadPool(Runtime.getRuntime.availableProcessors() * 2,
-                                 rescanThreadFactory)
+    Executors.newFixedThreadPool(Runtime.getRuntime.availableProcessors() * 2, rescanThreadFactory)
 
   private val callbacks = new Mutable(WalletCallbacks.empty)
 
@@ -105,8 +101,7 @@ case class WalletAppConfig(
 
   lazy val defaultAccount: HDAccount = {
     val purpose = defaultAccountKind
-    HDAccount(coin = HDCoin(purpose, HDCoinType.fromNetwork(network)),
-              index = 0)
+    HDAccount(coin = HDCoin(purpose, HDCoinType.fromNetwork(network)), index = 0)
   }
 
   lazy val bloomFalsePositiveRate: Double =
@@ -120,15 +115,13 @@ case class WalletAppConfig(
 
   lazy val requiredConfirmations: Int = {
     val confs = config.getInt("bitcoin-s.wallet.requiredConfirmations")
-    require(confs >= 1,
-            s"requiredConfirmations cannot be less than 1, got: $confs")
+    require(confs >= 1, s"requiredConfirmations cannot be less than 1, got: $confs")
     confs
   }
 
   lazy val longTermFeeRate: SatoshisPerVirtualByte = {
     val feeRate = config.getInt("bitcoin-s.wallet.longTermFeeRate")
-    require(feeRate >= 0,
-            s"longTermFeeRate cannot be less than 0, got: $feeRate")
+    require(feeRate >= 0, s"longTermFeeRate cannot be less than 0, got: $feeRate")
     SatoshisPerVirtualByte.fromLong(feeRate)
   }
 
@@ -192,8 +185,7 @@ case class WalletAppConfig(
       numMigrations = migrate()
       isExists <- seedExists()
       _ <- {
-        logger.info(
-          s"Starting wallet with xpub=${masterXpub} walletName=${walletNameOpt}")
+        logger.info(s"Starting wallet with xpub=${masterXpub} walletName=${walletNameOpt}")
         if (!isExists) {
           masterXPubDAO
             .create(masterXpub)
@@ -261,9 +253,7 @@ case class WalletAppConfig(
     *  2. wallet exists
     *  3. The account exists
     */
-  def hasWallet()(implicit
-      walletConf: WalletAppConfig,
-      ec: ExecutionContext): Future[Boolean] = {
+  def hasWallet()(implicit walletConf: WalletAppConfig, ec: ExecutionContext): Future[Boolean] = {
     if (kmConf.seedExists()) {
       val hdCoin = walletConf.defaultAccount.coin
       val walletDB = walletConf.dbPath resolve walletConf.dbName
@@ -281,17 +271,12 @@ case class WalletAppConfig(
   }
 
   /** Creates a wallet based on this [[WalletAppConfig]] */
-  def createHDWallet(
-      nodeApi: NodeApi,
-      chainQueryApi: ChainQueryApi,
-      feeRateApi: FeeRateApi)(implicit ec: ExecutionContext): Future[Wallet] = {
-    WalletAppConfig.createHDWallet(nodeApi = nodeApi,
-                                   chainQueryApi = chainQueryApi,
-                                   feeRateApi = feeRateApi)(this, ec)
+  def createHDWallet(nodeApi: NodeApi, chainQueryApi: ChainQueryApi, feeRateApi: FeeRateApi)(implicit
+      ec: ExecutionContext): Future[Wallet] = {
+    WalletAppConfig.createHDWallet(nodeApi = nodeApi, chainQueryApi = chainQueryApi, feeRateApi = feeRateApi)(this, ec)
   }
 
-  private[this] var rebroadcastTransactionsCancelOpt: Option[
-    ScheduledFuture[_]] = None
+  private[this] var rebroadcastTransactionsCancelOpt: Option[ScheduledFuture[_]] = None
 
   /** Starts the wallet's rebroadcast transaction scheduler */
   def startRebroadcastTxsScheduler(wallet: Wallet): Unit = synchronized {
@@ -305,10 +290,7 @@ case class WalletAppConfig(
         val interval = rebroadcastFrequency.toSeconds
         val initDelay = interval
         val future =
-          scheduler.scheduleAtFixedRate(RebroadcastTransactionsRunnable(wallet),
-                                        initDelay,
-                                        interval,
-                                        TimeUnit.SECONDS)
+          scheduler.scheduleAtFixedRate(RebroadcastTransactionsRunnable(wallet), initDelay, interval, TimeUnit.SECONDS)
         rebroadcastTransactionsCancelOpt = Some(future)
         ()
     }
@@ -330,24 +312,18 @@ case class WalletAppConfig(
   }
 }
 
-object WalletAppConfig
-    extends AppConfigFactory[WalletAppConfig]
-    with WalletLogger {
+object WalletAppConfig extends AppConfigFactory[WalletAppConfig] with WalletLogger {
 
   val moduleName: String = "wallet"
 
   /** Constructs a wallet configuration from the default Bitcoin-S
     * data directory and given list of configuration overrides.
     */
-  override def fromDatadir(datadir: Path, confs: Vector[Config])(implicit
-      ec: ExecutionContext): WalletAppConfig =
+  override def fromDatadir(datadir: Path, confs: Vector[Config])(implicit ec: ExecutionContext): WalletAppConfig =
     WalletAppConfig(datadir, confs: _*)
 
   /** Creates a wallet based on the given [[WalletAppConfig]] */
-  def createHDWallet(
-      nodeApi: NodeApi,
-      chainQueryApi: ChainQueryApi,
-      feeRateApi: FeeRateApi)(implicit
+  def createHDWallet(nodeApi: NodeApi, chainQueryApi: ChainQueryApi, feeRateApi: FeeRateApi)(implicit
       walletConf: WalletAppConfig,
       ec: ExecutionContext): Future[Wallet] = {
     walletConf.hasWallet().flatMap { walletExists =>
@@ -363,15 +339,12 @@ object WalletAppConfig
         val unInitializedWallet =
           Wallet(nodeApi, chainQueryApi, feeRateApi)
 
-        Wallet.initialize(wallet = unInitializedWallet,
-                          bip39PasswordOpt = bip39PasswordOpt)
+        Wallet.initialize(wallet = unInitializedWallet, bip39PasswordOpt = bip39PasswordOpt)
       }
     }
   }
 
-  case class RebroadcastTransactionsRunnable(wallet: Wallet)(implicit
-      ec: ExecutionContext)
-      extends Runnable {
+  case class RebroadcastTransactionsRunnable(wallet: Wallet)(implicit ec: ExecutionContext) extends Runnable {
 
     override def run(): Unit = {
       val f = for {

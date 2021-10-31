@@ -36,8 +36,7 @@ sealed trait EclairInstanceRemote extends EclairInstance
   * file to a
   * [[org.bitcoins.eclair.rpc.config.EclairInstance EclairInstance]]
   */
-object EclairInstanceLocal
-    extends InstanceFactoryLocal[EclairInstanceLocal, ActorSystem] {
+object EclairInstanceLocal extends InstanceFactoryLocal[EclairInstanceLocal, ActorSystem] {
 
   private case class EclairInstanceLocalImpl(
       network: NetworkParameters,
@@ -112,8 +111,7 @@ object EclairInstanceLocal
     fromConfig(config, file.getParentFile, logbackXml, proxyParams)
   }
 
-  override def fromDataDir(dir: File = DEFAULT_DATADIR.toFile)(implicit
-      system: ActorSystem): EclairInstanceLocal = {
+  override def fromDataDir(dir: File = DEFAULT_DATADIR.toFile)(implicit system: ActorSystem): EclairInstanceLocal = {
     require(dir.exists, s"${dir.getPath} does not exist!")
     require(dir.isDirectory, s"${dir.getPath} is not a directory!")
 
@@ -148,25 +146,20 @@ object EclairInstanceLocal
     val serverBindingIp =
       ConfigUtil.getStringOrElse(config, "eclair.server.binding-ip", "0.0.0.0")
 
-    val serverPort = ConfigUtil.getIntOrElse(config,
-                                             "eclair.server.port",
-                                             LnPolicy.DEFAULT_LN_P2P_PORT)
+    val serverPort = ConfigUtil.getIntOrElse(config, "eclair.server.port", LnPolicy.DEFAULT_LN_P2P_PORT)
 
     //  default conf: https://github.com/ACINQ/eclair/blob/master/eclair-core/src/main/resources/reference.conf
     val rpcHost =
       ConfigUtil.getStringOrElse(config, "eclair.api.binding-ip", "127.0.0.1")
 
-    val rpcPort = ConfigUtil.getIntOrElse(config,
-                                          "eclair.api.port",
-                                          LnPolicy.DEFAULT_ECLAIR_API_PORT)
+    val rpcPort = ConfigUtil.getIntOrElse(config, "eclair.api.port", LnPolicy.DEFAULT_ECLAIR_API_PORT)
 
     val np: NetworkParameters = chain match {
       case "regtest" => RegTest
       case "testnet" => TestNet3
       case "mainnet" => MainNet
       case network: String =>
-        throw new IllegalArgumentException(
-          s"Unknown network $network in eclair.conf")
+        throw new IllegalArgumentException(s"Unknown network $network in eclair.conf")
     }
 
     val uri: URI = new URI(s"http://$serverBindingIp:$serverPort")

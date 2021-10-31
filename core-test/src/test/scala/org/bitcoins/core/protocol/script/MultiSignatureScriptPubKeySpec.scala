@@ -5,14 +5,11 @@ import org.scalacheck.{Prop, Properties}
 
 /** Created by chris on 6/22/16.
   */
-class MultiSignatureScriptPubKeySpec
-    extends Properties("MultiSignatureScriptPubKeySpec") {
+class MultiSignatureScriptPubKeySpec extends Properties("MultiSignatureScriptPubKeySpec") {
 
-  property("Serialization symmetry") =
-    Prop.forAll(ScriptGenerators.multiSigScriptPubKey) {
-      case (multiSigScriptPubKey, _) =>
-        MultiSignatureScriptPubKey(
-          multiSigScriptPubKey.hex) == multiSigScriptPubKey
+  property("Serialization symmetry") = Prop.forAll(ScriptGenerators.multiSigScriptPubKey) {
+    case (multiSigScriptPubKey, _) =>
+      MultiSignatureScriptPubKey(multiSigScriptPubKey.hex) == multiSigScriptPubKey
 
-    }
+  }
 }

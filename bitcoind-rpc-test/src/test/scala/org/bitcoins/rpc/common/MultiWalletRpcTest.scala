@@ -14,10 +14,7 @@ import org.bitcoins.rpc.client.common._
 import org.bitcoins.rpc.client.v19.BitcoindV19RpcClient
 import org.bitcoins.rpc.config.{BitcoindInstanceLocal, BitcoindInstanceRemote}
 import org.bitcoins.rpc.util.{NodePair, RpcUtil}
-import org.bitcoins.testkit.rpc.{
-  BitcoindFixturesCachedPairV19,
-  BitcoindRpcTestUtil
-}
+import org.bitcoins.testkit.rpc.{BitcoindFixturesCachedPairV19, BitcoindRpcTestUtil}
 import org.bitcoins.testkit.util.AkkaUtil
 import org.scalatest.{FutureOutcome, Outcome}
 
@@ -47,10 +44,8 @@ class MultiWalletRpcTest extends BitcoindFixturesCachedPairV19 {
   }
 
   /** We need to test bitcoin core's wallet specific features, so we need to set that up */
-  private def setupWalletClient(pair: NodePair[BitcoindV19RpcClient]): Future[
-    NodePair[BitcoindV19RpcClient]] = {
-    val NodePair(client: BitcoindV19RpcClient,
-                 walletClient: BitcoindV19RpcClient) = pair
+  private def setupWalletClient(pair: NodePair[BitcoindV19RpcClient]): Future[NodePair[BitcoindV19RpcClient]] = {
+    val NodePair(client: BitcoindV19RpcClient, walletClient: BitcoindV19RpcClient) = pair
     for {
       _ <- walletClient.createWallet(walletName)
       _ <- walletClient.encryptWallet(password, Some(walletName))
@@ -73,9 +68,7 @@ class MultiWalletRpcTest extends BitcoindFixturesCachedPairV19 {
       wallets2 <- client.listWallets
       _ = require(wallets.size == 2)
       _ = require(wallets2.size == 2)
-    } yield NodePair[BitcoindV19RpcClient](
-      client,
-      started.asInstanceOf[BitcoindV19RpcClient])
+    } yield NodePair[BitcoindV19RpcClient](client, started.asInstanceOf[BitcoindV19RpcClient])
   }
 
   behavior of "WalletRpc"
@@ -164,14 +157,13 @@ class MultiWalletRpcTest extends BitcoindFixturesCachedPairV19 {
     Future.sequence(addrFuts).map(_ => succeed)
   }
 
-  it should "be able to get the amount recieved by some address" in {
-    nodePair =>
-      val client = nodePair.node2
-      for {
-        address <- client.getNewAddress(Some(walletName))
-        amount <-
-          client.getReceivedByAddress(address, walletNameOpt = Some(walletName))
-      } yield assert(amount == Bitcoins(0))
+  it should "be able to get the amount recieved by some address" in { nodePair =>
+    val client = nodePair.node2
+    for {
+      address <- client.getNewAddress(Some(walletName))
+      amount <-
+        client.getReceivedByAddress(address, walletNameOpt = Some(walletName))
+    } yield assert(amount == Bitcoins(0))
   }
 
   it should "be able to get the unconfirmed balance" in { nodePair =>
@@ -233,9 +225,7 @@ class MultiWalletRpcTest extends BitcoindFixturesCachedPairV19 {
     for {
       address <- otherClient.getNewAddress(Some(walletName))
       _ <- client.walletPassphrase(password, 1000, Some(walletName))
-      txid <- client.sendToAddress(address,
-                                   Bitcoins(1),
-                                   walletNameOpt = Some(walletName))
+      txid <- client.sendToAddress(address, Bitcoins(1), walletNameOpt = Some(walletName))
       transaction <-
         client.getTransaction(txid, walletNameOpt = Some(walletName))
     } yield {
@@ -253,8 +243,7 @@ class MultiWalletRpcTest extends BitcoindFixturesCachedPairV19 {
       _ <- client.walletPassphrase(password, 1000, Some(walletName))
       txid <-
         client
-          .sendMany(Map(address1 -> Bitcoins(1), address2 -> Bitcoins(2)),
-                    walletNameOpt = Some(walletName))
+          .sendMany(Map(address1 -> Bitcoins(1), address2 -> Bitcoins(2)), walletNameOpt = Some(walletName))
       transaction <-
         client.getTransaction(txid, walletNameOpt = Some(walletName))
     } yield {
@@ -300,25 +289,17 @@ class MultiWalletRpcTest extends BitcoindFixturesCachedPairV19 {
         local
     }
     for {
-      _ <- client.importPrivKey(ecPrivateKey.toPrivateKeyBytes(),
-                                rescan = false,
-                                walletNameOpt = Some(walletName))
+      _ <- client.importPrivKey(ecPrivateKey.toPrivateKeyBytes(), rescan = false, walletNameOpt = Some(walletName))
       key <- client.dumpPrivKey(address, Some(walletName))
       result <-
         client
-          .dumpWallet(
-            localInstance.datadir.getAbsolutePath + "/wallet_dump.dat",
-            Some(walletName))
+          .dumpWallet(localInstance.datadir.getAbsolutePath + "/wallet_dump.dat", Some(walletName))
     } yield {
       assert(key.toPrivateKey == ecPrivateKey)
       val reader = new Scanner(result.filename)
       var found = false
       while (reader.hasNext) {
-        if (
-          reader.next == ECPrivateKeyUtil.toWIF(
-            ecPrivateKey.toPrivateKeyBytes(),
-            networkParam)
-        ) {
+        if (reader.next == ECPrivateKeyUtil.toWIF(ecPrivateKey.toPrivateKeyBytes(), networkParam)) {
           found = true
         }
       }
@@ -334,39 +315,33 @@ class MultiWalletRpcTest extends BitcoindFixturesCachedPairV19 {
     } yield succeed
   }
 
-  it should "be able to import multiple addresses with importMulti" in {
-    nodePair =>
-      val client = nodePair.node2
-      val privKey = ECPrivateKey.freshPrivateKey
-      val address1 = P2PKHAddress(privKey.publicKey, networkParam)
+  it should "be able to import multiple addresses with importMulti" in { nodePair =>
+    val client = nodePair.node2
+    val privKey = ECPrivateKey.freshPrivateKey
+    val address1 = P2PKHAddress(privKey.publicKey, networkParam)
 
-      val privKey1 = ECPrivateKey.freshPrivateKey
-      val privKey2 = ECPrivateKey.freshPrivateKey
+    val privKey1 = ECPrivateKey.freshPrivateKey
+    val privKey2 = ECPrivateKey.freshPrivateKey
 
-      for {
-        firstResult <-
-          client
-            .createMultiSig(2,
-                            Vector(privKey1.publicKey, privKey2.publicKey),
-                            walletNameOpt = Some(walletName))
-        address2 = firstResult.address
+    for {
+      firstResult <-
+        client
+          .createMultiSig(2, Vector(privKey1.publicKey, privKey2.publicKey), walletNameOpt = Some(walletName))
+      address2 = firstResult.address
 
-        secondResult <-
-          client
-            .importMulti(
-              Vector(
-                RpcOpts.ImportMultiRequest(RpcOpts.ImportMultiAddress(address1),
-                                           UInt32(0)),
-                RpcOpts.ImportMultiRequest(RpcOpts.ImportMultiAddress(address2),
-                                           UInt32(0))),
-              rescan = false,
-              walletNameOpt = Some(walletName)
-            )
-      } yield {
-        assert(secondResult.length == 2)
-        assert(secondResult(0).success)
-        assert(secondResult(1).success)
-      }
+      secondResult <-
+        client
+          .importMulti(
+            Vector(RpcOpts.ImportMultiRequest(RpcOpts.ImportMultiAddress(address1), UInt32(0)),
+                   RpcOpts.ImportMultiRequest(RpcOpts.ImportMultiAddress(address2), UInt32(0))),
+            rescan = false,
+            walletNameOpt = Some(walletName)
+          )
+    } yield {
+      assert(secondResult.length == 2)
+      assert(secondResult(0).success)
+      assert(secondResult(1).success)
+    }
   }
 
   it should "be able to import a wallet" in { nodePair =>
@@ -423,9 +398,7 @@ class MultiWalletRpcTest extends BitcoindFixturesCachedPairV19 {
       _ <- client.sendRawTransaction(singedTx)
     } yield {
       assert(transaction.inputs.length == 1)
-      assert(
-        transaction.outputs.contains(
-          TransactionOutput(Bitcoins(1), address.scriptPubKey)))
+      assert(transaction.outputs.contains(TransactionOutput(Bitcoins(1), address.scriptPubKey)))
     }
   }
 

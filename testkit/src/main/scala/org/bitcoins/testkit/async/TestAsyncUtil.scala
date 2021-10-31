@@ -13,14 +13,9 @@ abstract class TestAsyncUtil extends AsyncUtil with Serializable {
       duration: FiniteDuration,
       counter: Int,
       maxTries: Int,
-      stackTrace: Array[StackTraceElement])(implicit
-      ec: ExecutionContext): Future[Unit] = {
+      stackTrace: Array[StackTraceElement])(implicit ec: ExecutionContext): Future[Unit] = {
     val retryF = super
-      .retryUntilSatisfiedWithCounter(conditionF,
-                                      duration,
-                                      counter,
-                                      maxTries,
-                                      stackTrace)
+      .retryUntilSatisfiedWithCounter(conditionF, duration, counter, maxTries, stackTrace)
 
     TestAsyncUtil.transformRetryToTestFailure(retryF)
   }
@@ -34,8 +29,7 @@ object TestAsyncUtil extends TestAsyncUtil {
     * Additionally, we want to transform RpcRetryExceptions to TestFailedExceptions which
     * conveniently mention the line that called the TestAsyncUtil method.
     */
-  def transformRetryToTestFailure[T](fut: Future[T])(implicit
-      ec: ExecutionContext): Future[T] = {
+  def transformRetryToTestFailure[T](fut: Future[T])(implicit ec: ExecutionContext): Future[T] = {
     def transformRetry(err: Throwable): Throwable = {
       if (err.isInstanceOf[RpcRetryException]) {
         val retryErr = err.asInstanceOf[RpcRetryException]

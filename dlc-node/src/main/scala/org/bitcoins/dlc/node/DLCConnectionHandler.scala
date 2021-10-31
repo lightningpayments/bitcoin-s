@@ -118,19 +118,12 @@ object DLCConnectionHandler extends Logging {
       connection: ActorRef,
       handlerP: Option[Promise[ActorRef]],
       dataHandlerFactory: DLCDataHandler.Factory): Props = {
-    Props(
-      new DLCConnectionHandler(dlcWalletApi,
-                               connection,
-                               handlerP,
-                               dataHandlerFactory))
+    Props(new DLCConnectionHandler(dlcWalletApi, connection, handlerP, dataHandlerFactory))
   }
 
-  private[bitcoins] def parseIndividualMessages(
-      bytes: ByteVector): (Vector[LnMessage[TLV]], ByteVector) = {
+  private[bitcoins] def parseIndividualMessages(bytes: ByteVector): (Vector[LnMessage[TLV]], ByteVector) = {
     @tailrec
-    def loop(
-        remainingBytes: ByteVector,
-        accum: Vector[LnMessage[TLV]]): (Vector[LnMessage[TLV]], ByteVector) = {
+    def loop(remainingBytes: ByteVector, accum: Vector[LnMessage[TLV]]): (Vector[LnMessage[TLV]], ByteVector) = {
       if (remainingBytes.length <= 0) {
         (accum, remainingBytes)
       } else {

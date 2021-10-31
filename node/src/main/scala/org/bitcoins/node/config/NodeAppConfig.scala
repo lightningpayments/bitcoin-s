@@ -4,11 +4,7 @@ import akka.actor.ActorSystem
 import com.typesafe.config.Config
 import org.bitcoins.chain.blockchain.ChainHandlerCached
 import org.bitcoins.chain.config.ChainAppConfig
-import org.bitcoins.chain.models.{
-  BlockHeaderDAO,
-  CompactFilterDAO,
-  CompactFilterHeaderDAO
-}
+import org.bitcoins.chain.models.{BlockHeaderDAO, CompactFilterDAO, CompactFilterHeaderDAO}
 import org.bitcoins.core.api.node.NodeType
 import org.bitcoins.core.util.Mutable
 import org.bitcoins.db.{DbAppConfig, JdbcProfileComponent}
@@ -28,9 +24,7 @@ import scala.concurrent.{ExecutionContext, Future}
   * @param directory The data directory of the node
   * @param confs Optional sequence of configuration overrides
   */
-case class NodeAppConfig(
-    private val directory: Path,
-    private val confs: Config*)(implicit val system: ActorSystem)
+case class NodeAppConfig(private val directory: Path, private val confs: Config*)(implicit val system: ActorSystem)
     extends DbAppConfig
     with NodeDbManagement
     with JdbcProfileComponent[NodeAppConfig] {
@@ -38,8 +32,7 @@ case class NodeAppConfig(
   override protected[bitcoins] def moduleName: String = NodeAppConfig.moduleName
   override protected[bitcoins] type ConfigType = NodeAppConfig
 
-  override protected[bitcoins] def newConfigOfType(
-      configs: Seq[Config]): NodeAppConfig =
+  override protected[bitcoins] def newConfigOfType(configs: Seq[Config]): NodeAppConfig =
     NodeAppConfig(directory, configs: _*)
 
   implicit override def ec: ExecutionContext = system.dispatcher
@@ -128,9 +121,7 @@ case class NodeAppConfig(
   }
 
   /** Creates either a neutrino node or a spv node based on the [[NodeAppConfig]] given */
-  def createNode(peers: Vector[Peer])(
-      chainConf: ChainAppConfig,
-      system: ActorSystem): Future[Node] = {
+  def createNode(peers: Vector[Peer])(chainConf: ChainAppConfig, system: ActorSystem): Future[Node] = {
     NodeAppConfig.createNode(peers)(this, chainConf, system)
   }
 }
@@ -142,8 +133,7 @@ object NodeAppConfig extends AppConfigFactoryActorSystem[NodeAppConfig] {
   /** Constructs a node configuration from the default Bitcoin-S
     * data directory and given list of configuration overrides.
     */
-  override def fromDatadir(datadir: Path, confs: Vector[Config])(implicit
-      system: ActorSystem): NodeAppConfig =
+  override def fromDatadir(datadir: Path, confs: Vector[Config])(implicit system: ActorSystem): NodeAppConfig =
     NodeAppConfig(datadir, confs: _*)
 
   /** Creates either a neutrino node or a spv node based on the [[NodeAppConfig]] given */

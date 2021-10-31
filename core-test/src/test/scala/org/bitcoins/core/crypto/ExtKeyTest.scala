@@ -3,11 +3,7 @@ package org.bitcoins.core.crypto
 import org.bitcoins.core.crypto.ExtKeyVersion._
 import org.bitcoins.core.hd.BIP32Path
 import org.bitcoins.core.number.UInt32
-import org.bitcoins.testkitcore.gen.{
-  CryptoGenerators,
-  HDGenerators,
-  NumberGenerator
-}
+import org.bitcoins.testkitcore.gen.{CryptoGenerators, HDGenerators, NumberGenerator}
 import org.bitcoins.testkitcore.util.BitcoinSUnitTest
 import scodec.bits.HexStringSyntax
 
@@ -21,22 +17,21 @@ class ExtKeyTest extends BitcoinSUnitTest {
   behavior of "ExtKey"
 
   it must "derive similar keys for UInt32s and primitive numbers" in {
-    forAll(CryptoGenerators.extPrivateKey, NumberGenerator.uInt32s) {
-      (priv, index) =>
-        val derivedPrivUInt32 = priv.deriveChildPrivKey(index)
-        val derivedPrivPrimitive = priv.deriveChildPrivKey(index.toLong)
-        assert(Success(derivedPrivUInt32) == derivedPrivPrimitive)
+    forAll(CryptoGenerators.extPrivateKey, NumberGenerator.uInt32s) { (priv, index) =>
+      val derivedPrivUInt32 = priv.deriveChildPrivKey(index)
+      val derivedPrivPrimitive = priv.deriveChildPrivKey(index.toLong)
+      assert(Success(derivedPrivUInt32) == derivedPrivPrimitive)
 
-        val pub = priv.extPublicKey
-        val derivedPubUInt32: Try[ExtPublicKey] = pub.deriveChildPubKey(index)
-        val derivedPubPrimitive: Try[ExtPublicKey] =
-          pub.deriveChildPubKey(index.toLong)
-        (derivedPubUInt32, derivedPubPrimitive) match {
-          case (Success(_), Success(_)) => succeed
-          case (Failure(exc1), Failure(exc2)) =>
-            assert(exc1.getMessage == exc2.getMessage)
-          case _: (Try[ExtPublicKey], Try[ExtPublicKey]) => fail()
-        }
+      val pub = priv.extPublicKey
+      val derivedPubUInt32: Try[ExtPublicKey] = pub.deriveChildPubKey(index)
+      val derivedPubPrimitive: Try[ExtPublicKey] =
+        pub.deriveChildPubKey(index.toLong)
+      (derivedPubUInt32, derivedPubPrimitive) match {
+        case (Success(_), Success(_)) => succeed
+        case (Failure(exc1), Failure(exc2)) =>
+          assert(exc1.getMessage == exc2.getMessage)
+        case _: (Try[ExtPublicKey], Try[ExtPublicKey]) => fail()
+      }
     }
   }
 
@@ -51,48 +46,42 @@ class ExtKeyTest extends BitcoinSUnitTest {
   }
 
   it must "derive private keys from a BIP32 path and an xpriv" in {
-    forAll(CryptoGenerators.extPrivateKey, HDGenerators.bip32Path) {
-      (priv, path) =>
-        priv.deriveChildPrivKey(path)
-        succeed
+    forAll(CryptoGenerators.extPrivateKey, HDGenerators.bip32Path) { (priv, path) =>
+      priv.deriveChildPrivKey(path)
+      succeed
     }
   }
 
   it must "derive public keys from a BIP32 path and an xpriv" in {
-    forAll(CryptoGenerators.extPrivateKey, HDGenerators.bip32Path) {
-      (priv, path) =>
-        val pub = priv.deriveChildPubKey(path)
-        pub match {
-          case Failure(exc) => fail(exc.getMessage)
-          case Success(_)   => succeed
-        }
+    forAll(CryptoGenerators.extPrivateKey, HDGenerators.bip32Path) { (priv, path) =>
+      val pub = priv.deriveChildPubKey(path)
+      pub match {
+        case Failure(exc) => fail(exc.getMessage)
+        case Success(_)   => succeed
+      }
     }
   }
 
   it must "fail to derive public keys from a hardened public key" in {
-    forAll(CryptoGenerators.extPrivateKey, HDGenerators.hardBip32Child) {
-      (priv, child) =>
-        val pub = priv.extPublicKey
-        val derivedPub = pub.deriveChildPubKey(child.toUInt32)
-        derivedPub match {
-          case Success(_)   => fail()
-          case Failure(exc) => assert(exc.getMessage.contains("hardened"))
-        }
+    forAll(CryptoGenerators.extPrivateKey, HDGenerators.hardBip32Child) { (priv, child) =>
+      val pub = priv.extPublicKey
+      val derivedPub = pub.deriveChildPubKey(child.toUInt32)
+      derivedPub match {
+        case Success(_)   => fail()
+        case Failure(exc) => assert(exc.getMessage.contains("hardened"))
+      }
     }
   }
 
   it must "fail to derive a unhardened child key from a ExtPrivateKeyHardened" in {
-    forAll(CryptoGenerators.extPrivateKey, HDGenerators.hdAddress) {
-      (priv, path) =>
-        val hardened: ExtPrivateKeyHardened = priv.toHardened
+    forAll(CryptoGenerators.extPrivateKey, HDGenerators.hdAddress) { (priv, path) =>
+      val hardened: ExtPrivateKeyHardened = priv.toHardened
 
-        assertThrows[IllegalArgumentException](hardened.deriveChildPrivKey(0))
+      assertThrows[IllegalArgumentException](hardened.deriveChildPrivKey(0))
 
-        assertThrows[IllegalArgumentException](
-          hardened.deriveChildPrivKey(UInt32.one))
+      assertThrows[IllegalArgumentException](hardened.deriveChildPrivKey(UInt32.one))
 
-        assertThrows[IllegalArgumentException](
-          hardened.deriveChildPrivKey(path))
+      assertThrows[IllegalArgumentException](hardened.deriveChildPrivKey(path))
     }
   }
 

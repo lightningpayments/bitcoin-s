@@ -18,17 +18,12 @@ import scodec.bits._
 import scala.annotation.tailrec
 import scala.util.{Failure, Success, Try}
 
-case class PSBT(
-    globalMap: GlobalPSBTMap,
-    inputMaps: Vector[InputPSBTMap],
-    outputMaps: Vector[OutputPSBTMap])
+case class PSBT(globalMap: GlobalPSBTMap, inputMaps: Vector[InputPSBTMap], outputMaps: Vector[OutputPSBTMap])
     extends NetworkElement {
-  require(
-    inputMaps.size == transaction.inputs.size,
-    s"There must be an input map for every input in the global transaction, inputs: ${transaction.inputs}")
-  require(
-    outputMaps.size == transaction.outputs.size,
-    s"There must be an output map for every output in the global transaction, outputs: ${transaction.outputs}")
+  require(inputMaps.size == transaction.inputs.size,
+          s"There must be an input map for every input in the global transaction, inputs: ${transaction.inputs}")
+  require(outputMaps.size == transaction.outputs.size,
+          s"There must be an output map for every output in the global transaction, outputs: ${transaction.outputs}")
 
   require(
     inputMaps.zip(transaction.inputs).forall { case (inputMap, txIn) =>
@@ -70,10 +65,8 @@ case class PSBT(
   def version: UInt32 = globalMap.version.version
 
   def validateBIP143Vulnerability: PSBT = {
-    require(
-      isFinalized || inputMaps.size == 1 || inputMaps.forall(
-        !_.isBIP143Vulnerable),
-      "One or more of the input maps are susceptible to the BIP 143 vulnerability")
+    require(isFinalized || inputMaps.size == 1 || inputMaps.forall(!_.isBIP143Vulnerable),
+            "One or more of the input maps are susceptible to the BIP 143 vulnerability")
 
     this
   }
@@ -91,11 +84,10 @@ case class PSBT(
     val hasPrevUtxos =
       inputMaps.zipWithIndex.forall(i => i._1.prevOutOpt(i._2).isDefined)
     if (hasPrevUtxos) {
-      val inputAmount = inputMaps.zipWithIndex.foldLeft(CurrencyUnits.zero) {
-        case (accum, (input, index)) =>
-          // .get is safe because of hasPrevUtxos
-          val prevOut = input.prevOutOpt(index).get
-          accum + prevOut.value
+      val inputAmount = inputMaps.zipWithIndex.foldLeft(CurrencyUnits.zero) { case (accum, (input, index)) =>
+        // .get is safe because of hasPrevUtxos
+        val prevOut = input.prevOutOpt(index).get
+        accum + prevOut.value
       }
       val outputAmount =
         transaction.outputs.foldLeft(CurrencyUnits.zero)(_ + _.value)
@@ -108,14 +100,13 @@ case class PSBT(
       val dummySigner = Sign.dummySign(ECPublicKey.freshPublicKey)
 
       val inputWeight =
-        inputMaps.zip(transaction.inputs).foldLeft(0L) {
-          case (weight, (inputMap, txIn)) =>
-            val signingInfo = inputMap
-              .toUTXOSatisfyingInfoUsingSigners(txIn, Vector(dummySigner))
-            val scriptSigLen = signingInfo.maxScriptSigLen
-            val maxWitnessLen = signingInfo.maxWitnessLen
+        inputMaps.zip(transaction.inputs).foldLeft(0L) { case (weight, (inputMap, txIn)) =>
+          val signingInfo = inputMap
+            .toUTXOSatisfyingInfoUsingSigners(txIn, Vector(dummySigner))
+          val scriptSigLen = signingInfo.maxScriptSigLen
+          val maxWitnessLen = signingInfo.maxWitnessLen
 
-            weight + 164 + maxWitnessLen + scriptSigLen
+          weight + 164 + maxWitnessLen + scriptSigLen
         }
       val outputWeight = transaction.outputs.foldLeft(0L)(_ + _.byteSize)
       val weight = 107 + outputWeight + inputWeight
@@ -147,8 +138,7 @@ case class PSBT(
     * @return A PSBT with the combined data of the two PSBTs
     */
   def combinePSBT(other: PSBT): PSBT = {
-    require(this.transaction.txId == other.transaction.txId,
-            "Can only combine PSBTs with the same global transaction.")
+    require(this.transaction.txId == other.transaction.txId, "Can only combine PSBTs with the same global transaction.")
 
     val global = this.globalMap.combine(other.globalMap)
     val inputs = this.inputMaps
@@ -166,8 +156,7 @@ case class PSBT(
   }
 
   def finalizeInput(index: Int): Try[PSBT] = {
-    require(index >= 0 && index < inputMaps.size,
-            s"Index must be within 0 and the number of inputs, got: $index")
+    require(index >= 0 && index < inputMaps.size, s"Index must be within 0 and the number of inputs, got: $index")
     val inputMap = inputMaps(index)
     if (inputMap.isFinalized) {
       Success(this)
@@ -186,26 +175,22 @@ case class PSBT(
     */
   def finalizePSBT: Try[PSBT] = {
     if (isFinalized) {
-      Failure(
-        new IllegalStateException(
-          s"Cannot finalize an already finalized PSBT: $this"))
+      Failure(new IllegalStateException(s"Cannot finalize an already finalized PSBT: $this"))
     } else {
-      val finalizedInputTs = inputMaps.zip(transaction.inputs).map {
-        case (inputMap, input) => inputMap.finalize(input)
+      val finalizedInputTs = inputMaps.zip(transaction.inputs).map { case (inputMap, input) =>
+        inputMap.finalize(input)
       }
 
       val finalizedInputMapsT = finalizedInputTs
-        .foldLeft[Try[Vector[InputPSBTMap]]](Success(Vector.empty)) {
-          case (inputsSoFarT, inputT) =>
-            inputsSoFarT.flatMap { inputsSoFar =>
-              inputT.map { input =>
-                inputsSoFar :+ input
-              }
+        .foldLeft[Try[Vector[InputPSBTMap]]](Success(Vector.empty)) { case (inputsSoFarT, inputT) =>
+          inputsSoFarT.flatMap { inputsSoFar =>
+            inputT.map { input =>
+              inputsSoFar :+ input
             }
+          }
         }
 
-      finalizedInputMapsT.map(finalizedInputMaps =>
-        this.copy(inputMaps = finalizedInputMaps))
+      finalizedInputMapsT.map(finalizedInputMaps => this.copy(inputMaps = finalizedInputMaps))
     }
   }
 
@@ -244,14 +229,10 @@ case class PSBT(
   def getSpendingInfoUsingSigners(
       index: Int,
       signers: Vector[Sign],
-      conditionalPath: ConditionalPath =
-        ConditionalPath.NoCondition): ScriptSignatureParams[InputInfo] = {
-    require(index >= 0 && index < inputMaps.size,
-            s"Index must be within 0 and the number of inputs, got: $index")
+      conditionalPath: ConditionalPath = ConditionalPath.NoCondition): ScriptSignatureParams[InputInfo] = {
+    require(index >= 0 && index < inputMaps.size, s"Index must be within 0 and the number of inputs, got: $index")
     inputMaps(index)
-      .toUTXOSatisfyingInfoUsingSigners(transaction.inputs(index),
-                                        signers,
-                                        conditionalPath)
+      .toUTXOSatisfyingInfoUsingSigners(transaction.inputs(index), signers, conditionalPath)
   }
 
   /** Adds tx to the indexed InputPSBTMap to either the NonWitnessOrUnknownUTXO
@@ -261,13 +242,11 @@ case class PSBT(
     * @return PSBT with added tx
     */
   def addUTXOToInput(tx: Transaction, index: Int): PSBT = {
-    require(
-      index < inputMaps.size,
-      s"index must be less than the number of input maps present in the psbt, $index >= ${inputMaps.size}")
+    require(index < inputMaps.size,
+            s"index must be less than the number of input maps present in the psbt, $index >= ${inputMaps.size}")
 
     val inputMap = inputMaps(index)
-    require(!inputMap.isFinalized,
-            s"Cannot update an InputPSBTMap that is finalized, index: $index")
+    require(!inputMap.isFinalized, s"Cannot update an InputPSBTMap that is finalized, index: $index")
 
     val txIn = transaction.inputs(index)
     val elements =
@@ -288,17 +267,13 @@ case class PSBT(
           )
         }
 
-        if (
-          (outIsWitnessScript || hasWitScript || hasWitRedeemScript) && notBIP143Vulnerable
-        ) {
+        if ((outIsWitnessScript || hasWitScript || hasWitRedeemScript) && notBIP143Vulnerable) {
           inputMap.filterRecords(WitnessUTXOKeyId) :+ WitnessUTXO(out)
         } else {
-          inputMap.filterRecords(
-            NonWitnessUTXOKeyId) :+ NonWitnessOrUnknownUTXO(tx)
+          inputMap.filterRecords(NonWitnessUTXOKeyId) :+ NonWitnessOrUnknownUTXO(tx)
         }
       } else {
-        throw new IllegalArgumentException(
-          s"Transaction does not correspond to map at given index($index), got: $tx")
+        throw new IllegalArgumentException(s"Transaction does not correspond to map at given index($index), got: $tx")
       }
 
     val newInputMaps =
@@ -313,15 +288,12 @@ case class PSBT(
     * @return PSBT with added tx
     */
   def addWitnessUTXOToInput(output: TransactionOutput, index: Int): PSBT = {
-    require(WitnessScriptPubKey.isValidAsm(output.scriptPubKey.asm),
-            s"Given output was not a Witness UTXO: $output")
-    require(
-      index < inputMaps.size,
-      s"index must be less than the number of input maps present in the psbt, $index >= ${inputMaps.size}")
+    require(WitnessScriptPubKey.isValidAsm(output.scriptPubKey.asm), s"Given output was not a Witness UTXO: $output")
+    require(index < inputMaps.size,
+            s"index must be less than the number of input maps present in the psbt, $index >= ${inputMaps.size}")
 
     val inputMap = inputMaps(index)
-    require(!inputMap.isFinalized,
-            s"Cannot update an InputPSBTMap that is finalized, index: $index")
+    require(!inputMap.isFinalized, s"Cannot update an InputPSBTMap that is finalized, index: $index")
 
     val elements =
       inputMap.filterRecords(WitnessUTXOKeyId) :+ WitnessUTXO(output)
@@ -336,14 +308,10 @@ case class PSBT(
     * @param index index of the InputPSBTMap to add script to
     * @return PSBT with added script
     */
-  def addRedeemOrWitnessScriptToInput(
-      script: ScriptPubKey,
-      index: Int): PSBT = {
-    require(
-      index < inputMaps.size,
-      s"index must be less than the number of input maps present in the psbt, $index >= ${inputMaps.size}")
-    require(!inputMaps(index).isFinalized,
-            s"Cannot update an InputPSBTMap that is finalized, index: $index")
+  def addRedeemOrWitnessScriptToInput(script: ScriptPubKey, index: Int): PSBT = {
+    require(index < inputMaps.size,
+            s"index must be less than the number of input maps present in the psbt, $index >= ${inputMaps.size}")
+    require(!inputMaps(index).isFinalized, s"Cannot update an InputPSBTMap that is finalized, index: $index")
 
     val inputMap = inputMaps(index)
 
@@ -356,8 +324,7 @@ case class PSBT(
       inputMap.filterRecords(WitnessScriptKeyId) :+ InputPSBTRecord
         .WitnessScript(script.asInstanceOf[RawScriptPubKey])
     } else {
-      inputMap.filterRecords(RedeemScriptKeyId) :+ InputPSBTRecord.RedeemScript(
-        script)
+      inputMap.filterRecords(RedeemScriptKeyId) :+ InputPSBTRecord.RedeemScript(script)
     }
     val newMap = InputPSBTMap(elements).compressMap(transaction.inputs(index))
     val newInputMaps = inputMaps.updated(index, newMap)
@@ -365,9 +332,7 @@ case class PSBT(
     PSBT(globalMap, newInputMaps, outputMaps)
   }
 
-  private def redeemScriptToOutputRecord(
-      outputScript: ScriptPubKey,
-      redeemScript: ScriptPubKey): OutputPSBTRecord = {
+  private def redeemScriptToOutputRecord(outputScript: ScriptPubKey, redeemScript: ScriptPubKey): OutputPSBTRecord = {
     outputScript match {
       case p2sh: P2SHScriptPubKey =>
         val scriptHash = P2SHScriptPubKey(redeemScript).scriptHash
@@ -385,29 +350,20 @@ case class PSBT(
         } else {
           OutputPSBTRecord.WitnessScript(redeemScript)
         }
-      case _: NonStandardScriptPubKey | _: WitnessCommitment |
-          EmptyScriptPubKey | _: MultiSignatureScriptPubKey |
-          _: ConditionalScriptPubKey | _: LockTimeScriptPubKey |
-          _: P2PKWithTimeoutScriptPubKey | _: WitnessScriptPubKey |
-          _: P2PKScriptPubKey | _: P2PKHScriptPubKey =>
-        throw new IllegalArgumentException(
-          s"Output script does not need a redeem script, got: $outputScript")
+      case _: NonStandardScriptPubKey | _: WitnessCommitment | EmptyScriptPubKey | _: MultiSignatureScriptPubKey |
+          _: ConditionalScriptPubKey | _: LockTimeScriptPubKey | _: P2PKWithTimeoutScriptPubKey |
+          _: WitnessScriptPubKey | _: P2PKScriptPubKey | _: P2PKHScriptPubKey =>
+        throw new IllegalArgumentException(s"Output script does not need a redeem script, got: $outputScript")
     }
   }
 
-  def addScriptWitnessToInput(
-      scriptWitness: ScriptWitness,
-      index: Int): PSBT = {
-    require(index >= 0,
-            s"index must be greater than or equal to 0, got: $index")
-    require(
-      index < inputMaps.size,
-      s"index must be less than the number of input maps present in the psbt, $index >= ${inputMaps.size}")
-    require(!inputMaps(index).isFinalized,
-            s"Cannot update an InputPSBTMap that is finalized, index: $index")
-    require(
-      inputMaps(index).witnessScriptOpt.isEmpty,
-      s"Input map already contains a ScriptWitness: ${inputMaps(index).witnessScriptOpt.get}")
+  def addScriptWitnessToInput(scriptWitness: ScriptWitness, index: Int): PSBT = {
+    require(index >= 0, s"index must be greater than or equal to 0, got: $index")
+    require(index < inputMaps.size,
+            s"index must be less than the number of input maps present in the psbt, $index >= ${inputMaps.size}")
+    require(!inputMaps(index).isFinalized, s"Cannot update an InputPSBTMap that is finalized, index: $index")
+    require(inputMaps(index).witnessScriptOpt.isEmpty,
+            s"Input map already contains a ScriptWitness: ${inputMaps(index).witnessScriptOpt.get}")
 
     val previousElements = inputMaps(index).elements
 
@@ -420,8 +376,7 @@ case class PSBT(
         val newElement = InputPSBTRecord.WitnessScript(p2wsh.redeemScript)
         InputPSBTMap(previousElements :+ newElement)
       case EmptyScriptWitness =>
-        throw new IllegalArgumentException(
-          s"Invalid scriptWitness given, got: $scriptWitness")
+        throw new IllegalArgumentException(s"Invalid scriptWitness given, got: $scriptWitness")
     }
     val newInputMaps = inputMaps.updated(index, newMap)
     PSBT(globalMap, newInputMaps, outputMaps)
@@ -431,13 +386,10 @@ case class PSBT(
       scriptSignature: ScriptSignature,
       scriptWitness: ScriptWitness,
       index: Int): PSBT = {
-    require(index >= 0,
-            s"index must be greater than or equal to 0, got: $index")
-    require(
-      index < inputMaps.size,
-      s"index must be less than the number of input maps present in the psbt, $index >= ${inputMaps.size}")
-    require(!inputMaps(index).isFinalized,
-            s"Cannot update an InputPSBTMap that is finalized, index: $index")
+    require(index >= 0, s"index must be greater than or equal to 0, got: $index")
+    require(index < inputMaps.size,
+            s"index must be less than the number of input maps present in the psbt, $index >= ${inputMaps.size}")
+    require(!inputMaps(index).isFinalized, s"Cannot update an InputPSBTMap that is finalized, index: $index")
 
     val prevInput = inputMaps(index)
 
@@ -456,12 +408,10 @@ case class PSBT(
       s"Input already contains fields: ${prevInput.elements}"
     )
 
-    val finalizedScripts = Vector(FinalizedScriptSig(scriptSignature),
-                                  FinalizedScriptWitness(scriptWitness))
+    val finalizedScripts = Vector(FinalizedScriptSig(scriptSignature), FinalizedScriptWitness(scriptWitness))
 
     // Replace RedeemScripts with FinalizedScriptSignatures and add FinalizedScriptWitnesses
-    val records = prevInput.elements.filterNot(
-      _.isInstanceOf[RedeemScript]) ++ finalizedScripts
+    val records = prevInput.elements.filterNot(_.isInstanceOf[RedeemScript]) ++ finalizedScripts
     val newMap = InputPSBTMap(records)
     val newInputMaps = inputMaps.updated(index, newMap)
     PSBT(globalMap, newInputMaps, outputMaps)
@@ -473,12 +423,9 @@ case class PSBT(
     * @param index index of the OutputPSBTMap to add script to
     * @return PSBT with added script
     */
-  def addRedeemOrWitnessScriptToOutput(
-      script: ScriptPubKey,
-      index: Int): PSBT = {
-    require(
-      index < outputMaps.size,
-      s"index must be less than the number of output maps present in the psbt, $index >= ${outputMaps.size}")
+  def addRedeemOrWitnessScriptToOutput(script: ScriptPubKey, index: Int): PSBT = {
+    require(index < outputMaps.size,
+            s"index must be less than the number of output maps present in the psbt, $index >= ${outputMaps.size}")
     require(!isFinalized, "Cannot update a PSBT that is finalized")
 
     val outputMap = outputMaps(index)
@@ -491,8 +438,7 @@ case class PSBT(
       if (!isWitScript && hasWitScript)
         redeemScriptToOutputRecord(redeemScriptOpt.get, script)
       else
-        redeemScriptToOutputRecord(transaction.outputs(index).scriptPubKey,
-                                   script)
+        redeemScriptToOutputRecord(transaction.outputs(index).scriptPubKey, script)
 
     val newMap = OutputPSBTMap(outputMap.elements :+ newElement)
     val newOutputMaps = outputMaps.updated(index, newMap)
@@ -500,18 +446,13 @@ case class PSBT(
     PSBT(globalMap, inputMaps, newOutputMaps)
   }
 
-  def addScriptWitnessToOutput(
-      scriptWitness: ScriptWitness,
-      index: Int): PSBT = {
-    require(index >= 0,
-            s"index must be greater than or equal to 0, got: $index")
-    require(
-      index < outputMaps.size,
-      s"index must be less than the number of output maps present in the psbt, $index >= ${inputMaps.size}")
+  def addScriptWitnessToOutput(scriptWitness: ScriptWitness, index: Int): PSBT = {
+    require(index >= 0, s"index must be greater than or equal to 0, got: $index")
+    require(index < outputMaps.size,
+            s"index must be less than the number of output maps present in the psbt, $index >= ${inputMaps.size}")
     require(!isFinalized, "Cannot update a PSBT that is finalized")
-    require(
-      outputMaps(index).witnessScriptOpt.isEmpty,
-      s"Output map already contains a ScriptWitness: ${outputMaps(index).witnessScriptOpt.get}")
+    require(outputMaps(index).witnessScriptOpt.isEmpty,
+            s"Output map already contains a ScriptWitness: ${outputMaps(index).witnessScriptOpt.get}")
 
     val outputMap = outputMaps(index)
 
@@ -525,17 +466,14 @@ case class PSBT(
           outputMap.filterRecords(PSBTOutputKeyId.WitnessScriptKeyId) :+
             OutputPSBTRecord.WitnessScript(p2wsh.redeemScript))
       case EmptyScriptWitness =>
-        throw new IllegalArgumentException(
-          s"Invalid scriptWitness given, got: $scriptWitness")
+        throw new IllegalArgumentException(s"Invalid scriptWitness given, got: $scriptWitness")
     }
 
     val newOutputMaps = outputMaps.updated(index, newMap)
     PSBT(globalMap, inputMaps, newOutputMaps)
   }
 
-  private def addKeyPathToMap[
-      RecordType <: PSBTRecord,
-      MapType <: PSBTMap[RecordType]](
+  private def addKeyPathToMap[RecordType <: PSBTRecord, MapType <: PSBTMap[RecordType]](
       extKey: ExtKey,
       path: BIP32Path,
       pubKey: ECPublicKey,
@@ -544,9 +482,8 @@ case class PSBT(
       maps: Vector[MapType],
       makeRecord: (ECPublicKey, ByteVector, BIP32Path) => RecordType,
       makeMap: Vector[RecordType] => MapType): Vector[MapType] = {
-    require(
-      index < maps.size,
-      s"index must be less than the number of output maps present in the psbt, $index >= ${outputMaps.size}")
+    require(index < maps.size,
+            s"index must be less than the number of output maps present in the psbt, $index >= ${outputMaps.size}")
     require(!isFinalized, "Cannot update a PSBT that is finalized")
 
     val previousElements = maps(index).elements
@@ -575,11 +512,7 @@ case class PSBT(
     * @param index index of the InputPSBTMap to add the BIP32Path to
     * @return PSBT with added BIP32Path
     */
-  def addKeyPathToInput(
-      extKey: ExtKey,
-      path: BIP32Path,
-      pubKey: ECPublicKey,
-      index: Int): PSBT = {
+  def addKeyPathToInput(extKey: ExtKey, path: BIP32Path, pubKey: ECPublicKey, index: Int): PSBT = {
     val newInputMaps = addKeyPathToMap[InputPSBTRecord, InputPSBTMap](
       extKey = extKey,
       path = path,
@@ -600,11 +533,7 @@ case class PSBT(
     * @param index index of the OutputPSBTMap to add the BIP32Path to
     * @return PSBT with added BIP32Path
     */
-  def addKeyPathToOutput(
-      extKey: ExtKey,
-      path: BIP32Path,
-      pubKey: ECPublicKey,
-      index: Int): PSBT = {
+  def addKeyPathToOutput(extKey: ExtKey, path: BIP32Path, pubKey: ECPublicKey, index: Int): PSBT = {
     val newOutputMaps = addKeyPathToMap[OutputPSBTRecord, OutputPSBTMap](
       extKey = extKey,
       path = path,
@@ -624,11 +553,9 @@ case class PSBT(
     * @return PSBT with added HashType
     */
   def addSigHashTypeToInput(hashType: HashType, index: Int): PSBT = {
-    require(
-      index < inputMaps.size,
-      s"index must be less than the number of input maps present in the psbt, $index >= ${inputMaps.size}")
-    require(!inputMaps(index).isFinalized,
-            s"Cannot update an InputPSBTMap that is finalized, index: $index")
+    require(index < inputMaps.size,
+            s"index must be less than the number of input maps present in the psbt, $index >= ${inputMaps.size}")
+    require(!inputMaps(index).isFinalized, s"Cannot update an InputPSBTMap that is finalized, index: $index")
 
     val newElements =
       inputMaps(index).filterRecords(SigHashTypeKeyId) :+ SigHashType(hashType)
@@ -638,25 +565,17 @@ case class PSBT(
     PSBT(globalMap, newInputMaps, outputMaps)
   }
 
-  def addSignature(
-      pubKey: ECPublicKey,
-      sig: ECDigitalSignature,
-      inputIndex: Int): PSBT =
+  def addSignature(pubKey: ECPublicKey, sig: ECDigitalSignature, inputIndex: Int): PSBT =
     addSignature(PartialSignature(pubKey, sig), inputIndex)
 
   def addSignature(partialSignature: PartialSignature, inputIndex: Int): PSBT =
     addSignatures(Vector(partialSignature), inputIndex)
 
   /** Adds all the PartialSignatures to the input map at the given index */
-  def addSignatures(
-      partialSignatures: Vector[PartialSignature],
-      inputIndex: Int): PSBT = {
-    require(
-      inputIndex < inputMaps.size,
-      s"index must be less than the number of input maps present in the psbt, $inputIndex >= ${inputMaps.size}")
-    require(
-      !inputMaps(inputIndex).isFinalized,
-      s"Cannot update an InputPSBTMap that is finalized, index: $inputIndex")
+  def addSignatures(partialSignatures: Vector[PartialSignature], inputIndex: Int): PSBT = {
+    require(inputIndex < inputMaps.size,
+            s"index must be less than the number of input maps present in the psbt, $inputIndex >= ${inputMaps.size}")
+    require(!inputMaps(inputIndex).isFinalized, s"Cannot update an InputPSBTMap that is finalized, index: $inputIndex")
     val intersect =
       inputMaps(inputIndex).partialSignatures.intersect(partialSignatures)
     val allSigs = inputMaps(inputIndex).partialSignatures ++ partialSignatures
@@ -683,14 +602,12 @@ case class PSBT(
       case None =>
         utxoOpt match {
           case Some(utxo) =>
-            val output = utxo.transactionSpent.outputs(
-              transaction.inputs(index).previousOutput.vout.toInt)
+            val output = utxo.transactionSpent.outputs(transaction.inputs(index).previousOutput.vout.toInt)
             output.scriptPubKey match {
               case _: RawScriptPubKey => None
               case _: P2SHScriptPubKey =>
                 inputMap.finalizedScriptSigOpt match {
-                  case Some(
-                        FinalizedScriptSig(scriptSig: P2SHScriptSignature)) =>
+                  case Some(FinalizedScriptSig(scriptSig: P2SHScriptSignature)) =>
                     scriptSig.redeemScript match {
                       case _: NonWitnessScriptPubKey => None
                       case _: WitnessScriptPubKey    => Some(WitnessUTXO(output))
@@ -748,11 +665,10 @@ case class PSBT(
     * Note: This PSBT must be finalized.
     */
   def extractTransactionAndValidate: Try[Transaction] = {
-    inputMaps.zipWithIndex.foldLeft(Try(extractTransaction)) {
-      case (txT, (inputMap, index)) =>
-        txT.flatMap { tx =>
-          BitcoinScriptUtil.verifyPSBTInputScript(tx, inputMap, index)
-        }
+    inputMaps.zipWithIndex.foldLeft(Try(extractTransaction)) { case (txT, (inputMap, index)) =>
+      txT.flatMap { tx =>
+        BitcoinScriptUtil.verifyPSBTInputScript(tx, inputMap, index)
+      }
     }
   }
 
@@ -772,36 +688,25 @@ case class PSBT(
           .flatMap(_.elements)
           .exists(_.isInstanceOf[FinalizedScriptWitness])
       ) {
-        val witness = inputMaps.zipWithIndex.foldLeft[TransactionWitness](
-          EmptyWitness.fromInputs(transaction.inputs)) {
+        val witness = inputMaps.zipWithIndex.foldLeft[TransactionWitness](EmptyWitness.fromInputs(transaction.inputs)) {
           case (witness, (inputMap, index)) =>
             inputMap.finalizedScriptWitnessOpt match {
               case None => witness
-              case Some(
-                    InputPSBTRecord.FinalizedScriptWitness(scriptWitness)) =>
+              case Some(InputPSBTRecord.FinalizedScriptWitness(scriptWitness)) =>
                 witness.updated(index, scriptWitness)
             }
         }
-        WitnessTransaction(transaction.version,
-                           newInputs,
-                           transaction.outputs,
-                           transaction.lockTime,
-                           witness)
+        WitnessTransaction(transaction.version, newInputs, transaction.outputs, transaction.lockTime, witness)
       } else {
         transaction match {
           case btx: NonWitnessTransaction =>
             BaseTransaction(btx.version, newInputs, btx.outputs, btx.lockTime)
           case wtx: WitnessTransaction =>
-            WitnessTransaction(wtx.version,
-                               newInputs,
-                               wtx.outputs,
-                               wtx.lockTime,
-                               wtx.witness)
+            WitnessTransaction(wtx.version, newInputs, wtx.outputs, wtx.lockTime, wtx.witness)
         }
       }
     } else {
-      throw new IllegalStateException(
-        "PSBT must be finalized in order to extract")
+      throw new IllegalStateException("PSBT must be finalized in order to extract")
     }
   }
 }
@@ -825,15 +730,13 @@ object PSBT extends Factory[PSBT] with StringFactory[PSBT] {
           case Some(base64) =>
             PSBT(base64)
           case None =>
-            throw new IllegalArgumentException(
-              s"String given must be in base64 or hexadecimal, got: $str")
+            throw new IllegalArgumentException(s"String given must be in base64 or hexadecimal, got: $str")
         }
     }
   }
 
   override def fromBytes(bytes: ByteVector): PSBT = {
-    require(bytes.startsWith(magicBytes),
-            s"A PSBT must start with the magic bytes $magicBytes, got: $bytes")
+    require(bytes.startsWith(magicBytes), s"A PSBT must start with the magic bytes $magicBytes, got: $bytes")
 
     val globalBytes = bytes.drop(magicBytes.size)
 
@@ -851,33 +754,23 @@ object PSBT extends Factory[PSBT] with StringFactory[PSBT] {
         accum
       } else {
         val newMap = factory.fromBytes(bytes)
-        mapLoop(bytes.drop(newMap.bytes.size),
-                numMaps - 1,
-                accum :+ newMap,
-                factory)
+        mapLoop(bytes.drop(newMap.bytes.size), numMaps - 1, accum :+ newMap, factory)
       }
     }
 
     val inputBytes = globalBytes.drop(global.bytes.size)
 
-    val inputMaps = mapLoop[InputPSBTMap](inputBytes,
-                                          tx.inputs.size,
-                                          Vector.empty,
-                                          InputPSBTMap)
+    val inputMaps = mapLoop[InputPSBTMap](inputBytes, tx.inputs.size, Vector.empty, InputPSBTMap)
 
     val outputBytes =
       inputBytes.drop(inputMaps.foldLeft(0)(_ + _.bytes.size.toInt))
 
-    val outputMaps = mapLoop[OutputPSBTMap](outputBytes,
-                                            tx.outputs.size,
-                                            Vector.empty,
-                                            OutputPSBTMap)
+    val outputMaps = mapLoop[OutputPSBTMap](outputBytes, tx.outputs.size, Vector.empty, OutputPSBTMap)
 
     val remainingBytes =
       outputBytes.drop(outputMaps.foldLeft(0)(_ + _.bytes.size.toInt))
 
-    require(remainingBytes.isEmpty,
-            s"The PSBT should be empty now, got: $remainingBytes")
+    require(remainingBytes.isEmpty, s"The PSBT should be empty now, got: $remainingBytes")
 
     PSBT(global, inputMaps, outputMaps)
   }
@@ -885,8 +778,7 @@ object PSBT extends Factory[PSBT] with StringFactory[PSBT] {
   def fromBase64(base64: String): PSBT = {
     ByteVector.fromBase64(base64) match {
       case None =>
-        throw new IllegalArgumentException(
-          s"String given was not in base64 format, got: $base64")
+        throw new IllegalArgumentException(s"String given was not in base64 format, got: $base64")
       case Some(bytes) => fromBytes(bytes)
     }
   }
@@ -904,8 +796,7 @@ object PSBT extends Factory[PSBT] with StringFactory[PSBT] {
         BaseTransaction(wtx.version, wtx.inputs, wtx.outputs, wtx.lockTime)
       case base: NonWitnessTransaction => base
     }
-    val globalMap = GlobalPSBTMap(
-      Vector(GlobalPSBTRecord.UnsignedTransaction(btx)))
+    val globalMap = GlobalPSBTMap(Vector(GlobalPSBTRecord.UnsignedTransaction(btx)))
     val inputMaps = unsignedTx.inputs.map(_ => InputPSBTMap.empty).toVector
     val outputMaps = unsignedTx.outputs.map(_ => OutputPSBTMap.empty).toVector
 
@@ -915,9 +806,7 @@ object PSBT extends Factory[PSBT] with StringFactory[PSBT] {
   def fromUnsignedTxWithP2SHScript(tx: Transaction): PSBT = {
     val inputs = tx.inputs.toVector
     val utxInputs = inputs.map { input =>
-      TransactionInput(input.previousOutput,
-                       EmptyScriptSignature,
-                       input.sequence)
+      TransactionInput(input.previousOutput, EmptyScriptSignature, input.sequence)
     }
     val utx = BaseTransaction(tx.version, utxInputs, tx.outputs, tx.lockTime)
     val psbt = fromUnsignedTx(utx)
@@ -940,11 +829,8 @@ object PSBT extends Factory[PSBT] with StringFactory[PSBT] {
     */
   def fromUnsignedTxAndInputs(
       unsignedTx: Transaction,
-      spendingInfoAndNonWitnessTxs: Vector[
-        ScriptSignatureParams[InputInfo]]): PSBT = {
-    fromUnsignedTxAndInputs(unsignedTx,
-                            spendingInfoAndNonWitnessTxs,
-                            finalized = false)
+      spendingInfoAndNonWitnessTxs: Vector[ScriptSignatureParams[InputInfo]]): PSBT = {
+    fromUnsignedTxAndInputs(unsignedTx, spendingInfoAndNonWitnessTxs, finalized = false)
   }
 
   /** Constructs a finalized PSBT from an
@@ -960,8 +846,7 @@ object PSBT extends Factory[PSBT] with StringFactory[PSBT] {
       unsignedTx: Transaction,
       spendingInfos: Vector[ScriptSignatureParams[InputInfo]],
       finalized: Boolean): PSBT = {
-    require(spendingInfos.length == unsignedTx.inputs.length,
-            "Must have a SpendingInfo for every input")
+    require(spendingInfos.length == unsignedTx.inputs.length, "Must have a SpendingInfo for every input")
     require(
       spendingInfos.zip(unsignedTx.inputs).forall { case (info, input) =>
         info.outPoint == input.previousOutput
@@ -975,8 +860,7 @@ object PSBT extends Factory[PSBT] with StringFactory[PSBT] {
       case base: NonWitnessTransaction => base
     }
 
-    val globalMap = GlobalPSBTMap(
-      Vector(GlobalPSBTRecord.UnsignedTransaction(btx)))
+    val globalMap = GlobalPSBTMap(Vector(GlobalPSBTRecord.UnsignedTransaction(btx)))
     val inputMaps = spendingInfos.map { info =>
       if (finalized) {
         InputPSBTMap.finalizedFromSpendingInfo(info, unsignedTx)

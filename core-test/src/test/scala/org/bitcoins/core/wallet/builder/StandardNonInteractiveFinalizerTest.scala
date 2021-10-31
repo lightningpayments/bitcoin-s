@@ -29,43 +29,27 @@ class StandardNonInteractiveFinalizerTest extends BitcoinSUnitTest {
     TransactionInput(outPoint, EmptyScriptSignature, UInt32.zero)
   private val output = TransactionOutput(Bitcoins.one, EmptyScriptPubKey)
 
-  private val tx = BaseTransaction(TransactionConstants.validLockVersion,
-                                   Vector(input),
-                                   Vector(output),
-                                   UInt32.zero)
+  private val tx = BaseTransaction(TransactionConstants.validLockVersion, Vector(input), Vector(output), UInt32.zero)
 
   private val changeSPK = P2PKHScriptPubKey(ECPublicKey.freshPublicKey)
 
   it should "detect a missing destination" in {
-    val missingOutputTx = BaseTransaction(tx.version,
-                                          tx.inputs,
-                                          Vector.empty[TransactionOutput],
-                                          tx.lockTime)
+    val missingOutputTx = BaseTransaction(tx.version, tx.inputs, Vector.empty[TransactionOutput], tx.lockTime)
 
     assert(
       SanityCheckFinalizer
-        .sanityDestinationChecks(Vector(outPoint),
-                                 Vector(EmptyScriptPubKey),
-                                 Vector(changeSPK),
-                                 missingOutputTx)
+        .sanityDestinationChecks(Vector(outPoint), Vector(EmptyScriptPubKey), Vector(changeSPK), missingOutputTx)
         .isFailure)
   }
 
   it should "detect extra outputs added" in {
     val newOutput =
-      TransactionOutput(Bitcoins.one,
-                        P2PKHScriptPubKey(ECPublicKey.freshPublicKey))
-    val extraOutputTx = BaseTransaction(tx.version,
-                                        tx.inputs,
-                                        Vector(output, newOutput),
-                                        tx.lockTime)
+      TransactionOutput(Bitcoins.one, P2PKHScriptPubKey(ECPublicKey.freshPublicKey))
+    val extraOutputTx = BaseTransaction(tx.version, tx.inputs, Vector(output, newOutput), tx.lockTime)
 
     assert(
       SanityCheckFinalizer
-        .sanityDestinationChecks(Vector(outPoint),
-                                 Vector(EmptyScriptPubKey),
-                                 Vector(changeSPK),
-                                 extraOutputTx)
+        .sanityDestinationChecks(Vector(outPoint), Vector(EmptyScriptPubKey), Vector(changeSPK), extraOutputTx)
         .isFailure)
   }
 
@@ -74,17 +58,11 @@ class StandardNonInteractiveFinalizerTest extends BitcoinSUnitTest {
       TransactionOutPoint(DoubleSha256DigestBE.empty, UInt32.one)
     val newInput =
       TransactionInput(newOutPoint, EmptyScriptSignature, UInt32.zero)
-    val extraOutPointTx = BaseTransaction(tx.version,
-                                          Vector(input, newInput),
-                                          tx.outputs,
-                                          tx.lockTime)
+    val extraOutPointTx = BaseTransaction(tx.version, Vector(input, newInput), tx.outputs, tx.lockTime)
 
     assert(
       SanityCheckFinalizer
-        .sanityDestinationChecks(Vector(outPoint),
-                                 Vector(EmptyScriptPubKey),
-                                 Vector(changeSPK),
-                                 extraOutPointTx)
+        .sanityDestinationChecks(Vector(outPoint), Vector(EmptyScriptPubKey), Vector(changeSPK), extraOutPointTx)
         .isFailure)
   }
 
@@ -93,8 +71,7 @@ class StandardNonInteractiveFinalizerTest extends BitcoinSUnitTest {
     val creditingOutput = TransactionOutput(CurrencyUnits.zero, spk)
     val destinations =
       Vector(TransactionOutput(Satoshis.one, EmptyScriptPubKey))
-    val creditingTx = BaseTransaction(version =
-                                        TransactionConstants.validLockVersion,
+    val creditingTx = BaseTransaction(version = TransactionConstants.validLockVersion,
                                       inputs = Nil,
                                       outputs = Vector(creditingOutput),
                                       lockTime = TransactionConstants.lockTime)
@@ -127,8 +104,7 @@ class StandardNonInteractiveFinalizerTest extends BitcoinSUnitTest {
     val creditingOutput = TransactionOutput(CurrencyUnits.zero, spk)
     val destinations =
       Vector(TransactionOutput(Satoshis.one, EmptyScriptPubKey))
-    val creditingTx = BaseTransaction(version =
-                                        TransactionConstants.validLockVersion,
+    val creditingTx = BaseTransaction(version = TransactionConstants.validLockVersion,
                                       inputs = Nil,
                                       outputs = Vector(creditingOutput),
                                       lockTime = TransactionConstants.lockTime)

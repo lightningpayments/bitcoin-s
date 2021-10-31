@@ -3,11 +3,7 @@ package org.bitcoins.core.protocol.dlc.models
 import org.bitcoins.core.currency.CurrencyUnit
 import org.bitcoins.core.dlc.accounting.{DLCAccounting, RateOfReturnUtil}
 import org.bitcoins.core.protocol.dlc.compute.DLCUtil
-import org.bitcoins.core.protocol.dlc.models.DLCMessage.{
-  DLCAccept,
-  DLCOffer,
-  DLCSign
-}
+import org.bitcoins.core.protocol.dlc.models.DLCMessage.{DLCAccept, DLCOffer, DLCSign}
 import org.bitcoins.core.protocol.transaction.WitnessTransaction
 import org.bitcoins.core.wallet.fee.FeeUnit
 import org.bitcoins.crypto._
@@ -48,11 +44,7 @@ sealed trait ClosedDLCStatus extends SignedDLCStatus {
   def counterPartyPayout: CurrencyUnit
 
   def accounting: DLCAccounting = {
-    DLCAccounting(dlcId,
-                  localCollateral,
-                  remoteCollateral,
-                  myPayout,
-                  counterPartyPayout)
+    DLCAccounting(dlcId, localCollateral, remoteCollateral, myPayout, counterPartyPayout)
   }
 
   def pnl: CurrencyUnit = accounting.pnl
@@ -235,8 +227,7 @@ object DLCStatus {
     }
   }
 
-  def getOracleSignatures(
-      status: DLCStatus): Option[Vector[SchnorrDigitalSignature]] = {
+  def getOracleSignatures(status: DLCStatus): Option[Vector[SchnorrDigitalSignature]] = {
     status match {
       case claimed: ClaimedDLCStatus =>
         Some(claimed.oracleSigs)
@@ -250,8 +241,7 @@ object DLCStatus {
       offer: DLCOffer,
       accept: DLCAccept,
       sign: DLCSign,
-      cet: WitnessTransaction): Option[
-    (SchnorrDigitalSignature, OracleOutcome)] = {
+      cet: WitnessTransaction): Option[(SchnorrDigitalSignature, OracleOutcome)] = {
     val localAdaptorSigs = if (isInitiator) {
       sign.cetSigs.outcomeSigs
     } else {

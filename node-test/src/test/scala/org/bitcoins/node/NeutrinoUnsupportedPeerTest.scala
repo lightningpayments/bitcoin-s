@@ -26,8 +26,7 @@ class NeutrinoUnsupportedPeerTest extends NodeTestWithCachedBitcoindV19 {
     } else {
       val outcomeF: Future[Outcome] = for {
         bitcoind <- cachedBitcoindWithFundsF
-        outcome = withNeutrinoNodeUnstarted(test, bitcoind)(system,
-                                                            getFreshConfig)
+        outcome = withNeutrinoNodeUnstarted(test, bitcoind)(system, getFreshConfig)
         f <- outcome.toFuture
       } yield f
       new FutureOutcome(outcomeF)
@@ -40,7 +39,6 @@ class NeutrinoUnsupportedPeerTest extends NodeTestWithCachedBitcoindV19 {
     nodeConnectedWithBitcoind: NeutrinoNodeConnectedWithBitcoind =>
       val node = nodeConnectedWithBitcoind.node
       val exception = recoverToExceptionIf[RuntimeException](node.start())
-      exception.map(e =>
-        assert(e.getMessage == "No peers supporting compact filters!"))
+      exception.map(e => assert(e.getMessage == "No peers supporting compact filters!"))
   }
 }

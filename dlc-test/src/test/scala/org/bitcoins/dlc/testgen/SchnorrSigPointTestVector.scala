@@ -10,8 +10,7 @@ case class SchnorrSigPointTestVector(
     signature: SchnorrDigitalSignature,
     sigPoint: ECPublicKey)
     extends TestVector {
-  require(signature.sig.getPublicKey == sigPoint,
-          s"Signature ($signature) does not match Signature Point ($sigPoint)")
+  require(signature.sig.getPublicKey == sigPoint, s"Signature ($signature) does not match Signature Point ($sigPoint)")
 
   def privKey: ECPrivateKey = inputs.privKey
   def privNonce: ECPrivateKey = inputs.privNonce
@@ -22,44 +21,33 @@ case class SchnorrSigPointTestVector(
   }
 }
 
-case class SchnorrSigPointTestVectorInput(
-    privKey: ECPrivateKey,
-    privNonce: ECPrivateKey,
-    msgHash: Sha256Digest)
+case class SchnorrSigPointTestVectorInput(privKey: ECPrivateKey, privNonce: ECPrivateKey, msgHash: Sha256Digest)
 
 object SchnorrSigPointTestVectorInput {
 
   def fromJson(json: JsValue): JsResult[SchnorrSigPointTestVectorInput] = {
-    json.validate[SchnorrSigPointTestVectorInput](
-      SchnorrSigPointTestVector.schnorrSigPointTestVectorInputFormat)
+    json.validate[SchnorrSigPointTestVectorInput](SchnorrSigPointTestVector.schnorrSigPointTestVectorInputFormat)
   }
 }
 
-object SchnorrSigPointTestVector
-    extends TestVectorParser[SchnorrSigPointTestVector] {
+object SchnorrSigPointTestVector extends TestVectorParser[SchnorrSigPointTestVector] {
 
-  def apply(
-      input: SchnorrSigPointTestVectorInput): SchnorrSigPointTestVector = {
+  def apply(input: SchnorrSigPointTestVectorInput): SchnorrSigPointTestVector = {
     SchnorrSigPointTestVector(input.privKey, input.privNonce, input.msgHash)
   }
 
-  def apply(
-      privKey: ECPrivateKey,
-      privNonce: ECPrivateKey,
-      msgHash: Sha256Digest): SchnorrSigPointTestVector = {
+  def apply(privKey: ECPrivateKey, privNonce: ECPrivateKey, msgHash: Sha256Digest): SchnorrSigPointTestVector = {
     val signature = privKey.schnorrSignWithNonce(msgHash.bytes, privNonce)
     val signaturePoint = signature.sig.getPublicKey
 
-    SchnorrSigPointTestVector(
-      SchnorrSigPointTestVectorInput(privKey, privNonce, msgHash),
-      privKey.schnorrPublicKey,
-      privNonce.schnorrNonce,
-      signature,
-      signaturePoint)
+    SchnorrSigPointTestVector(SchnorrSigPointTestVectorInput(privKey, privNonce, msgHash),
+                              privKey.schnorrPublicKey,
+                              privNonce.schnorrNonce,
+                              signature,
+                              signaturePoint)
   }
 
-  def networkElementFormat[T <: NetworkElement](
-      factory: Factory[T]): Format[T] = {
+  def networkElementFormat[T <: NetworkElement](factory: Factory[T]): Format[T] = {
     Format[T]({ json =>
                 json.validate[String].map(factory.fromHex)
               },
@@ -68,30 +56,25 @@ object SchnorrSigPointTestVector
               })
   }
 
-  implicit val privKeyFormat: Format[ECPrivateKey] = networkElementFormat(
-    ECPrivateKey)
+  implicit val privKeyFormat: Format[ECPrivateKey] = networkElementFormat(ECPrivateKey)
 
   implicit val schnorrPubKeyFormat: Format[SchnorrPublicKey] =
     networkElementFormat(SchnorrPublicKey)
 
-  implicit val schnorrNonceFormat: Format[SchnorrNonce] = networkElementFormat(
-    SchnorrNonce)
+  implicit val schnorrNonceFormat: Format[SchnorrNonce] = networkElementFormat(SchnorrNonce)
 
-  implicit val hashFormat: Format[Sha256Digest] = networkElementFormat(
-    Sha256Digest)
+  implicit val hashFormat: Format[Sha256Digest] = networkElementFormat(Sha256Digest)
 
   implicit val signatureFormat: Format[SchnorrDigitalSignature] =
     networkElementFormat(SchnorrDigitalSignature)
 
-  implicit val pubKeyFromat: Format[ECPublicKey] = networkElementFormat(
-    ECPublicKey)
+  implicit val pubKeyFromat: Format[ECPublicKey] = networkElementFormat(ECPublicKey)
 
-  implicit val schnorrSigPointTestVectorInputFormat: Format[
-    SchnorrSigPointTestVectorInput] =
+  implicit val schnorrSigPointTestVectorInputFormat: Format[SchnorrSigPointTestVectorInput] =
     Json.format[SchnorrSigPointTestVectorInput]
 
-  implicit val schnorrSigPointTestVectorFormat: Format[
-    SchnorrSigPointTestVector] = Json.format[SchnorrSigPointTestVector]
+  implicit val schnorrSigPointTestVectorFormat: Format[SchnorrSigPointTestVector] =
+    Json.format[SchnorrSigPointTestVector]
 
   override def fromJson(json: JsValue): JsResult[SchnorrSigPointTestVector] = {
     json.validate[SchnorrSigPointTestVector]

@@ -4,20 +4,11 @@ import org.bitcoins.core.currency.{Bitcoins, CurrencyUnit, Satoshis}
 import org.bitcoins.core.number.{UInt16, UInt32}
 import org.bitcoins.core.protocol.BlockStamp.BlockHeight
 import org.bitcoins.core.protocol.dlc.build.DLCTxBuilder
-import org.bitcoins.core.protocol.dlc.execution.{
-  DLCOutcome,
-  ExecutedDLCOutcome,
-  RefundDLCOutcome,
-  SetupDLC
-}
+import org.bitcoins.core.protocol.dlc.execution.{DLCOutcome, ExecutedDLCOutcome, RefundDLCOutcome, SetupDLC}
 import org.bitcoins.core.protocol.dlc.models._
 import org.bitcoins.core.protocol.script._
 import org.bitcoins.core.protocol.tlv.EnumOutcome
-import org.bitcoins.core.protocol.transaction.{
-  Transaction,
-  TransactionConstants,
-  TransactionOutPoint
-}
+import org.bitcoins.core.protocol.transaction.{Transaction, TransactionConstants, TransactionOutPoint}
 import org.bitcoins.core.script.crypto.HashType
 import org.bitcoins.core.wallet.fee.SatoshisPerVirtualByte
 import org.bitcoins.core.wallet.utxo._
@@ -51,16 +42,13 @@ class DLCClientIntegrationTest extends BitcoindRpcTest with DLCTest {
     for {
       client <- clientF
       addressForMining <- addressForMiningF
-      _ <- BitcoindRpcTestUtil.waitUntilBlock(blockHeight,
-                                              client,
-                                              addressForMining)
+      _ <- BitcoindRpcTestUtil.waitUntilBlock(blockHeight, client, addressForMining)
     } yield ()
   }
 
   behavior of "AdaptorDLCClient"
 
-  def constructDLC(numOutcomes: Int): Future[
-    (TestDLCClient, TestDLCClient, Vector[EnumOutcome])] = {
+  def constructDLC(numOutcomes: Int): Future[(TestDLCClient, TestDLCClient, Vector[EnumOutcome])] = {
     def fundingInput(input: CurrencyUnit): Bitcoins = {
       Bitcoins((input + Satoshis(200)).satoshis)
     }
@@ -86,8 +74,7 @@ class DLCClientIntegrationTest extends BitcoindRpcTest with DLCTest {
           .find { case (output, _) =>
             output.scriptPubKey match {
               case p2wpkh: P2WPKHWitnessSPKV0 =>
-                p2wpkh.pubKeyHash == P2WPKHWitnessSPKV0(
-                  inputPubKeyOffer).pubKeyHash
+                p2wpkh.pubKeyHash == P2WPKHWitnessSPKV0(inputPubKeyOffer).pubKeyHash
               case _ => false
             }
           }
@@ -107,8 +94,7 @@ class DLCClientIntegrationTest extends BitcoindRpcTest with DLCTest {
           .find { case (output, _) =>
             output.scriptPubKey match {
               case p2wpkh: P2WPKHWitnessSPKV0 =>
-                p2wpkh.pubKeyHash == P2WPKHWitnessSPKV0(
-                  inputPubKeyAccept).pubKeyHash
+                p2wpkh.pubKeyHash == P2WPKHWitnessSPKV0(inputPubKeyAccept).pubKeyHash
               case _ => false
             }
           }
@@ -118,8 +104,7 @@ class DLCClientIntegrationTest extends BitcoindRpcTest with DLCTest {
           .find { case (output, _) =>
             output.scriptPubKey match {
               case p2sh: P2SHScriptPubKey =>
-                p2sh.scriptHash == P2SHScriptPubKey(
-                  P2WSHWitnessSPKV0(acceptNestedSPK)).scriptHash
+                p2sh.scriptHash == P2SHScriptPubKey(P2WSHWitnessSPKV0(acceptNestedSPK)).scriptHash
               case _ => false
             }
           }
@@ -139,74 +124,68 @@ class DLCClientIntegrationTest extends BitcoindRpcTest with DLCTest {
        signedTxResult.hex)
     }
 
-    val localFundingUtxosF = fundedInputsTxidF.map {
-      case (prevTx, localOutputIndex, localOutputIndex2, _, _, tx) =>
-        Vector(
-          SpendingInfoWithSerialId(
-            ScriptSignatureParams(
-              inputInfo = P2WPKHV0InputInfo(
-                outPoint =
-                  TransactionOutPoint(prevTx.txIdBE, UInt32(localOutputIndex)),
-                amount = tx.outputs(localOutputIndex).value,
-                pubKey = inputPubKeyOffer
-              ),
-              prevTransaction = prevTx,
-              signer = inputPrivKeyOffer,
-              hashType = HashType.sigHashAll
+    val localFundingUtxosF = fundedInputsTxidF.map { case (prevTx, localOutputIndex, localOutputIndex2, _, _, tx) =>
+      Vector(
+        SpendingInfoWithSerialId(
+          ScriptSignatureParams(
+            inputInfo = P2WPKHV0InputInfo(
+              outPoint = TransactionOutPoint(prevTx.txIdBE, UInt32(localOutputIndex)),
+              amount = tx.outputs(localOutputIndex).value,
+              pubKey = inputPubKeyOffer
             ),
-            DLCMessage.genSerialId()
+            prevTransaction = prevTx,
+            signer = inputPrivKeyOffer,
+            hashType = HashType.sigHashAll
           ),
-          SpendingInfoWithSerialId(
-            ScriptSignatureParams(
-              P2WSHV0InputInfo(
-                outPoint =
-                  TransactionOutPoint(prevTx.txIdBE, UInt32(localOutputIndex2)),
-                amount = tx.outputs(localOutputIndex2).value,
-                scriptWitness = P2WSHWitnessV0(offerNestedSPK),
-                ConditionalPath.nonNestedTrue
-              ),
-              prevTransaction = prevTx,
-              signer = inputPrivKeyOffer2A,
-              hashType = HashType.sigHashAll
+          DLCMessage.genSerialId()
+        ),
+        SpendingInfoWithSerialId(
+          ScriptSignatureParams(
+            P2WSHV0InputInfo(
+              outPoint = TransactionOutPoint(prevTx.txIdBE, UInt32(localOutputIndex2)),
+              amount = tx.outputs(localOutputIndex2).value,
+              scriptWitness = P2WSHWitnessV0(offerNestedSPK),
+              ConditionalPath.nonNestedTrue
             ),
-            DLCMessage.genSerialId()
-          )
+            prevTransaction = prevTx,
+            signer = inputPrivKeyOffer2A,
+            hashType = HashType.sigHashAll
+          ),
+          DLCMessage.genSerialId()
         )
+      )
     }
 
-    val remoteFundingUtxosF = fundedInputsTxidF.map {
-      case (prevTx, _, _, remoteOutputIndex, remoteOutputIndex2, tx) =>
-        Vector(
-          SpendingInfoWithSerialId(
-            ScriptSignatureParams(
-              P2WPKHV0InputInfo(
-                outPoint =
-                  TransactionOutPoint(prevTx.txIdBE, UInt32(remoteOutputIndex)),
-                amount = tx.outputs(remoteOutputIndex).value,
-                pubKey = inputPubKeyAccept
-              ),
-              prevTx,
-              inputPrivKeyAccept,
-              HashType.sigHashAll
+    val remoteFundingUtxosF = fundedInputsTxidF.map { case (prevTx, _, _, remoteOutputIndex, remoteOutputIndex2, tx) =>
+      Vector(
+        SpendingInfoWithSerialId(
+          ScriptSignatureParams(
+            P2WPKHV0InputInfo(
+              outPoint = TransactionOutPoint(prevTx.txIdBE, UInt32(remoteOutputIndex)),
+              amount = tx.outputs(remoteOutputIndex).value,
+              pubKey = inputPubKeyAccept
             ),
-            DLCMessage.genSerialId()
+            prevTx,
+            inputPrivKeyAccept,
+            HashType.sigHashAll
           ),
-          SpendingInfoWithSerialId(
-            ScriptSignatureParams(
-              P2SHNestedSegwitV0InputInfo(
-                outPoint = TransactionOutPoint(prevTx.txIdBE,
-                                               UInt32(remoteOutputIndex2)),
-                amount = tx.outputs(remoteOutputIndex2).value,
-                scriptWitness = P2WSHWitnessV0(acceptNestedSPK),
-                ConditionalPath.NoCondition
-              ),
-              prevTransaction = prevTx,
-              signers = Vector(inputPrivKeyAccept2A, inputPrivKeyAccept2B),
-              hashType = HashType.sigHashAll
+          DLCMessage.genSerialId()
+        ),
+        SpendingInfoWithSerialId(
+          ScriptSignatureParams(
+            P2SHNestedSegwitV0InputInfo(
+              outPoint = TransactionOutPoint(prevTx.txIdBE, UInt32(remoteOutputIndex2)),
+              amount = tx.outputs(remoteOutputIndex2).value,
+              scriptWitness = P2WSHWitnessV0(acceptNestedSPK),
+              ConditionalPath.NoCondition
             ),
-            DLCMessage.genSerialId()
-          )
+            prevTransaction = prevTx,
+            signers = Vector(inputPrivKeyAccept2A, inputPrivKeyAccept2B),
+            hashType = HashType.sigHashAll
+          ),
+          DLCMessage.genSerialId()
         )
+      )
     }
 
     val feeRateF = clientF
@@ -228,31 +207,29 @@ class DLCClientIntegrationTest extends BitcoindRpcTest with DLCTest {
       val remoteFundingPrivKey = ECPrivateKey.freshPrivateKey
       val remotePayoutPrivKey = ECPrivateKey.freshPrivateKey
 
-      val localFundingInputs = localFundingUtxos.map {
-        case SpendingInfoWithSerialId(utxo, serialId) =>
-          DLCFundingInput(
-            serialId,
-            utxo.prevTransaction,
-            utxo.outPoint.vout,
-            TransactionConstants.sequence,
-            UInt16(utxo.maxWitnessLen),
-            InputInfo
-              .getRedeemScript(utxo.inputInfo)
-              .map(_.asInstanceOf[WitnessScriptPubKey])
-          )
+      val localFundingInputs = localFundingUtxos.map { case SpendingInfoWithSerialId(utxo, serialId) =>
+        DLCFundingInput(
+          serialId,
+          utxo.prevTransaction,
+          utxo.outPoint.vout,
+          TransactionConstants.sequence,
+          UInt16(utxo.maxWitnessLen),
+          InputInfo
+            .getRedeemScript(utxo.inputInfo)
+            .map(_.asInstanceOf[WitnessScriptPubKey])
+        )
       }
-      val remoteFundingInputs = remoteFundingUtxos.map {
-        case SpendingInfoWithSerialId(utxo, serialId) =>
-          DLCFundingInput(
-            serialId,
-            utxo.prevTransaction,
-            utxo.outPoint.vout,
-            TransactionConstants.sequence,
-            UInt16(utxo.maxWitnessLen),
-            InputInfo
-              .getRedeemScript(utxo.inputInfo)
-              .map(_.asInstanceOf[WitnessScriptPubKey])
-          )
+      val remoteFundingInputs = remoteFundingUtxos.map { case SpendingInfoWithSerialId(utxo, serialId) =>
+        DLCFundingInput(
+          serialId,
+          utxo.prevTransaction,
+          utxo.outPoint.vout,
+          TransactionConstants.sequence,
+          UInt16(utxo.maxWitnessLen),
+          InputInfo
+            .getRedeemScript(utxo.inputInfo)
+            .map(_.asInstanceOf[WitnessScriptPubKey])
+        )
       }
 
       constructEnumDLCClients(
@@ -273,9 +250,7 @@ class DLCClientIntegrationTest extends BitcoindRpcTest with DLCTest {
     }
   }
 
-  def validateOutcome(
-      outcome: DLCOutcome,
-      builder: DLCTxBuilder): Future[Assertion] = {
+  def validateOutcome(outcome: DLCOutcome, builder: DLCTxBuilder): Future[Assertion] = {
     val fundingTx = outcome.fundingTx
     val closingTx = outcome match {
       case ExecutedDLCOutcome(_, cet, _, _) => cet
@@ -287,10 +262,7 @@ class DLCClientIntegrationTest extends BitcoindRpcTest with DLCTest {
       regtestFundingTx <- client.getRawTransaction(fundingTx.txIdBE)
       regtestClosingTx <- client.getRawTransaction(closingTx.txIdBE)
     } yield {
-      DLCFeeTestUtil.validateFees(builder,
-                                  fundingTx,
-                                  closingTx,
-                                  fundingTxSigs = 5)
+      DLCFeeTestUtil.validateFees(builder, fundingTx, closingTx, fundingTxSigs = 5)
       assert(noEmptySPKOutputs(fundingTx))
       assert(regtestFundingTx.hex == fundingTx)
       assert(regtestFundingTx.confirmations.isDefined)
@@ -303,9 +275,7 @@ class DLCClientIntegrationTest extends BitcoindRpcTest with DLCTest {
     }
   }
 
-  def setupDLC(
-      dlcOffer: TestDLCClient,
-      dlcAccept: TestDLCClient): Future[(SetupDLC, SetupDLC)] = {
+  def setupDLC(dlcOffer: TestDLCClient, dlcAccept: TestDLCClient): Future[(SetupDLC, SetupDLC)] = {
     val fundingTxF = {
       val fundingTxP = Promise[Transaction]()
 
@@ -318,9 +288,7 @@ class DLCClientIntegrationTest extends BitcoindRpcTest with DLCTest {
 
               fundingTxResultF.onComplete {
                 case Success(fundingTxResult) =>
-                  if (
-                    fundingTxResult.confirmations.isEmpty || fundingTxResult.confirmations.get < 3
-                  ) {
+                  if (fundingTxResult.confirmations.isEmpty || fundingTxResult.confirmations.get < 3) {
                     ()
                   } else {
                     fundingTxP.trySuccess(fundingTxResult.hex)
@@ -333,9 +301,8 @@ class DLCClientIntegrationTest extends BitcoindRpcTest with DLCTest {
       }
 
       val cancelOnFundingFound =
-        system.scheduler.scheduleWithFixedDelay(
-          initialDelay = 100.milliseconds,
-          delay = 1.second)(runnable = watchForFundingTx)
+        system.scheduler.scheduleWithFixedDelay(initialDelay = 100.milliseconds, delay = 1.second)(runnable =
+          watchForFundingTx)
 
       fundingTxP.future.foreach(_ => cancelOnFundingFound.cancel())
 
@@ -345,25 +312,21 @@ class DLCClientIntegrationTest extends BitcoindRpcTest with DLCTest {
     setupDLC(dlcOffer, dlcAccept, _ => fundingTxF, publishTransaction)
   }
 
-  def constructAndSetupDLC(numOutcomes: Int): Future[
-    (TestDLCClient, SetupDLC, TestDLCClient, SetupDLC, Vector[EnumOutcome])] = {
+  def constructAndSetupDLC(
+      numOutcomes: Int): Future[(TestDLCClient, SetupDLC, TestDLCClient, SetupDLC, Vector[EnumOutcome])] = {
     for {
       (offerDLC, acceptDLC, outcomes) <- constructDLC(numOutcomes)
       (offerSetup, acceptSetup) <- setupDLC(offerDLC, acceptDLC)
     } yield (offerDLC, offerSetup, acceptDLC, acceptSetup, outcomes)
   }
 
-  def executeForCase(
-      outcomeIndex: Int,
-      numOutcomes: Int,
-      local: Boolean): Future[Assertion] = {
+  def executeForCase(outcomeIndex: Int, numOutcomes: Int, local: Boolean): Future[Assertion] = {
     for {
       (offerDLC, offerSetup, acceptDLC, acceptSetup, outcomes) <-
         constructAndSetupDLC(numOutcomes)
 
-      oracleSig = genEnumOracleSignature(
-        offerDLC.offer.oracleInfo.asInstanceOf[EnumSingleOracleInfo],
-        outcomes(outcomeIndex).outcome)
+      oracleSig = genEnumOracleSignature(offerDLC.offer.oracleInfo.asInstanceOf[EnumSingleOracleInfo],
+                                         outcomes(outcomeIndex).outcome)
 
       (unilateralDLC, unilateralSetup, otherDLC, otherSetup) = {
         if (local) {
@@ -373,20 +336,14 @@ class DLCClientIntegrationTest extends BitcoindRpcTest with DLCTest {
         }
       }
 
-      unilateralOutcome <- unilateralDLC.executeDLC(
-        unilateralSetup,
-        Future.successful(Vector(oracleSig)))
+      unilateralOutcome <- unilateralDLC.executeDLC(unilateralSetup, Future.successful(Vector(oracleSig)))
       otherOutcome <-
         otherDLC.executeDLC(otherSetup, Future.successful(Vector(oracleSig)))
 
-      _ <- recoverToSucceededIf[BitcoindException](
-        publishTransaction(unilateralOutcome.cet))
-      _ <- waitUntilBlock(
-        unilateralDLC.timeouts.contractMaturity.toUInt32.toInt - 1)
-      _ <- recoverToSucceededIf[BitcoindException](
-        publishTransaction(unilateralOutcome.cet))
-      _ <- waitUntilBlock(
-        unilateralDLC.timeouts.contractMaturity.toUInt32.toInt)
+      _ <- recoverToSucceededIf[BitcoindException](publishTransaction(unilateralOutcome.cet))
+      _ <- waitUntilBlock(unilateralDLC.timeouts.contractMaturity.toUInt32.toInt - 1)
+      _ <- recoverToSucceededIf[BitcoindException](publishTransaction(unilateralOutcome.cet))
+      _ <- waitUntilBlock(unilateralDLC.timeouts.contractMaturity.toUInt32.toInt)
       _ <- publishTransaction(unilateralOutcome.cet)
       _ <- validateOutcome(unilateralOutcome, offerDLC.dlcTxBuilder)
     } yield {
@@ -397,8 +354,7 @@ class DLCClientIntegrationTest extends BitcoindRpcTest with DLCTest {
 
   def executeForRefundCase(numOutcomes: Int): Future[Assertion] = {
     for {
-      (offerDLC, offerSetup, acceptDLC, acceptSetup, _) <- constructAndSetupDLC(
-        numOutcomes)
+      (offerDLC, offerSetup, acceptDLC, acceptSetup, _) <- constructAndSetupDLC(numOutcomes)
 
       acceptOutcome = acceptDLC.executeRefundDLC(acceptSetup)
       offerOutcome = offerDLC.executeRefundDLC(offerSetup)
@@ -429,9 +385,7 @@ class DLCClientIntegrationTest extends BitcoindRpcTest with DLCTest {
     }
   }
 
-  def runTests(
-      exec: (Int, Int, Boolean) => Future[Assertion],
-      local: Boolean): Future[Assertion] = {
+  def runTests(exec: (Int, Int, Boolean) => Future[Assertion], local: Boolean): Future[Assertion] = {
     runTestsForParam(numOutcomesToTest) { numOutcomes =>
       runTestsForParam(indicesToTest(numOutcomes)) { outcomeIndex =>
         exec(outcomeIndex, numOutcomes, local)

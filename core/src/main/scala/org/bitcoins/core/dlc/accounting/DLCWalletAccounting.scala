@@ -14,8 +14,7 @@ case class DLCWalletAccounting(
 
 object DLCWalletAccounting {
 
-  def fromDLCAccounting(
-      accountings: Vector[DLCAccounting]): DLCWalletAccounting = {
+  def fromDLCAccounting(accountings: Vector[DLCAccounting]): DLCWalletAccounting = {
     val myCollateral =
       accountings.foldLeft(CurrencyUnits.zero)(_ + _.myCollateral)
     val theirCollateral =

@@ -23,29 +23,23 @@ class BitcoinSUtilTest extends BitcoinSUnitTest {
 
   it must "convert a byte to a bit vector" in {
     val byte = 0.toByte
-    BytesUtil.byteToBitVector(byte).toIndexedSeq must be(
-      Seq(false, false, false, false, false, false, false, false))
+    BytesUtil.byteToBitVector(byte).toIndexedSeq must be(Seq(false, false, false, false, false, false, false, false))
 
     val byte1 = 1.toByte
-    BytesUtil.byteToBitVector(byte1).toIndexedSeq must be(
-      Seq(false, false, false, false, false, false, false, true))
+    BytesUtil.byteToBitVector(byte1).toIndexedSeq must be(Seq(false, false, false, false, false, false, false, true))
 
     val byte2 = 2.toByte
-    BytesUtil.byteToBitVector(byte2).toIndexedSeq must be(
-      Seq(false, false, false, false, false, false, true, false))
+    BytesUtil.byteToBitVector(byte2).toIndexedSeq must be(Seq(false, false, false, false, false, false, true, false))
 
     val byte3 = 3.toByte
-    BytesUtil.byteToBitVector(byte3).toIndexedSeq must be(
-      Seq(false, false, false, false, false, false, true, true))
+    BytesUtil.byteToBitVector(byte3).toIndexedSeq must be(Seq(false, false, false, false, false, false, true, true))
 
     val maxByte = 0xff.toByte
-    BytesUtil.byteToBitVector(maxByte).toIndexedSeq must be(
-      Seq(true, true, true, true, true, true, true, true))
+    BytesUtil.byteToBitVector(maxByte).toIndexedSeq must be(Seq(true, true, true, true, true, true, true, true))
   }
 
   it must "convert a bit vector to a byte" in {
-    val bitVector0 = BitVector.bits(
-      Seq(false, false, false, false, false, false, false, false))
+    val bitVector0 = BitVector.bits(Seq(false, false, false, false, false, false, false, false))
     BytesUtil.bitVectorToBytes(bitVector0).toByte() must be(0.toByte)
 
     val bitVector1 =

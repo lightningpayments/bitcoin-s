@@ -64,11 +64,7 @@ object EclairAuthCredentials {
       rpcPort: Int,
       bitcoindRpcUri: URI,
       datadir: Option[File] = None): EclairAuthCredentials = {
-    AuthCredentialsImpl(password,
-                        bitcoinAuthOpt,
-                        rpcPort,
-                        bitcoindRpcUri,
-                        datadir)
+    AuthCredentialsImpl(password, bitcoinAuthOpt, rpcPort, bitcoindRpcUri, datadir)
   }
 
   def fromDatadir(datadir: File): EclairAuthCredentials = {
@@ -88,18 +84,14 @@ object EclairAuthCredentials {
   def fromConfig(config: Config): EclairAuthCredentials =
     fromConfig(config, None)
 
-  private[config] def fromConfig(
-      config: Config,
-      datadir: Option[File]): EclairAuthCredentials = {
+  private[config] def fromConfig(config: Config, datadir: Option[File]): EclairAuthCredentials = {
 
     val bitcoindUsername = config.getString("eclair.bitcoind.rpcuser")
     val bitcoindPassword = config.getString("eclair.bitcoind.rpcpassword")
 
     val defaultBitcoindPort = getDefaultBitcoindRpcPort(config)
     val bitcoindRpcPort =
-      ConfigUtil.getIntOrElse(config,
-                              "eclair.bitcoind.rpcport",
-                              defaultBitcoindPort)
+      ConfigUtil.getIntOrElse(config, "eclair.bitcoind.rpcport", defaultBitcoindPort)
 
     val bitcoindRpcHost =
       ConfigUtil.getStringOrElse(config, "eclair.bitcoind.host", "localhost")
@@ -111,8 +103,7 @@ object EclairAuthCredentials {
     val eclairRpcPort = ConfigUtil.getIntOrElse(config, "eclair.api.port", 8080)
 
     val bitcoindAuth = {
-      BitcoindAuthCredentials.PasswordBased(username = bitcoindUsername,
-                                            password = bitcoindPassword)
+      BitcoindAuthCredentials.PasswordBased(username = bitcoindUsername, password = bitcoindPassword)
     }
 
     EclairAuthCredentials(password = password,
@@ -129,8 +120,7 @@ object EclairAuthCredentials {
       case "testnet" => TestNet3.rpcPort
       case "regtest" => RegTest.rpcPort
       case _: String =>
-        throw new IllegalArgumentException(
-          s"Got invalid chain parameter $network ")
+        throw new IllegalArgumentException(s"Got invalid chain parameter $network ")
     }
   }
 

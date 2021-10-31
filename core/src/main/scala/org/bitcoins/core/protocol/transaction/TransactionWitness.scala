@@ -10,9 +10,7 @@ import scodec.bits.ByteVector
   * The witness data for [[org.bitcoins.core.protocol.script.ScriptSignature ScriptSignature]] in this transaction
   * [[https://github.com/bitcoin/bitcoin/blob/b4e4ba475a5679e09f279aaf2a83dcf93c632bdb/src/primitives/transaction.h#L232-L268]]
   */
-sealed abstract class TransactionWitness
-    extends SeqWrapper[ScriptWitness]
-    with NetworkElement {
+sealed abstract class TransactionWitness extends SeqWrapper[ScriptWitness] with NetworkElement {
   val witnesses: Vector[ScriptWitness]
   override protected val wrapped: Vector[ScriptWitness] = witnesses
 
@@ -61,8 +59,7 @@ sealed abstract class TransactionWitness
   *
   * @see https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki#specification
   */
-case class EmptyWitness(witnesses: Vector[EmptyScriptWitness.type])
-    extends TransactionWitness
+case class EmptyWitness(witnesses: Vector[EmptyScriptWitness.type]) extends TransactionWitness
 
 object EmptyWitness {
 
@@ -79,8 +76,7 @@ object EmptyWitness {
 
 object TransactionWitness {
 
-  private case class TransactionWitnessImpl(witnesses: Vector[ScriptWitness])
-      extends TransactionWitness
+  private case class TransactionWitnessImpl(witnesses: Vector[ScriptWitness]) extends TransactionWitness
 
   def apply(witnesses: Vector[ScriptWitness]): TransactionWitness = {
     if (witnesses.exists(_ != EmptyScriptWitness)) {
@@ -99,8 +95,7 @@ object TransactionWitness {
     * [[org.bitcoins.core.protocol.script.EmptyScriptWitness EmptyScriptWitness]] and then calls the normal
     * [[org.bitcoins.core.protocol.transaction.TransactionWitness  TransactionWitness]] constructor
     */
-  def fromWitOpt(
-      witnesses: Vector[Option[ScriptWitness]]): TransactionWitness = {
+  def fromWitOpt(witnesses: Vector[Option[ScriptWitness]]): TransactionWitness = {
     val replaced: Vector[ScriptWitness] = witnesses.map {
       case Some(wit) => wit
       case None      => EmptyScriptWitness

@@ -14,12 +14,7 @@ import org.bitcoins.testkit.node.fixture.{
   SpvNodeConnectedWithBitcoind,
   SpvNodeConnectedWithBitcoindV21
 }
-import org.bitcoins.testkit.rpc.{
-  CachedBitcoind,
-  CachedBitcoindNewest,
-  CachedBitcoindPairV21,
-  CachedBitcoindV19
-}
+import org.bitcoins.testkit.rpc.{CachedBitcoind, CachedBitcoindNewest, CachedBitcoindPairV21, CachedBitcoindV19}
 import org.bitcoins.testkit.tor.CachedTor
 import org.bitcoins.testkit.wallet.BitcoinSWalletTest
 import org.bitcoins.wallet.WalletCallbacks
@@ -37,16 +32,13 @@ trait NodeTestWithCachedBitcoind extends BaseNodeTest with CachedTor {
   def withSpvNodeFundedWalletBitcoindCached(
       test: OneArgAsyncTest,
       bip39PasswordOpt: Option[String],
-      bitcoind: BitcoindRpcClient)(implicit
-      system: ActorSystem,
-      appConfig: BitcoinSAppConfig): FutureOutcome = {
+      bitcoind: BitcoindRpcClient)(implicit system: ActorSystem, appConfig: BitcoinSAppConfig): FutureOutcome = {
 
     makeDependentFixture[SpvNodeFundedWalletBitcoind](
       build = () =>
-        NodeUnitTest.createSpvNodeFundedWalletFromBitcoind(
-          walletCallbacks = WalletCallbacks.empty,
-          bip39PasswordOpt = bip39PasswordOpt,
-          bitcoind = bitcoind)(
+        NodeUnitTest.createSpvNodeFundedWalletFromBitcoind(walletCallbacks = WalletCallbacks.empty,
+                                                           bip39PasswordOpt = bip39PasswordOpt,
+                                                           bitcoind = bitcoind)(
           system, // Force V18 because Spv is disabled on versions after
           appConfig),
       { case x: SpvNodeFundedWalletBitcoind =>
@@ -55,74 +47,56 @@ trait NodeTestWithCachedBitcoind extends BaseNodeTest with CachedTor {
     )(test)
   }
 
-  def withSpvNodeConnectedToBitcoindCached(
-      test: OneArgAsyncTest,
-      bitcoind: BitcoindRpcClient)(implicit
+  def withSpvNodeConnectedToBitcoindCached(test: OneArgAsyncTest, bitcoind: BitcoindRpcClient)(implicit
       system: ActorSystem,
       appConfig: BitcoinSAppConfig): FutureOutcome = {
-    val nodeWithBitcoindBuilder: () => Future[SpvNodeConnectedWithBitcoind] = {
-      () =>
-        require(appConfig.nodeConf.nodeType == NodeType.SpvNode)
-        for {
-          peer <- createPeer(bitcoind)
-          node <- NodeUnitTest.createSpvNode(peer)(system,
-                                                   appConfig.chainConf,
-                                                   appConfig.nodeConf)
-          started <- node.start()
-          _ <- NodeUnitTest.syncSpvNode(started, bitcoind)
-        } yield SpvNodeConnectedWithBitcoind(node, bitcoind)
+    val nodeWithBitcoindBuilder: () => Future[SpvNodeConnectedWithBitcoind] = { () =>
+      require(appConfig.nodeConf.nodeType == NodeType.SpvNode)
+      for {
+        peer <- createPeer(bitcoind)
+        node <- NodeUnitTest.createSpvNode(peer)(system, appConfig.chainConf, appConfig.nodeConf)
+        started <- node.start()
+        _ <- NodeUnitTest.syncSpvNode(started, bitcoind)
+      } yield SpvNodeConnectedWithBitcoind(node, bitcoind)
     }
 
-    makeDependentFixture[SpvNodeConnectedWithBitcoind](
-      build = nodeWithBitcoindBuilder,
-      { case x: SpvNodeConnectedWithBitcoind =>
-        NodeUnitTest.destroyNode(x.node)
-      })(test)
+    makeDependentFixture[SpvNodeConnectedWithBitcoind](build = nodeWithBitcoindBuilder,
+                                                       { case x: SpvNodeConnectedWithBitcoind =>
+                                                         NodeUnitTest.destroyNode(x.node)
+                                                       })(test)
   }
 
-  def withNeutrinoNodeUnstarted(
-      test: OneArgAsyncTest,
-      bitcoind: BitcoindRpcClient)(implicit
+  def withNeutrinoNodeUnstarted(test: OneArgAsyncTest, bitcoind: BitcoindRpcClient)(implicit
       system: ActorSystem,
       appConfig: BitcoinSAppConfig): FutureOutcome = {
-    val nodeWithBitcoindBuilder: () => Future[
-      NeutrinoNodeConnectedWithBitcoind] = { () =>
+    val nodeWithBitcoindBuilder: () => Future[NeutrinoNodeConnectedWithBitcoind] = { () =>
       require(appConfig.nodeConf.nodeType == NodeType.NeutrinoNode)
       for {
-        node <- NodeUnitTest.createNeutrinoNode(bitcoind)(system,
-                                                          appConfig.chainConf,
-                                                          appConfig.nodeConf)
+        node <- NodeUnitTest.createNeutrinoNode(bitcoind)(system, appConfig.chainConf, appConfig.nodeConf)
       } yield NeutrinoNodeConnectedWithBitcoind(node, bitcoind)
     }
-    makeDependentFixture[NeutrinoNodeConnectedWithBitcoind](
-      build = nodeWithBitcoindBuilder,
-      { case x: NeutrinoNodeConnectedWithBitcoind =>
-        tearDownNode(x.node)
-      })(test)
+    makeDependentFixture[NeutrinoNodeConnectedWithBitcoind](build = nodeWithBitcoindBuilder,
+                                                            { case x: NeutrinoNodeConnectedWithBitcoind =>
+                                                              tearDownNode(x.node)
+                                                            })(test)
   }
 
-  def withNeutrinoNodeConnectedToBitcoinds(
-      test: OneArgAsyncTest,
-      bitcoinds: Vector[BitcoindRpcClient])(implicit
+  def withNeutrinoNodeConnectedToBitcoinds(test: OneArgAsyncTest, bitcoinds: Vector[BitcoindRpcClient])(implicit
       system: ActorSystem,
       appConfig: BitcoinSAppConfig): FutureOutcome = {
-    val nodeWithBitcoindBuilder: () => Future[
-      NeutrinoNodeConnectedWithBitcoinds] = { () =>
+    val nodeWithBitcoindBuilder: () => Future[NeutrinoNodeConnectedWithBitcoinds] = { () =>
       require(appConfig.nodeConf.nodeType == NodeType.NeutrinoNode)
       for {
-        node <- NodeUnitTest.createNeutrinoNode(bitcoinds)(system,
-                                                           appConfig.chainConf,
-                                                           appConfig.nodeConf)
+        node <- NodeUnitTest.createNeutrinoNode(bitcoinds)(system, appConfig.chainConf, appConfig.nodeConf)
         startedNode <- node.start()
         //is it enough to just sync with one bitcoind client for a test?
         syncedNode <- syncNeutrinoNode(startedNode, bitcoinds(0))
       } yield NeutrinoNodeConnectedWithBitcoinds(syncedNode, bitcoinds)
     }
-    makeDependentFixture[NeutrinoNodeConnectedWithBitcoinds](
-      build = nodeWithBitcoindBuilder,
-      { case x: NeutrinoNodeConnectedWithBitcoinds =>
-        tearDownNode(x.node)
-      })(test)
+    makeDependentFixture[NeutrinoNodeConnectedWithBitcoinds](build = nodeWithBitcoindBuilder,
+                                                             { case x: NeutrinoNodeConnectedWithBitcoinds =>
+                                                               tearDownNode(x.node)
+                                                             })(test)
   }
 
   def withNeutrinoNodeFundedWalletBitcoind(
@@ -135,27 +109,23 @@ trait NodeTestWithCachedBitcoind extends BaseNodeTest with CachedTor {
     makeDependentFixture[NeutrinoNodeFundedWalletBitcoind](
       build = () =>
         NodeUnitTest
-          .createNeutrinoNodeFundedWalletFromBitcoind(
-            bip39PasswordOpt = bip39PasswordOpt,
-            bitcoind,
-            walletCallbacks = walletCallbacks)(system, appConfig),
+          .createNeutrinoNodeFundedWalletFromBitcoind(bip39PasswordOpt = bip39PasswordOpt,
+                                                      bitcoind,
+                                                      walletCallbacks = walletCallbacks)(system, appConfig),
       { case x: NeutrinoNodeFundedWalletBitcoind =>
         tearDownNodeWithBitcoind(x)
       }
     )(test)
   }
 
-  def withBitcoindPeer(
-      test: OneArgAsyncTest,
-      bitcoind: BitcoindRpcClient): FutureOutcome = {
+  def withBitcoindPeer(test: OneArgAsyncTest, bitcoind: BitcoindRpcClient): FutureOutcome = {
     makeDependentFixture[Peer](
       () => NodeTestUtil.getBitcoindPeer(bitcoind),
       _ => Future.unit
     )(test)
   }
 
-  private def tearDownNodeWithBitcoind(
-      nodeWithBitcoind: NodeFundedWalletBitcoind): Future[Unit] = {
+  private def tearDownNodeWithBitcoind(nodeWithBitcoind: NodeFundedWalletBitcoind): Future[Unit] = {
     val node = nodeWithBitcoind.node
     val destroyNodeF = tearDownNode(node)
     val destroyWalletF =
@@ -176,9 +146,7 @@ trait NodeTestWithCachedBitcoind extends BaseNodeTest with CachedTor {
   }
 }
 
-trait NodeTestWithCachedBitcoindNewest
-    extends NodeTestWithCachedBitcoind
-    with CachedBitcoindNewest {
+trait NodeTestWithCachedBitcoindNewest extends NodeTestWithCachedBitcoind with CachedBitcoindNewest {
 
   override def afterAll(): Unit = {
     super[CachedBitcoindNewest].afterAll()
@@ -186,9 +154,7 @@ trait NodeTestWithCachedBitcoindNewest
   }
 }
 
-trait NodeTestWithCachedBitcoindPair
-    extends NodeTestWithCachedBitcoind
-    with CachedBitcoindPairV21 {
+trait NodeTestWithCachedBitcoindPair extends NodeTestWithCachedBitcoind with CachedBitcoindPairV21 {
 
   override def afterAll(): Unit = {
     super[CachedBitcoindPairV21].afterAll()
@@ -196,23 +162,16 @@ trait NodeTestWithCachedBitcoindPair
   }
 }
 
-trait NodeTestWithCachedBitcoindV19
-    extends NodeTestWithCachedBitcoind
-    with CachedBitcoindV19 {
+trait NodeTestWithCachedBitcoindV19 extends NodeTestWithCachedBitcoind with CachedBitcoindV19 {
 
-  def withSpvNodeConnectedToBitcoindV19Cached(
-      test: OneArgAsyncTest,
-      bitcoind: BitcoindV21RpcClient)(implicit
+  def withSpvNodeConnectedToBitcoindV19Cached(test: OneArgAsyncTest, bitcoind: BitcoindV21RpcClient)(implicit
       system: ActorSystem,
       appConfig: BitcoinSAppConfig): FutureOutcome = {
-    val nodeWithBitcoindBuilder: () => Future[
-      SpvNodeConnectedWithBitcoindV21] = { () =>
+    val nodeWithBitcoindBuilder: () => Future[SpvNodeConnectedWithBitcoindV21] = { () =>
       require(appConfig.nodeConf.nodeType == NodeType.SpvNode)
       for {
         peer <- createPeer(bitcoind)
-        node <- NodeUnitTest.createSpvNode(peer)(system,
-                                                 appConfig.chainConf,
-                                                 appConfig.nodeConf)
+        node <- NodeUnitTest.createSpvNode(peer)(system, appConfig.chainConf, appConfig.nodeConf)
         started <- node.start()
         _ <- NodeUnitTest.syncSpvNode(started, bitcoind)
       } yield SpvNodeConnectedWithBitcoindV21(node, bitcoind)

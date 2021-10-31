@@ -14,11 +14,7 @@ import org.bitcoins.core.wallet.utxo.{
 }
 import org.bitcoins.crypto.{DoubleSha256DigestBE, ECPrivateKey, ECPublicKey}
 import org.bitcoins.testkitcore.Implicits._
-import org.bitcoins.testkitcore.gen.{
-  CreditingTxGen,
-  FeeUnitGen,
-  ScriptGenerators
-}
+import org.bitcoins.testkitcore.gen.{CreditingTxGen, FeeUnitGen, ScriptGenerators}
 import org.bitcoins.testkitcore.util.BitcoinSUnitTest
 
 class ShufflingNonInteractiveFinalizerTest extends BitcoinSUnitTest {
@@ -33,43 +29,27 @@ class ShufflingNonInteractiveFinalizerTest extends BitcoinSUnitTest {
     TransactionInput(outPoint, EmptyScriptSignature, UInt32.zero)
   private val output = TransactionOutput(Bitcoins.one, EmptyScriptPubKey)
 
-  private val tx = BaseTransaction(TransactionConstants.validLockVersion,
-                                   Vector(input),
-                                   Vector(output),
-                                   UInt32.zero)
+  private val tx = BaseTransaction(TransactionConstants.validLockVersion, Vector(input), Vector(output), UInt32.zero)
 
   private val changeSPK = P2PKHScriptPubKey(ECPublicKey.freshPublicKey)
 
   it should "detect a missing destination" in {
-    val missingOutputTx = BaseTransaction(tx.version,
-                                          tx.inputs,
-                                          Vector.empty[TransactionOutput],
-                                          tx.lockTime)
+    val missingOutputTx = BaseTransaction(tx.version, tx.inputs, Vector.empty[TransactionOutput], tx.lockTime)
 
     assert(
       SanityCheckFinalizer
-        .sanityDestinationChecks(Vector(outPoint),
-                                 Vector(EmptyScriptPubKey),
-                                 Vector(changeSPK),
-                                 missingOutputTx)
+        .sanityDestinationChecks(Vector(outPoint), Vector(EmptyScriptPubKey), Vector(changeSPK), missingOutputTx)
         .isFailure)
   }
 
   it should "detect extra outputs added" in {
     val newOutput =
-      TransactionOutput(Bitcoins.one,
-                        P2PKHScriptPubKey(ECPublicKey.freshPublicKey))
-    val extraOutputTx = BaseTransaction(tx.version,
-                                        tx.inputs,
-                                        Vector(output, newOutput),
-                                        tx.lockTime)
+      TransactionOutput(Bitcoins.one, P2PKHScriptPubKey(ECPublicKey.freshPublicKey))
+    val extraOutputTx = BaseTransaction(tx.version, tx.inputs, Vector(output, newOutput), tx.lockTime)
 
     assert(
       SanityCheckFinalizer
-        .sanityDestinationChecks(Vector(outPoint),
-                                 Vector(EmptyScriptPubKey),
-                                 Vector(changeSPK),
-                                 extraOutputTx)
+        .sanityDestinationChecks(Vector(outPoint), Vector(EmptyScriptPubKey), Vector(changeSPK), extraOutputTx)
         .isFailure)
   }
 
@@ -78,17 +58,11 @@ class ShufflingNonInteractiveFinalizerTest extends BitcoinSUnitTest {
       TransactionOutPoint(DoubleSha256DigestBE.empty, UInt32.one)
     val newInput =
       TransactionInput(newOutPoint, EmptyScriptSignature, UInt32.zero)
-    val extraOutPointTx = BaseTransaction(tx.version,
-                                          Vector(input, newInput),
-                                          tx.outputs,
-                                          tx.lockTime)
+    val extraOutPointTx = BaseTransaction(tx.version, Vector(input, newInput), tx.outputs, tx.lockTime)
 
     assert(
       SanityCheckFinalizer
-        .sanityDestinationChecks(Vector(outPoint),
-                                 Vector(EmptyScriptPubKey),
-                                 Vector(changeSPK),
-                                 extraOutPointTx)
+        .sanityDestinationChecks(Vector(outPoint), Vector(EmptyScriptPubKey), Vector(changeSPK), extraOutPointTx)
         .isFailure)
   }
 
@@ -97,8 +71,7 @@ class ShufflingNonInteractiveFinalizerTest extends BitcoinSUnitTest {
     val creditingOutput = TransactionOutput(CurrencyUnits.zero, spk)
     val destinations =
       Vector(TransactionOutput(Satoshis.one, EmptyScriptPubKey))
-    val creditingTx = BaseTransaction(version =
-                                        TransactionConstants.validLockVersion,
+    val creditingTx = BaseTransaction(version = TransactionConstants.validLockVersion,
                                       inputs = Nil,
                                       outputs = Vector(creditingOutput),
                                       lockTime = TransactionConstants.lockTime)
@@ -131,8 +104,7 @@ class ShufflingNonInteractiveFinalizerTest extends BitcoinSUnitTest {
     val creditingOutput = TransactionOutput(CurrencyUnits.zero, spk)
     val destinations =
       Vector(TransactionOutput(Satoshis.one, EmptyScriptPubKey))
-    val creditingTx = BaseTransaction(version =
-                                        TransactionConstants.validLockVersion,
+    val creditingTx = BaseTransaction(version = TransactionConstants.validLockVersion,
                                       inputs = Nil,
                                       outputs = Vector(creditingOutput),
                                       lockTime = TransactionConstants.lockTime)
@@ -192,9 +164,7 @@ class ShufflingNonInteractiveFinalizerTest extends BitcoinSUnitTest {
   }
 
   it must "create a shuffled transaction with a ShufflingNonInteractiveFinalizer" in {
-    forAll(CreditingTxGen.inputsAndOutputs(),
-           FeeUnitGen.feeUnit(100),
-           ScriptGenerators.scriptPubKey) {
+    forAll(CreditingTxGen.inputsAndOutputs(), FeeUnitGen.feeUnit(100), ScriptGenerators.scriptPubKey) {
       case ((inputs, outputs), feeRate, (changeSpk, _)) =>
         val txs =
           0.to(20).foldLeft(Vector.empty[Transaction]) { (accum, _) =>
@@ -202,9 +172,7 @@ class ShufflingNonInteractiveFinalizerTest extends BitcoinSUnitTest {
               .txFrom(outputs, inputs, feeRate, changeSpk) +: accum
           }
 
-        assert(
-          inputs.size <= 1 || txs.exists(
-            _.inputs.map(_.previousOutput) != inputs.map(_.outPoint)))
+        assert(inputs.size <= 1 || txs.exists(_.inputs.map(_.previousOutput) != inputs.map(_.outPoint)))
         assert(outputs.size <= 1 || txs.exists(_.outputs != outputs))
     }
   }

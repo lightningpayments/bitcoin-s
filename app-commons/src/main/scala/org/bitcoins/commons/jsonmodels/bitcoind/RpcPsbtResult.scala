@@ -11,8 +11,7 @@ import org.bitcoins.crypto.{ECDigitalSignature, ECPublicKey, ECPublicKeyBytes}
 
 sealed abstract class RpcPsbtResult
 
-final case class WalletProcessPsbtResult(psbt: PSBT, complete: Boolean)
-    extends RpcPsbtResult
+final case class WalletProcessPsbtResult(psbt: PSBT, complete: Boolean) extends RpcPsbtResult
 
 sealed abstract class FinalizePsbtResult extends RpcPsbtResult
 final case class FinalizedPsbt(hex: Transaction) extends FinalizePsbtResult

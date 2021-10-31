@@ -25,8 +25,7 @@ class PeerMessageReceiver(
     extends P2PLogger {
   import ref.dispatcher
 
-  require(nodeAppConfig.nodeType != NodeType.BitcoindBackend,
-          "Bitcoind should handle the P2P interactions")
+  require(nodeAppConfig.nodeType != NodeType.BitcoindBackend, "Bitcoind should handle the P2P interactions")
 
   /** This method is called when we have received
     * a [[akka.io.Tcp.Connected]] message from our peer
@@ -37,8 +36,8 @@ class PeerMessageReceiver(
   protected[networking] def connect(client: P2PClient): PeerMessageReceiver = {
 
     state match {
-      case bad @ (_: Initializing | _: Normal | _: InitializedDisconnect |
-          _: InitializedDisconnectDone | _: Disconnected) =>
+      case bad @ (_: Initializing | _: Normal | _: InitializedDisconnect | _: InitializedDisconnectDone |
+          _: Disconnected) =>
         throw new RuntimeException(s"Cannot call connect when in state=${bad}")
       case Preconnection =>
         logger.info(s"Connection established with peer=${peer}")
@@ -61,19 +60,14 @@ class PeerMessageReceiver(
     */
   private[networking] def initializeDisconnect(): PeerMessageReceiver = {
     state match {
-      case bad @ (_: Disconnected | _: InitializedDisconnectDone |
-          Preconnection) =>
-        throw new RuntimeException(
-          s"Cannot initialize disconnect from peer=$peer when in state=$bad")
+      case bad @ (_: Disconnected | _: InitializedDisconnectDone | Preconnection) =>
+        throw new RuntimeException(s"Cannot initialize disconnect from peer=$peer when in state=$bad")
       case _: InitializedDisconnect =>
-        logger.warn(
-          s"Already initialized disconnected from peer=$peer, this is a noop")
+        logger.warn(s"Already initialized disconnected from peer=$peer, this is a noop")
         this
       case state @ (_: Initializing | _: Normal) =>
-        val newState = InitializedDisconnect(state.clientConnectP,
-                                             state.clientDisconnectP,
-                                             state.versionMsgP,
-                                             state.verackMsgP)
+        val newState =
+          InitializedDisconnect(state.clientConnectP, state.clientDisconnectP, state.versionMsgP, state.verackMsgP)
         toState(newState)
     }
   }
@@ -81,16 +75,13 @@ class PeerMessageReceiver(
   protected[networking] def disconnect(): PeerMessageReceiver = {
     logger.trace(s"Disconnecting with internalstate=${state}")
     state match {
-      case bad @ (_: Disconnected | Preconnection |
-          _: InitializedDisconnectDone) =>
-        throw new RuntimeException(
-          s"Cannot disconnect from peer=${peer} when in state=${bad}")
+      case bad @ (_: Disconnected | Preconnection | _: InitializedDisconnectDone) =>
+        throw new RuntimeException(s"Cannot disconnect from peer=${peer} when in state=${bad}")
       case good: InitializedDisconnect =>
-        val newState = InitializedDisconnectDone(
-          clientConnectP = good.clientConnectP,
-          clientDisconnectP = good.clientDisconnectP.success(()),
-          versionMsgP = good.versionMsgP,
-          verackMsgP = good.verackMsgP)
+        val newState = InitializedDisconnectDone(clientConnectP = good.clientConnectP,
+                                                 clientDisconnectP = good.clientDisconnectP.success(()),
+                                                 versionMsgP = good.versionMsgP,
+                                                 verackMsgP = good.verackMsgP)
         val newNode =
           node.updateDataMessageHandler(node.getDataMessageHandler.reset)
         new PeerMessageReceiver(newNode, newState, peer)
@@ -122,16 +113,14 @@ class PeerMessageReceiver(
   private[networking] def isInitialized: Boolean = state.isInitialized
 
   def handleNetworkMessageReceived(
-      networkMsgRecv: PeerMessageReceiver.NetworkMessageReceived): Future[
-    PeerMessageReceiver] = {
+      networkMsgRecv: PeerMessageReceiver.NetworkMessageReceived): Future[PeerMessageReceiver] = {
 
     val client = networkMsgRecv.client
 
     //create a way to send a response if we need too
     val peerMsgSender = PeerMessageSender(client)
 
-    logger.debug(
-      s"Received message=${networkMsgRecv.msg.header.commandName} from peer=${client.peer} state=${state} ")
+    logger.debug(s"Received message=${networkMsgRecv.msg.header.commandName} from peer=${client.peer} state=${state} ")
     networkMsgRecv.msg.payload match {
       case controlPayload: ControlPayload =>
         handleControlPayload(payload = controlPayload, sender = peerMsgSender)
@@ -147,15 +136,12 @@ class PeerMessageReceiver(
     * @param payload
     * @param sender
     */
-  private def handleDataPayload(
-      payload: DataPayload,
-      sender: PeerMessageSender): Future[PeerMessageReceiver] = {
+  private def handleDataPayload(payload: DataPayload, sender: PeerMessageSender): Future[PeerMessageReceiver] = {
     //else it means we are receiving this data payload from a peer,
     //we need to handle it
-    node.getDataMessageHandler.handleDataPayload(payload, sender, node).map {
-      handler =>
-        val newNode = node.updateDataMessageHandler(handler)
-        new PeerMessageReceiver(newNode, state, peer)
+    node.getDataMessageHandler.handleDataPayload(payload, sender, node).map { handler =>
+      val newNode = node.updateDataMessageHandler(handler)
+      new PeerMessageReceiver(newNode, state, peer)
     }
   }
 
@@ -165,9 +151,7 @@ class PeerMessageReceiver(
     * @param sender the [[PeerMessageSender]] we can use to initialize an subsequent messages that need to be sent
     * @return the requests with the request removed for which the @payload is responding too
     */
-  private def handleControlPayload(
-      payload: ControlPayload,
-      sender: PeerMessageSender): Future[PeerMessageReceiver] = {
+  private def handleControlPayload(payload: ControlPayload, sender: PeerMessageSender): Future[PeerMessageReceiver] = {
     node.controlMessageHandler
       .handleControlPayload(payload, sender, peer, this)
   }
@@ -192,8 +176,7 @@ object PeerMessageReceiver {
     def client: P2PClient
   }
 
-  case class NetworkMessageReceived(msg: NetworkMessage, client: P2PClient)
-      extends PeerMessageReceiverMsg
+  case class NetworkMessageReceived(msg: NetworkMessage, client: P2PClient) extends PeerMessageReceiverMsg
 
   def apply(state: PeerMessageReceiverState, node: Node, peer: Peer)(implicit
       ref: ActorRefFactory,
@@ -210,16 +193,12 @@ object PeerMessageReceiver {
       ref: ActorRefFactory,
       nodeAppConfig: NodeAppConfig
   ): PeerMessageReceiver = {
-    PeerMessageReceiver(node = node,
-                        state = PeerMessageReceiverState.fresh(),
-                        peer = peer)
+    PeerMessageReceiver(node = node, state = PeerMessageReceiverState.fresh(), peer = peer)
   }
 
   def newReceiver(node: Node, peer: Peer)(implicit
       nodeAppConfig: NodeAppConfig,
       ref: ActorRefFactory): PeerMessageReceiver = {
-    PeerMessageReceiver(state = PeerMessageReceiverState.fresh(),
-                        node = node,
-                        peer = peer)
+    PeerMessageReceiver(state = PeerMessageReceiverState.fresh(), node = node, peer = peer)
   }
 }

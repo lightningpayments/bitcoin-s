@@ -4,26 +4,13 @@ import org.bitcoins.core.crypto.BaseTxSigComponent
 import org.bitcoins.core.currency.CurrencyUnits
 import org.bitcoins.core.number.UInt32
 import org.bitcoins.core.policy.Policy
-import org.bitcoins.core.protocol.script.{
-  EmptyScriptPubKey,
-  P2SHScriptSignature,
-  ScriptPubKey,
-  ScriptSignature
-}
-import org.bitcoins.core.protocol.transaction.{
-  Transaction,
-  TransactionInput,
-  TransactionOutput
-}
+import org.bitcoins.core.protocol.script.{EmptyScriptPubKey, P2SHScriptSignature, ScriptPubKey, ScriptSignature}
+import org.bitcoins.core.protocol.transaction.{Transaction, TransactionInput, TransactionOutput}
 import org.bitcoins.core.protocol.{Bech32Address, BitcoinAddress}
 import org.bitcoins.core.script.PreExecutionScriptProgram
 import org.bitcoins.core.script.bitwise.{OP_EQUAL, OP_EQUALVERIFY}
 import org.bitcoins.core.script.constant._
-import org.bitcoins.core.script.crypto.{
-  OP_CHECKMULTISIG,
-  OP_CHECKSIG,
-  OP_HASH160
-}
+import org.bitcoins.core.script.crypto.{OP_CHECKMULTISIG, OP_CHECKSIG, OP_HASH160}
 import org.bitcoins.core.script.stack.OP_DUP
 import org.bitcoins.core.serializers.script.RawScriptPubKeyParser
 import org.bitcoins.core.serializers.transaction.RawTransactionInputParser
@@ -53,8 +40,7 @@ object TestUtil {
     ScriptConstant(
       "3044022016ffdbb7c57634903c5e018fcfc48d59f4e37dc4bc3bbc9ba4e6ee39150bca030220119c2241a931819bc1a75d3596e4029d803d1cd6de123bf8a1a1a2c3665e1fac01"),
     BytesToPushOntoStack(33),
-    ScriptConstant(
-      "02af7dad03e682fcd0427b5c24140c220ac9d8abe286c15f8cf5bf77eed19c3652")
+    ScriptConstant("02af7dad03e682fcd0427b5c24140c220ac9d8abe286c15f8cf5bf77eed19c3652")
   )
 
   val p2pkhOutputScript = "1976a914e2e7c1ab3f807151e832dd1accb3d4f5d7d19b4b88ac"
@@ -62,13 +48,12 @@ object TestUtil {
   val p2pkhOutputScriptNotParsedAsm =
     "OP_DUP OP_HASH160 e2e7c1ab3f807151e832dd1accb3d4f5d7d19b4b OP_EQUALVERIFY OP_CHECKSIG"
 
-  val p2pkhOutputScriptAsm = List(
-    OP_DUP,
-    OP_HASH160,
-    BytesToPushOntoStack(20),
-    ScriptConstant("e2e7c1ab3f807151e832dd1accb3d4f5d7d19b4b"),
-    OP_EQUALVERIFY,
-    OP_CHECKSIG)
+  val p2pkhOutputScriptAsm = List(OP_DUP,
+                                  OP_HASH160,
+                                  BytesToPushOntoStack(20),
+                                  ScriptConstant("e2e7c1ab3f807151e832dd1accb3d4f5d7d19b4b"),
+                                  OP_EQUALVERIFY,
+                                  OP_CHECKSIG)
 
   //tx id for p2sh inputs/outputs cad1082e674a7bd3bc9ab1bc7804ba8a57523607c876b8eb2cbe645f2b1803d6
   val p2shInputScriptNotParsedAsm =
@@ -84,8 +69,7 @@ object TestUtil {
     ScriptConstant(
       "304402207df6dd8dad22d49c3c83d8031733c32a53719278eb7985d3b35b375d776f84f102207054f9209a1e87d55feafc90aa04c33008e5bae9191da22aeaa16efde96f41f001"),
     BytesToPushOntoStack(37),
-    ScriptConstant(
-      "512102b022902a0fdd71e831c37e4136c2754a59887be0618fb75336d7ab67e2982ff551ae")
+    ScriptConstant("512102b022902a0fdd71e831c37e4136c2754a59887be0618fb75336d7ab67e2982ff551ae")
   )
 
   val p2shOutputScript = "17a914eda8ae08b5c9f973f49543e90a7c292367b3337c87"
@@ -93,11 +77,8 @@ object TestUtil {
   val p2shOutputScriptNotParsedAsm =
     "OP_HASH160 eda8ae08b5c9f973f49543e90a7c292367b3337c OP_EQUAL"
 
-  val p2shOutputScriptAsm = List(
-    OP_HASH160,
-    BytesToPushOntoStack(20),
-    ScriptConstant("eda8ae08b5c9f973f49543e90a7c292367b3337c"),
-    OP_EQUAL)
+  val p2shOutputScriptAsm =
+    List(OP_HASH160, BytesToPushOntoStack(20), ScriptConstant("eda8ae08b5c9f973f49543e90a7c292367b3337c"), OP_EQUAL)
 
   //https://btc.blockr.io/api/v1/tx/raw/791fe035d312dcf9196b48649a5c9a027198f623c0a5f5bd4cc311b8864dd0cf
   val rawP2shInputScriptSigHashSingle =
@@ -128,11 +109,9 @@ object TestUtil {
       BytesToPushOntoStack(71),
       OP_2,
       BytesToPushOntoStack(33),
-      ScriptConstant(
-        "0369d26ebd086523384a0f89f293d4c327a65fa73332d8efd1097cb35231295b83"),
+      ScriptConstant("0369d26ebd086523384a0f89f293d4c327a65fa73332d8efd1097cb35231295b83"),
       BytesToPushOntoStack(33),
-      ScriptConstant(
-        "02480863e5c4a4e9763f5380c44fcfe6a3b7787397076cf9ea1049303a9d34f721"),
+      ScriptConstant("02480863e5c4a4e9763f5380c44fcfe6a3b7787397076cf9ea1049303a9d34f721"),
       OP_2,
       OP_CHECKMULTISIG
     )
@@ -223,8 +202,7 @@ object TestUtil {
     testProgram match {
       case p: PreExecutionScriptProgram => p
       case _ =>
-        throw new RuntimeException(
-          "this must be a script program that is pre execution")
+        throw new RuntimeException("this must be a script program that is pre execution")
     }
 
   def testProgramExecutionInProgress =
@@ -253,8 +231,7 @@ object TestUtil {
         BytesToPushOntoStack(71),
         ScriptConstant("173014020002107777777777777777777777777777777701"),
         BytesToPushOntoStack(33),
-        ScriptConstant(
-          "02af7dad03e682fcd0427b5c24140c220ac9d8abe286c15f8cf5bf77eed19c3652")
+        ScriptConstant("02af7dad03e682fcd0427b5c24140c220ac9d8abe286c15f8cf5bf77eed19c3652")
       ))
 
   def multiSigScriptPubKeyHex =

@@ -19,10 +19,8 @@ class ScriptWitnessSpec extends Properties("ScriptWitnessSpec") {
   }
 
   property("pull script signature out of p2wsh witness") = {
-    Prop.forAll(ScriptGenerators.rawScriptPubKey,
-                ScriptGenerators.rawScriptSignature) {
-      case ((spk, _), scriptSig) =>
-        P2WSHWitnessV0(spk, scriptSig).scriptSignature == scriptSig
+    Prop.forAll(ScriptGenerators.rawScriptPubKey, ScriptGenerators.rawScriptSignature) { case ((spk, _), scriptSig) =>
+      P2WSHWitnessV0(spk, scriptSig).scriptSignature == scriptSig
     }
   }
 }

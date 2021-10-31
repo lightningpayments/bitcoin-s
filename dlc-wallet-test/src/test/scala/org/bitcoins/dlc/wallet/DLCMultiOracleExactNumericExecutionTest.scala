@@ -22,8 +22,7 @@ class DLCMultiOracleExactNumericExecutionTest extends BitcoinSDualWalletTest {
     0.until(5).map(_ => ECPrivateKey.freshPrivateKey).toVector
 
   val kValues: Vector[Vector[ECPrivateKey]] =
-    privateKeys.map(_ =>
-      0.until(numDigits).map(_ => ECPrivateKey.freshPrivateKey).toVector)
+    privateKeys.map(_ => 0.until(numDigits).map(_ => ECPrivateKey.freshPrivateKey).toVector)
 
   val contractDescriptor: NumericContractDescriptor =
     DLCWalletUtil.multiNonceContractDescriptor
@@ -45,9 +44,7 @@ class DLCMultiOracleExactNumericExecutionTest extends BitcoinSDualWalletTest {
     withDualDLCWallets(test, contractOraclePair)
   }
 
-  def getSigs(contractInfo: ContractInfo): (
-      Vector[OracleAttestmentTLV],
-      Vector[OracleAttestmentTLV]) = {
+  def getSigs(contractInfo: ContractInfo): (Vector[OracleAttestmentTLV], Vector[OracleAttestmentTLV]) = {
     contractInfo.contractDescriptor match {
       case _: NumericContractDescriptor => ()
       case _: EnumContractDescriptor =>
@@ -68,16 +65,12 @@ class DLCMultiOracleExactNumericExecutionTest extends BitcoinSDualWalletTest {
 
     val initiatorWinVec = initiatorWinOutcome.digits
 
-    val initWinOutcomes: NumericOracleOutcome = genNumericOracleOutcome(
-      initChosenOracles,
-      contractInfo,
-      initiatorWinVec,
-      None)
+    val initWinOutcomes: NumericOracleOutcome =
+      genNumericOracleOutcome(initChosenOracles, contractInfo, initiatorWinVec, None)
 
     val initiatorWinSigs =
       privateKeys.zip(kValues).flatMap { case (priv, kValues) =>
-        val outcomeOpt = initWinOutcomes.oraclesAndOutcomes.find(
-          _._1.publicKey == priv.schnorrPublicKey)
+        val outcomeOpt = initWinOutcomes.oraclesAndOutcomes.find(_._1.publicKey == priv.schnorrPublicKey)
 
         outcomeOpt.map { case (oracleInfo, outcome) =>
           val sigs = outcome.digits.zip(kValues).map { case (num, kValue) =>
@@ -88,10 +81,7 @@ class DLCMultiOracleExactNumericExecutionTest extends BitcoinSDualWalletTest {
             case v0: OracleEventV0TLV => v0.eventId
           }
 
-          OracleAttestmentV0TLV(eventId,
-                                priv.schnorrPublicKey,
-                                sigs,
-                                outcome.digits.map(_.toString))
+          OracleAttestmentV0TLV(eventId, priv.schnorrPublicKey, sigs, outcome.digits.map(_.toString))
         }
       }
 
@@ -108,16 +98,12 @@ class DLCMultiOracleExactNumericExecutionTest extends BitcoinSDualWalletTest {
 
     val recipientWinVec = recipientWinOutcome.digits
 
-    val recipientWinOutcomes: NumericOracleOutcome = genNumericOracleOutcome(
-      recipientChosenOracles,
-      contractInfo,
-      recipientWinVec,
-      None)
+    val recipientWinOutcomes: NumericOracleOutcome =
+      genNumericOracleOutcome(recipientChosenOracles, contractInfo, recipientWinVec, None)
 
     val recipientWinSigs =
       privateKeys.zip(kValues).flatMap { case (priv, kValues) =>
-        val outcomeOpt = recipientWinOutcomes.oraclesAndOutcomes.find(
-          _._1.publicKey == priv.schnorrPublicKey)
+        val outcomeOpt = recipientWinOutcomes.oraclesAndOutcomes.find(_._1.publicKey == priv.schnorrPublicKey)
 
         outcomeOpt.map { case (oracleInfo, outcome) =>
           val sigs = outcome.digits.zip(kValues).map { case (num, kValue) =>
@@ -128,10 +114,7 @@ class DLCMultiOracleExactNumericExecutionTest extends BitcoinSDualWalletTest {
             case v0: OracleEventV0TLV => v0.eventId
           }
 
-          OracleAttestmentV0TLV(eventId,
-                                priv.schnorrPublicKey,
-                                sigs,
-                                outcome.digits.map(_.toString))
+          OracleAttestmentV0TLV(eventId, priv.schnorrPublicKey, sigs, outcome.digits.map(_.toString))
         }
       }
 
@@ -146,10 +129,7 @@ class DLCMultiOracleExactNumericExecutionTest extends BitcoinSDualWalletTest {
       (sigs, _) = getSigs(status.contractInfo)
       func = (wallet: DLCWallet) => wallet.executeDLC(contractId, sigs)
 
-      result <- dlcExecutionTest(wallets = wallets,
-                                 asInitiator = true,
-                                 func = func,
-                                 expectedOutputs = 1)
+      result <- dlcExecutionTest(wallets = wallets, asInitiator = true, func = func, expectedOutputs = 1)
 
       _ = assert(result)
 
@@ -185,10 +165,7 @@ class DLCMultiOracleExactNumericExecutionTest extends BitcoinSDualWalletTest {
       (_, sigs) = getSigs(status.contractInfo)
       func = (wallet: DLCWallet) => wallet.executeDLC(contractId, sigs)
 
-      result <- dlcExecutionTest(wallets = wallets,
-                                 asInitiator = false,
-                                 func = func,
-                                 expectedOutputs = 1)
+      result <- dlcExecutionTest(wallets = wallets, asInitiator = false, func = func, expectedOutputs = 1)
 
       _ = assert(result)
 
@@ -217,9 +194,7 @@ class DLCMultiOracleExactNumericExecutionTest extends BitcoinSDualWalletTest {
     }
   }
 
-  private def verifyingMatchingOracleSigs(
-      statusA: Claimed,
-      statusB: RemoteClaimed): Boolean = {
+  private def verifyingMatchingOracleSigs(statusA: Claimed, statusB: RemoteClaimed): Boolean = {
     val outcome = statusB.oracleOutcome
     outcome match {
       case _: EnumOracleOutcome =>
@@ -227,9 +202,8 @@ class DLCMultiOracleExactNumericExecutionTest extends BitcoinSDualWalletTest {
       case numeric: NumericOracleOutcome =>
         val aggR = numeric.aggregateNonce
 
-        val neededNonces = numeric.oraclesAndOutcomes.flatMap {
-          case (oracle, outcome) =>
-            oracle.nonces.take(outcome.serialized.length)
+        val neededNonces = numeric.oraclesAndOutcomes.flatMap { case (oracle, outcome) =>
+          oracle.nonces.take(outcome.serialized.length)
         }
 
         val aggS = statusA.oracleSigs

@@ -3,11 +3,7 @@ package org.bitcoins.node
 import org.bitcoins.core.currency._
 import org.bitcoins.server.BitcoinSAppConfig
 import org.bitcoins.testkit.BitcoinSTestAppConfig
-import org.bitcoins.testkit.node.{
-  NodeTestUtil,
-  NodeTestWithCachedBitcoindNewest,
-  SpvNodeFundedWalletBitcoind
-}
+import org.bitcoins.testkit.node.{NodeTestUtil, NodeTestWithCachedBitcoindNewest, SpvNodeFundedWalletBitcoind}
 import org.bitcoins.testkit.util.TorUtil
 import org.scalatest.{FutureOutcome, Outcome}
 
@@ -27,10 +23,7 @@ class UpdateBloomFilterTest extends NodeTestWithCachedBitcoindNewest {
     val outcome: Future[Outcome] = for {
       _ <- torClientF
       bitcoind <- cachedBitcoindWithFundsF
-      outcome = withSpvNodeFundedWalletBitcoindCached(
-        test,
-        getBIP39PasswordOpt(),
-        bitcoind)(system, getFreshConfig)
+      outcome = withSpvNodeFundedWalletBitcoindCached(test, getBIP39PasswordOpt(), bitcoind)(system, getFreshConfig)
       f <- outcome.toFuture
     } yield f
     new FutureOutcome(outcome)

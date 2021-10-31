@@ -45,8 +45,7 @@ private[wallet] trait AccountHandling { self: Wallet =>
   }
 
   /** @inheritdoc */
-  override def getDefaultAccountForType(
-      addressType: AddressType): Future[AccountDb] = {
+  override def getDefaultAccountForType(addressType: AddressType): Future[AccountDb] = {
     val hdCoin = addressType match {
       case Legacy       => HDCoin(HDPurposes.Legacy, DEFAULT_HD_COIN_TYPE)
       case NestedSegWit => HDCoin(HDPurposes.NestedSegWit, DEFAULT_HD_COIN_TYPE)

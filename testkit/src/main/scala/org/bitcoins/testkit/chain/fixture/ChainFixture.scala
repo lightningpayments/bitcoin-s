@@ -18,24 +18,17 @@ object ChainFixture {
 
   case class PopulatedBlockHeaderDAO(dao: BlockHeaderDAO) extends ChainFixture
 
-  case class GenisisChainHandler(chainHandler: ChainHandler)
-      extends ChainFixture
+  case class GenisisChainHandler(chainHandler: ChainHandler) extends ChainFixture
 
   /** Genesis chain handler, but has both genesis [[org.bitcoins.core.api.chain.db.CompactFilterHeaderDb]] and
     * [[org.bitcoins.core.api.chain.db.CompactFilterDb]] inserted into their respective tables
     */
-  case class GenesisChainHandlerWithGenesisFilters(chainHandler: ChainHandler)
-      extends ChainFixture
+  case class GenesisChainHandlerWithGenesisFilters(chainHandler: ChainHandler) extends ChainFixture
 
   /** Genesis chain handler with the genesis block header cached in memory */
-  case class GenesisChainHandlerCachedWithGenesisFilters(
-      chainHandler: ChainHandlerCached)
-      extends ChainFixture
+  case class GenesisChainHandlerCachedWithGenesisFilters(chainHandler: ChainHandlerCached) extends ChainFixture
 
-  case class PopulatedChainHandler(chainHandler: ChainHandler)
-      extends ChainFixture
+  case class PopulatedChainHandler(chainHandler: ChainHandler) extends ChainFixture
 
-  case class BitcoindZmqChainHandlerWithBlock(
-      bitcoindChainHandler: BitcoindChainHandlerViaZmq)
-      extends ChainFixture
+  case class BitcoindZmqChainHandlerWithBlock(bitcoindChainHandler: BitcoindChainHandlerViaZmq) extends ChainFixture
 }

@@ -20,8 +20,7 @@ trait WalletSync extends Logging {
       wallet: Wallet,
       getBlockHeaderFunc: DoubleSha256DigestBE => Future[BlockHeader],
       getBestBlockHashFunc: () => Future[DoubleSha256DigestBE],
-      getBlockFunc: DoubleSha256DigestBE => Future[Block])(implicit
-      ec: ExecutionContext): Future[Wallet] = {
+      getBlockFunc: DoubleSha256DigestBE => Future[Block])(implicit ec: ExecutionContext): Future[Wallet] = {
     val bestBlockHashF = getBestBlockHashFunc()
     val bestBlockHeaderF = for {
       bestBlockHash <- bestBlockHashF
@@ -38,9 +37,8 @@ trait WalletSync extends Logging {
 
     val syncedWalletF = for {
       blocksToSync <- blocksToSyncF
-      syncedWallet <- FutureUtil.foldLeftAsync(wallet, blocksToSync) {
-        case (wallet, nextBlock) =>
-          wallet.processBlock(nextBlock)
+      syncedWallet <- FutureUtil.foldLeftAsync(wallet, blocksToSync) { case (wallet, nextBlock) =>
+        wallet.processBlock(nextBlock)
       }
     } yield syncedWallet
 
@@ -52,8 +50,7 @@ trait WalletSync extends Logging {
       wallet: Wallet,
       currentTipBlockHashBE: DoubleSha256DigestBE,
       accum: Vector[Block],
-      getBlock: DoubleSha256DigestBE => Future[Block])(implicit
-      ec: ExecutionContext): Future[Vector[Block]] = {
+      getBlock: DoubleSha256DigestBE => Future[Block])(implicit ec: ExecutionContext): Future[Vector[Block]] = {
     val initSyncDescriptorOptF = wallet.getSyncDescriptorOpt()
     val genesisBlockHashBE = wallet.walletConfig.chain.genesisHashBE
     for {
@@ -63,9 +60,7 @@ trait WalletSync extends Logging {
         case None             => wallet.chainParams.genesisHashBE
       }
       currentBlockOpt <- {
-        if (
-          walletBestHash == currentTipBlockHashBE || currentTipBlockHashBE == genesisBlockHashBE
-        ) {
+        if (walletBestHash == currentTipBlockHashBE || currentTipBlockHashBE == genesisBlockHashBE) {
           Future.successful(None) // done syncing!
         } else {
           getBlock(currentTipBlockHashBE)
@@ -77,8 +72,7 @@ trait WalletSync extends Logging {
           case Some(currentBlock) =>
             //loop again as we need to keep syncing
             getBlocksToSync(wallet = wallet,
-                            currentTipBlockHashBE =
-                              currentBlock.blockHeader.previousBlockHashBE,
+                            currentTipBlockHashBE = currentBlock.blockHeader.previousBlockHashBE,
                             accum = currentBlock +: accum,
                             getBlock = getBlock)
           case None =>

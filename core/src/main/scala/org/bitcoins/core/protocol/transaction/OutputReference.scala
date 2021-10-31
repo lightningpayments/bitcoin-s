@@ -4,18 +4,14 @@ import org.bitcoins.crypto.{Factory, NetworkElement}
 import scodec.bits.ByteVector
 
 /** Represents a generic on-chain output */
-case class OutputReference(
-    outPoint: TransactionOutPoint,
-    output: TransactionOutput)
-    extends NetworkElement {
+case class OutputReference(outPoint: TransactionOutPoint, output: TransactionOutput) extends NetworkElement {
 
   override def bytes: ByteVector = {
     outPoint.bytes ++ output.bytes
   }
 }
 
-object EmptyOutputReference
-    extends OutputReference(EmptyTransactionOutPoint, EmptyTransactionOutput) {
+object EmptyOutputReference extends OutputReference(EmptyTransactionOutPoint, EmptyTransactionOutput) {
   override def toString: String = "EmptyOutputReference"
 }
 

@@ -7,10 +7,7 @@ import org.bitcoins.core.number.UInt32
 import org.bitcoins.core.protocol.script._
 import org.bitcoins.core.protocol.transaction._
 import org.bitcoins.core.psbt.GlobalPSBTRecord.{UnsignedTransaction, Version}
-import org.bitcoins.core.psbt.InputPSBTRecord.{
-  NonWitnessOrUnknownUTXO,
-  WitnessUTXO
-}
+import org.bitcoins.core.psbt.InputPSBTRecord.{NonWitnessOrUnknownUTXO, WitnessUTXO}
 import org.bitcoins.core.psbt.PSBTGlobalKeyId.XPubKeyKeyId
 import org.bitcoins.core.script.constant._
 import org.bitcoins.core.script.crypto.HashType
@@ -103,8 +100,7 @@ class PSBTUnitTest extends BitcoinSUnitTest {
         0
       )
       .addRedeemOrWitnessScriptToInput(
-        ScriptPubKey.fromAsmBytes(
-          hex"00208c2353173743b595dfb4a07b72ba8e42e3797da74e87fe7d9d7497e3b2028903"),
+        ScriptPubKey.fromAsmBytes(hex"00208c2353173743b595dfb4a07b72ba8e42e3797da74e87fe7d9d7497e3b2028903"),
         1)
       .addRedeemOrWitnessScriptToInput(
         ScriptPubKey.fromAsmBytes(
@@ -160,13 +156,9 @@ class PSBTUnitTest extends BitcoinSUnitTest {
     val expected = PSBT.fromBytes(
       hex"70736274ff0100a00200000002ab0949a08c5af7c49b8212f417e2f15ab3f5c33dcf153821a8139f877a5b7be40000000000feffffff8fc5f0af7763a570bdf3d0a55e661196e7cfa5613b260791812da3f8049990c30000000000feffffff02603bea0b000000001976a914768a40bbd740cbe81d988e71de2a4d5c71396b1d88ac8e240000000000001976a9146f4620b553fa095e721b9ee0efe9fa039cca459788ac00000000000100df0200000001268171371edff285e937adeea4b37b78000c0566cbb3ad64641713ca42171bf6000000006a473044022070b2245123e6bf474d60c5b50c043d4c691a5d2435f09a34a7662a9dc251790a022001329ca9dacf280bdf30740ec0390422422c81cb45839457aeb76fc12edd95b3012102657d118d3357b8e0f4c2cd46db7b39f6d9c38d9a70abcb9b2de5dc8dbfe4ce31feffffff02d3dff505000000001976a914d0c59903c5bac2868760e90fd521a4665aa7652088ac00e1f5050000000017a9143545e6e33b832c47050f24d3eeb93c9c03948bc787b32e13000001005301000000010000000000000000000000000000000000000000000000000000000000000000ffffffff00ffffffff0100e1f5050000000017a9143545e6e33b832c47050f24d3eeb93c9c03948bc78700000000010416001485d13537f2e265405a34dbafa9e3dda01fb8230800220202ead596687ca806043edc3de116cdf29d5e9257c196cd055cf698c8d02bf24e9910b4a6ba670000008000000080020000800022020394f62be9df19952c5587768aeb7698061ad2c4a25c894f47d8c162b4d7213d0510b4a6ba6700000080010000800200008000")
     val psbt1 =
-      PSBT(expected.globalMap,
-           Vector(expected.inputMaps.head, InputPSBTMap(Vector.empty)),
-           expected.outputMaps)
+      PSBT(expected.globalMap, Vector(expected.inputMaps.head, InputPSBTMap(Vector.empty)), expected.outputMaps)
     val psbt2 =
-      PSBT(expected.globalMap,
-           Vector(InputPSBTMap(Vector.empty), expected.inputMaps.last),
-           expected.outputMaps)
+      PSBT(expected.globalMap, Vector(InputPSBTMap(Vector.empty), expected.inputMaps.last), expected.outputMaps)
 
     assert(psbt1.combinePSBT(psbt2) == expected)
     assert(psbt2.combinePSBT(psbt1) == expected)
@@ -209,8 +201,7 @@ class PSBTUnitTest extends BitcoinSUnitTest {
       "02000000019dfc6628c26c5899fe1bd3dc338665bfd55d7ada10f6220973df2d386dec12760100000000ffffffff01f03dcd1d000000001600147b3a00bfdc14d27795c2b74901d09da6ef13357900000000"))
 
     assertThrows[IllegalArgumentException](psbt0.combinePSBT(psbt1))
-    assertThrows[IllegalArgumentException](
-      psbt0.globalMap.combine(psbt1.globalMap))
+    assertThrows[IllegalArgumentException](psbt0.globalMap.combine(psbt1.globalMap))
   }
 
   it must "successfully extract a transaction from a finalized PSBT" in {
@@ -267,9 +258,7 @@ class PSBTUnitTest extends BitcoinSUnitTest {
     }
   }
 
-  private def getDummySigners(
-      size: Int,
-      pubKey: ECPublicKey = ECPublicKey.freshPublicKey): Vector[Sign] = {
+  private def getDummySigners(size: Int, pubKey: ECPublicKey = ECPublicKey.freshPublicKey): Vector[Sign] = {
     Vector.fill(size)(Sign.dummySign(pubKey))
   }
 
@@ -279,11 +268,8 @@ class PSBTUnitTest extends BitcoinSUnitTest {
       "70736274ff01009a020000000258e87a21b56daf0c23be8e7070456c336f7cbaa5c8757924f545887bb2abdd750000000000ffffffff05cd7e41ca0b7727e02bf505476e87858ebaa21fdb16802c7b3699d695a35e440000000000ffffffff0270aaf00800000000160014d85c2b71d0060b09c9886aeb815e50991dda124d00e1f5050000000016001400aea9a2e5f0f876a588df5546e8742d1d87008f00000000000100bb0200000001aad73931018bd25f84ae400b68848be09db706eac2ac18298babee71ab656f8b0000000048473044022058f6fc7c6a33e1b31548d481c826c015bd30135aad42cd67790dab66d2ad243b02204a1ced2604c6735b6393e5b41691dd78b00f0c5942fb9f751856faa938157dba01feffffff0280f0fa020000000017a9140fb9463421696b82c833af241c78c17ddbde493487d0f20a270100000017a91429ca74f8a08f81999428185c97b5d852e4063f618765000000010304010000000104475221029583bf39ae0a609747ad199addd634fa6108559d6c5cd39b4c2183f1ab96e07f2102dab61ff49a14db6a7d02b0cd1fbb78fc4b18312b5b4e54dae4dba2fbfef536d752ae2206029583bf39ae0a609747ad199addd634fa6108559d6c5cd39b4c2183f1ab96e07f10d90c6a4f000000800000008000000080220602dab61ff49a14db6a7d02b0cd1fbb78fc4b18312b5b4e54dae4dba2fbfef536d710d90c6a4f0000008000000080010000800001005301000000010000000000000000000000000000000000000000000000000000000000000000ffffffff00ffffffff0100c2eb0b0000000017a914b7f5faf40e3d40a5a459b1db3535f2b72fa921e887000000000103040100000001042200208c2353173743b595dfb4a07b72ba8e42e3797da74e87fe7d9d7497e3b2028903010547522103089dc10c7ac6db54f91329af617333db388cead0c231f723379d1b99030b02dc21023add904f3d6dcf59ddb906b0dee23529b7ffb9ed50e5e86151926860221f0e7352ae2206023add904f3d6dcf59ddb906b0dee23529b7ffb9ed50e5e86151926860221f0e7310d90c6a4f000000800000008003000080220603089dc10c7ac6db54f91329af617333db388cead0c231f723379d1b99030b02dc10d90c6a4f00000080000000800200008000220203a9a4c37f5996d3aa25dbac6b570af0650394492942460b354753ed9eeca5877110d90c6a4f000000800000008004000080002202027f6399757d2eff55a136ad02c684b1838b6556e5f1b6b34282a94b6b5005109610d90c6a4f00000080000000800500008000")
 
     val dummySigners = Vector(
-      Sign.dummySign(ECPublicKey(
-        "029583bf39ae0a609747ad199addd634fa6108559d6c5cd39b4c2183f1ab96e07f")),
-      Sign.dummySign(
-        ECPublicKey(
-          "02dab61ff49a14db6a7d02b0cd1fbb78fc4b18312b5b4e54dae4dba2fbfef536d7"))
+      Sign.dummySign(ECPublicKey("029583bf39ae0a609747ad199addd634fa6108559d6c5cd39b4c2183f1ab96e07f")),
+      Sign.dummySign(ECPublicKey("02dab61ff49a14db6a7d02b0cd1fbb78fc4b18312b5b4e54dae4dba2fbfef536d7"))
     )
     val spendingInfo =
       psbt.getSpendingInfoUsingSigners(index = 0, dummySigners)
@@ -300,10 +286,8 @@ class PSBTUnitTest extends BitcoinSUnitTest {
     val expectedRedeemScript = MultiSignatureScriptPubKey(
       2,
       Vector(
-        ECPublicKey(
-          "029583bf39ae0a609747ad199addd634fa6108559d6c5cd39b4c2183f1ab96e07f"),
-        ECPublicKey(
-          "02dab61ff49a14db6a7d02b0cd1fbb78fc4b18312b5b4e54dae4dba2fbfef536d7")
+        ECPublicKey("029583bf39ae0a609747ad199addd634fa6108559d6c5cd39b4c2183f1ab96e07f"),
+        ECPublicKey("02dab61ff49a14db6a7d02b0cd1fbb78fc4b18312b5b4e54dae4dba2fbfef536d7")
       )
     )
 
@@ -318,8 +302,7 @@ class PSBTUnitTest extends BitcoinSUnitTest {
   it must "fail to create a valid UTXOSpendingInfo from a PSBTInputMap with insufficient data" in {
     val psbt1 = PSBT(
       "70736274ff01003f0200000001ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0000000000ffffffff010000000000000000036a010000000000000a0f0102030405060708090f0102030405060708090a0b0c0d0e0f0000")
-    assertThrows[RuntimeException](
-      psbt1.getSpendingInfoUsingSigners(index = 0, getDummySigners(size = 1)))
+    assertThrows[RuntimeException](psbt1.getSpendingInfoUsingSigners(index = 0, getDummySigners(size = 1)))
   }
 
   it must "fail to create an Unknown PSBTRecord from with a known KeyId" in {
@@ -340,12 +323,10 @@ class PSBTUnitTest extends BitcoinSUnitTest {
     assert(unsignedPsbt.nextRole == PSBTRole.SignerPSBTRole)
 
     val privKey0 = ECPrivateKeyUtil
-      .fromWIFToPrivateKey(
-        "cP53pDbR5WtAD8dYAW9hhTjuvvTVaEiQBdrz9XPrgLBeRFiyCbQr")
+      .fromWIFToPrivateKey("cP53pDbR5WtAD8dYAW9hhTjuvvTVaEiQBdrz9XPrgLBeRFiyCbQr")
       .toPrivateKey
     val privKey1 = ECPrivateKeyUtil
-      .fromWIFToPrivateKey(
-        "cR6SXDoyfQrcp4piaiHE97Rsgta9mNhGTen9XeonVgwsh4iSgw6d")
+      .fromWIFToPrivateKey("cR6SXDoyfQrcp4piaiHE97Rsgta9mNhGTen9XeonVgwsh4iSgw6d")
       .toPrivateKey
 
     // BCrypto does not use low r signing
@@ -366,13 +347,11 @@ class PSBTUnitTest extends BitcoinSUnitTest {
         (psbt0, psbt1)
     }
     val privKey2 = ECPrivateKeyUtil
-      .fromWIFToPrivateKey(
-        "cT7J9YpCwY3AVRFSjN6ukeEeWY6mhpbJPxRaDaP5QTdygQRxP9Au")
+      .fromWIFToPrivateKey("cT7J9YpCwY3AVRFSjN6ukeEeWY6mhpbJPxRaDaP5QTdygQRxP9Au")
       .toPrivateKey
 
     val privKey3 = ECPrivateKeyUtil
-      .fromWIFToPrivateKey(
-        "cNBc3SWUip9PPm1GjRoLEJT6T41iNzCYtD7qro84FMnM5zEqeJsE")
+      .fromWIFToPrivateKey("cNBc3SWUip9PPm1GjRoLEJT6T41iNzCYtD7qro84FMnM5zEqeJsE")
       .toPrivateKey
 
     val expectedPubKeyHashes =
@@ -380,11 +359,10 @@ class PSBTUnitTest extends BitcoinSUnitTest {
         CryptoUtil.sha256Hash160(key.publicKey.bytes)
       }
 
-    unsignedPsbt.inputMaps.zip(unsignedPsbt.transaction.inputs).foreach {
-      case (inputMap, input) =>
-        val vout = input.previousOutput.vout.toInt
-        val missingSigs = inputMap.missingSignatures(vout)
-        assert(missingSigs.forall(expectedPubKeyHashes.contains))
+    unsignedPsbt.inputMaps.zip(unsignedPsbt.transaction.inputs).foreach { case (inputMap, input) =>
+      val vout = input.previousOutput.vout.toInt
+      val missingSigs = inputMap.missingSignatures(vout)
+      assert(missingSigs.forall(expectedPubKeyHashes.contains))
     }
 
     val firstSig0 = unsignedPsbt.sign(inputIndex = 0, signer = privKey0)
@@ -416,10 +394,9 @@ class PSBTUnitTest extends BitcoinSUnitTest {
     val expectedInputMap =
       InputPSBTMap(Vector(InputPSBTRecord.WitnessUTXO(output)))
 
-    val input = TransactionInput(
-      outPoint = TransactionOutPoint(txId = tx.txId, vout = UInt32.zero),
-      scriptSignature = EmptyScriptSignature,
-      sequenceNumber = UInt32.zero)
+    val input = TransactionInput(outPoint = TransactionOutPoint(txId = tx.txId, vout = UInt32.zero),
+                                 scriptSignature = EmptyScriptSignature,
+                                 sequenceNumber = UInt32.zero)
 
     val compressedInputMap = inputMap.compressMap(input)
 
@@ -428,8 +405,7 @@ class PSBTUnitTest extends BitcoinSUnitTest {
   }
 
   it must "do nothing when compressing a finalized InputPSBTMap" in {
-    val finalizedInputMap = InputPSBTMap(
-      Vector(InputPSBTRecord.FinalizedScriptSig(EmptyScriptSignature)))
+    val finalizedInputMap = InputPSBTMap(Vector(InputPSBTRecord.FinalizedScriptSig(EmptyScriptSignature)))
 
     val compressedInputMap =
       finalizedInputMap.compressMap(EmptyTransactionInput)
@@ -440,10 +416,9 @@ class PSBTUnitTest extends BitcoinSUnitTest {
   it must "be able to filter OutputPSBTMap records" in {
     val redeemScriptRecord = OutputPSBTRecord.RedeemScript(EmptyScriptPubKey)
     val outputMap = OutputPSBTMap(
-      Vector(redeemScriptRecord,
-             OutputPSBTRecord.BIP32DerivationPath(ECPublicKey.freshPublicKey,
-                                                  ExtKey.masterFingerprint,
-                                                  BIP32Path.empty)))
+      Vector(
+        redeemScriptRecord,
+        OutputPSBTRecord.BIP32DerivationPath(ECPublicKey.freshPublicKey, ExtKey.masterFingerprint, BIP32Path.empty)))
 
     val expectedElements = Vector(redeemScriptRecord)
 
@@ -456,8 +431,7 @@ class PSBTUnitTest extends BitcoinSUnitTest {
   it must "fail to finalize an already finalized PSBT" in {
     val psbt = dummyPSBT()
 
-    val finalizedInputMap = InputPSBTMap(
-      Vector(InputPSBTRecord.FinalizedScriptSig(EmptyScriptSignature)))
+    val finalizedInputMap = InputPSBTMap(Vector(InputPSBTRecord.FinalizedScriptSig(EmptyScriptSignature)))
     val finalizedPSBT =
       PSBT(psbt.globalMap, Vector(finalizedInputMap), psbt.outputMaps)
 
@@ -477,44 +451,35 @@ class PSBTUnitTest extends BitcoinSUnitTest {
     val psbtP2SH = dummyPSBT(spk = p2sh)
 
     assertThrows[IllegalArgumentException](
-      psbtP2WSH.addRedeemOrWitnessScriptToOutput(script = badRedeemScript,
-                                                 index = 0))
+      psbtP2WSH.addRedeemOrWitnessScriptToOutput(script = badRedeemScript, index = 0))
     assertThrows[IllegalArgumentException](
-      psbtP2SH.addRedeemOrWitnessScriptToOutput(script = badRedeemScript,
-                                                index = 0))
+      psbtP2SH.addRedeemOrWitnessScriptToOutput(script = badRedeemScript, index = 0))
   }
 
   it must "fail to add an EmptyScriptWitness to an input" in {
     val psbt = dummyPSBT()
 
-    assertThrows[IllegalArgumentException](
-      psbt.addScriptWitnessToInput(EmptyScriptWitness, index = 0))
+    assertThrows[IllegalArgumentException](psbt.addScriptWitnessToInput(EmptyScriptWitness, index = 0))
   }
 
   it must "fail to addRedeemOrWitnessScriptToOutput when finalized" in {
     val psbt = dummyPSBT()
-    val finalizedInputMap = InputPSBTMap(
-      Vector(InputPSBTRecord.FinalizedScriptSig(EmptyScriptSignature)))
+    val finalizedInputMap = InputPSBTMap(Vector(InputPSBTRecord.FinalizedScriptSig(EmptyScriptSignature)))
     val finalizedPsbt =
       PSBT(psbt.globalMap, Vector(finalizedInputMap), psbt.outputMaps)
 
-    assertThrows[IllegalArgumentException](
-      finalizedPsbt.addRedeemOrWitnessScriptToOutput(EmptyScriptPubKey,
-                                                     index = 0))
+    assertThrows[IllegalArgumentException](finalizedPsbt.addRedeemOrWitnessScriptToOutput(EmptyScriptPubKey, index = 0))
   }
 
   it must "addScriptWitnessToOutput correctly" in {
     val psbt = dummyPSBT()
     val p2wshWitness = P2WSHWitnessV0(EmptyScriptPubKey)
 
-    assertThrows[IllegalArgumentException](
-      psbt.addScriptWitnessToOutput(p2wshWitness, index = -1))
-    assertThrows[IllegalArgumentException](
-      psbt.addScriptWitnessToOutput(p2wshWitness, index = 1))
+    assertThrows[IllegalArgumentException](psbt.addScriptWitnessToOutput(p2wshWitness, index = -1))
+    assertThrows[IllegalArgumentException](psbt.addScriptWitnessToOutput(p2wshWitness, index = 1))
 
     val p2wpkhPSBT =
-      psbt.addScriptWitnessToOutput(P2WPKHWitnessV0(ECPublicKey.freshPublicKey),
-                                    index = 0)
+      psbt.addScriptWitnessToOutput(P2WPKHWitnessV0(ECPublicKey.freshPublicKey), index = 0)
     assert(p2wpkhPSBT == psbt)
 
     val p2wshPSBT = psbt.addScriptWitnessToOutput(p2wshWitness, index = 0)
@@ -523,18 +488,14 @@ class PSBTUnitTest extends BitcoinSUnitTest {
     val expectedPSBT =
       PSBT(psbt.globalMap, psbt.inputMaps, Vector(expectedOutputMap))
     assert(p2wshPSBT == expectedPSBT)
-    assertThrows[IllegalArgumentException](
-      p2wshPSBT.addScriptWitnessToOutput(p2wshWitness, index = 0))
+    assertThrows[IllegalArgumentException](p2wshPSBT.addScriptWitnessToOutput(p2wshWitness, index = 0))
 
-    assertThrows[IllegalArgumentException](
-      psbt.addScriptWitnessToOutput(EmptyScriptWitness, index = 0))
+    assertThrows[IllegalArgumentException](psbt.addScriptWitnessToOutput(EmptyScriptWitness, index = 0))
 
-    val finalizedInputMap = InputPSBTMap(
-      Vector(InputPSBTRecord.FinalizedScriptSig(EmptyScriptSignature)))
+    val finalizedInputMap = InputPSBTMap(Vector(InputPSBTRecord.FinalizedScriptSig(EmptyScriptSignature)))
     val finalizedPsbt =
       PSBT(psbt.globalMap, Vector(finalizedInputMap), psbt.outputMaps)
-    assertThrows[IllegalArgumentException](
-      finalizedPsbt.addScriptWitnessToOutput(p2wshWitness, index = 0))
+    assertThrows[IllegalArgumentException](finalizedPsbt.addScriptWitnessToOutput(p2wshWitness, index = 0))
   }
 
   it must "verify PSBT segwit inputs correctly without WitnessUTXO" in {

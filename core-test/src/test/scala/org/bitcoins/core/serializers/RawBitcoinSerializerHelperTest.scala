@@ -2,15 +2,8 @@ package org.bitcoins.core.serializers
 
 import org.bitcoins.core.number.UInt64
 import org.bitcoins.core.protocol.CompactSizeUInt
-import org.bitcoins.core.protocol.transaction.{
-  EmptyTransactionOutput,
-  TransactionInput,
-  TransactionOutput
-}
-import org.bitcoins.core.serializers.transaction.{
-  RawTransactionInputParser,
-  RawTransactionOutputParser
-}
+import org.bitcoins.core.protocol.transaction.{EmptyTransactionOutput, TransactionInput, TransactionOutput}
+import org.bitcoins.core.serializers.transaction.{RawTransactionInputParser, RawTransactionOutputParser}
 import org.bitcoins.testkitcore.util.BitcoinSUnitTest
 import scodec.bits.ByteVector
 

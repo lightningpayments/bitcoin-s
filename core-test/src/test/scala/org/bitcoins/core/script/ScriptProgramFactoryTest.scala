@@ -58,11 +58,10 @@ class ScriptProgramFactoryTest extends BitcoinSUnitTest {
   it must "update the script program to the given stack and script" in {
     val stack = List(OP_0)
     val script = List(OP_1)
-    val t = BaseTxSigComponent(
-      transaction = TestUtil.transaction,
-      inputIndex = UInt32.zero,
-      output = TransactionOutput(CurrencyUnits.zero, TestUtil.scriptPubKey),
-      ScriptFlagFactory.empty)
+    val t = BaseTxSigComponent(transaction = TestUtil.transaction,
+                               inputIndex = UInt32.zero,
+                               output = TransactionOutput(CurrencyUnits.zero, TestUtil.scriptPubKey),
+                               ScriptFlagFactory.empty)
 
     val inProgress =
       ExecutionInProgressScriptProgram(

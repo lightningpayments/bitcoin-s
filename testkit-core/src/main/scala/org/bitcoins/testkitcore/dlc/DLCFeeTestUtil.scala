@@ -51,11 +51,9 @@ object DLCFeeTestUtil extends Assertions {
       * the expected fee rate. This function asserts:
       * Lower Bound Fee Rate <= Expected Fee Rate <= Upper Bound Fee Rate
       */
-    def feeRateBounds(
-        tx: Transaction,
-        actualFee: CurrencyUnit,
-        numSignatures: Int,
-        missingOutputBytes: Long = 0): (Double, Double) = {
+    def feeRateBounds(tx: Transaction, actualFee: CurrencyUnit, numSignatures: Int, missingOutputBytes: Long = 0): (
+        Double,
+        Double) = {
       val vbytesLower =
         Math.ceil(tx.weight / 4.0) + missingOutputBytes
       val vbytesUpper =
@@ -82,35 +80,20 @@ object DLCFeeTestUtil extends Assertions {
     val acceptOutputBytes =
       9 + builder.acceptFinalAddress.scriptPubKey.asmBytes.length
 
-    val (actualClosingFeeRateWithoutOfferLower,
-         actualClosingFeeRateWithoutOfferUpper) =
-      feeRateBounds(closingTx,
-                    actualClosingFee,
-                    closingTxSigs,
-                    offerOutputBytes)
+    val (actualClosingFeeRateWithoutOfferLower, actualClosingFeeRateWithoutOfferUpper) =
+      feeRateBounds(closingTx, actualClosingFee, closingTxSigs, offerOutputBytes)
 
-    val (actualClosingFeeRateWithoutAcceptLower,
-         actualClosingFeeRateWithoutAcceptUpper) =
-      feeRateBounds(closingTx,
-                    actualClosingFee,
-                    closingTxSigs,
-                    acceptOutputBytes)
+    val (actualClosingFeeRateWithoutAcceptLower, actualClosingFeeRateWithoutAcceptUpper) =
+      feeRateBounds(closingTx, actualClosingFee, closingTxSigs, acceptOutputBytes)
 
-    def feeRateBetweenBounds(
-        lowerBound: Double,
-        upperBound: Double): Boolean = {
+    def feeRateBetweenBounds(lowerBound: Double, upperBound: Double): Boolean = {
       feeRate.toLong >= lowerBound - 10 && feeRate.toLong <= upperBound + 10
     }
 
+    assert(feeRateBetweenBounds(actualFundingFeeRateLower, actualFundingFeeRateUpper))
     assert(
-      feeRateBetweenBounds(actualFundingFeeRateLower,
-                           actualFundingFeeRateUpper))
-    assert(
-      feeRateBetweenBounds(actualClosingFeeRateLower,
-                           actualClosingFeeRateUpper) ||
-        feeRateBetweenBounds(actualClosingFeeRateWithoutOfferLower,
-                             actualClosingFeeRateWithoutOfferUpper) ||
-        feeRateBetweenBounds(actualClosingFeeRateWithoutAcceptLower,
-                             actualClosingFeeRateWithoutAcceptUpper))
+      feeRateBetweenBounds(actualClosingFeeRateLower, actualClosingFeeRateUpper) ||
+        feeRateBetweenBounds(actualClosingFeeRateWithoutOfferLower, actualClosingFeeRateWithoutOfferUpper) ||
+        feeRateBetweenBounds(actualClosingFeeRateWithoutAcceptLower, actualClosingFeeRateWithoutAcceptUpper))
   }
 }

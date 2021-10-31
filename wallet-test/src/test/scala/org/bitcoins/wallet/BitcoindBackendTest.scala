@@ -74,16 +74,14 @@ class BitcoindBackendTest extends WalletAppConfigWithBitcoindNewestFixtures {
       addr <- wallet.getNewAddress()
       _ <- bitcoind.sendToAddress(addr, amountToSend)
       bitcoindAddr <- bitcoind.getNewAddress
-      _ <- bitcoind.generateToAddress(wallet.walletConfig.requiredConfirmations,
-                                      bitcoindAddr)
+      _ <- bitcoind.generateToAddress(wallet.walletConfig.requiredConfirmations, bitcoindAddr)
 
       // assert wallet hasn't seen it yet
       firstBalance <- wallet.getBalance()
       _ = assert(firstBalance == Satoshis.zero)
 
       // Set sync height
-      _ <- wallet.stateDescriptorDAO.updateSyncHeight(header.hashBE,
-                                                      header.height)
+      _ <- wallet.stateDescriptorDAO.updateSyncHeight(header.hashBE, header.height)
 
       _ <- BitcoindRpcBackendUtil.syncWalletToBitcoind(bitcoind, wallet)
 
@@ -139,74 +137,68 @@ class BitcoindBackendTest extends WalletAppConfigWithBitcoindNewestFixtures {
     }
   }
 
-  it must "sync a filter and update utxos to confirmed" in {
-    walletAppConfigWithBitcoind =>
-      val bitcoind =
-        walletAppConfigWithBitcoind.bitcoind.asInstanceOf[BitcoindV21RpcClient]
+  it must "sync a filter and update utxos to confirmed" in { walletAppConfigWithBitcoind =>
+    val bitcoind =
+      walletAppConfigWithBitcoind.bitcoind.asInstanceOf[BitcoindV21RpcClient]
 
-      val amountToSend = Bitcoins.one
-      for {
-        // Setup wallet
-        wallet <- createWallet(walletAppConfigWithBitcoind)
+    val amountToSend = Bitcoins.one
+    for {
+      // Setup wallet
+      wallet <- createWallet(walletAppConfigWithBitcoind)
 
-        // Assert wallet is empty
-        isEmpty <- wallet.isEmpty()
-        _ = assert(isEmpty)
+      // Assert wallet is empty
+      isEmpty <- wallet.isEmpty()
+      _ = assert(isEmpty)
 
-        // Send to wallet
-        addr <- wallet.getNewAddress()
-        _ <- bitcoind.sendToAddress(addr, amountToSend)
-        bitcoindAddr <- bitcoind.getNewAddress
-        _ <- bitcoind.generateToAddress(1, bitcoindAddr)
+      // Send to wallet
+      addr <- wallet.getNewAddress()
+      _ <- bitcoind.sendToAddress(addr, amountToSend)
+      bitcoindAddr <- bitcoind.getNewAddress
+      _ <- bitcoind.generateToAddress(1, bitcoindAddr)
 
-        // assert wallet hasn't seen it yet
-        firstBalance <- wallet.getBalance()
-        _ = assert(firstBalance == Satoshis.zero)
+      // assert wallet hasn't seen it yet
+      firstBalance <- wallet.getBalance()
+      _ = assert(firstBalance == Satoshis.zero)
 
-        header <- bitcoind.getBestBlockHeader()
+      header <- bitcoind.getBestBlockHeader()
 
-        filterResult <- bitcoind.getBlockFilter(header.hashBE, FilterType.Basic)
-        filter = filterResult.filter
-        _ <- wallet.processCompactFilter(header.hash, filter)
+      filterResult <- bitcoind.getBlockFilter(header.hashBE, FilterType.Basic)
+      filter = filterResult.filter
+      _ <- wallet.processCompactFilter(header.hash, filter)
 
-        unconfirmedBalance <- wallet.getUnconfirmedBalance()
-        confirmedBalance <- wallet.getConfirmedBalance()
-        _ = assert(unconfirmedBalance == amountToSend)
-        _ = assert(confirmedBalance == Satoshis.zero)
+      unconfirmedBalance <- wallet.getUnconfirmedBalance()
+      confirmedBalance <- wallet.getConfirmedBalance()
+      _ = assert(unconfirmedBalance == amountToSend)
+      _ = assert(confirmedBalance == Satoshis.zero)
 
-        // confirm utxos
-        _ <- bitcoind.generateToAddress(
-          wallet.walletConfig.requiredConfirmations,
-          bitcoindAddr)
+      // confirm utxos
+      _ <- bitcoind.generateToAddress(wallet.walletConfig.requiredConfirmations, bitcoindAddr)
 
-        // sync wallet
-        _ <- BitcoindRpcBackendUtil.syncWalletToBitcoind(bitcoind, wallet)
+      // sync wallet
+      _ <- BitcoindRpcBackendUtil.syncWalletToBitcoind(bitcoind, wallet)
 
-        unconfirmedBalance <- wallet.getUnconfirmedBalance()
-        confirmedBalance <- wallet.getConfirmedBalance()
+      unconfirmedBalance <- wallet.getUnconfirmedBalance()
+      confirmedBalance <- wallet.getConfirmedBalance()
 
-        // clean up
-        _ <- wallet.walletConfig.stop()
-        _ = wallet.walletConfig.clean()
-      } yield {
-        assert(confirmedBalance == amountToSend)
-        assert(unconfirmedBalance == Satoshis.zero)
-      }
+      // clean up
+      _ <- wallet.walletConfig.stop()
+      _ = wallet.walletConfig.clean()
+    } yield {
+      assert(confirmedBalance == amountToSend)
+      assert(unconfirmedBalance == Satoshis.zero)
+    }
   }
 
-  private def createWallet(
-      params: WalletAppConfigWithBitcoindRpc): Future[Wallet] = {
+  private def createWallet(params: WalletAppConfigWithBitcoindRpc): Future[Wallet] = {
     val bitcoind = params.bitcoind
     implicit val walletAppConfig: WalletAppConfig = params.walletAppConfig
 
     for {
-      tmpWallet <- BitcoinSWalletTest.createDefaultWallet(
-        nodeApi = bitcoind,
-        chainQueryApi = bitcoind,
-        bip39PasswordOpt = walletAppConfig.bip39PasswordOpt)
+      tmpWallet <- BitcoinSWalletTest.createDefaultWallet(nodeApi = bitcoind,
+                                                          chainQueryApi = bitcoind,
+                                                          bip39PasswordOpt = walletAppConfig.bip39PasswordOpt)
     } yield {
-      BitcoindRpcBackendUtil.createWalletWithBitcoindCallbacks(bitcoind,
-                                                               tmpWallet)
+      BitcoindRpcBackendUtil.createWalletWithBitcoindCallbacks(bitcoind, tmpWallet)
     }
   }
 }

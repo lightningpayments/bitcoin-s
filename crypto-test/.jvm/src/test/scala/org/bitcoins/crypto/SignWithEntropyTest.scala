@@ -28,11 +28,10 @@ class SignWithEntropyTest extends BitcoinSCryptoTest {
   }
 
   it must "sign arbitrary pieces of data with arbitrary entropy correctly" in {
-    forAll(CryptoGenerators.sha256Digest, CryptoGenerators.sha256Digest) {
-      case (hash, entropy) =>
-        val sig = privKey.signWithEntropy(hash.bytes, entropy.bytes)
+    forAll(CryptoGenerators.sha256Digest, CryptoGenerators.sha256Digest) { case (hash, entropy) =>
+      val sig = privKey.signWithEntropy(hash.bytes, entropy.bytes)
 
-        assert(pubKey.verify(hash.bytes, sig))
+      assert(pubKey.verify(hash.bytes, sig))
     }
   }
 }

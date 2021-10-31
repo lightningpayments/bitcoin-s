@@ -57,8 +57,7 @@ trait BitcoinSCryptoAsyncTest
     )
   }
 
-  def forAllAsync[A](gen: Gen[A])(
-      func: A => Future[Assertion]): Future[Assertion] = {
+  def forAllAsync[A](gen: Gen[A])(func: A => Future[Assertion]): Future[Assertion] = {
 
     val samples = 1
       .to(generatorDrivenConfig.minSize)
@@ -71,8 +70,7 @@ trait BitcoinSCryptoAsyncTest
     checkRunResults(testRunsF)
   }
 
-  def forAllAsync[A, B](genA: Gen[A], genB: Gen[B])(
-      func: (A, B) => Future[Assertion]): Future[Assertion] = {
+  def forAllAsync[A, B](genA: Gen[A], genB: Gen[B])(func: (A, B) => Future[Assertion]): Future[Assertion] = {
 
     val samples = 1
       .to(generatorDrivenConfig.minSize)

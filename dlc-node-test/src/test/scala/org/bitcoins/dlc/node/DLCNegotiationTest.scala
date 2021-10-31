@@ -23,58 +23,55 @@ class DLCNegotiationTest extends BitcoinSDualWalletTest {
     withDualFundedDLCWallets(test)
   }
 
-  it must "setup a DLC" in {
-    fundedDLCWallets: (FundedDLCWallet, FundedDLCWallet) =>
-      val walletA = fundedDLCWallets._1.wallet
-      val walletB = fundedDLCWallets._2.wallet
-      val port = RpcUtil.randomPort
-      val bindAddress =
-        new InetSocketAddress("0.0.0.0", port)
-      val connectAddress =
-        InetSocketAddress.createUnresolved("127.0.0.1", port)
+  it must "setup a DLC" in { fundedDLCWallets: (FundedDLCWallet, FundedDLCWallet) =>
+    val walletA = fundedDLCWallets._1.wallet
+    val walletB = fundedDLCWallets._2.wallet
+    val port = RpcUtil.randomPort
+    val bindAddress =
+      new InetSocketAddress("0.0.0.0", port)
+    val connectAddress =
+      InetSocketAddress.createUnresolved("127.0.0.1", port)
 
-      val serverF = DLCServer.bind(walletA, bindAddress, None)
+    val serverF = DLCServer.bind(walletA, bindAddress, None)
 
-      val handlerP = Promise[ActorRef]()
-      val clientF =
-        DLCClient.connect(Peer(connectAddress, socks5ProxyParams = None),
-                          walletB,
-                          Some(handlerP))
+    val handlerP = Promise[ActorRef]()
+    val clientF =
+      DLCClient.connect(Peer(connectAddress, socks5ProxyParams = None), walletB, Some(handlerP))
 
-      for {
-        _ <- serverF
-        _ <- clientF
+    for {
+      _ <- serverF
+      _ <- clientF
 
-        handler <- handlerP.future
+      handler <- handlerP.future
 
-        // verify we have no DLCs
-        preDLCsA <- walletA.listDLCs()
-        preDLCsB <- walletB.listDLCs()
-        _ = assert(preDLCsA.isEmpty)
-        _ = assert(preDLCsB.isEmpty)
+      // verify we have no DLCs
+      preDLCsA <- walletA.listDLCs()
+      preDLCsB <- walletB.listDLCs()
+      _ = assert(preDLCsA.isEmpty)
+      _ = assert(preDLCsB.isEmpty)
 
-        offer <- walletB.createDLCOffer(sampleContractInfo,
-                                        half,
-                                        Some(SatoshisPerVirtualByte.one),
-                                        UInt32.zero,
-                                        UInt32.one)
-        accept <- walletA.acceptDLCOffer(offer)
+      offer <- walletB.createDLCOffer(sampleContractInfo,
+                                      half,
+                                      Some(SatoshisPerVirtualByte.one),
+                                      UInt32.zero,
+                                      UInt32.one)
+      accept <- walletA.acceptDLCOffer(offer)
 
-        // Send accept message to begin p2p
-        _ = handler ! accept.toMessage
+      // Send accept message to begin p2p
+      _ = handler ! accept.toMessage
 
-        _ <- TestAsyncUtil.awaitConditionF(
-          () =>
-            for {
-              dlcsA <- walletA.listDLCs()
-              dlcsB <- walletB.listDLCs()
-            } yield {
-              dlcsA.head.state == DLCState.Broadcasted &&
-              dlcsB.head.state == DLCState.Signed
-            },
-          interval = 1.second,
-          maxTries = 15
-        )
-      } yield succeed
+      _ <- TestAsyncUtil.awaitConditionF(
+        () =>
+          for {
+            dlcsA <- walletA.listDLCs()
+            dlcsB <- walletB.listDLCs()
+          } yield {
+            dlcsA.head.state == DLCState.Broadcasted &&
+            dlcsB.head.state == DLCState.Signed
+          },
+        interval = 1.second,
+        maxTries = 15
+      )
+    } yield succeed
   }
 }

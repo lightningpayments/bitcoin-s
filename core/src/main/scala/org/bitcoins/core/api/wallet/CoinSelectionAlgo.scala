@@ -32,10 +32,7 @@ object CoinSelectionAlgo extends StringFactory[CoinSelectionAlgo] {
 
   /** Coin selection algos that don't call other ones */
   val independentAlgos: Vector[CoinSelectionAlgo] =
-    Vector(RandomSelection,
-           AccumulateLargest,
-           AccumulateSmallestViable,
-           StandardAccumulate)
+    Vector(RandomSelection, AccumulateLargest, AccumulateSmallestViable, StandardAccumulate)
 
   /** Coin selection algos that call upon other ones and choose the best */
   val multiCoinSelectionAlgos: Vector[CoinSelectionAlgo] = Vector(LeastWaste)
@@ -49,7 +46,6 @@ object CoinSelectionAlgo extends StringFactory[CoinSelectionAlgo] {
 
   override def fromString(string: String): CoinSelectionAlgo = {
     val algoOpt = fromStringOpt(string)
-    algoOpt.getOrElse(
-      sys.error(s"Could not find coin selection algorithm=${string}"))
+    algoOpt.getOrElse(sys.error(s"Could not find coin selection algorithm=${string}"))
   }
 }

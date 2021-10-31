@@ -18,9 +18,7 @@ class UTXOHandlingTest extends BitcoinSWalletTest {
   }
 
   it must "correctly update txo state based on confirmations" in { wallet =>
-    val utxo = sampleSegwitUTXO(EmptyScriptPubKey,
-                                state = TxoState.Reserved
-    ) //state doesn't matter here
+    val utxo = sampleSegwitUTXO(EmptyScriptPubKey, state = TxoState.Reserved) //state doesn't matter here
     val requiredConfs = 6
     assert(wallet.walletConfig.requiredConfirmations == requiredConfs)
 
@@ -43,15 +41,11 @@ class UTXOHandlingTest extends BitcoinSWalletTest {
     assert(wallet.updateTxoWithConfs(immatureCoinbase, 10) == immatureCoinbase)
     assert(wallet.updateTxoWithConfs(immatureCoinbase, 101) == confReceived)
 
-    assert(
-      wallet.updateTxoWithConfs(pendingConfReceived, 1) == pendingConfReceived)
-    assert(
-      wallet.updateTxoWithConfs(pendingConfReceived,
-                                requiredConfs) == confReceived)
+    assert(wallet.updateTxoWithConfs(pendingConfReceived, 1) == pendingConfReceived)
+    assert(wallet.updateTxoWithConfs(pendingConfReceived, requiredConfs) == confReceived)
 
     assert(wallet.updateTxoWithConfs(pendingConfSpent, 1) == pendingConfSpent)
-    assert(
-      wallet.updateTxoWithConfs(pendingConfSpent, requiredConfs) == confSpent)
+    assert(wallet.updateTxoWithConfs(pendingConfSpent, requiredConfs) == confSpent)
 
     assert(wallet.updateTxoWithConfs(dne, 1) == dne)
     assert(wallet.updateTxoWithConfs(dne, requiredConfs) == dne)
@@ -60,7 +54,6 @@ class UTXOHandlingTest extends BitcoinSWalletTest {
     assert(wallet.updateTxoWithConfs(confSpent, requiredConfs) == confSpent)
 
     assert(wallet.updateTxoWithConfs(confReceived, 1) == confReceived)
-    assert(
-      wallet.updateTxoWithConfs(confReceived, requiredConfs) == confReceived)
+    assert(wallet.updateTxoWithConfs(confReceived, requiredConfs) == confReceived)
   }
 }

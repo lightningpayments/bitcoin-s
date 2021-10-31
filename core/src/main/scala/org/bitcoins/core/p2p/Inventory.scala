@@ -11,8 +11,7 @@ import scodec.bits.ByteVector
   *
   * @see [[https://bitcoin.org/en/developer-reference#term-inventory]]
   */
-case class Inventory(typeIdentifier: TypeIdentifier, hash: DoubleSha256Digest)
-    extends NetworkElement {
+case class Inventory(typeIdentifier: TypeIdentifier, hash: DoubleSha256Digest) extends NetworkElement {
 
   override def bytes: ByteVector = RawInventorySerializer.write(this)
 }

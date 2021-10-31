@@ -6,8 +6,7 @@ import org.bitcoins.crypto.DoubleSha256Digest
 import org.bitcoins.testkitcore.util.BitcoinSUnitTest
 import scodec.bits._
 
-class RawGetCompactFilterCheckpointMessageSerializerTest
-    extends BitcoinSUnitTest {
+class RawGetCompactFilterCheckpointMessageSerializerTest extends BitcoinSUnitTest {
 
   it must "parse a message" in {
     // cribbed from a P2P log dump with Bitcoin-S node
@@ -32,14 +31,11 @@ class RawGetCompactFilterCheckpointMessageSerializerTest
     assert(bytes == message.bytes)
 
     val anotherMessage = GetCompactFilterCheckPointMessage(
-      DoubleSha256Digest.fromHex(
-        "8000000000000000000000000000000000000000000000000000000000000001"))
+      DoubleSha256Digest.fromHex("8000000000000000000000000000000000000000000000000000000000000001"))
 
     val anotherBytes = anotherMessage.bytes
 
-    assert(
-      anotherMessage == GetCompactFilterCheckPointMessage.fromBytes(
-        anotherBytes))
+    assert(anotherMessage == GetCompactFilterCheckPointMessage.fromBytes(anotherBytes))
   }
 
 }

@@ -83,9 +83,7 @@ trait RemoteLndFixture extends BitcoinSFixture with CachedBitcoindV21 {
           lnd <- client.start()
 
           // create a remote instance and client
-          remoteInstance = LndInstanceRemote(lnd.instance.rpcUri,
-                                             lnd.instance.macaroon,
-                                             lnd.instance.certFile)
+          remoteInstance = LndInstanceRemote(lnd.instance.rpcUri, lnd.instance.macaroon, lnd.instance.certFile)
           remoteLnd = LndRpcClient(remoteInstance)
         } yield remoteLnd
       },

@@ -31,9 +31,7 @@ import java.time.Instant
 import java.util.concurrent.atomic.AtomicInteger
 import scala.concurrent.{ExecutionContext, Future}
 
-case class DLCOracle()(implicit val conf: DLCOracleAppConfig)
-    extends DLCOracleApi
-    with Logging {
+case class DLCOracle()(implicit val conf: DLCOracleAppConfig) extends DLCOracleApi with Logging {
 
   implicit private val ec: ExecutionContext = conf.ec
 
@@ -101,21 +99,14 @@ case class DLCOracle()(implicit val conf: DLCOracleAppConfig)
     val coin = rValAccount.coin
     val purpose = coin.purpose
 
-    BIP32Path.fromString(
-      s"m/${purpose.constant}'/${coin.coinType.toInt}'/$accountIndex'/$rValueChainIndex'/$keyIndex'")
+    BIP32Path.fromString(s"m/${purpose.constant}'/${coin.coinType.toInt}'/$accountIndex'/$rValueChainIndex'/$keyIndex'")
   }
 
-  private def getKValue(
-      rValDb: RValueDb,
-      signingVersion: SigningVersion): ECPrivateKey =
+  private def getKValue(rValDb: RValueDb, signingVersion: SigningVersion): ECPrivateKey =
     getKValue(rValDb.eventName, rValDb.path, signingVersion)
 
-  private def getKValue(
-      label: String,
-      path: BIP32Path,
-      signingVersion: SigningVersion): ECPrivateKey = {
-    require(path.forall(_.hardened),
-            s"Cannot use a BIP32Path with unhardened nodes, got $path")
+  private def getKValue(label: String, path: BIP32Path, signingVersion: SigningVersion): ECPrivateKey = {
+    require(path.forall(_.hardened), s"Cannot use a BIP32Path with unhardened nodes, got $path")
     val priv = extPrivateKey.deriveChildPrivKey(path).key
     val tweakBytes = signingVersion.calcNonceTweak(priv.schnorrNonce, label)
     val tweak = ECPrivateKey(tweakBytes)
@@ -135,8 +126,7 @@ case class DLCOracle()(implicit val conf: DLCOracleAppConfig)
     }
   }
 
-  override def findEvent(
-      oracleEventTLV: OracleEventTLV): Future[Option[OracleEvent]] = {
+  override def findEvent(oracleEventTLV: OracleEventTLV): Future[Option[OracleEvent]] = {
     eventDAO.findByOracleEventTLV(oracleEventTLV).map { dbs =>
       if (dbs.isEmpty) {
         None
@@ -160,15 +150,10 @@ case class DLCOracle()(implicit val conf: DLCOracleAppConfig)
       numDigits: Int,
       unit: String,
       precision: Int32): Future[OracleAnnouncementTLV] = {
-    require(base > UInt16.zero,
-            s"base cannot be less than 1, got ${base.toInt}")
+    require(base > UInt16.zero, s"base cannot be less than 1, got ${base.toInt}")
     require(numDigits > 0, s"numDigits cannot be less than 1, got $numDigits")
 
-    val descriptorTLV = DigitDecompositionEventDescriptorV0TLV(base,
-                                                               isSigned,
-                                                               numDigits,
-                                                               unit,
-                                                               precision)
+    val descriptorTLV = DigitDecompositionEventDescriptorV0TLV(base, isSigned, numDigits, unit, precision)
 
     createNewAnnouncement(eventName, maturationTime, descriptorTLV)
   }
@@ -178,8 +163,7 @@ case class DLCOracle()(implicit val conf: DLCOracleAppConfig)
       maturationTime: Instant,
       outcomes: Vector[String]): Future[OracleAnnouncementTLV] = {
     require(outcomes.nonEmpty, "Cannot make an event with no outcomes")
-    require(outcomes.distinct.size == outcomes.size,
-            s"Cannot have duplicate outcomes, got $outcomes")
+    require(outcomes.distinct.size == outcomes.size, s"Cannot have duplicate outcomes, got $outcomes")
 
     val descriptorTLV = EnumEventDescriptorV0TLV(outcomes)
 
@@ -190,10 +174,8 @@ case class DLCOracle()(implicit val conf: DLCOracleAppConfig)
       eventName: String,
       maturationTime: Instant,
       descriptor: EventDescriptorTLV,
-      signingVersion: SigningVersion = SigningVersion.latest): Future[
-    OracleAnnouncementTLV] = {
-    require(maturationTime.isAfter(TimeUtil.now),
-            s"Event cannot mature in the past, got $maturationTime")
+      signingVersion: SigningVersion = SigningVersion.latest): Future[OracleAnnouncementTLV] = {
+    require(maturationTime.isAfter(TimeUtil.now), s"Event cannot mature in the past, got $maturationTime")
 
     for {
       dbs <- eventDAO.findByEventName(eventName)
@@ -221,25 +203,19 @@ case class DLCOracle()(implicit val conf: DLCOracleAppConfig)
 
       nonces = rValueDbs.map(_.nonce)
 
-      eventTLV = OracleEventV0TLV(OrderedNonces(nonces),
-                                  epoch,
-                                  descriptor,
-                                  eventName)
+      eventTLV = OracleEventV0TLV(OrderedNonces(nonces), epoch, descriptor, eventName)
 
       announcementBytes = signingVersion.calcAnnouncementHash(eventTLV)
       announcementSignature = signingKey.schnorrSign(announcementBytes)
 
-      oracleAnnouncement = OracleAnnouncementV0TLV(announcementSignature =
-                                                     announcementSignature,
+      oracleAnnouncement = OracleAnnouncementV0TLV(announcementSignature = announcementSignature,
                                                    publicKey = publicKey,
                                                    eventTLV = eventTLV)
 
-      eventOutcomeDbs = EventDbUtil.toEventOutcomeDbs(
-        oracleAnnouncementV0TLV = oracleAnnouncement,
-        signingVersion = signingVersion)
+      eventOutcomeDbs = EventDbUtil.toEventOutcomeDbs(oracleAnnouncementV0TLV = oracleAnnouncement,
+                                                      signingVersion = signingVersion)
 
-      eventDbs = EventDbUtil.toEventDbs(oracleAnnouncementV0TLV =
-                                          oracleAnnouncement,
+      eventDbs = EventDbUtil.toEventDbs(oracleAnnouncementV0TLV = oracleAnnouncement,
                                         eventName = eventName,
                                         signingVersion = signingVersion)
 
@@ -251,25 +227,19 @@ case class DLCOracle()(implicit val conf: DLCOracleAppConfig)
     }
   }
 
-  override def signEnum(
-      eventName: String,
-      outcome: EnumAttestation): Future[EventDb] = {
+  override def signEnum(eventName: String, outcome: EnumAttestation): Future[EventDb] = {
     for {
       eventDbs <- eventDAO.findByEventName(eventName)
-      _ = require(eventDbs.size == 1,
-                  "Use signLargeRange for signing multi nonce outcomes")
+      _ = require(eventDbs.size == 1, "Use signLargeRange for signing multi nonce outcomes")
 
       sign <- createAttestation(eventDbs.head.nonce, outcome)
     } yield sign
   }
 
-  override def signEnum(
-      oracleEventTLV: OracleEventTLV,
-      outcome: EnumAttestation): Future[EventDb] = {
+  override def signEnum(oracleEventTLV: OracleEventTLV, outcome: EnumAttestation): Future[EventDb] = {
     for {
       eventDbs <- eventDAO.findByOracleEventTLV(oracleEventTLV)
-      _ = require(eventDbs.size == 1,
-                  "Use signLargeRange for signing multi nonce outcomes")
+      _ = require(eventDbs.size == 1, "Use signLargeRange for signing multi nonce outcomes")
 
       sign <- createAttestation(eventDbs.head.nonce, outcome)
     } yield sign
@@ -278,40 +248,32 @@ case class DLCOracle()(implicit val conf: DLCOracleAppConfig)
   /** Signs the event for the single nonce
     * This will be called multiple times by signDigits for each nonce
     */
-  override def createAttestation(
-      nonce: SchnorrNonce,
-      outcome: DLCAttestationType): Future[EventDb] = {
+  override def createAttestation(nonce: SchnorrNonce, outcome: DLCAttestationType): Future[EventDb] = {
     for {
       rValDbOpt <- rValueDAO.read(nonce)
       rValDb <- rValDbOpt match {
         case Some(value) => Future.successful(value)
         case None =>
-          Future.failed(
-            new IllegalArgumentException(
-              s"Nonce not found from this oracle ${nonce.hex}"))
+          Future.failed(new IllegalArgumentException(s"Nonce not found from this oracle ${nonce.hex}"))
       }
 
       eventOpt <- eventDAO.read(nonce)
       eventDb <- eventOpt match {
         case Some(value) =>
-          require(
-            value.attestationOpt.isEmpty,
-            s"Event already has been signed, attestation: ${value.sigOpt.get.hex}")
+          require(value.attestationOpt.isEmpty, s"Event already has been signed, attestation: ${value.sigOpt.get.hex}")
           Future.successful(value)
         case None =>
-          Future.failed(
-            new IllegalArgumentException(
-              s"No event saved with nonce ${nonce.hex} $outcome"))
+          Future.failed(new IllegalArgumentException(s"No event saved with nonce ${nonce.hex} $outcome"))
       }
 
-      hash = eventDb.signingVersion.calcOutcomeHash(eventDb.eventDescriptorTLV,
-                                                    outcome.outcomeString)
+      hash = eventDb.signingVersion.calcOutcomeHash(eventDb.eventDescriptorTLV, outcome.outcomeString)
       eventOutcomeOpt <- eventOutcomeDAO.find(nonce, hash)
       eventOutcomeDb <- eventOutcomeOpt match {
         case Some(value) => Future.successful(value)
         case None =>
-          Future.failed(new IllegalArgumentException(
-            s"No event outcome saved with nonce and message ${nonce.hex} ${outcome.outcomeString}"))
+          Future.failed(
+            new IllegalArgumentException(
+              s"No event outcome saved with nonce and message ${nonce.hex} ${outcome.outcomeString}"))
       }
 
       sigVersion = eventDb.signingVersion
@@ -325,8 +287,7 @@ case class DLCOracle()(implicit val conf: DLCOracleAppConfig)
       hashBytes = eventOutcomeDb.hashedMessage
       sig = signingKey.schnorrSignWithNonce(hashBytes, kVal)
 
-      updated = eventDb.copy(attestationOpt = Some(sig.sig),
-                             outcomeOpt = Some(outcome.outcomeString))
+      updated = eventDb.copy(attestationOpt = Some(sig.sig), outcomeOpt = Some(outcome.outcomeString))
       _ <- eventDAO.update(updated)
     } yield updated
   }
@@ -334,21 +295,17 @@ case class DLCOracle()(implicit val conf: DLCOracleAppConfig)
   override def signDigits(eventName: String, num: Long): Future[OracleEvent] = {
     for {
       eventOpt <- findEvent(eventName)
-      _ = require(eventOpt.isDefined,
-                  s"No event found by event name $eventName")
+      _ = require(eventOpt.isDefined, s"No event found by event name $eventName")
       res <- signDigits(eventOpt.get.announcementTLV.eventTLV, num)
     } yield res
   }
 
-  override def signDigits(
-      oracleEventTLV: OracleEventTLV,
-      num: Long): Future[OracleEvent] = {
+  override def signDigits(oracleEventTLV: OracleEventTLV, num: Long): Future[OracleEvent] = {
 
     val eventDescriptorTLV: DigitDecompositionEventDescriptorV0TLV = {
       oracleEventTLV.eventDescriptor match {
         case _: EnumEventDescriptorV0TLV =>
-          throw new IllegalArgumentException(
-            "Must have a DigitDecomposition event descriptor use signEvent instead")
+          throw new IllegalArgumentException("Must have a DigitDecomposition event descriptor use signEvent instead")
         case decomp: DigitDecompositionEventDescriptorV0TLV =>
           decomp
       }
@@ -359,25 +316,21 @@ case class DLCOracle()(implicit val conf: DLCOracleAppConfig)
       eventDescriptorTLV match {
         case _: SignedDigitDecompositionEventDescriptor =>
           val signOutcome = DigitDecompositionSignAttestation(num >= 0)
-          createAttestation(oracleEventTLV.nonces.head, signOutcome).map(db =>
-            Vector(db))
+          createAttestation(oracleEventTLV.nonces.head, signOutcome).map(db => Vector(db))
         case _: UnsignedDigitDecompositionEventDescriptor =>
           FutureUtil.emptyVec[EventDb]
       }
 
     val boundedNum = if (num < eventDescriptorTLV.minNum) {
-      logger.info(
-        s"Number given $num is less than the minimum, signing minimum instead")
+      logger.info(s"Number given $num is less than the minimum, signing minimum instead")
       eventDescriptorTLV.minNum.toLong
     } else if (num > eventDescriptorTLV.maxNum) {
-      logger.info(
-        s"Number given $num is greater than the maximum, signing maximum instead")
+      logger.info(s"Number given $num is greater than the maximum, signing maximum instead")
       eventDescriptorTLV.maxNum.toLong
     } else num
 
-    val decomposed = NumberUtil.decompose(Math.abs(boundedNum),
-                                          eventDescriptorTLV.base.toInt,
-                                          eventDescriptorTLV.numDigits.toInt)
+    val decomposed =
+      NumberUtil.decompose(Math.abs(boundedNum), eventDescriptorTLV.base.toInt, eventDescriptorTLV.numDigits.toInt)
 
     val nonces = eventDescriptorTLV match {
       case _: UnsignedDigitDecompositionEventDescriptor =>
@@ -404,18 +357,15 @@ case class DLCOracle()(implicit val conf: DLCOracleAppConfig)
   }
 
   /** @inheritdoc */
-  override def deleteAnnouncement(
-      eventName: String): Future[OracleAnnouncementTLV] = {
+  override def deleteAnnouncement(eventName: String): Future[OracleAnnouncementTLV] = {
     logger.warn(s"Deleting announcement with name=$eventName")
     for {
       eventOpt <- findEvent(eventName)
-      _ = require(eventOpt.isDefined,
-                  s"No announcement found by event name $eventName")
+      _ = require(eventOpt.isDefined, s"No announcement found by event name $eventName")
       event = eventOpt.get
       eventDbs <- eventDAO.findByOracleEventTLV(event.eventTLV)
-      _ = require(
-        eventDbs.forall(_.attestationOpt.isEmpty),
-        s"Cannot have attesations defined when deleting an announcement, name=$eventName")
+      _ = require(eventDbs.forall(_.attestationOpt.isEmpty),
+                  s"Cannot have attesations defined when deleting an announcement, name=$eventName")
       nonces = eventDbs.map(_.nonce)
       rVals <- rValueDAO.findByNonces(nonces)
       outcomeDbs <- eventOutcomeDAO.findByNonces(nonces)
@@ -426,8 +376,7 @@ case class DLCOracle()(implicit val conf: DLCOracleAppConfig)
   }
 
   /** @inheritdoc */
-  override def deleteAnnouncement(
-      announcementTLV: OracleAnnouncementTLV): Future[OracleAnnouncementTLV] = {
+  override def deleteAnnouncement(announcementTLV: OracleAnnouncementTLV): Future[OracleAnnouncementTLV] = {
     deleteAnnouncement(announcementTLV.eventTLV.eventId.toString)
   }
 
@@ -439,8 +388,7 @@ case class DLCOracle()(implicit val conf: DLCOracleAppConfig)
   override def deleteAttestation(eventName: String): Future[OracleEvent] = {
     for {
       eventOpt <- findEvent(eventName)
-      _ = require(eventOpt.isDefined,
-                  s"No event found by event name $eventName")
+      _ = require(eventOpt.isDefined, s"No event found by event name $eventName")
       res <- deleteAttestation(eventOpt.get.eventTLV)
     } yield res
   }
@@ -450,12 +398,10 @@ case class DLCOracle()(implicit val conf: DLCOracleAppConfig)
     * WARNING: if previous signatures have been made public
     * the oracle private key will be revealed.
     */
-  override def deleteAttestation(
-      oracleEventTLV: OracleEventTLV): Future[OracleEvent] = {
+  override def deleteAttestation(oracleEventTLV: OracleEventTLV): Future[OracleEvent] = {
     for {
       eventDbs <- eventDAO.findByOracleEventTLV(oracleEventTLV)
-      _ = require(eventDbs.exists(_.attestationOpt.isDefined),
-                  s"Event given is unsigned")
+      _ = require(eventDbs.exists(_.attestationOpt.isDefined), s"Event given is unsigned")
 
       updated = eventDbs.map(_.copy(outcomeOpt = None, attestationOpt = None))
       _ <- eventDAO.updateAll(updated)
@@ -471,9 +417,7 @@ case class DLCOracle()(implicit val conf: DLCOracleAppConfig)
       val jdbcUrl = conf.jdbcUrl.replace("\"", "")
       Future { SQLiteUtil.backup(jdbcUrl, location) }
     case _: DatabaseDriver =>
-      Future.failed(
-        new IllegalArgumentException(
-          "Backup is supported only for SQLite database backend"))
+      Future.failed(new IllegalArgumentException("Backup is supported only for SQLite database backend"))
   }
 
   override def oracleName(): Task[Option[String]] = {
@@ -491,8 +435,7 @@ object DLCOracle {
   val R_VALUE_PURPOSE = 585
 
   /** Gets the DLC oracle from the given datadir */
-  def fromDatadir(path: Path, configs: Vector[Config])(implicit
-      ec: ExecutionContext): Future[DLCOracle] = {
+  def fromDatadir(path: Path, configs: Vector[Config])(implicit ec: ExecutionContext): Future[DLCOracle] = {
     implicit val appConfig =
       DLCOracleAppConfig.fromDatadir(datadir = path, configs)
     val masterXpubDAO: MasterXPubDAO = MasterXPubDAO()(ec, appConfig)
@@ -501,8 +444,7 @@ object DLCOracle {
     for {
       _ <- appConfig.start()
       _ <- MasterXPubUtil.checkMasterXPub(oracle.getRootXpub, masterXpubDAO)
-      differentKeyDbs <- oracle.eventDAO.findDifferentPublicKey(
-        oracle.publicKey)
+      differentKeyDbs <- oracle.eventDAO.findDifferentPublicKey(oracle.publicKey)
       fixedDbs = differentKeyDbs.map(_.copy(pubkey = oracle.publicKey))
       _ <- oracle.eventDAO.updateAll(fixedDbs)
     } yield oracle

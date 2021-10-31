@@ -5,24 +5,16 @@ import org.bitcoins.core.protocol.ln.currency.{LnCurrencyUnit, PicoBitcoins}
 import org.bitcoins.core.protocol.ln.node.NodeId
 import org.bitcoins.core.protocol.ln.util.LnUtil
 import org.bitcoins.core.util._
-import org.bitcoins.crypto.{
-  CryptoUtil,
-  ECPrivateKey,
-  Sha256Digest,
-  StringFactory
-}
+import org.bitcoins.crypto.{CryptoUtil, ECPrivateKey, Sha256Digest, StringFactory}
 import scodec.bits.ByteVector
 
 import scala.util.{Failure, Success, Try}
 
 sealed abstract class LnInvoice {
 
-  require(timestamp < LnInvoice.MAX_TIMESTAMP_U64,
-          s"timestamp ${timestamp.toBigInt} < ${LnInvoice.MAX_TIMESTAMP}")
+  require(timestamp < LnInvoice.MAX_TIMESTAMP_U64, s"timestamp ${timestamp.toBigInt} < ${LnInvoice.MAX_TIMESTAMP}")
 
-  require(
-    isValidSignature,
-    s"Did not receive a valid digital signature for the invoice $toString")
+  require(isValidSignature, s"Did not receive a valid digital signature for the invoice $toString")
 
   def hrp: LnHumanReadablePart
 
@@ -133,9 +125,7 @@ object LnInvoice extends StringFactory[LnInvoice] {
   def hrpExpand(lnHumanReadablePart: LnHumanReadablePart): Vector[UInt5] =
     lnHumanReadablePart.expand
 
-  def createChecksum(
-      hrp: LnHumanReadablePart,
-      data: Vector[UInt5]): Vector[UInt5] = {
+  def createChecksum(hrp: LnHumanReadablePart, data: Vector[UInt5]): Vector[UInt5] = {
     val hrpBytes = hrpExpand(hrp)
     val u5s = Bech32.createChecksum(hrpBytes ++ data, Bech32Encoding.Bech32)
     u5s
@@ -171,10 +161,7 @@ object LnInvoice extends StringFactory[LnInvoice] {
 
       val taggedFields = LnTaggedFields.fromUInt5s(tags)
 
-      LnInvoice(hrp = hrp,
-                timestamp = timestamp,
-                lnTags = taggedFields,
-                signature = signature)
+      LnInvoice(hrp = hrp, timestamp = timestamp, lnTags = taggedFields, signature = signature)
     }
 
   }
@@ -186,8 +173,7 @@ object LnInvoice extends StringFactory[LnInvoice] {
       }
     }
     if (sepIndexes.isEmpty) {
-      throw new IllegalArgumentException(
-        "LnInvoice did not have the correct separator")
+      throw new IllegalArgumentException("LnInvoice did not have the correct separator")
     } else {
       val (_, sepIndex) = sepIndexes.last
 
@@ -205,11 +191,10 @@ object LnInvoice extends StringFactory[LnInvoice] {
 
         val dataValid = Bech32.checkDataValidity(data)
 
-        val isChecksumValid: Try[Vector[UInt5]] = hrpValid.flatMap {
-          h: LnHumanReadablePart =>
-            dataValid.flatMap { d: Vector[UInt5] =>
-              stripChecksumIfValid(h, d)
-            }
+        val isChecksumValid: Try[Vector[UInt5]] = hrpValid.flatMap { h: LnHumanReadablePart =>
+          dataValid.flatMap { d: Vector[UInt5] =>
+            stripChecksumIfValid(h, d)
+          }
         }
 
         val invoiceT = isChecksumValid.flatMap { d: Vector[UInt5] =>
@@ -229,10 +214,7 @@ object LnInvoice extends StringFactory[LnInvoice] {
       timestamp: UInt64,
       lnTags: LnTaggedFields,
       signature: LnInvoiceSignature): LnInvoice = {
-    LnInvoiceImpl(hrp = hrp,
-                  timestamp = timestamp,
-                  lnTags = lnTags,
-                  signature = signature)
+    LnInvoiceImpl(hrp = hrp, timestamp = timestamp, lnTags = lnTags, signature = signature)
   }
 
   def apply(
@@ -242,16 +224,10 @@ object LnInvoice extends StringFactory[LnInvoice] {
       privateKey: ECPrivateKey): LnInvoice = {
 
     val signature = buildLnInvoiceSignature(hrp, timestamp, lnTags, privateKey)
-    LnInvoiceImpl(hrp = hrp,
-                  timestamp = timestamp,
-                  lnTags = lnTags,
-                  signature = signature)
+    LnInvoiceImpl(hrp = hrp, timestamp = timestamp, lnTags = lnTags, signature = signature)
   }
 
-  def buildSignatureData(
-      hrp: LnHumanReadablePart,
-      timestamp: UInt64,
-      lnTags: LnTaggedFields): ByteVector = {
+  def buildSignatureData(hrp: LnHumanReadablePart, timestamp: UInt64, lnTags: LnTaggedFields): ByteVector = {
     val tsu5 = uInt64ToBase32(timestamp)
     val payloadU5 = tsu5 ++ lnTags.data
     val payloadU8 = Bech32.from5bitTo8bit(payloadU5, pad = true)
@@ -259,10 +235,7 @@ object LnInvoice extends StringFactory[LnInvoice] {
     hrp.bytes ++ payload
   }
 
-  def buildSigHashData(
-      hrp: LnHumanReadablePart,
-      timestamp: UInt64,
-      lnTags: LnTaggedFields): Sha256Digest = {
+  def buildSigHashData(hrp: LnHumanReadablePart, timestamp: UInt64, lnTags: LnTaggedFields): Sha256Digest = {
     val sigdata = buildSignatureData(hrp, timestamp, lnTags)
     CryptoUtil.sha256(sigdata)
   }
@@ -295,10 +268,7 @@ object LnInvoice extends StringFactory[LnInvoice] {
     val lnInvoiceSignature =
       buildLnInvoiceSignature(hrp, timestamp, lnTags, privateKey)
 
-    LnInvoice(hrp = hrp,
-              timestamp = timestamp,
-              lnTags = lnTags,
-              signature = lnInvoiceSignature)
+    LnInvoice(hrp = hrp, timestamp = timestamp, lnTags = lnTags, signature = lnInvoiceSignature)
   }
 
   /** The easiest way to create a [[org.bitcoins.core.protocol.ln.LnInvoice LnInvoice]]
@@ -309,18 +279,12 @@ object LnInvoice extends StringFactory[LnInvoice] {
     * @param lnTags the various tags in the invoice
     * @param privateKey - the key used to sign the invoice
     */
-  def build(
-      hrp: LnHumanReadablePart,
-      lnTags: LnTaggedFields,
-      privateKey: ECPrivateKey): LnInvoice = {
+  def build(hrp: LnHumanReadablePart, lnTags: LnTaggedFields, privateKey: ECPrivateKey): LnInvoice = {
     val timestamp = UInt64(System.currentTimeMillis() / 1000L)
     val lnInvoiceSignature =
       buildLnInvoiceSignature(hrp, timestamp, lnTags, privateKey)
 
-    LnInvoice(hrp = hrp,
-              timestamp = timestamp,
-              lnTags = lnTags,
-              signature = lnInvoiceSignature)
+    LnInvoice(hrp = hrp, timestamp = timestamp, lnTags = lnTags, signature = lnInvoiceSignature)
   }
 
   private def uInt64ToBase32(input: UInt64): Vector[UInt5] = {
@@ -340,14 +304,11 @@ object LnInvoice extends StringFactory[LnInvoice] {
     * @param h - the [[org.bitcoins.core.protocol.ln.LnHumanReadablePart LnHumanReadablePart]] of the invoice
     * @param d - the payload WITH the checksum included
     */
-  private def stripChecksumIfValid(
-      h: LnHumanReadablePart,
-      d: Vector[UInt5]): Try[Vector[UInt5]] = {
+  private def stripChecksumIfValid(h: LnHumanReadablePart, d: Vector[UInt5]): Try[Vector[UInt5]] = {
     if (verifyChecksum(h, d)) {
       if (d.size < 6) Success(Vector.empty)
       else Success(d.take(d.size - 6))
     } else
-      Failure(
-        new IllegalArgumentException("Checksum was invalid on the LnInvoice"))
+      Failure(new IllegalArgumentException("Checksum was invalid on the LnInvoice"))
   }
 }

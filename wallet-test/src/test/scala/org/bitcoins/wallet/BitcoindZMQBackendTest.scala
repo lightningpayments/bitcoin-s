@@ -25,9 +25,8 @@ class BitcoindZMQBackendTest extends WalletAppConfigWithBitcoindNewestFixtures {
       for {
         _ <- bitcoind.sendToAddress(addr, amountToSend)
         // Wait for it to process
-        _ <- TestAsyncUtil.awaitConditionF(
-          () => wallet.getUnconfirmedBalance().map(_ > Satoshis.zero),
-          interval = 1.second)
+        _ <- TestAsyncUtil.awaitConditionF(() => wallet.getUnconfirmedBalance().map(_ > Satoshis.zero),
+                                           interval = 1.second)
       } yield ()
     }
 
@@ -35,9 +34,8 @@ class BitcoindZMQBackendTest extends WalletAppConfigWithBitcoindNewestFixtures {
       for {
         _ <- bitcoind.generateToAddress(numBlocks, bech32Address)
         // Wait for it to process
-        _ <- TestAsyncUtil.awaitConditionF(
-          () => wallet.getConfirmedBalance().map(_ > Satoshis.zero),
-          interval = 1.second)
+        _ <- TestAsyncUtil.awaitConditionF(() => wallet.getConfirmedBalance().map(_ > Satoshis.zero),
+                                           interval = 1.second)
       } yield ()
     }
 
@@ -46,8 +44,7 @@ class BitcoindZMQBackendTest extends WalletAppConfigWithBitcoindNewestFixtures {
       tmpWallet <-
         BitcoinSWalletTest.createDefaultWallet(bitcoind, bitcoind, None)
       wallet =
-        BitcoindRpcBackendUtil.createWalletWithBitcoindCallbacks(bitcoind,
-                                                                 tmpWallet)
+        BitcoindRpcBackendUtil.createWalletWithBitcoindCallbacks(bitcoind, tmpWallet)
       // Assert wallet is empty
       isEmpty <- wallet.isEmpty()
       _ = assert(isEmpty)
@@ -58,9 +55,7 @@ class BitcoindZMQBackendTest extends WalletAppConfigWithBitcoindNewestFixtures {
       _ = assert(firstBalance == Satoshis.zero)
 
       // Setup zmq subscribers
-      _ = BitcoindRpcBackendUtil.startZMQWalletCallbacks(
-        wallet,
-        bitcoind.instance.zmqConfig)
+      _ = BitcoindRpcBackendUtil.startZMQWalletCallbacks(wallet, bitcoind.instance.zmqConfig)
 
       _ <- attemptZMQTx(addr, wallet)
         .recoverWith { case NonFatal(_) =>

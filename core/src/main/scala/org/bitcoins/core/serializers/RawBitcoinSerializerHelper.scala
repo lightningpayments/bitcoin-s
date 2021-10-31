@@ -38,24 +38,20 @@ sealed abstract class RawSerializerHelper {
 
     val remaining = loop(payload)
     val result = b.result()
-    require(
-      result.size == count.num.toInt,
-      s"Could not parse the amount of required elements, got: ${result.size} required: ${count}")
+    require(result.size == count.num.toInt,
+            s"Could not parse the amount of required elements, got: ${result.size} required: ${count}")
     (result, remaining)
   }
 
   /** Writes a Seq[TransactionInput]/Seq[TransactionOutput]/Seq[Transaction] -> ByteVector */
-  final def writeCmpctSizeUInt[T](
-      ts: Seq[T],
-      serializer: T => ByteVector): ByteVector = {
+  final def writeCmpctSizeUInt[T](ts: Seq[T], serializer: T => ByteVector): ByteVector = {
     val serialized = write(ts, serializer)
     val cmpct = CompactSizeUInt(UInt64(ts.size))
     cmpct.bytes ++ serialized
   }
 
   /** Serializes a [[scala.Seq Seq]] of [[NetworkElement]] to a [[scodec.bits.ByteVector]] */
-  final def writeNetworkElements[T <: NetworkElement](
-      ts: Seq[T]): ByteVector = {
+  final def writeNetworkElements[T <: NetworkElement](ts: Seq[T]): ByteVector = {
     val f = { t: T =>
       t.bytes
     }

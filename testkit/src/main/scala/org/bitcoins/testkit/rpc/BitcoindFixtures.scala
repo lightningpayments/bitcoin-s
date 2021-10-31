@@ -19,14 +19,11 @@ import scala.concurrent.Future
 trait BitcoindFixtures extends BitcoinSFixture with EmbeddedPg {
   _: BitcoinSAsyncFixtureTest =>
 
-  def withNewestFundedBitcoindCached(
-      test: OneArgAsyncTest,
-      bitcoind: BitcoindRpcClient): FutureOutcome = {
-    makeDependentFixture[BitcoindRpcClient](
-      () => Future.successful(bitcoind),
-      { case _ =>
-        Future.unit // don't want to destroy anything since it is cached
-      })(test)
+  def withNewestFundedBitcoindCached(test: OneArgAsyncTest, bitcoind: BitcoindRpcClient): FutureOutcome = {
+    makeDependentFixture[BitcoindRpcClient](() => Future.successful(bitcoind),
+                                            { case _ =>
+                                              Future.unit // don't want to destroy anything since it is cached
+                                            })(test)
   }
 
 }
@@ -69,14 +66,11 @@ trait BitcoindFixturesFundedCachedV18
     new FutureOutcome(f)
   }
 
-  def withV18FundedBitcoindCached(
-      test: OneArgAsyncTest,
-      bitcoind: BitcoindV18RpcClient): FutureOutcome = {
-    makeDependentFixture[BitcoindV18RpcClient](
-      () => Future.successful(bitcoind),
-      { case _ =>
-        Future.unit // don't want to destroy anything since it is cached
-      })(test)
+  def withV18FundedBitcoindCached(test: OneArgAsyncTest, bitcoind: BitcoindV18RpcClient): FutureOutcome = {
+    makeDependentFixture[BitcoindV18RpcClient](() => Future.successful(bitcoind),
+                                               { case _ =>
+                                                 Future.unit // don't want to destroy anything since it is cached
+                                               })(test)
   }
 
   override def afterAll(): Unit = {
@@ -104,14 +98,11 @@ trait BitcoindFixturesFundedCachedV19
     new FutureOutcome(f)
   }
 
-  def withV19FundedBitcoindCached(
-      test: OneArgAsyncTest,
-      bitcoind: BitcoindV19RpcClient): FutureOutcome = {
-    makeDependentFixture[BitcoindV19RpcClient](
-      () => Future.successful(bitcoind),
-      { case _ =>
-        Future.unit // don't want to destroy anything since it is cached
-      })(test)
+  def withV19FundedBitcoindCached(test: OneArgAsyncTest, bitcoind: BitcoindV19RpcClient): FutureOutcome = {
+    makeDependentFixture[BitcoindV19RpcClient](() => Future.successful(bitcoind),
+                                               { case _ =>
+                                                 Future.unit // don't want to destroy anything since it is cached
+                                               })(test)
   }
 
   override def afterAll(): Unit = {
@@ -138,14 +129,11 @@ trait BitcoindFixturesFundedCachedV20
     new FutureOutcome(f)
   }
 
-  def withV20FundedBitcoindCached(
-      test: OneArgAsyncTest,
-      bitcoind: BitcoindV20RpcClient): FutureOutcome = {
-    makeDependentFixture[BitcoindV20RpcClient](
-      () => Future.successful(bitcoind),
-      { case _ =>
-        Future.unit // don't want to destroy anything since it is cached
-      })(test)
+  def withV20FundedBitcoindCached(test: OneArgAsyncTest, bitcoind: BitcoindV20RpcClient): FutureOutcome = {
+    makeDependentFixture[BitcoindV20RpcClient](() => Future.successful(bitcoind),
+                                               { case _ =>
+                                                 Future.unit // don't want to destroy anything since it is cached
+                                               })(test)
   }
 
   override def afterAll(): Unit = {
@@ -173,14 +161,11 @@ trait BitcoindFixturesFundedCachedV21
     new FutureOutcome(f)
   }
 
-  def withV21FundedBitcoindCached(
-      test: OneArgAsyncTest,
-      bitcoind: BitcoindV21RpcClient): FutureOutcome = {
-    makeDependentFixture[BitcoindV21RpcClient](
-      () => Future.successful(bitcoind),
-      { case _ =>
-        Future.unit // don't want to destroy anything since it is cached
-      })(test)
+  def withV21FundedBitcoindCached(test: OneArgAsyncTest, bitcoind: BitcoindV21RpcClient): FutureOutcome = {
+    makeDependentFixture[BitcoindV21RpcClient](() => Future.successful(bitcoind),
+                                               { case _ =>
+                                                 Future.unit // don't want to destroy anything since it is cached
+                                               })(test)
   }
 
   override def afterAll(): Unit = {
@@ -211,14 +196,10 @@ trait BitcoindFixturesFundedCachedNewest
 }
 
 /** Bitcoind fixtures with two cached bitcoind that are connected via p2p */
-trait BitcoindFixturesCachedPair[T <: BitcoindRpcClient]
-    extends BitcoindFixturesCached
-    with CachedBitcoindPair[T] {
+trait BitcoindFixturesCachedPair[T <: BitcoindRpcClient] extends BitcoindFixturesCached with CachedBitcoindPair[T] {
   _: BitcoinSAsyncFixtureTest =>
 
-  def with2BitcoindsCached(
-      test: OneArgAsyncTest,
-      bitcoinds: NodePair[T]): FutureOutcome = {
+  def with2BitcoindsCached(test: OneArgAsyncTest, bitcoinds: NodePair[T]): FutureOutcome = {
     makeDependentFixture[NodePair[T]](
       () => Future.successful(bitcoinds),
       destroy = { case _: NodePair[T] =>
@@ -341,9 +322,7 @@ trait BitcoindFixturesCachedTriple[T <: BitcoindRpcClient]
     with BitcoindFixturesCached
     with CachedBitcoindTriple[T] {
 
-  def with3BitcoindsCached(
-      test: OneArgAsyncTest,
-      bitcoinds: NodeTriple[T]): FutureOutcome = {
+  def with3BitcoindsCached(test: OneArgAsyncTest, bitcoinds: NodeTriple[T]): FutureOutcome = {
     makeDependentFixture[NodeTriple[T]](
       () => Future.successful(bitcoinds),
       destroy = { case _: NodeTriple[T] =>

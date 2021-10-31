@@ -4,18 +4,8 @@ import org.bitcoins.core.api.dlcoracle.{CompletedOracleEvent, OracleEvent}
 import org.bitcoins.core.api.dlcoracle.db.EventDb
 import org.bitcoins.core.protocol.Bech32Address
 import org.bitcoins.core.protocol.dlc.compute.SigningVersion
-import org.bitcoins.core.protocol.tlv.{
-  EnumEventDescriptorV0TLV,
-  NormalizedString,
-  OracleAttestmentV0TLV
-}
-import org.bitcoins.crypto.{
-  CryptoUtil,
-  ECPrivateKey,
-  ECPublicKey,
-  SchnorrDigitalSignature,
-  Sha256Digest
-}
+import org.bitcoins.core.protocol.tlv.{EnumEventDescriptorV0TLV, NormalizedString, OracleAttestmentV0TLV}
+import org.bitcoins.crypto.{CryptoUtil, ECPrivateKey, ECPublicKey, SchnorrDigitalSignature, Sha256Digest}
 
 import java.time.Instant
 
@@ -23,11 +13,10 @@ object OracleTestUtil {
   val testAddressStr = "bc1qvrctqwa6g70z5vtxsyft7xvsyyt749trlm80al"
   val testAddress: Bech32Address = Bech32Address.fromString(testAddressStr)
 
-  val kVal: ECPrivateKey = ECPrivateKey.fromHex(
-    "447d4457dfff21354d56cb1b62b2ab6e5964c5ef93e6d74ae3b30dc83b89b6a5")
+  val kVal: ECPrivateKey = ECPrivateKey.fromHex("447d4457dfff21354d56cb1b62b2ab6e5964c5ef93e6d74ae3b30dc83b89b6a5")
 
-  val dummyPrivKey: ECPrivateKey = ECPrivateKey.fromHex(
-    "f04671ab68f3fefbeaa344c49149748f722287a81b19cd956b2332d07b8f6853")
+  val dummyPrivKey: ECPrivateKey =
+    ECPrivateKey.fromHex("f04671ab68f3fefbeaa344c49149748f722287a81b19cd956b2332d07b8f6853")
 
   val dummyKey: ECPublicKey = dummyPrivKey.publicKey
 

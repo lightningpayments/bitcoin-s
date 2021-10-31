@@ -2,11 +2,7 @@ package org.bitcoins.wallet.models
 
 import java.sql.SQLException
 
-import org.bitcoins.core.api.wallet.db.{
-  AddressDb,
-  AddressRecord,
-  ScriptPubKeyDb
-}
+import org.bitcoins.core.api.wallet.db.{AddressDb, AddressRecord, ScriptPubKeyDb}
 import org.bitcoins.core.currency.CurrencyUnit
 import org.bitcoins.core.hd.{HDAccount, HDChainType, HDCoinType, HDPurpose}
 import org.bitcoins.core.protocol.BitcoinAddress
@@ -31,18 +27,15 @@ case class AddressDAO()(implicit
   override val table: profile.api.TableQuery[AddressTable] =
     TableQuery[AddressTable]
 
-  private lazy val spendingInfoTable: profile.api.TableQuery[
-    SpendingInfoDAO#SpendingInfoTable] = {
+  private lazy val spendingInfoTable: profile.api.TableQuery[SpendingInfoDAO#SpendingInfoTable] = {
     SpendingInfoDAO().table
   }
 
-  private lazy val spkTable: profile.api.TableQuery[
-    ScriptPubKeyDAO#ScriptPubKeyTable] = {
+  private lazy val spkTable: profile.api.TableQuery[ScriptPubKeyDAO#ScriptPubKeyTable] = {
     ScriptPubKeyDAO().table
   }
 
-  override def createAll(
-      ts: Vector[AddressRecord]): Future[Vector[AddressRecord]] =
+  override def createAll(ts: Vector[AddressRecord]): Future[Vector[AddressRecord]] =
     createAllNoAutoInc(ts, safeDatabase)
 
   def create(addressDb: AddressDb): Future[AddressDb] = {
@@ -56,8 +49,7 @@ case class AddressDAO()(implicit
         case None =>
           (for {
             newSpkId <-
-              (spkTable returning spkTable.map(_.id)) += (ScriptPubKeyDb(
-                addressDb.scriptPubKey))
+              (spkTable returning spkTable.map(_.id)) += (ScriptPubKeyDb(addressDb.scriptPubKey))
           } yield {
             val record = AddressRecord.fromAddressDb(addressDb, newSpkId)
             table += record
@@ -76,8 +68,7 @@ case class AddressDAO()(implicit
       .map {
         case (Some(addr), Some(spk)) => addr.toAddressDb(spk.scriptPubKey)
         case _ =>
-          throw new SQLException(
-            s"Unexpected result: Cannot create either a address or a SPK record for $addressDb")
+          throw new SQLException(s"Unexpected result: Cannot create either a address or a SPK record for $addressDb")
       }
 
   }
@@ -89,15 +80,12 @@ case class AddressDAO()(implicit
       spkOpt: Option[ScriptPubKeyDb] <- spkFind.headOption
       _ <- spkOpt match {
         case Some(foundSpk) =>
-          table.insertOrUpdate(
-            AddressRecord.fromAddressDb(addressDb, foundSpk.id.get))
+          table.insertOrUpdate(AddressRecord.fromAddressDb(addressDb, foundSpk.id.get))
         case None =>
           (for {
             newSpkId <-
-              (spkTable returning spkTable.map(_.id)) += ScriptPubKeyDb(
-                addressDb.scriptPubKey)
-          } yield table.insertOrUpdate(
-            AddressRecord.fromAddressDb(addressDb, newSpkId))).flatten
+              (spkTable returning spkTable.map(_.id)) += ScriptPubKeyDb(addressDb.scriptPubKey)
+          } yield table.insertOrUpdate(AddressRecord.fromAddressDb(addressDb, newSpkId))).flatten
       }
       addr <- table.filter(_.address === addressDb.address).result.headOption
       spk <-
@@ -112,8 +100,7 @@ case class AddressDAO()(implicit
       .map {
         case (Some(addr), Some(spk)) => addr.toAddressDb(spk.scriptPubKey)
         case _ =>
-          throw new SQLException(
-            s"Unexpected result: Cannot upsert either a address or a SPK record for $addressDb")
+          throw new SQLException(s"Unexpected result: Cannot upsert either a address or a SPK record for $addressDb")
       }
   }
 
@@ -127,14 +114,10 @@ case class AddressDAO()(implicit
   }
 
   /** Finds the rows that correlate to the given primary keys */
-  override def findByPrimaryKeys(addresses: Vector[BitcoinAddress]): Query[
-    AddressTable,
-    AddressRecord,
-    Seq] =
+  override def findByPrimaryKeys(addresses: Vector[BitcoinAddress]): Query[AddressTable, AddressRecord, Seq] =
     table.filter(_.address.inSet(addresses))
 
-  override def findAll(
-      ts: Vector[AddressRecord]): Query[AddressTable, AddressRecord, Seq] =
+  override def findAll(ts: Vector[AddressRecord]): Query[AddressTable, AddressRecord, Seq] =
     findByPrimaryKeys(ts.map(_.address))
 
   def findAllAddresses(): Future[Vector[AddressDb]] = {
@@ -172,8 +155,7 @@ case class AddressDAO()(implicit
       .on(_.scriptPubKeyId === _.id)
       .filter(_._1.accountIndex === accountIndex)
 
-  def findAllAddressDbForAccount(
-      account: HDAccount): Future[Vector[AddressDb]] = {
+  def findAllAddressDbForAccount(account: HDAccount): Future[Vector[AddressDb]] = {
     val query = table
       .join(spkTable)
       .on(_.scriptPubKeyId === _.id)
@@ -281,8 +263,7 @@ case class AddressDAO()(implicit
     findByScriptPubKeys(Vector(spk)).map(_.headOption)
   }
 
-  def findByScriptPubKeys(
-      spks: Vector[ScriptPubKey]): Future[Vector[AddressDb]] = {
+  def findByScriptPubKeys(spks: Vector[ScriptPubKey]): Future[Vector[AddressDb]] = {
     val query = table
       .join(spkTable)
       .on(_.scriptPubKeyId === _.id)
@@ -309,8 +290,7 @@ case class AddressDAO()(implicit
 
   /** Finds the most recent external address in the wallet, if any
     */
-  def findMostRecentExternal(
-      hdAccount: HDAccount): Future[Option[AddressDb]] = {
+  def findMostRecentExternal(hdAccount: HDAccount): Future[Option[AddressDb]] = {
     val query =
       findMostRecentForChain(hdAccount, HDChainType.External)
     safeDatabase
@@ -323,8 +303,7 @@ case class AddressDAO()(implicit
   /** todo: this needs design rework.
     * todo: https://github.com/bitcoin-s/bitcoin-s-core/pull/391#discussion_r274188334
     */
-  class AddressTable(tag: Tag)
-      extends Table[AddressRecord](tag, schemaName, "addresses") {
+  class AddressTable(tag: Tag) extends Table[AddressRecord](tag, schemaName, "addresses") {
 
     def purpose: Rep[HDPurpose] = column("hd_purpose")
 
@@ -359,9 +338,7 @@ case class AddressDAO()(implicit
        scriptWitness).<>((AddressRecord.apply _).tupled, AddressRecord.unapply)
 
     def fk_scriptPubKeyId: ForeignKeyQuery[_, ScriptPubKeyDb] = {
-      foreignKey("fk_spk",
-                 sourceColumns = scriptPubKeyId,
-                 targetTableQuery = spkTable)(_.id)
+      foreignKey("fk_spk", sourceColumns = scriptPubKeyId, targetTableQuery = spkTable)(_.id)
     }
 
   }

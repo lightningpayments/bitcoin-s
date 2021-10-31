@@ -1,10 +1,7 @@
 package org.bitcoins.rpc.config
 
 import org.bitcoins.core.config.RegTest
-import org.bitcoins.rpc.config.BitcoindAuthCredentials.{
-  CookieBased,
-  PasswordBased
-}
+import org.bitcoins.rpc.config.BitcoindAuthCredentials.{CookieBased, PasswordBased}
 import org.bitcoins.testkit.util.FileUtil
 import org.bitcoins.testkitcore.util.BitcoinSUnitTest
 

@@ -30,10 +30,7 @@ class ScriptSignatureTest extends BitcoinSJvmTest {
   }
 
   it must "derive the signature hash type from the signature" in {
-    HashType(
-      ByteVector.fromByte(
-        TestUtil.scriptSig.signatures.head.bytes.last)) must be(
-      HashType.sigHashAll)
+    HashType(ByteVector.fromByte(TestUtil.scriptSig.signatures.head.bytes.last)) must be(HashType.sigHashAll)
   }
 
   it must "find the digital signature for a p2sh script signature" in {
@@ -71,18 +68,13 @@ class ScriptSignatureTest extends BitcoinSJvmTest {
       ))
   }
   it must "find the hash type for a p2sh script signature" in {
-    HashType(
-      ByteVector.fromByte(
-        TestUtil.p2shInputScript2Of2.signatures.head.bytes.last)) must be(
-      HashType.sigHashAll)
+    HashType(ByteVector.fromByte(TestUtil.p2shInputScript2Of2.signatures.head.bytes.last)) must be(HashType.sigHashAll)
   }
 
   it must "find the digital signature and hash type for a SIGHASH_SINGLE" in {
     TestUtil.p2shInputScriptSigHashSingle.signatures.head.hex must be(
       "3045022100dfcfafcea73d83e1c54d444a19fb30d17317f922c19e2ff92dcda65ad09cba24022001e7a805c5672c49b222c5f2f1e67bb01f87215fb69df184e7c16f66c1f87c2903")
-    HashType(
-      TestUtil.p2shInputScriptSigHashSingle.signatures.head.bytes.last) must be(
-      HashType.sigHashSingle)
+    HashType(TestUtil.p2shInputScriptSigHashSingle.signatures.head.bytes.last) must be(HashType.sigHashSingle)
   }
 
   it must "find the hash type for the weird occurrence of hash type being 0 on the blockchain" in {
@@ -90,8 +82,7 @@ class ScriptSignatureTest extends BitcoinSJvmTest {
     val hex =
       "8c493046022100d23459d03ed7e9511a47d13292d3430a04627de6235b6e51a40f9cd386f2abe3022100e7d25b080f0bb8d8d5f878bba7d54ad2fda650ea8d158a33ee3cbd11768191fd004104b0e2c879e4daf7b9ab68350228c159766676a14f5815084ba166432aab46198d4cca98fa3e9981d0a90b2effc514b76279476550ba3663fdcaff94c38420e9d5"
     val scriptSig: ScriptSignature = RawScriptSignatureParser.read(hex)
-    HashType(scriptSig.signatures.head.bytes.last) must be(
-      SIGHASH_ALL(Int32.zero))
+    HashType(scriptSig.signatures.head.bytes.last) must be(SIGHASH_ALL(Int32.zero))
   }
 
   it must "have an empty script signature" in {
@@ -133,19 +124,12 @@ class ScriptSignatureTest extends BitcoinSJvmTest {
       val output = TransactionOutput(CurrencyUnits.zero, testCase.script)
       val txSigComponent = testCase.transaction match {
         case btx: NonWitnessTransaction =>
-          BaseTxSigComponent(btx,
-                             testCase.inputIndex,
-                             output,
-                             Policy.standardFlags)
+          BaseTxSigComponent(btx, testCase.inputIndex, output, Policy.standardFlags)
         case wtx: WitnessTransaction =>
-          WitnessTxSigComponent(wtx,
-                                inputIndex = testCase.inputIndex,
-                                output,
-                                Policy.standardFlags)
+          WitnessTxSigComponent(wtx, inputIndex = testCase.inputIndex, output, Policy.standardFlags)
       }
       val hashForSig =
-        TransactionSignatureSerializer.hashForSignature(txSigComponent,
-                                                        testCase.hashType)
+        TransactionSignatureSerializer.hashForSignature(txSigComponent, testCase.hashType)
       val flipHash = BytesUtil.flipEndianness(testCase.hash.hex)
       hashForSig == DoubleSha256Digest(flipHash)
     }

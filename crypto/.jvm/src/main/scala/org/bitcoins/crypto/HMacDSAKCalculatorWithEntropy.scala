@@ -19,8 +19,7 @@ import java.security.SecureRandom
   *
   * The added lines are marked below with comments.
   */
-class HMacDSAKCalculatorWithEntropy(digest: Digest, entropy: ByteVector)
-    extends DSAKCalculator {
+class HMacDSAKCalculatorWithEntropy(digest: Digest, entropy: ByteVector) extends DSAKCalculator {
   require(entropy.length == 32, "Entropy must be 32 bytes")
 
   private val ZERO = BigInteger.valueOf(0)
@@ -37,10 +36,7 @@ class HMacDSAKCalculatorWithEntropy(digest: Digest, entropy: ByteVector)
     throw new IllegalStateException("Operation not supported")
   }
 
-  override def init(
-      n: BigInteger,
-      d: BigInteger,
-      message: Array[Byte]): Unit = {
+  override def init(n: BigInteger, d: BigInteger, message: Array[Byte]): Unit = {
     this.n = n
 
     Arrays.fill(V, 0x01.toByte)

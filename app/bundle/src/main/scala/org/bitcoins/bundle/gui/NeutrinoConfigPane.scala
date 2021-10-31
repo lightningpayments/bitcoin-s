@@ -11,16 +11,13 @@ import scalafx.scene.control._
 import scalafx.scene.layout._
 import scalafx.scene.text.{Font, TextAlignment}
 
-class NeutrinoConfigPane(
-    appConfig: BitcoinSAppConfig,
-    model: LandingPaneModel) {
+class NeutrinoConfigPane(appConfig: BitcoinSAppConfig, model: LandingPaneModel) {
 
   private val neutrinoExplainer: Label = new Label {
     padding = Insets(20)
-    text =
-      "Neutrino syncing will have the Bitcoin-S wallet fetch block headers and neutrino filters" +
-        " from the given peer. This requires downloading the entire history of filters" +
-        " on first startup which can take an hour or two."
+    text = "Neutrino syncing will have the Bitcoin-S wallet fetch block headers and neutrino filters" +
+      " from the given peer. This requires downloading the entire history of filters" +
+      " on first startup which can take an hour or two."
     font = new Font(16)
     maxWidth = 600
     wrapText = true
@@ -35,8 +32,7 @@ class NeutrinoConfigPane(
     }
   }
 
-  private val defaultPeer: String = defaultPeerForNetwork(
-    appConfig.nodeConf.network)
+  private val defaultPeer: String = defaultPeerForNetwork(appConfig.nodeConf.network)
 
   private val startingPeerAddress: String = {
     appConfig.nodeConf.peers.headOption match {
@@ -52,8 +48,7 @@ class NeutrinoConfigPane(
   }
 
   private val networkComboBox: ComboBox[BitcoinNetwork] =
-    new ComboBox[BitcoinNetwork](
-      BitcoinNetworks.knownNetworks.map(_.asInstanceOf[BitcoinNetwork])) {
+    new ComboBox[BitcoinNetwork](BitcoinNetworks.knownNetworks.map(_.asInstanceOf[BitcoinNetwork])) {
       value = BitcoinNetworks.fromString(appConfig.chainConf.network.name)
       onAction = _ => {
         val peer = peerAddressTF.text.value
@@ -103,8 +98,7 @@ class NeutrinoConfigPane(
   val view: Node = new VBox {
     spacing = 20
     alignment = Pos.TopCenter
-    children =
-      Vector(neutrinoExplainer, gridPane, GUIUtil.getVSpacer(), launchButton)
+    children = Vector(neutrinoExplainer, gridPane, GUIUtil.getVSpacer(), launchButton)
   }
 
   def getConfig: Config = {
@@ -113,8 +107,7 @@ class NeutrinoConfigPane(
       torCheckBox.selected.value || peerAddressTF.text.value.contains(".onion")
     val configStr = s"""
                        |bitcoin-s.proxy.enabled = ${proxyEnabled}
-                       |bitcoin-s.network = ${DatadirUtil.networkStrToDirName(
-      networkComboBox.value.value.toString)}
+                       |bitcoin-s.network = ${DatadirUtil.networkStrToDirName(networkComboBox.value.value.toString)}
                        |bitcoin-s.node.mode = neutrino
                        |bitcoin-s.node.peers = ["${peerAddressTF.text.value}"]
                        |""".stripMargin

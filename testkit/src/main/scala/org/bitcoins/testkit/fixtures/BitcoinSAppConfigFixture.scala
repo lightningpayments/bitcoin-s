@@ -1,11 +1,7 @@
 package org.bitcoins.testkit.fixtures
 
 import com.typesafe.config.{Config, ConfigFactory}
-import org.bitcoins.rpc.config.{
-  BitcoindInstance,
-  BitcoindInstanceLocal,
-  BitcoindInstanceRemote
-}
+import org.bitcoins.rpc.config.{BitcoindInstance, BitcoindInstanceLocal, BitcoindInstanceRemote}
 import org.bitcoins.rpc.util.RpcUtil
 import org.bitcoins.server.BitcoinSAppConfig
 import org.bitcoins.testkit.rpc.CachedBitcoindNewest
@@ -29,9 +25,7 @@ sealed trait BitcoinSAppConfigFixture extends BitcoinSFixture with EmbeddedPg {
   *
   * The [[BitcoinSAppConfig]] is not started
   */
-trait BitcoinSAppConfigBitcoinFixtureNotStarted
-    extends BitcoinSAppConfigFixture
-    with CachedBitcoindNewest {
+trait BitcoinSAppConfigBitcoinFixtureNotStarted extends BitcoinSAppConfigFixture with CachedBitcoindNewest {
 
   override type FixtureParam = BitcoinSAppConfig
 

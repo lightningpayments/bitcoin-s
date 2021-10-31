@@ -14,9 +14,7 @@ class P2PKHScriptSignatureTest extends BitcoinSJvmTest {
       case s: P2PKHScriptSignature => s
       case _                       => throw new RuntimeException("Must be p2pkh scriptSig")
     }
-    HashType.fromBytes(
-      ByteVector.fromByte(p2pkhScriptSig.signatures.head.bytes.last)) must be(
-      HashType.sigHashAll)
+    HashType.fromBytes(ByteVector.fromByte(p2pkhScriptSig.signatures.head.bytes.last)) must be(HashType.sigHashAll)
   }
 
   it must "be able to identify the signature in a p2pkh scriptSig" in {

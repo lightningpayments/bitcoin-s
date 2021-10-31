@@ -42,9 +42,7 @@ sealed abstract class Bech32 {
   /** Creates a checksum for the given byte vector according to
     * [[https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki#bech32 BIP173]]
     */
-  def createChecksum(
-      u5s: Vector[UInt5],
-      encoding: Bech32Encoding): Vector[UInt5] = {
+  def createChecksum(u5s: Vector[UInt5], encoding: Bech32Encoding): Vector[UInt5] = {
     val z = UInt5.zero
     val polymod: Long =
       polyMod(u5s ++ Array(z, z, z, z, z, z)) ^ encoding.constant
@@ -99,27 +97,19 @@ sealed abstract class Bech32 {
     */
   def checkHrpValidity(hrp: String): Try[String] = {
     @tailrec
-    def loop(
-        remaining: List[Char],
-        accum: List[Char],
-        isLower: Boolean,
-        isUpper: Boolean): Try[Seq[Char]] =
+    def loop(remaining: List[Char], accum: List[Char], isLower: Boolean, isUpper: Boolean): Try[Seq[Char]] =
       remaining match {
         case h :: t =>
           if (!isInHrpRange(h)) {
-            Failure(
-              new IllegalArgumentException(
-                "Invalid character range for hrp, got: " + hrp))
+            Failure(new IllegalArgumentException("Invalid character range for hrp, got: " + hrp))
           } else if (isLower && isUpper) {
-            Failure(
-              new IllegalArgumentException("HRP had mixed case, got: " + hrp))
+            Failure(new IllegalArgumentException("HRP had mixed case, got: " + hrp))
           } else {
             loop(t, h +: accum, h.isLower || isLower, h.isUpper || isUpper)
           }
         case Nil =>
           if (isLower && isUpper) {
-            Failure(
-              new IllegalArgumentException("HRP had mixed case, got: " + hrp))
+            Failure(new IllegalArgumentException("HRP had mixed case, got: " + hrp))
           } else {
             Success(accum.reverse)
           }
@@ -135,9 +125,7 @@ sealed abstract class Bech32 {
   }
 
   /** Checks the validity of the HRP against bech32 and the given [[StringFactory]] */
-  def checkHrpValidity[T <: Bech32HumanReadablePart](
-      hrp: String,
-      factory: StringFactory[T]): Try[T] = {
+  def checkHrpValidity[T <: Bech32HumanReadablePart](hrp: String, factory: StringFactory[T]): Try[T] = {
     checkHrpValidity(hrp)
       .flatMap(str => factory.fromStringT(str))
   }
@@ -149,25 +137,17 @@ sealed abstract class Bech32 {
     */
   def checkDataValidity(data: String): Try[Vector[UInt5]] = {
     @tailrec
-    def loop(
-        remaining: List[Char],
-        accum: Vector[UInt5],
-        hasUpper: Boolean,
-        hasLower: Boolean): Try[Vector[UInt5]] =
+    def loop(remaining: List[Char], accum: Vector[UInt5], hasUpper: Boolean, hasLower: Boolean): Try[Vector[UInt5]] =
       remaining match {
         case Nil => Success(accum.reverse)
         case h :: t =>
           if ((h.isUpper && hasLower) || (h.isLower && hasUpper)) {
-            Failure(
-              new IllegalArgumentException(
-                "Cannot have mixed case for bech32 address"))
+            Failure(new IllegalArgumentException("Cannot have mixed case for bech32 address"))
           } else {
             val value = Bech32.charsetReversed(h.toInt)
 
             if (value == -1) {
-              Failure(
-                new IllegalArgumentException(
-                  "Invalid character in data of bech32 address, got: " + h))
+              Failure(new IllegalArgumentException("Invalid character in data of bech32 address, got: " + h))
             } else {
               loop(remaining = t,
                    accum = UInt5.fromByte(value.toByte) +: accum,
@@ -176,10 +156,7 @@ sealed abstract class Bech32 {
             }
           }
       }
-    val payload: Try[Vector[UInt5]] = loop(data.toCharArray.toList,
-                                           Vector.empty,
-                                           hasUpper = false,
-                                           hasLower = false)
+    val payload: Try[Vector[UInt5]] = loop(data.toCharArray.toList, Vector.empty, hasUpper = false, hasLower = false)
 
     payload
   }
@@ -230,9 +207,7 @@ sealed abstract class Bech32 {
     *      [[https://github.com/sipa/bech32/blob/master/ref/python/segwit_addr.py#L62 this function]]
     *      by Sipa
     */
-  def splitToHrpAndData(
-      bech32: String,
-      encoding: Bech32Encoding): Try[(String, Vector[UInt5])] = {
+  def splitToHrpAndData(bech32: String, encoding: Bech32Encoding): Try[(String, Vector[UInt5])] = {
     val sepIndexes = bech32.zipWithIndex.filter { case (sep, _) =>
       sep == Bech32.separator
     }
@@ -248,13 +223,9 @@ sealed abstract class Bech32 {
         90
 
     if (length > maxLength || length < 8) {
-      Failure(
-        new IllegalArgumentException(
-          "Bech32 payloads must be between 8 and 90 chars, got: " + length))
+      Failure(new IllegalArgumentException("Bech32 payloads must be between 8 and 90 chars, got: " + length))
     } else if (sepIndexes.isEmpty) {
-      Failure(
-        new IllegalArgumentException(
-          "Bech32 payload did not have the correct separator"))
+      Failure(new IllegalArgumentException("Bech32 payload did not have the correct separator"))
     } else {
       val (_, sepIndex) = sepIndexes.last
       val hrpStr = bech32.take(sepIndex)
@@ -273,9 +244,7 @@ sealed abstract class Bech32 {
             if (verifyChecksum(hrpU5s, dataWithCheck, encoding)) {
               Success(dataWithCheck.take(dataWithCheck.size - 6))
             } else
-              Failure(
-                new IllegalArgumentException(
-                  s"Checksum was invalid on bech32 string $bech32"))
+              Failure(new IllegalArgumentException(s"Checksum was invalid on bech32 string $bech32"))
           }
         } yield (hrpString, dataNoCheck)
       }
@@ -294,10 +263,7 @@ sealed abstract class Bech32 {
     }
   }
 
-  def verifyChecksum(
-      hrp: Seq[UInt5],
-      u5s: Seq[UInt5],
-      encoding: Bech32Encoding): Boolean = {
+  def verifyChecksum(hrp: Seq[UInt5], u5s: Seq[UInt5], encoding: Bech32Encoding): Boolean = {
     val data = hrp ++ u5s
     val checksum = Bech32.polyMod(data.toVector)
     checksum == encoding.constant
@@ -309,8 +275,7 @@ sealed abstract class Bech32 {
       .map(_.toLower)
       .map { char =>
         val index = Bech32.charset.indexOf(char)
-        require(index >= 0,
-                s"$char (${char.toInt}) is not part of the Bech32 charset!")
+        require(index >= 0, s"$char (${char.toInt}) is not part of the Bech32 charset!")
         UInt5(index)
       }
       .toVector
@@ -326,27 +291,23 @@ object Bech32 extends Bech32 {
    * See [[https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki#bech32 BIP173]]
    * for more
    */
-  val charset: Vector[Char] = Vector('q', 'p', 'z', 'r', 'y', '9', 'x', '8',
-    'g', 'f', '2', 't', 'v', 'd', 'w', '0', 's', '3', 'j', 'n', '5', '4', 'k',
-    'h', 'c', 'e', '6', 'm', 'u', 'a', '7', 'l')
+  val charset: Vector[Char] = Vector('q', 'p', 'z', 'r', 'y', '9', 'x', '8', 'g', 'f', '2', 't', 'v', 'd', 'w', '0',
+    's', '3', 'j', 'n', '5', '4', 'k', 'h', 'c', 'e', '6', 'm', 'u', 'a', '7', 'l')
 
   /** The Bech32 character set for decoding.
     * @see https://github.com/sipa/bech32/blob/master/ref/c%2B%2B/bech32.cpp#L33
     */
   val charsetReversed: Vector[Int] = Vector(
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 15, -1, 10, 17, 21, 20, 26, 30, 7,
-    5, -1, -1, -1, -1, -1, -1, -1, 29, -1, 24, 13, 25, 9, 8, 23, -1, 18, 22, 31,
-    27, 19, -1, 1, 0, 3, 16, 11, 28, 12, 14, 6, 4, 2, -1, -1, -1, -1, -1, -1,
-    29, -1, 24, 13, 25, 9, 8, 23, -1, 18, 22, 31, 27, 19, -1, 1, 0, 3, 16, 11,
-    28, 12, 14, 6, 4, 2, -1, -1, -1, -1, -1
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 15, -1, 10, 17, 21, 20, 26, 30, 7, 5,
+    -1, -1, -1, -1, -1, -1, -1, 29, -1, 24, 13, 25, 9, 8, 23, -1, 18, 22, 31, 27, 19, -1, 1, 0, 3, 16, 11, 28, 12, 14,
+    6, 4, 2, -1, -1, -1, -1, -1, -1, 29, -1, 24, 13, 25, 9, 8, 23, -1, 18, 22, 31, 27, 19, -1, 1, 0, 3, 16, 11, 28, 12,
+    14, 6, 4, 2, -1, -1, -1, -1, -1
   )
 }
 
 abstract class Bech32HumanReadablePart {
-  require(chars.forall(Bech32.isInHrpRange),
-          s"Some characters in $chars were not in valid HRP range ([33-126])")
+  require(chars.forall(Bech32.isInHrpRange), s"Some characters in $chars were not in valid HRP range ([33-126])")
 
   def chars: String
 

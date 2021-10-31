@@ -27,11 +27,7 @@ sealed abstract class HDChain extends BIP32Path {
 
 object HDChain {
 
-  private case class BIP44ChainImpl(
-      coin: HDCoin,
-      chainType: HDChainType,
-      account: HDAccount,
-      purpose: HDPurpose)
+  private case class BIP44ChainImpl(coin: HDCoin, chainType: HDChainType, account: HDAccount, purpose: HDPurpose)
       extends HDChain
 
   def apply(chainType: HDChainType, account: HDAccount): HDChain =

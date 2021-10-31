@@ -25,28 +25,22 @@ object LndUtils {
     TxOut(output.value.satoshis.toLong, output.scriptPubKey.asmBytes)
 
   implicit def txOutToTxOutput(txOut: TxOut): TransactionOutput =
-    TransactionOutput(Satoshis(txOut.value),
-                      ScriptPubKey.fromAsmBytes(txOut.pkScript))
+    TransactionOutput(Satoshis(txOut.value), ScriptPubKey.fromAsmBytes(txOut.pkScript))
 
   // If other kinds of Iterables are needed, there's a fancy thing to do
   // that is done all over the Seq code using params and an implicit CanBuildFrom
-  implicit def outputVecToTxOuts(
-      outputs: Vector[TransactionOutput]): Vector[TxOut] =
+  implicit def outputVecToTxOuts(outputs: Vector[TransactionOutput]): Vector[TxOut] =
     outputs.map(outputToTxOut)
 
-  implicit def byteStringVecToByteVecs(
-      byteStrings: Vector[ByteString]): Vector[ByteVector] =
+  implicit def byteStringVecToByteVecs(byteStrings: Vector[ByteString]): Vector[ByteVector] =
     byteStrings.map(byteStringToByteVec)
 
-  implicit def channelPointToOutpoint(
-      channelPoint: ChannelPoint): TransactionOutPoint = {
+  implicit def channelPointToOutpoint(channelPoint: ChannelPoint): TransactionOutPoint = {
     val txIdBytes = channelPoint.fundingTxid.fundingTxidBytes.get
-    TransactionOutPoint(DoubleSha256Digest(txIdBytes),
-                        UInt32(channelPoint.outputIndex))
+    TransactionOutPoint(DoubleSha256Digest(txIdBytes), UInt32(channelPoint.outputIndex))
   }
 
-  implicit def outPointToChannelPoint(
-      outPoint: TransactionOutPoint): ChannelPoint = {
+  implicit def outPointToChannelPoint(outPoint: TransactionOutPoint): ChannelPoint = {
     val txId = FundingTxidBytes(outPoint.txId.bytes)
     ChannelPoint(txId, outPoint.vout.toInt)
   }

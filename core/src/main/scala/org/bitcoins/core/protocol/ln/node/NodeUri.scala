@@ -21,8 +21,7 @@ object NodeUri extends StringFactory[NodeUri] {
       case Some(withPort) =>
         Success(parse(withPort))
       case None =>
-        Failure(
-          new IllegalArgumentException(s"Failed to parse $uri to a NodeUri"))
+        Failure(new IllegalArgumentException(s"Failed to parse $uri to a NodeUri"))
     }
     nodeUriT
   }

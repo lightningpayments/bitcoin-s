@@ -18,9 +18,7 @@ class DLCNumericExecutionTest extends BitcoinSDualWalletTest {
 
   behavior of "DLCWallet"
 
-  def getSigs(contractInfo: ContractInfo): (
-      OracleAttestmentTLV,
-      OracleAttestmentTLV) = {
+  def getSigs(contractInfo: ContractInfo): (OracleAttestmentTLV, OracleAttestmentTLV) = {
     contractInfo.contractDescriptor match {
       case _: NumericContractDescriptor => ()
       case _: EnumContractDescriptor =>
@@ -76,14 +74,8 @@ class DLCNumericExecutionTest extends BitcoinSDualWalletTest {
       case v0: OracleEventV0TLV => v0.eventId
     }
 
-    (OracleAttestmentV0TLV(eventId,
-                           publicKey,
-                           initiatorWinSigs,
-                           initiatorWinVec.map(_.toString)),
-     OracleAttestmentV0TLV(eventId,
-                           publicKey,
-                           recipientWinSigs,
-                           recipientWinVec.map(_.toString)))
+    (OracleAttestmentV0TLV(eventId, publicKey, initiatorWinSigs, initiatorWinVec.map(_.toString)),
+     OracleAttestmentV0TLV(eventId, publicKey, recipientWinSigs, recipientWinVec.map(_.toString)))
   }
 
   it must "execute as the initiator" in { wallets =>
@@ -93,10 +85,7 @@ class DLCNumericExecutionTest extends BitcoinSDualWalletTest {
       (sigs, _) = getSigs(status.contractInfo)
       func = (wallet: DLCWallet) => wallet.executeDLC(contractId, sigs)
 
-      result <- dlcExecutionTest(wallets = wallets,
-                                 asInitiator = true,
-                                 func = func,
-                                 expectedOutputs = 1)
+      result <- dlcExecutionTest(wallets = wallets, asInitiator = true, func = func, expectedOutputs = 1)
 
       _ = assert(result)
 
@@ -132,10 +121,7 @@ class DLCNumericExecutionTest extends BitcoinSDualWalletTest {
       (_, sigs) = getSigs(status.contractInfo)
       func = (wallet: DLCWallet) => wallet.executeDLC(contractId, sigs)
 
-      result <- dlcExecutionTest(wallets = wallets,
-                                 asInitiator = false,
-                                 func = func,
-                                 expectedOutputs = 1)
+      result <- dlcExecutionTest(wallets = wallets, asInitiator = false, func = func, expectedOutputs = 1)
 
       _ = assert(result)
 
@@ -164,9 +150,7 @@ class DLCNumericExecutionTest extends BitcoinSDualWalletTest {
     }
   }
 
-  private def verifyingMatchingOracleSigs(
-      statusA: Claimed,
-      statusB: RemoteClaimed): Boolean = {
+  private def verifyingMatchingOracleSigs(statusA: Claimed, statusB: RemoteClaimed): Boolean = {
     val outcome = statusB.oracleOutcome
     outcome match {
       case _: EnumOracleOutcome =>
@@ -174,9 +158,8 @@ class DLCNumericExecutionTest extends BitcoinSDualWalletTest {
       case numeric: NumericOracleOutcome =>
         val aggR = numeric.aggregateNonce
 
-        val neededNonces = numeric.oraclesAndOutcomes.flatMap {
-          case (oracle, outcome) =>
-            oracle.nonces.take(outcome.serialized.length)
+        val neededNonces = numeric.oraclesAndOutcomes.flatMap { case (oracle, outcome) =>
+          oracle.nonces.take(outcome.serialized.length)
         }
 
         val aggS = statusA.oracleSigs

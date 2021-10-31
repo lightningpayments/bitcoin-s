@@ -36,17 +36,13 @@ sealed trait NonStandardScriptSignature extends ScriptSignature {
   override def toString = s"NonStandardScriptSignature($asm)"
 }
 
-object NonStandardScriptSignature
-    extends ScriptFactory[NonStandardScriptSignature] {
+object NonStandardScriptSignature extends ScriptFactory[NonStandardScriptSignature] {
 
-  private case class NonStandardScriptSignatureImpl(
-      override val asm: Vector[ScriptToken])
+  private case class NonStandardScriptSignatureImpl(override val asm: Vector[ScriptToken])
       extends NonStandardScriptSignature
 
   def fromAsm(asm: Seq[ScriptToken]): NonStandardScriptSignature = {
-    buildScript(asm = asm.toVector,
-                constructor = NonStandardScriptSignatureImpl(_),
-                errorMsg = "")
+    buildScript(asm = asm.toVector, constructor = NonStandardScriptSignatureImpl(_), errorMsg = "")
   }
 
   override def isValidAsm(asm: Seq[ScriptToken]): Boolean = {
@@ -91,9 +87,7 @@ sealed trait P2PKHScriptSignature extends ScriptSignature {
 
 object P2PKHScriptSignature extends ScriptFactory[P2PKHScriptSignature] {
 
-  private case class P2PKHScriptSignatureImpl(
-      override val asm: Vector[ScriptToken])
-      extends P2PKHScriptSignature
+  private case class P2PKHScriptSignatureImpl(override val asm: Vector[ScriptToken]) extends P2PKHScriptSignature
 
   def fromAsm(asm: Seq[ScriptToken]): P2PKHScriptSignature = {
     buildScript(
@@ -104,9 +98,7 @@ object P2PKHScriptSignature extends ScriptFactory[P2PKHScriptSignature] {
   }
 
   /** Builds a P2PKH ScriptSig from a signature and raw ECPublicKeyBytes (may be invalid). */
-  private[core] def apply(
-      signature: ECDigitalSignature,
-      pubKeyBytes: ECPublicKeyBytes): P2PKHScriptSignature = {
+  private[core] def apply(signature: ECDigitalSignature, pubKeyBytes: ECPublicKeyBytes): P2PKHScriptSignature = {
     val signatureBytesToPushOntoStack =
       BitcoinScriptUtil.calculatePushOp(signature.bytes)
     val pubKeyBytesToPushOntoStack =
@@ -120,19 +112,14 @@ object P2PKHScriptSignature extends ScriptFactory[P2PKHScriptSignature] {
   /** Builds a script signature from a digital signature and a public key
     * this is a pay to public key hash script sig
     */
-  def apply(
-      signature: ECDigitalSignature,
-      pubKey: ECPublicKey): P2PKHScriptSignature = {
+  def apply(signature: ECDigitalSignature, pubKey: ECPublicKey): P2PKHScriptSignature = {
     P2PKHScriptSignature(signature, pubKey.toPublicKeyBytes())
   }
 
   /** Determines if the given asm matches a [[P2PKHScriptSignature]] */
   override def isValidAsm(asm: Seq[ScriptToken]): Boolean =
     asm match {
-      case Seq(_: BytesToPushOntoStack,
-               maybeSig: ScriptConstant,
-               _: BytesToPushOntoStack,
-               maybeKey: ScriptConstant) =>
+      case Seq(_: BytesToPushOntoStack, maybeSig: ScriptConstant, _: BytesToPushOntoStack, maybeKey: ScriptConstant) =>
         if (
           (maybeKey.bytes.length == 33 || maybeKey.bytes.length == 65) &&
           (maybeSig.bytes.length > 68 && maybeSig.bytes.length < 73)
@@ -211,13 +198,9 @@ sealed trait P2SHScriptSignature extends ScriptSignature {
 
 object P2SHScriptSignature extends ScriptFactory[P2SHScriptSignature] {
 
-  private case class P2SHScriptSignatureImpl(
-      override val asm: Vector[ScriptToken])
-      extends P2SHScriptSignature
+  private case class P2SHScriptSignatureImpl(override val asm: Vector[ScriptToken]) extends P2SHScriptSignature
 
-  def apply(
-      scriptSig: ScriptSignature,
-      redeemScript: ScriptPubKey): P2SHScriptSignature = {
+  def apply(scriptSig: ScriptSignature, redeemScript: ScriptPubKey): P2SHScriptSignature = {
     //we need to calculate the size of the redeemScript and add the corresponding push op
     val serializedRedeemScript = ScriptConstant(redeemScript.asmBytes)
     val pushOps = BitcoinScriptUtil.calculatePushOp(serializedRedeemScript)
@@ -245,8 +228,7 @@ object P2SHScriptSignature extends ScriptFactory[P2SHScriptSignature] {
   def fromAsm(asm: Seq[ScriptToken]): P2SHScriptSignature = {
     buildScript(asm = asm.toVector,
                 constructor = P2SHScriptSignatureImpl(_),
-                errorMsg =
-                  s"Given asm tokens are not a p2sh scriptSig, got: $asm")
+                errorMsg = s"Given asm tokens are not a p2sh scriptSig, got: $asm")
   }
 
   /** Tests if the given asm tokens are a [[P2SHScriptSignature]] */
@@ -274,12 +256,9 @@ object P2SHScriptSignature extends ScriptFactory[P2SHScriptSignature] {
   }
 
   @tailrec
-  private def isStandardNonP2SH(
-      spk: ScriptPubKey,
-      isRecursiveCall: Boolean): Boolean = {
+  private def isStandardNonP2SH(spk: ScriptPubKey, isRecursiveCall: Boolean): Boolean = {
     spk match {
-      case _: P2PKHScriptPubKey | _: MultiSignatureScriptPubKey |
-          _: P2PKScriptPubKey | _: P2PKWithTimeoutScriptPubKey |
+      case _: P2PKHScriptPubKey | _: MultiSignatureScriptPubKey | _: P2PKScriptPubKey | _: P2PKWithTimeoutScriptPubKey |
           _: UnassignedWitnessScriptPubKey | _: WitnessScriptPubKeyV0 |
           _: ConditionalScriptPubKey => // Conditional SPKs are not recursively checked
         true
@@ -290,8 +269,7 @@ object P2SHScriptSignature extends ScriptFactory[P2SHScriptSignature] {
         } else {
           false
         }
-      case _: NonStandardScriptPubKey | _: WitnessCommitment |
-          _: P2SHScriptPubKey =>
+      case _: NonStandardScriptPubKey | _: WitnessCommitment | _: P2SHScriptPubKey =>
         false
     }
   }
@@ -322,15 +300,12 @@ sealed trait MultiSignatureScriptSignature extends ScriptSignature {
     s"MultiSignatureScriptSignature(${signatures.mkString(", ")})"
 }
 
-object MultiSignatureScriptSignature
-    extends ScriptFactory[MultiSignatureScriptSignature] {
+object MultiSignatureScriptSignature extends ScriptFactory[MultiSignatureScriptSignature] {
 
-  private case class MultiSignatureScriptSignatureImpl(
-      override val asm: Vector[ScriptToken])
+  private case class MultiSignatureScriptSignatureImpl(override val asm: Vector[ScriptToken])
       extends MultiSignatureScriptSignature
 
-  def apply(
-      signatures: Seq[ECDigitalSignature]): MultiSignatureScriptSignature = {
+  def apply(signatures: Seq[ECDigitalSignature]): MultiSignatureScriptSignature = {
     val sigsPushOpsPairs: Seq[Seq[ScriptToken]] = for {
       sig <- signatures
       constant = ScriptConstant(sig.bytes)
@@ -346,8 +321,7 @@ object MultiSignatureScriptSignature
     buildScript(
       asm = asm.toVector,
       constructor = MultiSignatureScriptSignatureImpl(_),
-      errorMsg =
-        s"The given asm tokens were not a multisignature script sig: $asm"
+      errorMsg = s"The given asm tokens were not a multisignature script sig: $asm"
     )
   }
 
@@ -402,9 +376,7 @@ sealed trait P2PKScriptSignature extends ScriptSignature {
 
 object P2PKScriptSignature extends ScriptFactory[P2PKScriptSignature] {
 
-  private case class P2PKScriptSignatureImpl(
-      override val asm: Vector[ScriptToken])
-      extends P2PKScriptSignature
+  private case class P2PKScriptSignatureImpl(override val asm: Vector[ScriptToken]) extends P2PKScriptSignature
 
   def apply(signature: ECDigitalSignature): P2PKScriptSignature = {
     val pushOps = BitcoinScriptUtil.calculatePushOp(signature.bytes)
@@ -414,9 +386,7 @@ object P2PKScriptSignature extends ScriptFactory[P2PKScriptSignature] {
   }
 
   def fromAsm(asm: Seq[ScriptToken]): P2PKScriptSignature = {
-    buildScript(asm.toVector,
-                P2PKScriptSignatureImpl(_),
-                "The given asm tokens were not a p2pk script sig: " + asm)
+    buildScript(asm.toVector, P2PKScriptSignatureImpl(_), "The given asm tokens were not a p2pk script sig: " + asm)
   }
 
   /** P2PK scriptSigs always have the pattern [pushop, digitalSignature] */
@@ -427,8 +397,7 @@ object P2PKScriptSignature extends ScriptFactory[P2PKScriptSignature] {
     }
 }
 
-object P2PKWithTimeoutScriptSignature
-    extends ScriptFactory[ConditionalScriptSignature] {
+object P2PKWithTimeoutScriptSignature extends ScriptFactory[ConditionalScriptSignature] {
 
   override def fromAsm(asm: Seq[ScriptToken]): ConditionalScriptSignature = {
     buildScript(
@@ -438,15 +407,12 @@ object P2PKWithTimeoutScriptSignature
     )
   }
 
-  def apply(
-      beforeTimeout: Boolean,
-      signature: ECDigitalSignature): ConditionalScriptSignature = {
+  def apply(beforeTimeout: Boolean, signature: ECDigitalSignature): ConditionalScriptSignature = {
     ConditionalScriptSignature(P2PKScriptSignature(signature), beforeTimeout)
   }
 
   override def isValidAsm(asm: Seq[ScriptToken]): Boolean = {
-    P2PKScriptSignature.isValidAsm(
-      asm.dropRight(1)) && ConditionalScriptSignature
+    P2PKScriptSignature.isValidAsm(asm.dropRight(1)) && ConditionalScriptSignature
       .isValidAsm(asm)
   }
 }
@@ -468,9 +434,7 @@ sealed trait CLTVScriptSignature extends LockTimeScriptSignature {
   */
 object CLTVScriptSignature extends ScriptFactory[CLTVScriptSignature] {
 
-  private case class CLTVScriptSignatureImpl(
-      override val asm: Vector[ScriptToken])
-      extends CLTVScriptSignature
+  private case class CLTVScriptSignatureImpl(override val asm: Vector[ScriptToken]) extends CLTVScriptSignature
 
   override def fromAsm(asm: Seq[ScriptToken]): CLTVScriptSignature = {
     buildScript(asm = asm.toVector,
@@ -497,9 +461,7 @@ sealed trait CSVScriptSignature extends LockTimeScriptSignature {
 
 object CSVScriptSignature extends ScriptFactory[CSVScriptSignature] {
 
-  private case class CSVScriptSignatureImpl(
-      override val asm: Vector[ScriptToken])
-      extends CSVScriptSignature
+  private case class CSVScriptSignatureImpl(override val asm: Vector[ScriptToken]) extends CSVScriptSignature
 
   override def fromAsm(asm: Seq[ScriptToken]): CSVScriptSignature = {
     buildScript(asm = asm.toVector,
@@ -520,8 +482,7 @@ object CSVScriptSignature extends ScriptFactory[CSVScriptSignature] {
 
 /** ScriptSignature for both OP_IF and OP_NOTIF ScriptPubKeys */
 sealed trait ConditionalScriptSignature extends ScriptSignature {
-  require(ConditionalScriptSignature.isValidAsm(asm),
-          "ConditionalScriptSignature must end in true or false")
+  require(ConditionalScriptSignature.isValidAsm(asm), "ConditionalScriptSignature must end in true or false")
 
   def isTrue: Boolean = {
     BitcoinScriptUtil.castToBool(asm.last)
@@ -541,11 +502,9 @@ sealed trait ConditionalScriptSignature extends ScriptSignature {
   }
 }
 
-object ConditionalScriptSignature
-    extends ScriptFactory[ConditionalScriptSignature] {
+object ConditionalScriptSignature extends ScriptFactory[ConditionalScriptSignature] {
 
-  private case class ConditionalScriptSignatureImpl(
-      override val asm: Vector[ScriptToken])
+  private case class ConditionalScriptSignatureImpl(override val asm: Vector[ScriptToken])
       extends ConditionalScriptSignature {
 
     override def toString: String =
@@ -558,9 +517,7 @@ object ConditionalScriptSignature
                 s"Given asm was not a ConditionalScriptSignature: $asm")
   }
 
-  def apply(
-      nestedScriptSig: ScriptSignature,
-      condition: Boolean): ConditionalScriptSignature = {
+  def apply(nestedScriptSig: ScriptSignature, condition: Boolean): ConditionalScriptSignature = {
     val conditionAsm = if (condition) {
       OP_TRUE
     } else {
@@ -582,13 +539,11 @@ object ConditionalScriptSignature
       case ConditionalPath.nonNestedFalse =>
         ConditionalScriptSignature(nestedScriptSig, condition = false)
       case ConditionalPath.ConditionTrue(nextCondition) =>
-        ConditionalScriptSignature.fromNestedScriptSig(
-          ConditionalScriptSignature(nestedScriptSig, condition = true),
-          nextCondition)
+        ConditionalScriptSignature.fromNestedScriptSig(ConditionalScriptSignature(nestedScriptSig, condition = true),
+                                                       nextCondition)
       case ConditionalPath.ConditionFalse(nextCondition) =>
-        ConditionalScriptSignature.fromNestedScriptSig(
-          ConditionalScriptSignature(nestedScriptSig, condition = false),
-          nextCondition)
+        ConditionalScriptSignature.fromNestedScriptSig(ConditionalScriptSignature(nestedScriptSig, condition = false),
+                                                       nextCondition)
     }
   }
 

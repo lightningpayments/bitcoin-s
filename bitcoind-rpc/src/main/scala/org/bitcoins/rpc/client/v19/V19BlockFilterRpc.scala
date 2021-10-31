@@ -20,24 +20,17 @@ trait V19BlockFilterRpc {
     * We use an intermediary data type to hold our data so we can add the block hash
     * we were given after the RPC call
     */
-  private case class TempBlockFilterResult(
-      filter: String,
-      header: DoubleSha256DigestBE)
+  private case class TempBlockFilterResult(filter: String, header: DoubleSha256DigestBE)
 
-  implicit
-  private val tempBlockFilterResultReads: Reads[TempBlockFilterResult] =
+  implicit private val tempBlockFilterResultReads: Reads[TempBlockFilterResult] =
     Json.reads[TempBlockFilterResult]
 
-  def getBlockFilter(
-      blockhash: DoubleSha256DigestBE,
-      filtertype: FilterType): Future[GetBlockFilterResult] = {
-    bitcoindCall[TempBlockFilterResult](
-      "getblockfilter",
-      List(JsString(blockhash.hex), JsString(filtertype.toString.toLowerCase)))
+  def getBlockFilter(blockhash: DoubleSha256DigestBE, filtertype: FilterType): Future[GetBlockFilterResult] = {
+    bitcoindCall[TempBlockFilterResult]("getblockfilter",
+                                        List(JsString(blockhash.hex), JsString(filtertype.toString.toLowerCase)))
       .map { tempBlockFilterResult =>
-        GetBlockFilterResult(
-          BlockFilter.fromHex(tempBlockFilterResult.filter, blockhash.flip),
-          tempBlockFilterResult.header)
+        GetBlockFilterResult(BlockFilter.fromHex(tempBlockFilterResult.filter, blockhash.flip),
+                             tempBlockFilterResult.header)
       }
   }
 

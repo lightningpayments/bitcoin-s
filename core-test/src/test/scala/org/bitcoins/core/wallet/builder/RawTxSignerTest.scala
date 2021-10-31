@@ -8,18 +8,8 @@ import org.bitcoins.core.script.constant.ScriptNumber
 import org.bitcoins.core.script.crypto.HashType
 import org.bitcoins.core.util.BitcoinScriptUtil
 import org.bitcoins.core.wallet.fee.{SatoshisPerByte, SatoshisPerVirtualByte}
-import org.bitcoins.core.wallet.utxo.{
-  ConditionalPath,
-  InputInfo,
-  LockTimeInputInfo,
-  ScriptSignatureParams
-}
-import org.bitcoins.crypto.{
-  DoubleSha256DigestBE,
-  ECPrivateKey,
-  LowRDummyECDigitalSignature,
-  Sign
-}
+import org.bitcoins.core.wallet.utxo.{ConditionalPath, InputInfo, LockTimeInputInfo, ScriptSignatureParams}
+import org.bitcoins.crypto.{DoubleSha256DigestBE, ECPrivateKey, LowRDummyECDigitalSignature, Sign}
 import org.bitcoins.testkitcore.Implicits._
 import org.bitcoins.testkitcore.gen.{CreditingTxGen, ScriptGenerators}
 import org.bitcoins.testkitcore.util.BitcoinSUnitTest
@@ -111,8 +101,7 @@ class RawTxSignerTest extends BitcoinSUnitTest {
     val creditingOutput = TransactionOutput(CurrencyUnits.zero, p2pkh)
     val destinations =
       Vector(TransactionOutput(Satoshis.one, EmptyScriptPubKey))
-    val creditingTx = BaseTransaction(version =
-                                        TransactionConstants.validLockVersion,
+    val creditingTx = BaseTransaction(version = TransactionConstants.validLockVersion,
                                       inputs = Nil,
                                       outputs = Vector(creditingOutput),
                                       lockTime = TransactionConstants.lockTime)
@@ -150,8 +139,7 @@ class RawTxSignerTest extends BitcoinSUnitTest {
     val lockTime = System.currentTimeMillis / 1000
 
     val cltvSPK =
-      CLTVScriptPubKey(ScriptNumber(lockTime),
-                       P2PKScriptPubKey(fundingPrivKey.publicKey))
+      CLTVScriptPubKey(ScriptNumber(lockTime), P2PKScriptPubKey(fundingPrivKey.publicKey))
 
     val creditingTx = BaseTransaction(
       version = TransactionConstants.validLockVersion,
@@ -175,9 +163,7 @@ class RawTxSignerTest extends BitcoinSUnitTest {
 
     val utx =
       StandardNonInteractiveFinalizer.txFrom(
-        outputs = Vector(
-          TransactionOutput(Bitcoins.one - CurrencyUnits.oneMBTC,
-                            EmptyScriptPubKey)),
+        outputs = Vector(TransactionOutput(Bitcoins.one - CurrencyUnits.oneMBTC, EmptyScriptPubKey)),
         utxos = utxos,
         feeRate = feeUnit,
         changeSPK = EmptyScriptPubKey
@@ -194,8 +180,7 @@ class RawTxSignerTest extends BitcoinSUnitTest {
     val lockTime = 1000
 
     val cltvSPK =
-      CLTVScriptPubKey(ScriptNumber(lockTime),
-                       P2PKScriptPubKey(fundingPrivKey.publicKey))
+      CLTVScriptPubKey(ScriptNumber(lockTime), P2PKScriptPubKey(fundingPrivKey.publicKey))
 
     val creditingTx = BaseTransaction(
       version = TransactionConstants.validLockVersion,
@@ -219,9 +204,7 @@ class RawTxSignerTest extends BitcoinSUnitTest {
 
     val utx =
       StandardNonInteractiveFinalizer.txFrom(
-        outputs = Vector(
-          TransactionOutput(Bitcoins.one - CurrencyUnits.oneMBTC,
-                            EmptyScriptPubKey)),
+        outputs = Vector(TransactionOutput(Bitcoins.one - CurrencyUnits.oneMBTC, EmptyScriptPubKey)),
         utxos = utxos,
         feeRate = feeUnit,
         changeSPK = EmptyScriptPubKey
@@ -240,15 +223,12 @@ class RawTxSignerTest extends BitcoinSUnitTest {
     val lockTime2 = 1000
 
     val cltvSPK1 =
-      CLTVScriptPubKey(ScriptNumber(lockTime1),
-                       P2PKScriptPubKey(fundingPrivKey1.publicKey))
+      CLTVScriptPubKey(ScriptNumber(lockTime1), P2PKScriptPubKey(fundingPrivKey1.publicKey))
     val cltvSPK2 =
-      CLTVScriptPubKey(ScriptNumber(lockTime2),
-                       P2PKScriptPubKey(fundingPrivKey2.publicKey))
+      CLTVScriptPubKey(ScriptNumber(lockTime2), P2PKScriptPubKey(fundingPrivKey2.publicKey))
 
     val cltvSpendingInfo1 = ScriptSignatureParams(
-      LockTimeInputInfo(TransactionOutPoint(DoubleSha256DigestBE.empty,
-                                            UInt32.zero),
+      LockTimeInputInfo(TransactionOutPoint(DoubleSha256DigestBE.empty, UInt32.zero),
                         Bitcoins.one,
                         cltvSPK1,
                         ConditionalPath.NoCondition),
@@ -258,8 +238,7 @@ class RawTxSignerTest extends BitcoinSUnitTest {
     )
 
     val cltvSpendingInfo2 = ScriptSignatureParams(
-      LockTimeInputInfo(TransactionOutPoint(DoubleSha256DigestBE.empty,
-                                            UInt32.one),
+      LockTimeInputInfo(TransactionOutPoint(DoubleSha256DigestBE.empty, UInt32.one),
                         Bitcoins.one,
                         cltvSPK2,
                         ConditionalPath.NoCondition),
@@ -272,9 +251,7 @@ class RawTxSignerTest extends BitcoinSUnitTest {
     val feeRate = SatoshisPerByte(Satoshis.one)
 
     val utx = RawFinalizerFactory.txFrom(
-      Vector(
-        TransactionOutput(Bitcoins.one + Bitcoins.one - CurrencyUnits.oneMBTC,
-                          EmptyScriptPubKey)),
+      Vector(TransactionOutput(Bitcoins.one + Bitcoins.one - CurrencyUnits.oneMBTC, EmptyScriptPubKey)),
       utxos,
       UInt32.zero,
       feeRate,
@@ -311,9 +288,7 @@ class RawTxSignerTest extends BitcoinSUnitTest {
           val mockSigners =
             inputInfo.pubKeys.take(inputInfo.requiredSigs).map(Sign.dummySign)
 
-          inputInfo.toSpendingInfo(EmptyTransaction,
-                                   mockSigners,
-                                   HashType.sigHashAll)
+          inputInfo.toSpendingInfo(EmptyTransaction, mockSigners, HashType.sigHashAll)
         }
 
         val utx =
@@ -321,10 +296,7 @@ class RawTxSignerTest extends BitcoinSUnitTest {
                                                  utxos = dummySpendingInfos,
                                                  feeRate = fee,
                                                  changeSPK = changeSPK)
-        val tx = RawTxSigner.sign(utx,
-                                  dummySpendingInfos.toVector,
-                                  RawTxSigner.emptyInvariant,
-                                  dummySign = true)
+        val tx = RawTxSigner.sign(utx, dummySpendingInfos.toVector, RawTxSigner.emptyInvariant, dummySign = true)
 
         // Can't use BitcoinScriptUtil.verifyScript because it will pass for things
         // with EmptyScriptPubKeys or Multisig with 0 required sigs
@@ -332,9 +304,7 @@ class RawTxSignerTest extends BitcoinSUnitTest {
           case EmptyTransaction =>
             succeed
           case btx: BaseTransaction =>
-            assert(
-              btx.inputs.forall(_.scriptSignature.signatures.forall(
-                _ == LowRDummyECDigitalSignature)))
+            assert(btx.inputs.forall(_.scriptSignature.signatures.forall(_ == LowRDummyECDigitalSignature)))
           case wtx: WitnessTransaction =>
             assert(
               wtx.witness.witnesses.forall {
@@ -351,8 +321,7 @@ class RawTxSignerTest extends BitcoinSUnitTest {
   }
 
   it should "sign a mix of p2sh/p2wsh in a tx and then have it verified" in {
-    forAll(CreditingTxGen.inputsAndOutputs(CreditingTxGen.nestedOutputs),
-           ScriptGenerators.scriptPubKey) {
+    forAll(CreditingTxGen.inputsAndOutputs(CreditingTxGen.nestedOutputs), ScriptGenerators.scriptPubKey) {
       case ((creditingTxsInfo, destinations), (changeSPK, _)) =>
         val fee = SatoshisPerByte(Satoshis(1000))
         val utx =

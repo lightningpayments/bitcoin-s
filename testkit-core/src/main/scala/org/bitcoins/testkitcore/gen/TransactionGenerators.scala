@@ -51,8 +51,7 @@ object TransactionGenerators {
 
   def realisticWitnessOutput: Gen[TransactionOutput] = {
     CurrencyUnitGenerator.positiveRealistic.flatMap { amt =>
-      ScriptGenerators.witnessScriptPubKeyV0.map(spk =>
-        TransactionOutput(amt, spk._1))
+      ScriptGenerators.witnessScriptPubKeyV0.map(spk => TransactionOutput(amt, spk._1))
     }
   }
 
@@ -71,10 +70,7 @@ object TransactionGenerators {
   private def genAmounts(totalAmount: CurrencyUnit): Seq[CurrencyUnit] = {
     val numOutputs = Gen.choose(0, 5).sampleSome
     @tailrec
-    def loop(
-        remaining: Int,
-        remainingAmount: CurrencyUnit,
-        accum: Seq[CurrencyUnit]): Seq[CurrencyUnit] = {
+    def loop(remaining: Int, remainingAmount: CurrencyUnit, accum: Seq[CurrencyUnit]): Seq[CurrencyUnit] = {
       if (remaining <= 0) {
         accum
       } else {
@@ -102,8 +98,7 @@ object TransactionGenerators {
   /**  Creates a small sequence of outputs whose total sum is <= totalAmount
     * @return Sequence of outputs and corresponding Redeem Scripts
     */
-  def smallP2SHOutputs(totalAmount: CurrencyUnit): Gen[
-    Seq[(TransactionOutput, ScriptPubKey)]] = {
+  def smallP2SHOutputs(totalAmount: CurrencyUnit): Gen[Seq[(TransactionOutput, ScriptPubKey)]] = {
     val amts = genAmounts(totalAmount)
     val spks = Gen.listOfN(amts.size, ScriptGenerators.p2shScriptPubKey)
     spks.flatMap { s =>
@@ -113,8 +108,7 @@ object TransactionGenerators {
     }
   }
 
-  def smallP2WSHOutputs(totalAmount: CurrencyUnit): Gen[
-    Seq[(TransactionOutput, ScriptPubKey)]] = {
+  def smallP2WSHOutputs(totalAmount: CurrencyUnit): Gen[Seq[(TransactionOutput, ScriptPubKey)]] = {
     val amts = genAmounts(totalAmount)
     val spks = Gen.listOfN(amts.size, ScriptGenerators.p2wshSPKV0)
     spks.flatMap { s =>
@@ -186,8 +180,7 @@ object TransactionGenerators {
     Gen.oneOf(realisticBaseTransaction, realisiticWitnessTransaction)
 
   def realisticTransactionWitnessOut: Gen[Transaction] =
-    Gen.oneOf(realisticBaseTransactionWitnessOut,
-              realisiticWitnessTransactionWitnessOut)
+    Gen.oneOf(realisticBaseTransactionWitnessOut, realisiticWitnessTransactionWitnessOut)
 
   /** Generates a transaction where at least one output pays to the given SPK */
   def transactionTo(spk: ScriptPubKey) =
@@ -233,8 +226,7 @@ object TransactionGenerators {
     } yield BaseTransaction(version, is, os, lockTime)
 
   /** To avoid duplicating logic */
-  private def witnessTxHelper(
-      outputs: Seq[TransactionOutput]): Gen[WitnessTransaction] = {
+  private def witnessTxHelper(outputs: Seq[TransactionOutput]): Gen[WitnessTransaction] = {
     for {
       version <- NumberGenerator.int32s
       //we cannot have zero witnesses on a WitnessTx
@@ -292,11 +284,7 @@ object TransactionGenerators {
       (signedTx, inputIndex) =
         buildSpendingTransaction(creditingTx, signedScriptSig, outputIndex)
       output = creditingTx.outputs(outputIndex.toInt)
-      signedTxSignatureComponent = BaseTxSigComponent(
-        signedTx,
-        inputIndex,
-        output,
-        Policy.standardScriptVerifyFlags)
+      signedTxSignatureComponent = BaseTxSigComponent(signedTx, inputIndex, output, Policy.standardScriptVerifyFlags)
     } yield (signedTxSignatureComponent, privateKey)
 
   /** Creates a [[org.bitcoins.crypto.ECPrivateKey ECPrivateKey]], then creates a
@@ -312,11 +300,7 @@ object TransactionGenerators {
       (signedTx, inputIndex) =
         buildSpendingTransaction(creditingTx, signedScriptSig, outputIndex)
       output = creditingTx.outputs(outputIndex.toInt)
-      signedTxSignatureComponent = BaseTxSigComponent(
-        signedTx,
-        inputIndex,
-        output,
-        Policy.standardScriptVerifyFlags)
+      signedTxSignatureComponent = BaseTxSigComponent(signedTx, inputIndex, output, Policy.standardScriptVerifyFlags)
     } yield (signedTxSignatureComponent, privateKey)
 
   /** Creates a sequence of [[org.bitcoins.crypto.ECPrivateKey ECPrivateKey]], then creates a
@@ -332,11 +316,7 @@ object TransactionGenerators {
       (signedTx, inputIndex) =
         buildSpendingTransaction(creditingTx, signedScriptSig, outputIndex)
       output = creditingTx.outputs(outputIndex.toInt)
-      signedTxSignatureComponent = BaseTxSigComponent(
-        signedTx,
-        inputIndex,
-        output,
-        Policy.standardScriptVerifyFlags)
+      signedTxSignatureComponent = BaseTxSigComponent(signedTx, inputIndex, output, Policy.standardScriptVerifyFlags)
     } yield (signedTxSignatureComponent, privateKeys)
 
   /** Creates a transaction which contains a
@@ -347,17 +327,11 @@ object TransactionGenerators {
     for {
       (signedScriptSig, scriptPubKey, privateKey) <-
         ScriptGenerators.signedP2SHScriptSignature
-      (creditingTx, outputIndex) = buildCreditingTransaction(
-        signedScriptSig.redeemScript)
+      (creditingTx, outputIndex) = buildCreditingTransaction(signedScriptSig.redeemScript)
       (signedTx, inputIndex) =
         buildSpendingTransaction(creditingTx, signedScriptSig, outputIndex)
-      output = TransactionOutput(creditingTx.outputs(outputIndex.toInt).value,
-                                 scriptPubKey)
-      signedTxSignatureComponent = BaseTxSigComponent(
-        signedTx,
-        inputIndex,
-        output,
-        Policy.standardScriptVerifyFlags)
+      output = TransactionOutput(creditingTx.outputs(outputIndex.toInt).value, scriptPubKey)
+      signedTxSignatureComponent = BaseTxSigComponent(signedTx, inputIndex, output, Policy.standardScriptVerifyFlags)
     } yield (signedTxSignatureComponent, privateKey)
 
   /** Generates a validly constructed CLTV transaction, which has a 50/50 chance of being spendable or unspendable. */
@@ -381,11 +355,7 @@ object TransactionGenerators {
       (scriptSig, scriptPubKey, privKeys) <-
         ScriptGenerators
           .signedCLTVScriptSignature(cltvLockTime, txLockTime, sequence)
-      unspendable = lockTimeTxHelper(scriptSig,
-                                     scriptPubKey,
-                                     privKeys,
-                                     sequence,
-                                     Some(txLockTime))
+      unspendable = lockTimeTxHelper(scriptSig, scriptPubKey, privKeys, sequence, Some(txLockTime))
     } yield unspendable
 
   /**  Creates a [[org.bitcoins.crypto.ECPrivateKey ECPrivateKey]], then creates a
@@ -400,11 +370,7 @@ object TransactionGenerators {
       (scriptSig, scriptPubKey, privKeys) <-
         ScriptGenerators
           .signedCLTVScriptSignature(cltvLockTime, txLockTime, sequence)
-      spendable = lockTimeTxHelper(scriptSig,
-                                   scriptPubKey,
-                                   privKeys,
-                                   sequence,
-                                   Some(txLockTime))
+      spendable = lockTimeTxHelper(scriptSig, scriptPubKey, privKeys, sequence, Some(txLockTime))
     } yield spendable
 
   /**  Creates a [[org.bitcoins.crypto.ECPrivateKey ECPrivateKey]], then creates a
@@ -425,18 +391,12 @@ object TransactionGenerators {
       tx <- csvTransaction(csvScriptNum, sequence)
     } yield tx
 
-  def csvTransaction(
-      csvScriptNum: ScriptNumber,
-      sequence: UInt32): Gen[(BaseTxSigComponent, Seq[ECPrivateKey])] =
+  def csvTransaction(csvScriptNum: ScriptNumber, sequence: UInt32): Gen[(BaseTxSigComponent, Seq[ECPrivateKey])] =
     for {
       (signedScriptSig, csvScriptPubKey, privateKeys) <-
         ScriptGenerators
           .signedCSVScriptSignature(csvScriptNum, sequence)
-    } yield lockTimeTxHelper(signedScriptSig,
-                             csvScriptPubKey,
-                             privateKeys,
-                             sequence,
-                             None)
+    } yield lockTimeTxHelper(signedScriptSig, csvScriptPubKey, privateKeys, sequence, None)
 
   /** Generates a [[org.bitcoins.core.protocol.transaction.WitnessTransaction WitnessTransaction]] that has all of
     * it's inputs signed correctly
@@ -450,8 +410,7 @@ object TransactionGenerators {
   /** Generates a [[org.bitcoins.core.protocol.transaction.WitnessTransaction WitnessTransaction]] that has an input
     * spends a raw P2WSH [[org.bitcoins.core.protocol.script.WitnessScriptPubKey WitnessScriptPubKey]]
     */
-  def signedP2WSHP2PKTransaction: Gen[
-    (WitnessTxSigComponentRaw, Seq[ECPrivateKey])] =
+  def signedP2WSHP2PKTransaction: Gen[(WitnessTxSigComponentRaw, Seq[ECPrivateKey])] =
     for {
       (_, wBaseTxSigComponent, privKeys) <-
         WitnessGenerators.signedP2WSHP2PKTransactionWitness
@@ -460,82 +419,60 @@ object TransactionGenerators {
   /** Generates a [[org.bitcoins.core.protocol.transaction.WitnessTransaction WitnessTransaction]] that has an
     * input spends a raw P2WSH [[org.bitcoins.core.protocol.script.WitnessScriptPubKey WitnessScriptPubKey]]
     */
-  def signedP2WSHP2PKHTransaction: Gen[
-    (WitnessTxSigComponentRaw, Seq[ECPrivateKey])] =
+  def signedP2WSHP2PKHTransaction: Gen[(WitnessTxSigComponentRaw, Seq[ECPrivateKey])] =
     for {
       (_, wBaseTxSigComponent, privKeys) <-
         WitnessGenerators.signedP2WSHP2PKHTransactionWitness
     } yield (wBaseTxSigComponent, privKeys)
 
-  def signedP2WSHMultiSigTransaction: Gen[
-    (WitnessTxSigComponentRaw, Seq[ECPrivateKey])] =
+  def signedP2WSHMultiSigTransaction: Gen[(WitnessTxSigComponentRaw, Seq[ECPrivateKey])] =
     for {
       (_, wBaseTxSigComponent, privKeys) <-
         WitnessGenerators.signedP2WSHMultiSigTransactionWitness
     } yield (wBaseTxSigComponent, privKeys)
 
   /** Creates a signed P2SH(P2WPKH) transaction */
-  def signedP2SHP2WPKHTransaction: Gen[
-    (WitnessTxSigComponent, Seq[ECPrivateKey])] =
+  def signedP2SHP2WPKHTransaction: Gen[(WitnessTxSigComponent, Seq[ECPrivateKey])] =
     for {
       (signedScriptSig, scriptPubKey, privKeys, witness, amount) <-
         ScriptGenerators.signedP2SHP2WPKHScriptSignature
       (creditingTx, outputIndex) =
         buildCreditingTransaction(signedScriptSig.redeemScript, amount)
-      (signedTx, inputIndex) = buildSpendingTransaction(
-        TransactionConstants.validLockVersion,
-        creditingTx,
-        signedScriptSig,
-        outputIndex,
-        witness)
-      output = TransactionOutput(creditingTx.outputs(outputIndex.toInt).value,
-                                 scriptPubKey)
-      signedTxSignatureComponent = WitnessTxSigComponent(
-        signedTx,
-        inputIndex,
-        output,
-        Policy.standardScriptVerifyFlags)
+      (signedTx, inputIndex) = buildSpendingTransaction(TransactionConstants.validLockVersion,
+                                                        creditingTx,
+                                                        signedScriptSig,
+                                                        outputIndex,
+                                                        witness)
+      output = TransactionOutput(creditingTx.outputs(outputIndex.toInt).value, scriptPubKey)
+      signedTxSignatureComponent = WitnessTxSigComponent(signedTx, inputIndex, output, Policy.standardScriptVerifyFlags)
     } yield (signedTxSignatureComponent, privKeys)
 
-  def signedP2WSHTransaction: Gen[
-    (WitnessTxSigComponentRaw, Seq[ECPrivateKey])] = {
-    Gen.oneOf(signedP2WSHP2PKTransaction,
-              signedP2WSHP2PKHTransaction,
-              signedP2WSHMultiSigTransaction)
+  def signedP2WSHTransaction: Gen[(WitnessTxSigComponentRaw, Seq[ECPrivateKey])] = {
+    Gen.oneOf(signedP2WSHP2PKTransaction, signedP2WSHP2PKHTransaction, signedP2WSHMultiSigTransaction)
   }
 
   /** Creates a signed P2SH(P2WSH) transaction */
-  def signedP2SHP2WSHTransaction: Gen[
-    (WitnessTxSigComponent, Seq[ECPrivateKey])] =
+  def signedP2SHP2WSHTransaction: Gen[(WitnessTxSigComponent, Seq[ECPrivateKey])] =
     for {
       (witness, wBaseTxSigComponent, privKeys) <-
         WitnessGenerators.signedP2WSHTransactionWitness
       p2shScriptPubKey = P2SHScriptPubKey(wBaseTxSigComponent.scriptPubKey)
-      p2shScriptSig = P2SHScriptSignature(
-        wBaseTxSigComponent.scriptPubKey.asInstanceOf[WitnessScriptPubKey])
-      (creditingTx, outputIndex) = buildCreditingTransaction(
-        p2shScriptSig.redeemScript,
-        wBaseTxSigComponent.amount)
+      p2shScriptSig = P2SHScriptSignature(wBaseTxSigComponent.scriptPubKey.asInstanceOf[WitnessScriptPubKey])
+      (creditingTx, outputIndex) = buildCreditingTransaction(p2shScriptSig.redeemScript, wBaseTxSigComponent.amount)
       sequence =
         wBaseTxSigComponent.transaction
           .inputs(wBaseTxSigComponent.inputIndex.toInt)
           .sequence
       locktime = wBaseTxSigComponent.transaction.lockTime
-      (signedTx, inputIndex) = buildSpendingTransaction(
-        TransactionConstants.validLockVersion,
-        creditingTx,
-        p2shScriptSig,
-        outputIndex,
-        locktime,
-        sequence,
-        witness)
-      output = TransactionOutput(creditingTx.outputs(outputIndex.toInt).value,
-                                 p2shScriptPubKey)
-      signedTxSignatureComponent = WitnessTxSigComponent(
-        signedTx,
-        inputIndex,
-        output,
-        Policy.standardScriptVerifyFlags)
+      (signedTx, inputIndex) = buildSpendingTransaction(TransactionConstants.validLockVersion,
+                                                        creditingTx,
+                                                        p2shScriptSig,
+                                                        outputIndex,
+                                                        locktime,
+                                                        sequence,
+                                                        witness)
+      output = TransactionOutput(creditingTx.outputs(outputIndex.toInt).value, p2shScriptPubKey)
+      signedTxSignatureComponent = WitnessTxSigComponent(signedTx, inputIndex, output, Policy.standardScriptVerifyFlags)
     } yield (signedTxSignatureComponent, privKeys)
 
   /** Builds a spending transaction according to bitcoin core
@@ -549,13 +486,7 @@ object TransactionGenerators {
       locktime: UInt32,
       sequence: UInt32): (Transaction, UInt32) = {
     val output = TransactionOutput(CurrencyUnits.zero, EmptyScriptPubKey)
-    buildSpendingTransaction(version,
-                             creditingTx,
-                             scriptSignature,
-                             outputIndex,
-                             locktime,
-                             sequence,
-                             Seq(output))
+    buildSpendingTransaction(version, creditingTx, scriptSignature, outputIndex, locktime, sequence, Seq(output))
   }
 
   def buildSpendingTransaction(
@@ -580,10 +511,9 @@ object TransactionGenerators {
   /** Builds a spending transaction according to bitcoin core with max sequence and a locktime of zero.
     * @return the built spending transaction and the input index for the script signature
     */
-  def buildSpendingTransaction(
-      creditingTx: Transaction,
-      scriptSignature: ScriptSignature,
-      outputIndex: UInt32): (Transaction, UInt32) = {
+  def buildSpendingTransaction(creditingTx: Transaction, scriptSignature: ScriptSignature, outputIndex: UInt32): (
+      Transaction,
+      UInt32) = {
     buildSpendingTransaction(TransactionConstants.version,
                              creditingTx,
                              scriptSignature,
@@ -619,14 +549,7 @@ object TransactionGenerators {
       witness: TransactionWitness): (WitnessTransaction, UInt32) = {
 
     val outputs = dummyOutputs
-    buildSpendingTransaction(version,
-                             creditingTx,
-                             scriptSignature,
-                             outputIndex,
-                             locktime,
-                             sequence,
-                             witness,
-                             outputs)
+    buildSpendingTransaction(version, creditingTx, scriptSignature, outputIndex, locktime, sequence, witness, outputs)
   }
 
   def dummyOutputs: Seq[TransactionOutput] =
@@ -643,8 +566,7 @@ object TransactionGenerators {
       outputs: Seq[TransactionOutput]): (WitnessTransaction, UInt32) = {
     val outpoint = TransactionOutPoint(creditingTx.txId, outputIndex)
     val input = TransactionInput(outpoint, scriptSignature, sequence)
-    (WitnessTransaction(version, Seq(input), outputs, locktime, witness),
-     UInt32.zero)
+    (WitnessTransaction(version, Seq(input), outputs, locktime, witness), UInt32.zero)
   }
 
   def buildSpendingTransaction(
@@ -652,11 +574,7 @@ object TransactionGenerators {
       scriptSignature: ScriptSignature,
       outputIndex: UInt32,
       witness: TransactionWitness): (WitnessTransaction, UInt32) = {
-    buildSpendingTransaction(TransactionConstants.version,
-                             creditingTx,
-                             scriptSignature,
-                             outputIndex,
-                             witness)
+    buildSpendingTransaction(TransactionConstants.version, creditingTx, scriptSignature, outputIndex, witness)
   }
 
   def buildSpendingTransaction(
@@ -667,21 +585,14 @@ object TransactionGenerators {
       witness: TransactionWitness): (WitnessTransaction, UInt32) = {
     val locktime = TransactionConstants.lockTime
     val sequence = TransactionConstants.sequence
-    buildSpendingTransaction(version,
-                             creditingTx,
-                             scriptSignature,
-                             outputIndex,
-                             locktime,
-                             sequence,
-                             witness)
+    buildSpendingTransaction(version, creditingTx, scriptSignature, outputIndex, locktime, sequence, witness)
   }
 
   /** Mimics this test utility found in bitcoin core
     * https://github.com/bitcoin/bitcoin/blob/605c17844ea32b6d237db6d83871164dc7d59dab/src/test/script_tests.cpp#L57
     * @return the transaction and the output index of the scriptPubKey
     */
-  def buildCreditingTransaction(
-      scriptPubKey: ScriptPubKey): (Transaction, UInt32) = {
+  def buildCreditingTransaction(scriptPubKey: ScriptPubKey): (Transaction, UInt32) = {
     //this needs to be all zeros according to these 3 lines in bitcoin core
     //https://github.com/bitcoin/bitcoin/blob/605c17844ea32b6d237db6d83871164dc7d59dab/src/test/script_tests.cpp#L64
     //https://github.com/bitcoin/bitcoin/blob/80d1f2e48364f05b2cdf44239b3a1faa0277e58e/src/primitives/transaction.h#L32
@@ -689,42 +600,30 @@ object TransactionGenerators {
     buildCreditingTransaction(TransactionConstants.version, scriptPubKey)
   }
 
-  def buildCreditingTransaction(
-      scriptPubKey: ScriptPubKey,
-      amount: CurrencyUnit): (Transaction, UInt32) = {
-    buildCreditingTransaction(TransactionConstants.version,
-                              scriptPubKey,
-                              amount)
+  def buildCreditingTransaction(scriptPubKey: ScriptPubKey, amount: CurrencyUnit): (Transaction, UInt32) = {
+    buildCreditingTransaction(TransactionConstants.version, scriptPubKey, amount)
   }
 
   /** Builds a crediting transaction with a transaction version parameter.
     * Example: useful for creating transactions with scripts containing OP_CHECKSEQUENCEVERIFY.
     * @return
     */
-  def buildCreditingTransaction(
-      version: Int32,
-      scriptPubKey: ScriptPubKey): (Transaction, UInt32) = {
+  def buildCreditingTransaction(version: Int32, scriptPubKey: ScriptPubKey): (Transaction, UInt32) = {
     buildCreditingTransaction(version, scriptPubKey, CurrencyUnits.zero)
   }
 
-  def buildCreditingTransaction(
-      version: Int32,
-      output: TransactionOutput): (Transaction, UInt32) = {
+  def buildCreditingTransaction(version: Int32, output: TransactionOutput): (Transaction, UInt32) = {
     val outpoint = EmptyTransactionOutPoint
     val scriptSignature = ScriptSignature("0000")
     val input =
       TransactionInput(outpoint, scriptSignature, TransactionConstants.sequence)
-    val tx = BaseTransaction(version,
-                             Seq(input),
-                             Seq(output),
-                             TransactionConstants.lockTime)
+    val tx = BaseTransaction(version, Seq(input), Seq(output), TransactionConstants.lockTime)
     (tx, UInt32.zero)
   }
 
-  def buildCreditingTransaction(
-      version: Int32,
-      scriptPubKey: ScriptPubKey,
-      amount: CurrencyUnit): (Transaction, UInt32) = {
+  def buildCreditingTransaction(version: Int32, scriptPubKey: ScriptPubKey, amount: CurrencyUnit): (
+      Transaction,
+      UInt32) = {
     buildCreditingTransaction(version, TransactionOutput(amount, scriptPubKey))
   }
 
@@ -737,39 +636,30 @@ object TransactionGenerators {
     val (creditingTx, outputIndex) =
       buildCreditingTransaction(TransactionConstants.validLockVersion, lock)
     //Transaction version must not be less than 2 for a CSV transaction
-    val (signedSpendingTx, inputIndex) = buildSpendingTransaction(
-      TransactionConstants.validLockVersion,
-      creditingTx,
-      signedScriptSig,
-      outputIndex,
-      lockTime.getOrElse(TransactionConstants.lockTime),
-      sequence)
+    val (signedSpendingTx, inputIndex) = buildSpendingTransaction(TransactionConstants.validLockVersion,
+                                                                  creditingTx,
+                                                                  signedScriptSig,
+                                                                  outputIndex,
+                                                                  lockTime.getOrElse(TransactionConstants.lockTime),
+                                                                  sequence)
     val output = creditingTx.outputs(outputIndex.toInt)
-    val baseTxSigComponent = BaseTxSigComponent(
-      signedSpendingTx,
-      inputIndex,
-      output,
-      Policy.standardScriptVerifyFlags)
+    val baseTxSigComponent = BaseTxSigComponent(signedSpendingTx, inputIndex, output, Policy.standardScriptVerifyFlags)
     (baseTxSigComponent, privKeys)
   }
 
   /** Determines if the transaction input's sequence value and CSV script sequence value are of the same type
     * (i.e. determines whether both are a timestamp or block-height)
     */
-  private def csvLockTimesOfSameType(
-      sequenceNumbers: (ScriptNumber, UInt32)): Boolean = {
-    LockTimeInterpreter.isCSVLockByRelativeLockTime(sequenceNumbers._1,
-                                                    sequenceNumbers._2) ||
-    LockTimeInterpreter.isCSVLockByBlockHeight(sequenceNumbers._1,
-                                               sequenceNumbers._2)
+  private def csvLockTimesOfSameType(sequenceNumbers: (ScriptNumber, UInt32)): Boolean = {
+    LockTimeInterpreter.isCSVLockByRelativeLockTime(sequenceNumbers._1, sequenceNumbers._2) ||
+    LockTimeInterpreter.isCSVLockByBlockHeight(sequenceNumbers._1, sequenceNumbers._2)
   }
 
   /** Generates a pair of CSV values: a transaction input sequence, and a CSV script sequence value, such that the txInput
     * sequence mask is always greater than the script sequence mask (i.e. generates values for a validly constructed and spendable CSV transaction)
     */
   def spendableCSVValues: Gen[(ScriptNumber, UInt32)] = {
-    Gen.oneOf(validScriptNumberAndSequenceForBlockHeight,
-              validScriptNumberAndSequenceForRelativeLockTime)
+    Gen.oneOf(validScriptNumberAndSequenceForBlockHeight, validScriptNumberAndSequenceForRelativeLockTime)
   }
 
   /** To indicate that we should evaulate a [[org.bitcoins.core.script.locktime.OP_CHECKSEQUENCEVERIFY OP_CSV]]
@@ -782,16 +672,14 @@ object TransactionGenerators {
   private def sequenceForBlockHeight: Gen[UInt32] =
     validCSVSequence.map { n =>
       val result: UInt32 = n & lockByBlockHeightBitSet
-      require(LockTimeInterpreter.isCSVLockByBlockHeight(result),
-              "Block height locktime bit was not set: " + result)
+      require(LockTimeInterpreter.isCSVLockByBlockHeight(result), "Block height locktime bit was not set: " + result)
       result
     }
 
   /** Generates a [[org.bitcoins.core.script.constant.ScriptNumber ScriptNumber]] and
     * [[org.bitcoins.core.number.UInt32 UInt32]] s.t. the pair can be spent by an OP_CSV operation
     */
-  private def validScriptNumberAndSequenceForBlockHeight: Gen[
-    (ScriptNumber, UInt32)] = {
+  private def validScriptNumberAndSequenceForBlockHeight: Gen[(ScriptNumber, UInt32)] = {
     sequenceForBlockHeight.flatMap { s =>
       val seqMasked = TransactionConstants.sequenceLockTimeMask
       val validScriptNums = s & seqMasked
@@ -808,22 +696,19 @@ object TransactionGenerators {
   private def sequenceForRelativeLockTime: Gen[UInt32] =
     validCSVSequence.map { n =>
       val result = n | TransactionConstants.sequenceLockTimeTypeFlag
-      require(LockTimeInterpreter.isCSVLockByRelativeLockTime(result),
-              "Relative locktime bit was not set: " + result)
+      require(LockTimeInterpreter.isCSVLockByRelativeLockTime(result), "Relative locktime bit was not set: " + result)
       result
     }
 
   /** Generates a valid [[org.bitcoins.core.script.constant.ScriptNumber ScriptNumber]] and
     * [[org.bitcoins.core.number.UInt32 UInt32]] s.t. the pair will evaluate to true by a OP_CSV operation
     */
-  private def validScriptNumberAndSequenceForRelativeLockTime: Gen[
-    (ScriptNumber, UInt32)] = {
+  private def validScriptNumberAndSequenceForRelativeLockTime: Gen[(ScriptNumber, UInt32)] = {
     sequenceForRelativeLockTime.flatMap { s =>
       val seqMasked = TransactionConstants.sequenceLockTimeMask
       val validScriptNums = s & seqMasked
       Gen.choose(0L, validScriptNums.toLong).map { sn =>
-        val scriptNum = ScriptNumber(
-          sn | TransactionConstants.sequenceLockTimeTypeFlag.toLong)
+        val scriptNum = ScriptNumber(sn | TransactionConstants.sequenceLockTimeTypeFlag.toLong)
         require(LockTimeInterpreter.isCSVLockByRelativeLockTime(scriptNum))
         require(LockTimeInterpreter.isCSVLockByRelativeLockTime(s))
         (scriptNum, s)
@@ -874,14 +759,12 @@ object TransactionGenerators {
       cltvLockTime <- sameLockTimeUnspendable(txLockTime)
     } yield (cltvLockTime, txLockTime)
 
-  private def sameLockTimeTypeSpendable(
-      txLockTime: UInt32): Gen[ScriptNumber] = {
+  private def sameLockTimeTypeSpendable(txLockTime: UInt32): Gen[ScriptNumber] = {
     if (txLockTime < TransactionConstants.locktimeThreshold) {
       Gen.choose(0, txLockTime.toLong).map(ScriptNumber(_))
     } else {
       Gen
-        .choose(TransactionConstants.locktimeThreshold.toLong,
-                txLockTime.toLong)
+        .choose(TransactionConstants.locktimeThreshold.toLong, txLockTime.toLong)
         .map(ScriptNumber(_))
     }
   }
@@ -889,8 +772,7 @@ object TransactionGenerators {
   private def sameLockTimeUnspendable(txLockTime: UInt32): Gen[ScriptNumber] = {
     if (txLockTime < TransactionConstants.locktimeThreshold) {
       Gen
-        .choose(txLockTime.toLong + 1,
-                TransactionConstants.locktimeThreshold.toLong)
+        .choose(txLockTime.toLong + 1, TransactionConstants.locktimeThreshold.toLong)
         .map(ScriptNumber(_))
     } else {
       Gen.choose(txLockTime.toLong + 1, UInt32.max.toLong).map(ScriptNumber(_))

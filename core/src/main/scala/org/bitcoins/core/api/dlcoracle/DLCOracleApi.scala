@@ -77,8 +77,7 @@ trait DLCOracleApi {
       eventName: String,
       maturationTime: Instant,
       descriptor: EventDescriptorTLV,
-      signingVersion: SigningVersion = SigningVersion.latest): Task[
-    OracleAnnouncementTLV] = {
+      signingVersion: SigningVersion = SigningVersion.latest): Task[OracleAnnouncementTLV] = {
     createNewAnnouncement(eventName, maturationTime, descriptor, signingVersion)
   }
 
@@ -86,13 +85,10 @@ trait DLCOracleApi {
       eventName: String,
       maturationTime: Instant,
       descriptor: EventDescriptorTLV,
-      signingVersion: SigningVersion = SigningVersion.latest): Task[
-    OracleAnnouncementTLV]
+      signingVersion: SigningVersion = SigningVersion.latest): Task[OracleAnnouncementTLV]
 
   @deprecated("Call signEnum", "2021-09-30")
-  def signEnumEvent(
-      eventName: String,
-      outcome: EnumAttestation): Task[EventDb] = {
+  def signEnumEvent(eventName: String, outcome: EnumAttestation): Task[EventDb] = {
     signEnum(eventName, outcome)
   }
 
@@ -103,9 +99,7 @@ trait DLCOracleApi {
   def signEnum(eventName: String, outcome: EnumAttestation): Task[EventDb]
 
   @deprecated("Call signEnum", "2021-09-30")
-  def signEnumEvent(
-      oracleEventTLV: OracleEventTLV,
-      outcome: EnumAttestation): Task[EventDb] = {
+  def signEnumEvent(oracleEventTLV: OracleEventTLV, outcome: EnumAttestation): Task[EventDb] = {
     signEnum(oracleEventTLV, outcome)
   }
 
@@ -113,20 +107,14 @@ trait DLCOracleApi {
     * @param oracleEventTLV the tlv of the oracle event
     * @param outcome the outcome for the give announcement
     */
-  def signEnum(
-      oracleEventTLV: OracleEventTLV,
-      outcome: EnumAttestation): Task[EventDb]
+  def signEnum(oracleEventTLV: OracleEventTLV, outcome: EnumAttestation): Task[EventDb]
 
   @deprecated("Call createAttestation", "2021-09-30")
-  def signEvent(
-      nonce: SchnorrNonce,
-      outcome: DLCAttestationType): Task[EventDb] = {
+  def signEvent(nonce: SchnorrNonce, outcome: DLCAttestationType): Task[EventDb] = {
     createAttestation(nonce, outcome)
   }
 
-  def createAttestation(
-      nonce: SchnorrNonce,
-      outcome: DLCAttestationType): Task[EventDb]
+  def createAttestation(nonce: SchnorrNonce, outcome: DLCAttestationType): Task[EventDb]
 
   def signDigits(eventName: String, num: Long): Task[OracleEvent]
 
@@ -146,8 +134,7 @@ trait DLCOracleApi {
     * You likely should only use this in testing scenarios
     * @return the deleted announcement
     */
-  def deleteAnnouncement(
-      announcementTLV: OracleAnnouncementTLV): Task[OracleAnnouncementTLV]
+  def deleteAnnouncement(announcementTLV: OracleAnnouncementTLV): Task[OracleAnnouncementTLV]
 
   /** Deletes attestations for the given event
     *

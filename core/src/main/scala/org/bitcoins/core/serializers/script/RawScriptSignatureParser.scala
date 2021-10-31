@@ -7,8 +7,7 @@ import scodec.bits.ByteVector
 
 /** Created by chris on 1/12/16.
   */
-sealed abstract class RawScriptSignatureParser
-    extends RawBitcoinSerializer[ScriptSignature] {
+sealed abstract class RawScriptSignatureParser extends RawBitcoinSerializer[ScriptSignature] {
 
   def read(bytes: ByteVector): ScriptSignature = {
     if (bytes.isEmpty) EmptyScriptSignature

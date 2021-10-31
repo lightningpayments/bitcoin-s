@@ -9,9 +9,7 @@ import slick.lifted.{PrimaryKey, ProvenShape}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-case class AccountDAO()(implicit
-    val ec: ExecutionContext,
-    override val appConfig: WalletAppConfig)
+case class AccountDAO()(implicit val ec: ExecutionContext, override val appConfig: WalletAppConfig)
     extends CRUD[AccountDb, (HDCoin, Int)]
     with SlickUtil[AccountDb, (HDCoin, Int)] {
   import profile.api._
@@ -23,11 +21,9 @@ case class AccountDAO()(implicit
   override def createAll(ts: Vector[AccountDb]): Future[Vector[AccountDb]] =
     createAllNoAutoInc(ts, safeDatabase)
 
-  override protected def findByPrimaryKeys(
-      ids: Vector[(HDCoin, Int)]): Query[AccountTable, AccountDb, Seq] = ???
+  override protected def findByPrimaryKeys(ids: Vector[(HDCoin, Int)]): Query[AccountTable, AccountDb, Seq] = ???
 
-  override def findByPrimaryKey(
-      id: (HDCoin, Int)): Query[AccountTable, AccountDb, Seq] = {
+  override def findByPrimaryKey(id: (HDCoin, Int)): Query[AccountTable, AccountDb, Seq] = {
     val (coin, index) = id
     table
       .filter(_.coinType === coin.coinType)
@@ -35,10 +31,8 @@ case class AccountDAO()(implicit
       .filter(_.index === index)
   }
 
-  override def findAll(
-      accounts: Vector[AccountDb]): Query[AccountTable, AccountDb, Seq] =
-    findByPrimaryKeys(
-      accounts.map(acc => (acc.hdAccount.coin, acc.hdAccount.index)))
+  override def findAll(accounts: Vector[AccountDb]): Query[AccountTable, AccountDb, Seq] =
+    findByPrimaryKeys(accounts.map(acc => (acc.hdAccount.coin, acc.hdAccount.index)))
 
   def findByAccount(account: HDAccount): Future[Option[AccountDb]] = {
     val q = table
@@ -53,13 +47,11 @@ case class AccountDAO()(implicit
         None
       case accounts: Vector[AccountDb] =>
         //yikes, we should not have more the one account per coin type/purpose
-        throw new RuntimeException(
-          s"More than one account per account=${account}, got=${accounts}")
+        throw new RuntimeException(s"More than one account per account=${account}, got=${accounts}")
     }
   }
 
-  class AccountTable(tag: Tag)
-      extends Table[AccountDb](tag, schemaName, "wallet_accounts") {
+  class AccountTable(tag: Tag) extends Table[AccountDb](tag, schemaName, "wallet_accounts") {
 
     def xpub: Rep[ExtPublicKey] = column[ExtPublicKey]("xpub")
 
@@ -71,17 +63,12 @@ case class AccountDAO()(implicit
 
     private type AccountTuple = (HDPurpose, ExtPublicKey, HDCoinType, Int)
 
-    private val fromTuple: AccountTuple => AccountDb = {
-      case (purpose, pub, coin, index) =>
-        AccountDb(pub, HDAccount(HDCoin(purpose, coin), index))
+    private val fromTuple: AccountTuple => AccountDb = { case (purpose, pub, coin, index) =>
+      AccountDb(pub, HDAccount(HDCoin(purpose, coin), index))
     }
 
     private val toTuple: AccountDb => Option[AccountTuple] = account =>
-      Some(
-        (account.hdAccount.purpose,
-         account.xpub,
-         account.hdAccount.coin.coinType,
-         account.hdAccount.index))
+      Some((account.hdAccount.purpose, account.xpub, account.hdAccount.coin.coinType, account.hdAccount.index))
 
     def * : ProvenShape[AccountDb] =
       (purpose, xpub, coinType, index).<>(fromTuple, toTuple)

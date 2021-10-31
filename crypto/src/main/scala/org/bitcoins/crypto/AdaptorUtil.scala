@@ -56,8 +56,7 @@ object AdaptorUtil {
       privateKey: ECPrivateKey): FieldElement = {
     CryptoUtil.decodePoint(r) match {
       case SecpPointInfinity =>
-        throw new IllegalArgumentException(
-          s"Invalid point, got=$SecpPointInfinity")
+        throw new IllegalArgumentException(s"Invalid point, got=$SecpPointInfinity")
       case point: SecpPointFinite =>
         val rx = FieldElement(point.x.toBigInteger)
         val x = privateKey.fieldElement
@@ -74,11 +73,7 @@ object AdaptorUtil {
       adaptorPoint: ECPublicKey,
       dataToSign: ByteVector,
       auxRand: ByteVector): ECAdaptorSignature = {
-    val k = adaptorNonce(dataToSign,
-                         privateKey,
-                         adaptorPoint,
-                         "ECDSAadaptor/non",
-                         auxRand)
+    val k = adaptorNonce(dataToSign, privateKey, adaptorPoint, "ECDSAadaptor/non", auxRand)
 
     if (k.isZero) {
       throw new RuntimeException("Nonce cannot be zero.")
@@ -124,8 +119,7 @@ object AdaptorUtil {
     )
 
     if (validProof) {
-      val tweakedNoncex = FieldElement(
-        CurveCoordinate(adaptorSig.tweakedNonce.bytes.tail).toBigInteger)
+      val tweakedNoncex = FieldElement(CurveCoordinate(adaptorSig.tweakedNonce.bytes.tail).toBigInteger)
       val untweakedNoncex = FieldElement(adaptorSig.untweakedNonce.bytes.tail)
 
       if (tweakedNoncex.isZero || untweakedNoncex.isZero) {
@@ -143,14 +137,11 @@ object AdaptorUtil {
   }
 
   /** Implements https://github.com/discreetlogcontracts/dlcspecs/blob/d01595b70269d4204b05510d19bba6a4f4fcff23/ECDSA-adaptor.md#decryption */
-  def adaptorComplete(
-      adaptorSecret: ECPrivateKey,
-      adaptorSig: ECAdaptorSignature): ECDigitalSignature = {
+  def adaptorComplete(adaptorSecret: ECPrivateKey, adaptorSig: ECAdaptorSignature): ECDigitalSignature = {
     val rx = FieldElement(adaptorSig.tweakedNonce.bytes.tail)
     val correctedS = adaptorSig.adaptedS.multInv(adaptorSecret.fieldElement)
 
-    val sig = ECDigitalSignature.fromRS(BigInt(rx.toBigInteger),
-                                        BigInt(correctedS.toBigInteger))
+    val sig = ECDigitalSignature.fromRS(BigInt(rx.toBigInteger), BigInt(correctedS.toBigInteger))
     DERSignatureUtil.lowS(sig)
   }
 
@@ -159,8 +150,7 @@ object AdaptorUtil {
       sig: ECDigitalSignature,
       adaptorSig: ECAdaptorSignature,
       adaptor: ECPublicKey): ECPrivateKey = {
-    require(adaptorSig.tweakedNonce.bytes.tail == sig.rBytes,
-            "Adaptor signature must be related to signature")
+    require(adaptorSig.tweakedNonce.bytes.tail == sig.rBytes, "Adaptor signature must be related to signature")
 
     val secretOrNeg = adaptorSig.adaptedS.multInv(FieldElement(sig.s))
 

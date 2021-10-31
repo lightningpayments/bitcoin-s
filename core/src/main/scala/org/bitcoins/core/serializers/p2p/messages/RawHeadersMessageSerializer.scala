@@ -20,28 +20,21 @@ trait RawHeadersMessageSerializer extends RawBitcoinSerializer[HeadersMessage] {
 
   def write(headersMessage: HeadersMessage): ByteVector = {
     val z = ByteVector.fromByte(0.toByte)
-    val headerBytes = headersMessage.headers.foldLeft(ByteVector.empty) {
-      case (accum, msg) =>
-        accum ++ msg.bytes ++ z
+    val headerBytes = headersMessage.headers.foldLeft(ByteVector.empty) { case (accum, msg) =>
+      accum ++ msg.bytes ++ z
     }
     headersMessage.count.bytes ++ headerBytes
   }
 
-  private def parseBlockHeaders(
-      bytes: ByteVector,
-      compactSizeUInt: CompactSizeUInt): Vector[BlockHeader] = {
+  private def parseBlockHeaders(bytes: ByteVector, compactSizeUInt: CompactSizeUInt): Vector[BlockHeader] = {
     @tailrec
-    def loop(
-        remainingBytes: ByteVector,
-        remainingHeaders: Long,
-        accum: List[BlockHeader]): List[BlockHeader] = {
+    def loop(remainingBytes: ByteVector, remainingHeaders: Long, accum: List[BlockHeader]): List[BlockHeader] = {
       if (remainingHeaders <= 0) accum
       //81 is because HeadersMessage appends 0x00 at the end of every block header for some reason
       //read https://bitcoin.org/en/developer-reference#headers
       else {
-        require(
-          remainingBytes.size >= 80,
-          "We do not have enough bytes for another block header, this probably means a tcp frame was not aligned")
+        require(remainingBytes.size >= 80,
+                "We do not have enough bytes for another block header, this probably means a tcp frame was not aligned")
         loop(remainingBytes = remainingBytes.slice(81, remainingBytes.length),
              remainingHeaders = remainingHeaders - 1,
              accum = BlockHeader(remainingBytes.take(80)) :: accum)

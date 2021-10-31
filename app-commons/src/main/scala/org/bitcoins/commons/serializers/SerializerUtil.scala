@@ -4,8 +4,7 @@ import play.api.libs.json._
 
 sealed abstract class SerializerUtil {
 
-  def processJsNumberBigInt[T](numFunc: BigInt => T)(
-      json: JsValue): JsResult[T] =
+  def processJsNumberBigInt[T](numFunc: BigInt => T)(json: JsValue): JsResult[T] =
     json match {
       case JsNumber(nDecimal) =>
         val nOpt = nDecimal.toBigIntExact
@@ -14,8 +13,7 @@ sealed abstract class SerializerUtil {
           case None =>
             JsError(s"Could not parsed expected t from given string $nDecimal")
         }
-      case err @ (JsNull | _: JsBoolean | _: JsString | _: JsArray |
-          _: JsObject) =>
+      case err @ (JsNull | _: JsBoolean | _: JsString | _: JsArray | _: JsObject) =>
         buildJsErrorMsg("jsnumber", err)
     }
 
@@ -31,16 +29,14 @@ sealed abstract class SerializerUtil {
   def processJsNumber[T](numFunc: BigDecimal => T)(json: JsValue): JsResult[T] =
     json match {
       case JsNumber(n) => JsSuccess(numFunc(n))
-      case err @ (JsNull | _: JsBoolean | _: JsString | _: JsArray |
-          _: JsObject) =>
+      case err @ (JsNull | _: JsBoolean | _: JsString | _: JsArray | _: JsObject) =>
         SerializerUtil.buildJsErrorMsg("jsnumber", err)
     }
 
   def processJsObject[T](f: JsObject => T)(json: JsValue): JsResult[T] = {
     json match {
       case obj: JsObject => JsSuccess(f(obj))
-      case err @ (JsNull | _: JsBoolean | _: JsString | _: JsArray |
-          _: JsNumber) =>
+      case err @ (JsNull | _: JsBoolean | _: JsString | _: JsArray | _: JsNumber) =>
         SerializerUtil.buildJsErrorMsg("jsobject", err)
     }
   }
@@ -49,13 +45,11 @@ sealed abstract class SerializerUtil {
   def processJsString[T](strFunc: String => T)(json: JsValue): JsResult[T] =
     json match {
       case JsString(s) => JsSuccess(strFunc(s))
-      case err @ (JsNull | _: JsBoolean | _: JsNumber | _: JsArray |
-          _: JsObject) =>
+      case err @ (JsNull | _: JsBoolean | _: JsNumber | _: JsArray | _: JsObject) =>
         SerializerUtil.buildJsErrorMsg("jsstring", err)
     }
 
-  def processJsStringOpt[T](f: String => Option[T])(
-      jsValue: JsValue): JsResult[T] = {
+  def processJsStringOpt[T](f: String => Option[T])(jsValue: JsValue): JsResult[T] = {
     jsValue match {
       case JsString(key) =>
         val tOpt = f(key)
@@ -63,8 +57,7 @@ sealed abstract class SerializerUtil {
           case Some(t) => JsSuccess(t)
           case None    => SerializerUtil.buildErrorMsg("invalid jsstring", jsValue)
         }
-      case err @ (_: JsNumber | _: JsObject | _: JsArray | JsNull |
-          _: JsBoolean) =>
+      case err @ (_: JsNumber | _: JsObject | _: JsArray | JsNull | _: JsBoolean) =>
         SerializerUtil.buildErrorMsg("jsstring", err)
     }
   }

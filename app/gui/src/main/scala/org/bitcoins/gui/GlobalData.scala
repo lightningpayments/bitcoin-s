@@ -23,9 +23,7 @@ object GlobalData {
   val torProxyEnabled = StringProperty("")
   val networkString: StringProperty = new StringProperty("")
 
-  def setBitcoinNetwork(
-      network: BitcoinNetwork,
-      proxyEnabled: Boolean): Unit = {
+  def setBitcoinNetwork(network: BitcoinNetwork, proxyEnabled: Boolean): Unit = {
     this.network = network
     networkString.value = "Network: " + network
     // Only showing Tor Proxy status when enabled

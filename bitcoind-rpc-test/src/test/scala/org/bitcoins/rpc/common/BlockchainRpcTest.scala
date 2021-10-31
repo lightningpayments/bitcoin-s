@@ -6,10 +6,7 @@ import org.bitcoins.core.config.RegTest
 import org.bitcoins.core.currency.Bitcoins
 import org.bitcoins.core.number.UInt32
 import org.bitcoins.rpc.client.common.{BitcoindRpcClient, BitcoindVersion}
-import org.bitcoins.testkit.rpc.{
-  BitcoindFixturesCachedPairV17,
-  BitcoindRpcTestUtil
-}
+import org.bitcoins.testkit.rpc.{BitcoindFixturesCachedPairV17, BitcoindRpcTestUtil}
 
 import scala.concurrent.{Await, Future}
 
@@ -23,8 +20,7 @@ class BlockchainRpcTest extends BitcoindFixturesCachedPairV17 {
 
     for {
       _ <- pruneClient.start()
-      _ <- pruneClient.getNewAddress.flatMap(
-        pruneClient.generateToAddress(1000, _))
+      _ <- pruneClient.getNewAddress.flatMap(pruneClient.generateToAddress(1000, _))
     } yield pruneClient
   }
 

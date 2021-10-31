@@ -10,8 +10,7 @@ import scala.annotation.tailrec
 /** Serializes and deserializes inventory objects on the peer-to-peer network
   * @see https://bitcoin.org/en/developer-reference#inv
   */
-trait RawInventoryMessageSerializer
-    extends RawBitcoinSerializer[InventoryMessage] {
+trait RawInventoryMessageSerializer extends RawBitcoinSerializer[InventoryMessage] {
 
   /** Transforms a sequence of bytes into a Inventory object
     */
@@ -47,9 +46,7 @@ trait RawInventoryMessageSerializer
       if (remainingInventories <= 0) (accum.reverse, remainingBytes)
       else {
         val inventory = RawInventorySerializer.read(remainingBytes.slice(0, 36))
-        loop(remainingInventories - 1,
-             remainingBytes.slice(36, remainingBytes.size),
-             inventory :: accum)
+        loop(remainingInventories - 1, remainingBytes.slice(36, remainingBytes.size), inventory :: accum)
       }
     }
     loop(requiredInventories.num.toInt, bytes, List.empty)

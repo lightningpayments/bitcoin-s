@@ -38,8 +38,7 @@ trait ScriptNumberUtil {
     * @return
     */
   def toInt(bytes: ByteVector): Int = {
-    require(bytes.size <= 4,
-            "We cannot have an integer with more than 4 bytes (32 bits)")
+    require(bytes.size <= 4, "We cannot have an integer with more than 4 bytes (32 bits)")
     toLong(bytes).toInt
   }
 

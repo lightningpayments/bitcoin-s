@@ -10,12 +10,7 @@ import org.bitcoins.core.wallet.fee.SatoshisPerVirtualByte
 import org.bitcoins.lnd.rpc.LndRpcClient
 import org.bitcoins.lnd.rpc.config.{LndInstanceLocal, LndInstanceRemote}
 import org.bitcoins.rpc.client.common.{BitcoindRpcClient, BitcoindVersion}
-import org.bitcoins.rpc.config.{
-  BitcoindAuthCredentials,
-  BitcoindInstance,
-  BitcoindInstanceLocal,
-  ZmqConfig
-}
+import org.bitcoins.rpc.config.{BitcoindAuthCredentials, BitcoindInstance, BitcoindInstanceLocal, ZmqConfig}
 import org.bitcoins.rpc.util.RpcUtil
 import org.bitcoins.testkit.async.TestAsyncUtil
 import org.bitcoins.testkit.rpc.BitcoindRpcTestUtil
@@ -40,8 +35,7 @@ trait LndRpcTestUtil extends Logging {
 
   /** Makes a best effort to get a 0.21 bitcoind instance
     */
-  def startedBitcoindRpcClient(
-      instanceOpt: Option[BitcoindInstanceLocal] = None)(implicit
+  def startedBitcoindRpcClient(instanceOpt: Option[BitcoindInstanceLocal] = None)(implicit
       actorSystem: ActorSystem): Future[BitcoindRpcClient] = {
     //need to do something with the Vector.newBuilder presumably?
     BitcoindRpcTestUtil.startedBitcoindRpcClient(instanceOpt, Vector.newBuilder)
@@ -52,12 +46,8 @@ trait LndRpcTestUtil extends Logging {
       port: Int = RpcUtil.randomPort,
       rpcPort: Int = RpcUtil.randomPort,
       zmqConfig: ZmqConfig = RpcUtil.zmqConfig,
-      bitcoindV: BitcoindVersion = BitcoindVersion.V21)(implicit
-      system: ActorSystem): BitcoindInstanceLocal = {
-    BitcoindRpcTestUtil.getInstance(bitcoindVersion = bitcoindV,
-                                    port = port,
-                                    rpcPort = rpcPort,
-                                    zmqConfig = zmqConfig)
+      bitcoindV: BitcoindVersion = BitcoindVersion.V21)(implicit system: ActorSystem): BitcoindInstanceLocal = {
+    BitcoindRpcTestUtil.getInstance(bitcoindVersion = bitcoindV, port = port, rpcPort = rpcPort, zmqConfig = zmqConfig)
   }
 
   def commonConfig(
@@ -88,9 +78,7 @@ trait LndRpcTestUtil extends Logging {
        |""".stripMargin
   }
 
-  def lndDataDir(
-      bitcoindRpcClient: BitcoindRpcClient,
-      isCannonical: Boolean): File = {
+  def lndDataDir(bitcoindRpcClient: BitcoindRpcClient, isCannonical: Boolean): File = {
     val bitcoindInstance = bitcoindRpcClient.instance
     if (isCannonical) {
       //assumes that the ${HOME}/.lnd/lnd.conf file is created AND a bitcoind instance is running
@@ -111,30 +99,25 @@ trait LndRpcTestUtil extends Logging {
     }
   }
 
-  def lndInstance(bitcoindRpc: BitcoindRpcClient)(implicit
-      system: ActorSystem): LndInstanceLocal = {
+  def lndInstance(bitcoindRpc: BitcoindRpcClient)(implicit system: ActorSystem): LndInstanceLocal = {
     val datadir = lndDataDir(bitcoindRpc, isCannonical = false)
     lndInstance(datadir)
   }
 
-  def lndInstance(datadir: File)(implicit
-      system: ActorSystem): LndInstanceLocal = {
+  def lndInstance(datadir: File)(implicit system: ActorSystem): LndInstanceLocal = {
     LndInstanceLocal.fromDataDir(datadir)
   }
 
   /** Returns a `Future` that is completed when both lnd and bitcoind have the same block height
     * Fails the future if they are not synchronized within the given timeout.
     */
-  def awaitLndInSync(lnd: LndRpcClient, bitcoind: BitcoindRpcClient)(implicit
-      system: ActorSystem): Future[Unit] = {
+  def awaitLndInSync(lnd: LndRpcClient, bitcoind: BitcoindRpcClient)(implicit system: ActorSystem): Future[Unit] = {
     import system.dispatcher
-    TestAsyncUtil.retryUntilSatisfiedF(conditionF =
-                                         () => clientInSync(lnd, bitcoind),
-                                       interval = 1.seconds)
+    TestAsyncUtil.retryUntilSatisfiedF(conditionF = () => clientInSync(lnd, bitcoind), interval = 1.seconds)
   }
 
-  private def clientInSync(client: LndRpcClient, bitcoind: BitcoindRpcClient)(
-      implicit ec: ExecutionContext): Future[Boolean] =
+  private def clientInSync(client: LndRpcClient, bitcoind: BitcoindRpcClient)(implicit
+      ec: ExecutionContext): Future[Boolean] =
     for {
       blockCount <- bitcoind.getBlockCount
       info <- client.getInfo
@@ -142,8 +125,7 @@ trait LndRpcTestUtil extends Logging {
 
   /** Shuts down an lnd daemon and the bitcoind daemon it is associated with
     */
-  def shutdown(lndRpcClient: LndRpcClient)(implicit
-      system: ActorSystem): Future[Unit] = {
+  def shutdown(lndRpcClient: LndRpcClient)(implicit system: ActorSystem): Future[Unit] = {
     import system.dispatcher
     val shutdownF = for {
       bitcoindRpc <- startedBitcoindRpcClient()
@@ -153,15 +135,13 @@ trait LndRpcTestUtil extends Logging {
       logger.debug("Successfully shutdown lnd and it's corresponding bitcoind")
     }
     shutdownF.failed.foreach { err: Throwable =>
-      logger.info(
-        s"Killed a bitcoind instance, but could not find an lnd process to kill")
+      logger.info(s"Killed a bitcoind instance, but could not find an lnd process to kill")
       throw err
     }
     shutdownF
   }
 
-  def connectLNNodes(client: LndRpcClient, otherClient: LndRpcClient)(implicit
-      ec: ExecutionContext): Future[Unit] = {
+  def connectLNNodes(client: LndRpcClient, otherClient: LndRpcClient)(implicit ec: ExecutionContext): Future[Unit] = {
     val infoF = otherClient.getInfo
     val nodeIdF = client.getInfo.map(_.identityPubkey)
     val connectionF: Future[Unit] = infoF.flatMap { info =>
@@ -171,8 +151,7 @@ trait LndRpcTestUtil extends Logging {
           otherClient.getInfo.map(info => new URI(info.uris.head))
       }
       uriF.flatMap(uri =>
-        client.connectPeer(NodeId(info.identityPubkey),
-                           new InetSocketAddress(uri.getHost, uri.getPort)))
+        client.connectPeer(NodeId(info.identityPubkey), new InetSocketAddress(uri.getHost, uri.getPort)))
     }
 
     def isConnected: Future[Boolean] = {
@@ -184,19 +163,14 @@ trait LndRpcTestUtil extends Logging {
     }
 
     logger.debug(s"Awaiting connection between clients")
-    val connected = TestAsyncUtil.retryUntilSatisfiedF(conditionF =
-                                                         () => isConnected,
-                                                       interval = 1.second)
+    val connected = TestAsyncUtil.retryUntilSatisfiedF(conditionF = () => isConnected, interval = 1.second)
 
     connected.map(_ => logger.debug(s"Successfully connected two clients"))
 
     connected
   }
 
-  def fundLNNodes(
-      bitcoind: BitcoindRpcClient,
-      client: LndRpcClient,
-      otherClient: LndRpcClient)(implicit
+  def fundLNNodes(bitcoind: BitcoindRpcClient, client: LndRpcClient, otherClient: LndRpcClient)(implicit
       ec: ExecutionContext): Future[Unit] = {
     for {
       addrA <- client.getNewAddress
@@ -275,8 +249,7 @@ trait LndRpcTestUtil extends Logging {
 
     val fundedChannelIdF =
       nodeIdsF.flatMap { case (nodeId1, nodeId2) =>
-        logger.debug(
-          s"Opening a channel from $nodeId1 -> $nodeId2 with amount $amt")
+        logger.debug(s"Opening a channel from $nodeId1 -> $nodeId2 with amount $amt")
         n1.openChannel(nodeId = nodeId2,
                        fundingAmount = amt,
                        pushAmt = pushAmt,
@@ -304,17 +277,14 @@ trait LndRpcTestUtil extends Logging {
 
     openedF.flatMap { _ =>
       nodeIdsF.map { case (nodeId1, nodeId2) =>
-        logger.debug(
-          s"Channel successfully opened $nodeId1 -> $nodeId2 with amount $amt")
+        logger.debug(s"Channel successfully opened $nodeId1 -> $nodeId2 with amount $amt")
       }
     }
 
     openedF
   }
 
-  private def awaitUntilChannelActive(
-      client: LndRpcClient,
-      outPoint: TransactionOutPoint)(implicit
+  private def awaitUntilChannelActive(client: LndRpcClient, outPoint: TransactionOutPoint)(implicit
       ec: ExecutionContext): Future[Unit] = {
     def isActive: Future[Boolean] = {
       client.findChannel(outPoint).map {
@@ -323,8 +293,7 @@ trait LndRpcTestUtil extends Logging {
       }
     }
 
-    TestAsyncUtil.retryUntilSatisfiedF(conditionF = () => isActive,
-                                       interval = 1.seconds)
+    TestAsyncUtil.retryUntilSatisfiedF(conditionF = () => isActive, interval = 1.seconds)
   }
 }
 

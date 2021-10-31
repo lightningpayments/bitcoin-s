@@ -9,9 +9,7 @@ import scodec.bits.ByteVector
 import scala.math.Numeric
 import scala.util.{Failure, Success, Try}
 
-sealed abstract class CurrencyUnit
-    extends NetworkElement
-    with BasicArithmetic[CurrencyUnit] {
+sealed abstract class CurrencyUnit extends NetworkElement with BasicArithmetic[CurrencyUnit] {
   type A
 
   def satoshis: Satoshis
@@ -117,10 +115,7 @@ sealed abstract class Satoshis extends CurrencyUnit {
   def ==(satoshis: Satoshis): Boolean = underlying == satoshis.underlying
 }
 
-object Satoshis
-    extends Factory[Satoshis]
-    with BaseNumbers[Satoshis]
-    with Bounded[Satoshis] {
+object Satoshis extends Factory[Satoshis] with BaseNumbers[Satoshis] with Bounded[Satoshis] {
 
   val min = Satoshis(Int64.min)
   val max = Satoshis(Int64.max)

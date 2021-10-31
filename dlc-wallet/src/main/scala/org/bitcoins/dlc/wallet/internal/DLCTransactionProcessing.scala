@@ -48,15 +48,13 @@ private[bitcoins] trait DLCTransactionProcessing extends TransactionProcessing {
 
             _ <- {
               updated.state match {
-                case DLCState.Claimed | DLCState.RemoteClaimed |
-                    DLCState.Refunded =>
+                case DLCState.Claimed | DLCState.RemoteClaimed | DLCState.Refunded =>
                   val contractId = updated.contractIdOpt.get.toHex
-                  logger.info(
-                    s"Deleting unneeded DLC signatures for contract $contractId")
+                  logger.info(s"Deleting unneeded DLC signatures for contract $contractId")
 
                   dlcSigsDAO.deleteByDLCId(updated.dlcId)
-                case DLCState.Offered | DLCState.Accepted | DLCState.Signed |
-                    DLCState.Broadcasted | DLCState.Confirmed =>
+                case DLCState.Offered | DLCState.Accepted | DLCState.Signed | DLCState.Broadcasted |
+                    DLCState.Confirmed =>
                   FutureUtil.unit
               }
             }
@@ -88,8 +86,7 @@ private[bitcoins] trait DLCTransactionProcessing extends TransactionProcessing {
         refundSigsDb <- dlcRefundSigDAO.findByDLCId(dlcId)
         sigDbs <- dlcSigsDAO.findByDLCId(dlcId)
 
-        (announcements, announcementData, nonceDbs) <- getDLCAnnouncementDbs(
-          dlcDb.dlcId)
+        (announcements, announcementData, nonceDbs) <- getDLCAnnouncementDbs(dlcDb.dlcId)
 
         cet <-
           transactionDAO
@@ -103,17 +100,13 @@ private[bitcoins] trait DLCTransactionProcessing extends TransactionProcessing {
 
           val isInit = dlcDb.isInitiator
 
-          val fundingInputs = fundingInputDbs.map(input =>
-            input.toFundingInput(txs(input.outPoint.txIdBE).head))
+          val fundingInputs = fundingInputDbs.map(input => input.toFundingInput(txs(input.outPoint.txIdBE).head))
 
           val offerRefundSigOpt = refundSigsDb.flatMap(_.initiatorSig)
           val acceptRefundSigOpt = refundSigsDb.map(_.accepterSig)
 
           val contractInfo =
-            getContractInfo(contractData,
-                            announcements,
-                            announcementData,
-                            nonceDbs)
+            getContractInfo(contractData, announcements, announcementData, nonceDbs)
 
           val offer =
             offerDb.toDLCOffer(contractInfo, fundingInputs, dlcDb, contractData)
@@ -121,16 +114,13 @@ private[bitcoins] trait DLCTransactionProcessing extends TransactionProcessing {
             .map(
               _.toDLCAccept(dlcDb.tempContractId,
                             fundingInputs,
-                            sigDbs.map(dbSig =>
-                              (dbSig.sigPoint, dbSig.accepterSig)),
+                            sigDbs.map(dbSig => (dbSig.sigPoint, dbSig.accepterSig)),
                             acceptRefundSigOpt.get))
             .get
 
           val sign: DLCSign = {
             val cetSigs: CETSignatures =
-              CETSignatures(
-                sigDbs.map(dbSig => (dbSig.sigPoint, dbSig.initiatorSig.get)),
-                offerRefundSigOpt.get)
+              CETSignatures(sigDbs.map(dbSig => (dbSig.sigPoint, dbSig.initiatorSig.get)), offerRefundSigOpt.get)
 
             val contractId = dlcDb.contractIdOpt.get
             val fundingSigs =
@@ -141,8 +131,7 @@ private[bitcoins] trait DLCTransactionProcessing extends TransactionProcessing {
                     case Some(witnessScript) =>
                       witnessScript match {
                         case EmptyScriptWitness =>
-                          throw new RuntimeException(
-                            "Script witness cannot be empty")
+                          throw new RuntimeException("Script witness cannot be empty")
                         case witness: ScriptWitnessV0 =>
                           (input.outPoint, witness)
                       }
@@ -161,9 +150,7 @@ private[bitcoins] trait DLCTransactionProcessing extends TransactionProcessing {
         noncesByAnnouncement = nonceDbs
           .groupBy(_.announcementId)
 
-        announcementsWithId = getOracleAnnouncementsWithId(announcements,
-                                                           announcementData,
-                                                           nonceDbs)
+        announcementsWithId = getOracleAnnouncementsWithId(announcements, announcementData, nonceDbs)
 
         usedIds = announcementsWithId
           .filter(t => oracleInfos.exists(_.announcement == t._1))
@@ -216,21 +203,18 @@ private[bitcoins] trait DLCTransactionProcessing extends TransactionProcessing {
           dlcDbs <- dlcDAO.findByFundingTxId(tx.txIdBE)
           _ <-
             if (dlcDbs.nonEmpty) {
-              logger.info(
-                s"Processing tx ${tx.txIdBE.hex} for ${dlcDbs.size} DLC(s)")
+              logger.info(s"Processing tx ${tx.txIdBE.hex} for ${dlcDbs.size} DLC(s)")
               insertTransaction(tx, blockHashOpt)
             } else FutureUtil.unit
 
           // Update the state to be confirmed or broadcasted
           updated = dlcDbs.map { dlcDb =>
             dlcDb.state match {
-              case DLCState.Offered | DLCState.Accepted | DLCState.Signed |
-                  DLCState.Broadcasted =>
+              case DLCState.Offered | DLCState.Accepted | DLCState.Signed | DLCState.Broadcasted =>
                 if (blockHashOpt.isDefined)
                   dlcDb.updateState(DLCState.Confirmed)
                 else dlcDb.copy(state = DLCState.Broadcasted)
-              case DLCState.Confirmed | DLCState.Claimed |
-                  DLCState.RemoteClaimed | DLCState.Refunded =>
+              case DLCState.Confirmed | DLCState.Claimed | DLCState.RemoteClaimed | DLCState.Refunded =>
                 dlcDb
             }
           }
@@ -243,8 +227,7 @@ private[bitcoins] trait DLCTransactionProcessing extends TransactionProcessing {
   override protected def processSpentUtxos(
       transaction: Transaction,
       outputsBeingSpent: Vector[SpendingInfoDb],
-      blockHashOpt: Option[DoubleSha256DigestBE]): Future[
-    Vector[SpendingInfoDb]] = {
+      blockHashOpt: Option[DoubleSha256DigestBE]): Future[Vector[SpendingInfoDb]] = {
     super
       .processSpentUtxos(transaction, outputsBeingSpent, blockHashOpt)
       .flatMap { res =>
@@ -254,8 +237,7 @@ private[bitcoins] trait DLCTransactionProcessing extends TransactionProcessing {
           dlcDbs <- dlcDAO.findByFundingOutPoints(outPoints)
           _ <-
             if (dlcDbs.nonEmpty) {
-              logger.info(
-                s"Processing tx ${transaction.txIdBE.hex} for ${dlcDbs.size} DLC(s)")
+              logger.info(s"Processing tx ${transaction.txIdBE.hex} for ${dlcDbs.size} DLC(s)")
               insertTransaction(transaction, blockHashOpt)
             } else FutureUtil.unit
 
@@ -268,9 +250,7 @@ private[bitcoins] trait DLCTransactionProcessing extends TransactionProcessing {
       }
   }
 
-  private def getOutcomeDbInfo(oracleOutcome: OracleOutcome): (
-      Vector[DLCOutcomeType],
-      Vector[SingleOracleInfo]) = {
+  private def getOutcomeDbInfo(oracleOutcome: OracleOutcome): (Vector[DLCOutcomeType], Vector[SingleOracleInfo]) = {
     oracleOutcome match {
       case EnumOracleOutcome(oracles, outcome) =>
         (Vector.fill(oracles.length)(outcome), oracles)

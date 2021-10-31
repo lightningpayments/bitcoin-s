@@ -46,21 +46,17 @@ object FundingTransactionDialog {
                          })
         },
         new Hyperlink("View transaction on mempool.space") {
-          onAction =
-            _ => GUIUtil.openUrl(GlobalData.buildMempoolSpaceTxUrl(fundingTxId))
+          onAction = _ => GUIUtil.openUrl(GlobalData.buildMempoolSpaceTxUrl(fundingTxId))
         },
         new Hyperlink("View transaction on Blockstream Explorer") {
-          onAction = _ =>
-            GUIUtil.openUrl(
-              GlobalData.buildBlockstreamExplorerTxUrl(fundingTxId))
+          onAction = _ => GUIUtil.openUrl(GlobalData.buildBlockstreamExplorerTxUrl(fundingTxId))
         },
         new Label(
           "It will take a few seconds for the transaction to show up in the block explorer. Refresh your browser tab momentarily if the transaction is not immediately available.") {
           wrapText = true
           maxWidth = MAX_WIDTH
         },
-        new Label(
-          s"You can execute the refund clause of your DLC at ${refundDateTime}."),
+        new Label(s"You can execute the refund clause of your DLC at ${refundDateTime}."),
         new Hyperlink("View Oracle Announcement") {
           onAction = _ => {
             GUIUtil.openUrl(oracleLink)

@@ -10,9 +10,7 @@ import java.nio.file.{Path, Paths}
   * 2. Inferring the datadir based on the bitcoin network configured
   * 3. ??? Anything else i'm forgetting ????
   */
-case class DatadirParser(
-    serverArgs: ServerArgParser,
-    customFinalDirOpt: Option[String]) {
+case class DatadirParser(serverArgs: ServerArgParser, customFinalDirOpt: Option[String]) {
 
   /** Sets the default data dir, overridden by the --datadir option */
   private lazy val datadirPath: Path = serverArgs.datadirOpt match {
@@ -21,8 +19,7 @@ case class DatadirParser(
   }
 
   lazy val datadirConfig: Config =
-    ConfigFactory.parseString(
-      s"bitcoin-s.datadir = ${AppConfig.safePathToString(datadirPath)}")
+    ConfigFactory.parseString(s"bitcoin-s.datadir = ${AppConfig.safePathToString(datadirPath)}")
 
   lazy val networkConfig: Config = serverArgs.networkOpt match {
     case Some(network) =>

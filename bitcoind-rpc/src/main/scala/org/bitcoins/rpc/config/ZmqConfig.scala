@@ -28,20 +28,14 @@ object ZmqConfig extends Logging {
       hashTx: Option[InetSocketAddress] = None,
       rawTx: Option[InetSocketAddress] = None
   ): ZmqConfig =
-    ZmqConfigImpl(hashBlock = hashBlock,
-                  rawBlock = rawBlock,
-                  hashTx = hashTx,
-                  rawTx = rawTx)
+    ZmqConfigImpl(hashBlock = hashBlock, rawBlock = rawBlock, hashTx = hashTx, rawTx = rawTx)
 
   /** Creates a `ZmqConfig` with all `URI`s set to
     * `localhost` and the same port
     */
   def fromPort(port: Int): ZmqConfig = {
     val uri = new InetSocketAddress("tcp://127.0.0.1", port)
-    ZmqConfig(hashBlock = Some(uri),
-              rawBlock = Some(uri),
-              hashTx = Some(uri),
-              rawTx = Some(uri))
+    ZmqConfig(hashBlock = Some(uri), rawBlock = Some(uri), hashTx = Some(uri), rawTx = Some(uri))
   }
 
   def fromConfig(config: BitcoindConfig): ZmqConfig =

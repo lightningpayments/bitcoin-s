@@ -23,9 +23,7 @@ sealed trait Sha1Digest extends Any with HashDigest {
 
 object Sha1Digest extends Factory[Sha1Digest] {
 
-  private case class Sha1DigestImpl(bytes: ByteVector)
-      extends AnyVal
-      with Sha1Digest {
+  private case class Sha1DigestImpl(bytes: ByteVector) extends AnyVal with Sha1Digest {
     // $COVERAGE-OFF$
     override def toString = s"Sha1DigestImpl($hex)"
     // $COVERAGE-ON$
@@ -39,9 +37,7 @@ sealed trait Sha1DigestBE extends Any with HashDigest {
 
 object Sha1DigestBE extends Factory[Sha1DigestBE] {
 
-  private case class Sha1DigestBEImpl(bytes: ByteVector)
-      extends AnyVal
-      with Sha1DigestBE {
+  private case class Sha1DigestBEImpl(bytes: ByteVector) extends AnyVal with Sha1DigestBE {
     // $COVERAGE-OFF$
     override def toString = s"Sha1DigestBEImpl($hex)"
     // $COVERAGE-ON$
@@ -60,9 +56,7 @@ sealed trait Sha256Digest extends Any with HashDigest {
 
 object Sha256Digest extends Factory[Sha256Digest] {
 
-  private case class Sha256DigestImpl(bytes: ByteVector)
-      extends AnyVal
-      with Sha256Digest {
+  private case class Sha256DigestImpl(bytes: ByteVector) extends AnyVal with Sha256Digest {
     override def toString = s"Sha256DigestImpl($hex)"
     // $COVERAGE-ON$
   }
@@ -88,9 +82,7 @@ sealed trait Sha256DigestBE extends Any with HashDigest {
 
 object Sha256DigestBE extends Factory[Sha256DigestBE] {
 
-  private case class Sha256DigestBEImpl(bytes: ByteVector)
-      extends AnyVal
-      with Sha256DigestBE {
+  private case class Sha256DigestBEImpl(bytes: ByteVector) extends AnyVal with Sha256DigestBE {
     override def toString = s"Sha256DigestBEImpl($hex)"
     // $COVERAGE-ON$
   }
@@ -108,8 +100,7 @@ object Sha256DigestBE extends Factory[Sha256DigestBE] {
 /** Represents the result of SHA256(SHA256())
   */
 case class DoubleSha256Digest(bytes: ByteVector) extends HashDigest {
-  require(bytes.length == 32,
-          "DoubleSha256Digest must always be 32 bytes, got: " + bytes.length)
+  require(bytes.length == 32, "DoubleSha256Digest must always be 32 bytes, got: " + bytes.length)
 
   lazy val flip: DoubleSha256DigestBE = DoubleSha256DigestBE(bytes.reverse)
 
@@ -133,8 +124,7 @@ object DoubleSha256Digest extends Factory[DoubleSha256Digest] {
 
 /** The big endian version of [[DoubleSha256Digest DoubleSha256Digest]] */
 case class DoubleSha256DigestBE(bytes: ByteVector) extends HashDigest {
-  require(bytes.length == 32,
-          "DoubleSha256Digest must always be 32 bytes, got: " + bytes.length)
+  require(bytes.length == 32, "DoubleSha256Digest must always be 32 bytes, got: " + bytes.length)
 
   def flip: DoubleSha256Digest =
     DoubleSha256Digest.fromBytes(bytes.reverse)
@@ -161,9 +151,7 @@ sealed trait RipeMd160Digest extends Any with HashDigest {
 
 object RipeMd160Digest extends Factory[RipeMd160Digest] {
 
-  private case class RipeMd160DigestImpl(bytes: ByteVector)
-      extends AnyVal
-      with RipeMd160Digest {
+  private case class RipeMd160DigestImpl(bytes: ByteVector) extends AnyVal with RipeMd160Digest {
     override def toString = s"RipeMd160DigestImpl($hex)"
     // $COVERAGE-ON$
   }
@@ -184,9 +172,7 @@ sealed trait RipeMd160DigestBE extends Any with HashDigest {
 
 object RipeMd160DigestBE extends Factory[RipeMd160DigestBE] {
 
-  private case class RipeMd160DigestBEImpl(bytes: ByteVector)
-      extends AnyVal
-      with RipeMd160DigestBE {
+  private case class RipeMd160DigestBEImpl(bytes: ByteVector) extends AnyVal with RipeMd160DigestBE {
     override def toString = s"RipeMd160DigestBEImpl($hex)"
     // $COVERAGE-ON$
   }
@@ -209,9 +195,7 @@ sealed trait Sha256Hash160Digest extends Any with HashDigest {
 
 object Sha256Hash160Digest extends Factory[Sha256Hash160Digest] {
 
-  private case class Sha256Hash160DigestImpl(bytes: ByteVector)
-      extends AnyVal
-      with Sha256Hash160Digest {
+  private case class Sha256Hash160DigestImpl(bytes: ByteVector) extends AnyVal with Sha256Hash160Digest {
     override def toString = s"Sha256Hash160DigestImpl($hex)"
     // $COVERAGE-ON$
   }
@@ -232,9 +216,7 @@ sealed trait Sha256Hash160DigestBE extends Any with HashDigest {
 
 object Sha256Hash160DigestBE extends Factory[Sha256Hash160DigestBE] {
 
-  private case class Sha256Hash160DigestBEImpl(bytes: ByteVector)
-      extends AnyVal
-      with Sha256Hash160DigestBE {
+  private case class Sha256Hash160DigestBEImpl(bytes: ByteVector) extends AnyVal with Sha256Hash160DigestBE {
     override def toString = s"Sha256Hash160DigestBEImpl($hex)"
     // $COVERAGE-ON$
   }

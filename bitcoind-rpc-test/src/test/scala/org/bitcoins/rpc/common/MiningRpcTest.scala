@@ -55,8 +55,7 @@ class MiningRpcTest extends BitcoindRpcTest {
       assert(blocks.length == 3)
       assert(blocks.length == 3)
       foundBlocks.foreach { found =>
-        assert(
-          found.tx.head.vout.head.scriptPubKey.addresses.get.head == address)
+        assert(found.tx.head.vout.head.scriptPubKey.addresses.get.head == address)
       }
       succeed
     }

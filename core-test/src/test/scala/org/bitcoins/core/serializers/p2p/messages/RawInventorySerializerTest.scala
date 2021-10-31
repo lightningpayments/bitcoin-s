@@ -17,9 +17,7 @@ class RawInventorySerializerTest extends BitcoinSUnitTest {
     val inventory = RawInventorySerializer.read(hex)
     inventory.typeIdentifier must be(MsgTx)
     inventory.hash must be
-    (DoubleSha256Digest(
-      BytesUtil.decodeHex(
-        "de55ffd709ac1f5dc509a0925d0b1fc442ca034f224732e429081da1b621f55a")))
+    (DoubleSha256Digest(BytesUtil.decodeHex("de55ffd709ac1f5dc509a0925d0b1fc442ca034f224732e429081da1b621f55a")))
   }
 
   it must "write a inventory object to its serialized format" in {

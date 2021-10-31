@@ -12,8 +12,7 @@ object FutureUtil {
     * @param fun A function that transforms each element into a future
     * @return The processed elements
     */
-  def sequentially[T, U](items: Iterable[T])(fun: T => Future[U])(implicit
-      ec: ExecutionContext): Future[Vector[U]] = {
+  def sequentially[T, U](items: Iterable[T])(fun: T => Future[U])(implicit ec: ExecutionContext): Future[Vector[U]] = {
     val init = Future.successful(Vector.empty[U])
     items.foldLeft(init) { (f, item) =>
       f.flatMap { x =>
@@ -27,8 +26,7 @@ object FutureUtil {
     * @param items The collection of futures
     * @return The processed elements
     */
-  def collect[T](items: Iterable[Future[T]])(implicit
-      ec: ExecutionContext): Future[Vector[T]] = {
+  def collect[T](items: Iterable[Future[T]])(implicit ec: ExecutionContext): Future[Vector[T]] = {
     FutureUtil.sequentially(items)(x => x)
   }
 
@@ -42,8 +40,8 @@ object FutureUtil {
     * @param fun the function we are applying to every element that returns a future
     * @return
     */
-  def foldLeftAsync[T, U](init: T, items: Seq[U])(fun: (T, U) => Future[T])(
-      implicit ec: ExecutionContext): Future[T] = {
+  def foldLeftAsync[T, U](init: T, items: Seq[U])(fun: (T, U) => Future[T])(implicit
+      ec: ExecutionContext): Future[T] = {
     items.foldLeft(Future.successful(init)) { case (accumF, elem) =>
       accumF.flatMap { accum =>
         fun(accum, elem)
@@ -55,11 +53,8 @@ object FutureUtil {
     * The next batch does not start executing until the first batch is finished. This does
     * not aggregate result over batches, rather just returns the result of the last batch
     */
-  def batchExecute[T, U](
-      elements: Vector[T],
-      f: Vector[T] => Future[U],
-      init: U,
-      batchSize: Int)(implicit ec: ExecutionContext): Future[U] = {
+  def batchExecute[T, U](elements: Vector[T], f: Vector[T] => Future[U], init: U, batchSize: Int)(implicit
+      ec: ExecutionContext): Future[U] = {
     val initF = Future.successful(init)
     val batches = elements.grouped(batchSize)
     for {
@@ -77,20 +72,17 @@ object FutureUtil {
   /** Batches the elements by batchSize, executes f, and then aggregates all of the results
     * into a vector and returns it. This is is the synchronous version of batchAndParallelExecute
     */
-  def batchAndSyncExecute[T, U](
-      elements: Vector[T],
-      f: Vector[T] => Future[Vector[U]],
-      batchSize: Int)(implicit ec: ExecutionContext): Future[Vector[U]] = {
+  def batchAndSyncExecute[T, U](elements: Vector[T], f: Vector[T] => Future[Vector[U]], batchSize: Int)(implicit
+      ec: ExecutionContext): Future[Vector[U]] = {
     val initF = Future.successful(Vector.empty)
     val batches = elements.grouped(batchSize)
     for {
       batchExecution <- {
-        batches.foldLeft(initF) {
-          case (accumF: Future[Vector[U]], batch: Vector[T]) =>
-            for {
-              accum <- accumF
-              executed <- f(batch)
-            } yield accum ++ executed
+        batches.foldLeft(initF) { case (accumF: Future[Vector[U]], batch: Vector[T]) =>
+          for {
+            accum <- accumF
+            executed <- f(batch)
+          } yield accum ++ executed
         }
       }
     } yield batchExecution
@@ -110,13 +102,9 @@ object FutureUtil {
   /** Batches the [[elements]] by [[batchSize]] and then calls [[f]] on them in parallel
     * This is the parallel version of [[batchAndSyncExecute()]]
     */
-  def batchAndParallelExecute[T, U](
-      elements: Vector[T],
-      f: Vector[T] => Future[U],
-      batchSize: Int)(implicit ec: ExecutionContext): Future[Vector[U]] = {
-    require(
-      batchSize > 0,
-      s"Cannot have batch size less than or equal to zero, got=$batchSize")
+  def batchAndParallelExecute[T, U](elements: Vector[T], f: Vector[T] => Future[U], batchSize: Int)(implicit
+      ec: ExecutionContext): Future[Vector[U]] = {
+    require(batchSize > 0, s"Cannot have batch size less than or equal to zero, got=$batchSize")
     if (elements.isEmpty) {
       Future.successful(Vector.empty)
     } else {
@@ -130,9 +118,7 @@ object FutureUtil {
   /** Same as [[batchAndParallelExecute()]], but computes the batchSize based on the
     * number of available processors on your machine
     */
-  def batchAndParallelExecute[T, U](
-      elements: Vector[T],
-      f: Vector[T] => Future[U])(implicit
+  def batchAndParallelExecute[T, U](elements: Vector[T], f: Vector[T] => Future[U])(implicit
       ec: ExecutionContext): Future[Vector[U]] = {
     //divide and conquer
     val batchSize =

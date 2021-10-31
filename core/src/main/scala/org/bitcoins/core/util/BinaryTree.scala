@@ -32,10 +32,7 @@ trait BinaryTree[+T] {
     */
   def toSeqLeafValues: Seq[T] = {
     @tailrec
-    def loop(
-        tree: BinaryTree[T],
-        accum: List[T],
-        remainder: List[BinaryTree[T]]): Seq[T] =
+    def loop(tree: BinaryTree[T], accum: List[T], remainder: List[BinaryTree[T]]): Seq[T] =
       tree match {
         case Leaf(x) =>
           if (remainder.isEmpty) x :: accum
@@ -54,9 +51,7 @@ trait BinaryTree[+T] {
   def findFirstDFS[T](t: T)(f: T => Boolean = (x: T) => x == t)(implicit
       tree: BinaryTree[T] = this): Option[BinaryTree[T]] = {
     @tailrec
-    def loop(
-        subTree: BinaryTree[T],
-        remainder: List[BinaryTree[T]]): Option[BinaryTree[T]] = {
+    def loop(subTree: BinaryTree[T], remainder: List[BinaryTree[T]]): Option[BinaryTree[T]] = {
       subTree match {
         case Empty =>
           if (remainder.isEmpty) None else loop(remainder.head, remainder.tail)
@@ -73,8 +68,7 @@ trait BinaryTree[+T] {
   }
 
   /** Checks if the [[org.bitcoins.core.util.BinaryTree BinaryTree]] contains a certain element. */
-  def contains[T](t: T)(f: T => Boolean = (x: T) => x == t)(implicit
-      tree: BinaryTree[T] = this): Boolean =
+  def contains[T](t: T)(f: T => Boolean = (x: T) => x == t)(implicit tree: BinaryTree[T] = this): Boolean =
     findFirstDFS(t)(f)(tree).isDefined
 
   def count[T](t: T): Int = toSeq.count(_ == t)
@@ -91,8 +85,7 @@ trait BinaryTree[+T] {
     * If it cannot insert it because the branches are not empty,
     * it throws a [[scala.RuntimeException RuntimeException]].
     */
-  def insert[T](subTree: BinaryTree[T])(implicit
-      parentTree: BinaryTree[T]): BinaryTree[T] =
+  def insert[T](subTree: BinaryTree[T])(implicit parentTree: BinaryTree[T]): BinaryTree[T] =
     parentTree match {
       case n: Node[T] =>
         if (n.l == Empty) Node[T](n.v, subTree, n.r)
@@ -105,8 +98,7 @@ trait BinaryTree[+T] {
     }
 
   /** Removes the subTree from the parentTree. */
-  def remove[T](subTree: BinaryTree[T])(
-      parentTree: BinaryTree[T] = this): BinaryTree[T] = {
+  def remove[T](subTree: BinaryTree[T])(parentTree: BinaryTree[T] = this): BinaryTree[T] = {
     //TODO: Optimize into a tail recursive function
     parentTree match {
       case Empty      => Empty
@@ -118,8 +110,8 @@ trait BinaryTree[+T] {
   }
 
   /** Replaces all instances of the original tree with the replacement tree. */
-  def replace[T](originalTree: BinaryTree[T], replacementTree: BinaryTree[T])(
-      implicit parentTree: BinaryTree[T] = this): BinaryTree[T] = {
+  def replace[T](originalTree: BinaryTree[T], replacementTree: BinaryTree[T])(implicit
+      parentTree: BinaryTree[T] = this): BinaryTree[T] = {
     //TODO: Optimize this into a tail recursive function
     parentTree match {
       case Empty      => if (originalTree == Empty) replacementTree else Empty
@@ -127,18 +119,13 @@ trait BinaryTree[+T] {
       case n: Node[T] =>
         if (n == originalTree) replacementTree
         else
-          Node(n.v,
-               replace(originalTree, replacementTree)(n.l),
-               replace(originalTree, replacementTree)(n.r))
+          Node(n.v, replace(originalTree, replacementTree)(n.l), replace(originalTree, replacementTree)(n.r))
     }
   }
 
   def toSeq: Seq[T] = {
     @tailrec
-    def loop(
-        tree: BinaryTree[T],
-        accum: List[T],
-        remainder: List[BinaryTree[T]]): List[T] =
+    def loop(tree: BinaryTree[T], accum: List[T], remainder: List[BinaryTree[T]]): List[T] =
       tree match {
         case Leaf(x) =>
           if (remainder.isEmpty) accum ++ List(x)
@@ -155,7 +142,6 @@ trait BinaryTree[+T] {
   def toList: List[T] = toSeq.toList
 }
 
-case class Node[T](v: T, l: BinaryTree[T], r: BinaryTree[T])
-    extends BinaryTree[T]
+case class Node[T](v: T, l: BinaryTree[T], r: BinaryTree[T]) extends BinaryTree[T]
 case class Leaf[T](v: T) extends BinaryTree[T]
 case object Empty extends BinaryTree[Nothing]

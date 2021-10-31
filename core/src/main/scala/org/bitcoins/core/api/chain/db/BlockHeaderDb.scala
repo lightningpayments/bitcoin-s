@@ -42,10 +42,7 @@ case class BlockHeaderDb(
 
 object BlockHeaderDbHelper {
 
-  def fromBlockHeader(
-      height: Int,
-      chainWork: BigInt,
-      bh: BlockHeader): BlockHeaderDb = {
+  def fromBlockHeader(height: Int, chainWork: BigInt, bh: BlockHeader): BlockHeaderDb = {
     BlockHeaderDb(
       height = height,
       hashBE = bh.hashBE,

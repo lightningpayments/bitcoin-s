@@ -26,9 +26,7 @@ class WalletDLCSetupTest extends BitcoinSDualWalletTest {
 
   behavior of "DLCWallet"
 
-  def testNegotiate(
-      fundedDLCWallets: (FundedDLCWallet, FundedDLCWallet),
-      offerData: DLCOffer): Future[Assertion] = {
+  def testNegotiate(fundedDLCWallets: (FundedDLCWallet, FundedDLCWallet), offerData: DLCOffer): Future[Assertion] = {
     val walletA = fundedDLCWallets._1.wallet
     val walletB = fundedDLCWallets._2.wallet
 
@@ -65,8 +63,7 @@ class WalletDLCSetupTest extends BitcoinSDualWalletTest {
           accept.fundingInputs
             .map(_.output.value)
             .sum >= accept.totalCollateral)
-        assert(
-          accept.totalCollateral == offer.contractInfo.max - offer.totalCollateral)
+        assert(accept.totalCollateral == offer.contractInfo.max - offer.totalCollateral)
         assert(accept.changeAddress.value.nonEmpty)
       }
 
@@ -93,15 +90,11 @@ class WalletDLCSetupTest extends BitcoinSDualWalletTest {
 
       (announcementsA, announcementDataA, nonceDbsA) <- walletA
         .getDLCAnnouncementDbs(dlcDb.dlcId)
-      announcementTLVsA = walletA.getOracleAnnouncements(announcementsA,
-                                                         announcementDataA,
-                                                         nonceDbsA)
+      announcementTLVsA = walletA.getOracleAnnouncements(announcementsA, announcementDataA, nonceDbsA)
 
       (announcementsB, announcementDataB, nonceDbsB) <- walletA
         .getDLCAnnouncementDbs(dlcDb.dlcId)
-      announcementTLVsB = walletB.getOracleAnnouncements(announcementsB,
-                                                         announcementDataB,
-                                                         nonceDbsB)
+      announcementTLVsB = walletB.getOracleAnnouncements(announcementsB, announcementDataB, nonceDbsB)
     } yield {
       assert(dlcDb.contractIdOpt.get == sign.contractId)
 
@@ -112,8 +105,7 @@ class WalletDLCSetupTest extends BitcoinSDualWalletTest {
       assert(refundSigsA.get.accepterSig == refundSigsB.get.accepterSig)
 
       assert(sign.cetSigs.outcomeSigs.forall { case (outcome, sig) =>
-        outcomeSigs.exists(dbSig =>
-          (dbSig.sigPoint, dbSig.initiatorSig.get) == ((outcome, sig)))
+        outcomeSigs.exists(dbSig => (dbSig.sigPoint, dbSig.initiatorSig.get) == ((outcome, sig)))
       })
 
       assert(announcementTLVsA == announcementTLVsB)
@@ -126,9 +118,8 @@ class WalletDLCSetupTest extends BitcoinSDualWalletTest {
     }
   }
 
-  it must "correctly negotiate a dlc" in {
-    fundedDLCWallets: (FundedDLCWallet, FundedDLCWallet) =>
-      testNegotiate(fundedDLCWallets, DLCWalletUtil.sampleDLCOffer)
+  it must "correctly negotiate a dlc" in { fundedDLCWallets: (FundedDLCWallet, FundedDLCWallet) =>
+    testNegotiate(fundedDLCWallets, DLCWalletUtil.sampleDLCOffer)
   }
 
   it must "correctly negotiate a dlc with a multi-nonce oracle info" in {
@@ -138,59 +129,53 @@ class WalletDLCSetupTest extends BitcoinSDualWalletTest {
 
   // This could happen inputs can end up in different orders when
   // using postgres or using different coin selection algos
-  it must "correctly negotiate a dlc with reordered inputs" in {
-    fundedDLCWallets: (FundedDLCWallet, FundedDLCWallet) =>
-      // construct a contract info that uses many inputs
-      val totalCol = Bitcoins(11).satoshis
-      val col = totalCol / Satoshis(2)
+  it must "correctly negotiate a dlc with reordered inputs" in { fundedDLCWallets: (FundedDLCWallet, FundedDLCWallet) =>
+    // construct a contract info that uses many inputs
+    val totalCol = Bitcoins(11).satoshis
+    val col = totalCol / Satoshis(2)
 
-      val outcomes: Vector[(EnumOutcome, Satoshis)] =
-        Vector(EnumOutcome(winStr) -> totalCol,
-               EnumOutcome(loseStr) -> Satoshis.zero)
+    val outcomes: Vector[(EnumOutcome, Satoshis)] =
+      Vector(EnumOutcome(winStr) -> totalCol, EnumOutcome(loseStr) -> Satoshis.zero)
 
-      val oraclePair: ContractOraclePair.EnumPair =
-        ContractOraclePair.EnumPair(EnumContractDescriptor(outcomes),
-                                    sampleOracleInfo)
+    val oraclePair: ContractOraclePair.EnumPair =
+      ContractOraclePair.EnumPair(EnumContractDescriptor(outcomes), sampleOracleInfo)
 
-      val contractInfo: ContractInfo = ContractInfo(totalCol, oraclePair)
+    val contractInfo: ContractInfo = ContractInfo(totalCol, oraclePair)
 
-      val offerData =
-        sampleDLCOffer.copy(contractInfo = contractInfo,
-                            totalCollateral = col.satoshis)
+    val offerData =
+      sampleDLCOffer.copy(contractInfo = contractInfo, totalCollateral = col.satoshis)
 
-      val walletA = fundedDLCWallets._1.wallet
-      val walletB = fundedDLCWallets._2.wallet
+    val walletA = fundedDLCWallets._1.wallet
+    val walletB = fundedDLCWallets._2.wallet
 
-      def reorderInputDbs(
-          wallet: DLCWallet,
-          dlcId: Sha256Digest): Future[Unit] = {
-        for {
-          inputDbs <- wallet.dlcInputsDAO.findByDLCId(dlcId)
-          _ <- wallet.dlcInputsDAO.deleteByDLCId(dlcId)
-          _ <- wallet.dlcInputsDAO.createAll(inputDbs.reverse)
-        } yield ()
-      }
-
+    def reorderInputDbs(wallet: DLCWallet, dlcId: Sha256Digest): Future[Unit] = {
       for {
-        offer <- walletA.createDLCOffer(
-          offerData.contractInfo,
-          offerData.totalCollateral,
-          Some(offerData.feeRate),
-          offerData.timeouts.contractMaturity.toUInt32,
-          offerData.timeouts.contractTimeout.toUInt32
-        )
-        dlcId = calcDLCId(offer.fundingInputs.map(_.outPoint))
+        inputDbs <- wallet.dlcInputsDAO.findByDLCId(dlcId)
+        _ <- wallet.dlcInputsDAO.deleteByDLCId(dlcId)
+        _ <- wallet.dlcInputsDAO.createAll(inputDbs.reverse)
+      } yield ()
+    }
 
-        accept <- walletB.acceptDLCOffer(offer)
+    for {
+      offer <- walletA.createDLCOffer(
+        offerData.contractInfo,
+        offerData.totalCollateral,
+        Some(offerData.feeRate),
+        offerData.timeouts.contractMaturity.toUInt32,
+        offerData.timeouts.contractTimeout.toUInt32
+      )
+      dlcId = calcDLCId(offer.fundingInputs.map(_.outPoint))
 
-        // reorder dlc inputs in wallets
-        _ <- reorderInputDbs(walletA, dlcId)
-        _ <- reorderInputDbs(walletB, dlcId)
+      accept <- walletB.acceptDLCOffer(offer)
 
-        sign <- walletA.signDLC(accept)
+      // reorder dlc inputs in wallets
+      _ <- reorderInputDbs(walletA, dlcId)
+      _ <- reorderInputDbs(walletB, dlcId)
 
-        dlcDb <- walletB.addDLCSigs(sign)
-      } yield assert(dlcDb.state == DLCState.Signed)
+      sign <- walletA.signDLC(accept)
+
+      dlcDb <- walletB.addDLCSigs(sign)
+    } yield assert(dlcDb.state == DLCState.Signed)
   }
 
   // This could happen inputs can end up in different orders when
@@ -202,25 +187,20 @@ class WalletDLCSetupTest extends BitcoinSDualWalletTest {
       val col = totalCol / Satoshis(2)
 
       val outcomes: Vector[(EnumOutcome, Satoshis)] =
-        Vector(EnumOutcome(winStr) -> totalCol,
-               EnumOutcome(loseStr) -> Satoshis.zero)
+        Vector(EnumOutcome(winStr) -> totalCol, EnumOutcome(loseStr) -> Satoshis.zero)
 
       val oraclePair: ContractOraclePair.EnumPair =
-        ContractOraclePair.EnumPair(EnumContractDescriptor(outcomes),
-                                    sampleOracleInfo)
+        ContractOraclePair.EnumPair(EnumContractDescriptor(outcomes), sampleOracleInfo)
 
       val contractInfo: ContractInfo = ContractInfo(totalCol, oraclePair)
 
       val offerData =
-        sampleDLCOffer.copy(contractInfo = contractInfo,
-                            totalCollateral = col.satoshis)
+        sampleDLCOffer.copy(contractInfo = contractInfo, totalCollateral = col.satoshis)
 
       val walletA = fundedDLCWallets._1.wallet
       val walletB = fundedDLCWallets._2.wallet
 
-      def reorderInputDbs(
-          wallet: DLCWallet,
-          dlcId: Sha256Digest): Future[Unit] = {
+      def reorderInputDbs(wallet: DLCWallet, dlcId: Sha256Digest): Future[Unit] = {
         for {
           inputDbs <- wallet.dlcInputsDAO.findByDLCId(dlcId)
           _ <- wallet.dlcInputsDAO.deleteByDLCId(dlcId)
@@ -250,91 +230,88 @@ class WalletDLCSetupTest extends BitcoinSDualWalletTest {
       } yield assert(dlcDb.state == DLCState.Signed)
   }
 
-  it must "correctly negotiate a dlc using TLVs" in {
-    fundedDLCWallets: (FundedDLCWallet, FundedDLCWallet) =>
-      val walletA = fundedDLCWallets._1.wallet
-      val walletB = fundedDLCWallets._2.wallet
+  it must "correctly negotiate a dlc using TLVs" in { fundedDLCWallets: (FundedDLCWallet, FundedDLCWallet) =>
+    val walletA = fundedDLCWallets._1.wallet
+    val walletB = fundedDLCWallets._2.wallet
 
-      val offerData = DLCWalletUtil.sampleDLCOffer
+    val offerData = DLCWalletUtil.sampleDLCOffer
 
-      for {
-        offer <- walletA.createDLCOffer(
-          offerData.contractInfo.toTLV,
-          offerData.totalCollateral,
-          Some(offerData.feeRate),
-          offerData.timeouts.contractMaturity.toUInt32,
-          offerData.timeouts.contractTimeout.toUInt32
-        )
-        dlcId = calcDLCId(offer.fundingInputs.map(_.outPoint))
-        dlcA1Opt <- walletA.dlcDAO.read(dlcId)
-        _ = {
-          assert(dlcA1Opt.isDefined)
-          assert(dlcA1Opt.get.state == DLCState.Offered)
-          assert(offer.oracleInfo == offerData.oracleInfo)
-          assert(offer.contractInfo == offerData.contractInfo)
-          assert(offer.totalCollateral == offerData.totalCollateral)
-          assert(offer.feeRate == offerData.feeRate)
-          assert(offer.timeouts == offerData.timeouts)
-          assert(offer.fundingInputs.nonEmpty)
-          assert(offer.changeAddress.value.nonEmpty)
-        }
-
-        accept <- walletB.acceptDLCOffer(offer.toTLV)
-        dlcB1Opt <- walletB.dlcDAO.read(dlcId)
-        _ = {
-          assert(dlcB1Opt.isDefined)
-          assert(dlcB1Opt.get.state == DLCState.Accepted)
-          assert(accept.fundingInputs.nonEmpty)
-          assert(
-            accept.fundingInputs
-              .map(_.output.value)
-              .sum >= accept.totalCollateral)
-          assert(
-            accept.totalCollateral == offer.contractInfo.max - offer.totalCollateral)
-          assert(accept.changeAddress.value.nonEmpty)
-        }
-
-        sign <- walletA.signDLC(accept.toTLV)
-        dlcA2Opt <- walletA.dlcDAO.read(dlcId)
-        _ = {
-          assert(dlcA2Opt.isDefined)
-          assert(dlcA2Opt.get.state == DLCState.Signed)
-          assert(sign.fundingSigs.length == offer.fundingInputs.size)
-        }
-
-        dlcDb <- walletB.addDLCSigs(sign.toTLV)
-        _ = assert(dlcDb.state == DLCState.Signed)
-        outcomeSigs <- walletB.dlcSigsDAO.findByDLCId(dlcId)
-
-        refundSigsA <- walletA.dlcRefundSigDAO.findByDLCId(dlcId)
-        refundSigsB <- walletB.dlcRefundSigDAO.findByDLCId(dlcId)
-
-        walletAChange <- walletA.addressDAO.read(offer.changeAddress)
-        walletAFinal <- walletA.addressDAO.read(offer.pubKeys.payoutAddress)
-
-        walletBChange <- walletB.addressDAO.read(accept.changeAddress)
-        walletBFinal <- walletB.addressDAO.read(accept.pubKeys.payoutAddress)
-
-      } yield {
-        assert(dlcDb.contractIdOpt.get == sign.contractId)
-
-        assert(refundSigsA.isDefined)
-        assert(refundSigsB.isDefined)
-        assert(refundSigsA.get.initiatorSig.isDefined)
-        assert(refundSigsA.get.initiatorSig == refundSigsB.get.initiatorSig)
-        assert(refundSigsA.get.accepterSig == refundSigsB.get.accepterSig)
-
-        assert(sign.cetSigs.outcomeSigs.forall { case (outcome, sig) =>
-          outcomeSigs.exists(dbSig =>
-            (dbSig.sigPoint, dbSig.initiatorSig.get) == ((outcome, sig)))
-        })
-
-        // Test that the Addresses are in the wallet's database
-        assert(walletAChange.isDefined)
-        assert(walletAFinal.isDefined)
-        assert(walletBChange.isDefined)
-        assert(walletBFinal.isDefined)
+    for {
+      offer <- walletA.createDLCOffer(
+        offerData.contractInfo.toTLV,
+        offerData.totalCollateral,
+        Some(offerData.feeRate),
+        offerData.timeouts.contractMaturity.toUInt32,
+        offerData.timeouts.contractTimeout.toUInt32
+      )
+      dlcId = calcDLCId(offer.fundingInputs.map(_.outPoint))
+      dlcA1Opt <- walletA.dlcDAO.read(dlcId)
+      _ = {
+        assert(dlcA1Opt.isDefined)
+        assert(dlcA1Opt.get.state == DLCState.Offered)
+        assert(offer.oracleInfo == offerData.oracleInfo)
+        assert(offer.contractInfo == offerData.contractInfo)
+        assert(offer.totalCollateral == offerData.totalCollateral)
+        assert(offer.feeRate == offerData.feeRate)
+        assert(offer.timeouts == offerData.timeouts)
+        assert(offer.fundingInputs.nonEmpty)
+        assert(offer.changeAddress.value.nonEmpty)
       }
+
+      accept <- walletB.acceptDLCOffer(offer.toTLV)
+      dlcB1Opt <- walletB.dlcDAO.read(dlcId)
+      _ = {
+        assert(dlcB1Opt.isDefined)
+        assert(dlcB1Opt.get.state == DLCState.Accepted)
+        assert(accept.fundingInputs.nonEmpty)
+        assert(
+          accept.fundingInputs
+            .map(_.output.value)
+            .sum >= accept.totalCollateral)
+        assert(accept.totalCollateral == offer.contractInfo.max - offer.totalCollateral)
+        assert(accept.changeAddress.value.nonEmpty)
+      }
+
+      sign <- walletA.signDLC(accept.toTLV)
+      dlcA2Opt <- walletA.dlcDAO.read(dlcId)
+      _ = {
+        assert(dlcA2Opt.isDefined)
+        assert(dlcA2Opt.get.state == DLCState.Signed)
+        assert(sign.fundingSigs.length == offer.fundingInputs.size)
+      }
+
+      dlcDb <- walletB.addDLCSigs(sign.toTLV)
+      _ = assert(dlcDb.state == DLCState.Signed)
+      outcomeSigs <- walletB.dlcSigsDAO.findByDLCId(dlcId)
+
+      refundSigsA <- walletA.dlcRefundSigDAO.findByDLCId(dlcId)
+      refundSigsB <- walletB.dlcRefundSigDAO.findByDLCId(dlcId)
+
+      walletAChange <- walletA.addressDAO.read(offer.changeAddress)
+      walletAFinal <- walletA.addressDAO.read(offer.pubKeys.payoutAddress)
+
+      walletBChange <- walletB.addressDAO.read(accept.changeAddress)
+      walletBFinal <- walletB.addressDAO.read(accept.pubKeys.payoutAddress)
+
+    } yield {
+      assert(dlcDb.contractIdOpt.get == sign.contractId)
+
+      assert(refundSigsA.isDefined)
+      assert(refundSigsB.isDefined)
+      assert(refundSigsA.get.initiatorSig.isDefined)
+      assert(refundSigsA.get.initiatorSig == refundSigsB.get.initiatorSig)
+      assert(refundSigsA.get.accepterSig == refundSigsB.get.accepterSig)
+
+      assert(sign.cetSigs.outcomeSigs.forall { case (outcome, sig) =>
+        outcomeSigs.exists(dbSig => (dbSig.sigPoint, dbSig.initiatorSig.get) == ((outcome, sig)))
+      })
+
+      // Test that the Addresses are in the wallet's database
+      assert(walletAChange.isDefined)
+      assert(walletAFinal.isDefined)
+      assert(walletBChange.isDefined)
+      assert(walletBFinal.isDefined)
+    }
   }
 
   def getDLCReadyToAddSigs(
@@ -367,8 +344,7 @@ class WalletDLCSetupTest extends BitcoinSDualWalletTest {
   def testDLCSignVerification[E <: Exception](
       walletA: DLCWallet,
       walletB: DLCWallet,
-      makeDLCSignInvalid: DLCSign => DLCSign)(implicit
-      classTag: ClassTag[E]): Future[Assertion] = {
+      makeDLCSignInvalid: DLCSign => DLCSign)(implicit classTag: ClassTag[E]): Future[Assertion] = {
     val failedAddSigsF = for {
       sign <- getDLCReadyToAddSigs(walletA, walletB)
       invalidSign = makeDLCSignInvalid(sign)
@@ -391,16 +367,14 @@ class WalletDLCSetupTest extends BitcoinSDualWalletTest {
     recoverToSucceededIf[IllegalArgumentException](failedAddSigsF)
   }
 
-  it must "fail to add its own sigs" in {
-    FundedDLCWallets: (FundedDLCWallet, FundedDLCWallet) =>
-      val walletA = FundedDLCWallets._1.wallet
-      val walletB = FundedDLCWallets._2.wallet
+  it must "fail to add its own sigs" in { FundedDLCWallets: (FundedDLCWallet, FundedDLCWallet) =>
+    val walletA = FundedDLCWallets._1.wallet
+    val walletB = FundedDLCWallets._2.wallet
 
-      for {
-        sign <- getDLCReadyToAddSigs(walletA, walletB)
-        _ <- recoverToSucceededIf[IllegalArgumentException](
-          walletA.addDLCSigs(sign))
-      } yield succeed
+    for {
+      sign <- getDLCReadyToAddSigs(walletA, walletB)
+      _ <- recoverToSucceededIf[IllegalArgumentException](walletA.addDLCSigs(sign))
+    } yield succeed
   }
 
   it must "fail to add dlc funding sigs that do not correspond to the DLC" in {
@@ -411,248 +385,222 @@ class WalletDLCSetupTest extends BitcoinSDualWalletTest {
       testDLCSignVerification[IllegalArgumentException](
         walletA,
         walletB,
-        (sign: DLCSign) =>
-          sign.copy(fundingSigs = DLCWalletUtil.dummyFundingSignatures)
+        (sign: DLCSign) => sign.copy(fundingSigs = DLCWalletUtil.dummyFundingSignatures)
       )
   }
 
-  it must "fail to add dlc funding sigs that are invalid" in {
-    FundedDLCWallets: (FundedDLCWallet, FundedDLCWallet) =>
-      val walletA = FundedDLCWallets._1.wallet
-      val walletB = FundedDLCWallets._2.wallet
+  it must "fail to add dlc funding sigs that are invalid" in { FundedDLCWallets: (FundedDLCWallet, FundedDLCWallet) =>
+    val walletA = FundedDLCWallets._1.wallet
+    val walletB = FundedDLCWallets._2.wallet
 
-      testDLCSignVerification[IllegalArgumentException](
-        walletA,
-        walletB,
-        (sign: DLCSign) =>
-          sign.copy(fundingSigs = FundingSignatures(
-            sign.fundingSigs
-              .map(_.copy(_2 = P2WPKHWitnessV0(ECPublicKey.freshPublicKey)))
-              .toVector))
+    testDLCSignVerification[IllegalArgumentException](
+      walletA,
+      walletB,
+      (sign: DLCSign) =>
+        sign.copy(fundingSigs = FundingSignatures(
+          sign.fundingSigs
+            .map(_.copy(_2 = P2WPKHWitnessV0(ECPublicKey.freshPublicKey)))
+            .toVector))
+    )
+  }
+
+  it must "fail to add dlc cet sigs that are invalid" in { FundedDLCWallets: (FundedDLCWallet, FundedDLCWallet) =>
+    val walletA = FundedDLCWallets._1.wallet
+    val walletB = FundedDLCWallets._2.wallet
+
+    testDLCSignVerification[IllegalArgumentException](
+      walletA,
+      walletB,
+      (sign: DLCSign) => sign.copy(cetSigs = CETSignatures(DLCWalletUtil.dummyOutcomeSigs, sign.cetSigs.refundSig)))
+  }
+
+  it must "fail to add an invalid dlc refund sig" in { FundedDLCWallets: (FundedDLCWallet, FundedDLCWallet) =>
+    val walletA = FundedDLCWallets._1.wallet
+    val walletB = FundedDLCWallets._2.wallet
+
+    testDLCSignVerification[IllegalArgumentException](
+      walletA,
+      walletB,
+      (sign: DLCSign) => sign.copy(cetSigs = CETSignatures(sign.cetSigs.outcomeSigs, DLCWalletUtil.dummyPartialSig)))
+  }
+
+  it must "fail to sign dlc with cet sigs that are invalid" in { FundedDLCWallets: (FundedDLCWallet, FundedDLCWallet) =>
+    val walletA = FundedDLCWallets._1.wallet
+    val walletB = FundedDLCWallets._2.wallet
+
+    testDLCAcceptVerification(
+      walletA,
+      walletB,
+      (accept: DLCAccept) =>
+        accept.copy(cetSigs = CETSignatures(DLCWalletUtil.dummyOutcomeSigs, accept.cetSigs.refundSig)))
+  }
+
+  it must "fail to sign dlc with an invalid refund sig" in { FundedDLCWallets: (FundedDLCWallet, FundedDLCWallet) =>
+    val walletA = FundedDLCWallets._1.wallet
+    val walletB = FundedDLCWallets._2.wallet
+
+    testDLCAcceptVerification(
+      walletA,
+      walletB,
+      (accept: DLCAccept) =>
+        accept.copy(cetSigs = CETSignatures(accept.cetSigs.outcomeSigs, DLCWalletUtil.dummyPartialSig)))
+  }
+
+  it must "cancel an offered DLC" in { FundedDLCWallets: (FundedDLCWallet, FundedDLCWallet) =>
+    val walletA = FundedDLCWallets._1.wallet
+
+    val offerData: DLCOffer = DLCWalletUtil.sampleDLCOffer
+
+    val announcementTLVs =
+      offerData.contractInfo.oracleInfo.singleOracleInfos.map(_.announcement)
+    assert(announcementTLVs.size == 1)
+    val announcementTLV = announcementTLVs.head
+
+    for {
+      oldBalance <- walletA.getBalance()
+      oldReserved <- walletA.spendingInfoDAO.findByTxoState(TxoState.Reserved)
+      _ = assert(oldReserved.isEmpty)
+
+      offer <- walletA.createDLCOffer(
+        offerData.contractInfo,
+        offerData.totalCollateral,
+        Some(offerData.feeRate),
+        offerData.timeouts.contractMaturity.toUInt32,
+        offerData.timeouts.contractTimeout.toUInt32
       )
+
+      dlcId = calcDLCId(offer.fundingInputs.map(_.outPoint))
+
+      _ <- walletA.cancelDLC(dlcId)
+
+      announcementData <- walletA.announcementDAO.findByPublicKey(announcementTLV.publicKey)
+      nonceDbs <- walletA.oracleNonceDAO.findByAnnouncementIds(announcementData.map(_.id.get))
+
+      balance <- walletA.getBalance()
+      reserved <- walletA.spendingInfoDAO.findByTxoState(TxoState.Reserved)
+      dlcOpt <- walletA.findDLC(dlcId)
+    } yield {
+      assert(balance == oldBalance)
+      assert(reserved.isEmpty)
+      assert(dlcOpt.isEmpty)
+
+      // Check we persist the announcements
+      assert(announcementData.nonEmpty)
+      assert(nonceDbs.nonEmpty)
+    }
   }
 
-  it must "fail to add dlc cet sigs that are invalid" in {
-    FundedDLCWallets: (FundedDLCWallet, FundedDLCWallet) =>
-      val walletA = FundedDLCWallets._1.wallet
-      val walletB = FundedDLCWallets._2.wallet
+  it must "cancel an accepted DLC" in { FundedDLCWallets: (FundedDLCWallet, FundedDLCWallet) =>
+    val walletA = FundedDLCWallets._1.wallet
+    val walletB = FundedDLCWallets._2.wallet
 
-      testDLCSignVerification[IllegalArgumentException](
-        walletA,
-        walletB,
-        (sign: DLCSign) =>
-          sign.copy(
-            cetSigs = CETSignatures(DLCWalletUtil.dummyOutcomeSigs,
-                                    sign.cetSigs.refundSig)))
+    val offerData: DLCOffer = DLCWalletUtil.sampleDLCOffer
+
+    for {
+      oldBalance <- walletB.getBalance()
+      oldReserved <- walletB.spendingInfoDAO.findByTxoState(TxoState.Reserved)
+      _ = assert(oldReserved.isEmpty)
+
+      offer <- walletA.createDLCOffer(
+        offerData.contractInfo,
+        offerData.totalCollateral,
+        Some(offerData.feeRate),
+        offerData.timeouts.contractMaturity.toUInt32,
+        offerData.timeouts.contractTimeout.toUInt32
+      )
+      _ <- walletB.acceptDLCOffer(offer)
+
+      dlcId = calcDLCId(offer.fundingInputs.map(_.outPoint))
+
+      _ <- walletB.cancelDLC(dlcId)
+
+      balance <- walletB.getBalance()
+      reserved <- walletB.spendingInfoDAO.findByTxoState(TxoState.Reserved)
+      dlcOpt <- walletB.findDLC(dlcId)
+    } yield {
+      assert(balance == oldBalance)
+      assert(reserved.isEmpty)
+      assert(dlcOpt.isEmpty)
+    }
   }
 
-  it must "fail to add an invalid dlc refund sig" in {
-    FundedDLCWallets: (FundedDLCWallet, FundedDLCWallet) =>
-      val walletA = FundedDLCWallets._1.wallet
-      val walletB = FundedDLCWallets._2.wallet
+  it must "cancel a signed DLC" in { FundedDLCWallets: (FundedDLCWallet, FundedDLCWallet) =>
+    val walletA = FundedDLCWallets._1.wallet
+    val walletB = FundedDLCWallets._2.wallet
 
-      testDLCSignVerification[IllegalArgumentException](
-        walletA,
-        walletB,
-        (sign: DLCSign) =>
-          sign.copy(
-            cetSigs = CETSignatures(sign.cetSigs.outcomeSigs,
-                                    DLCWalletUtil.dummyPartialSig)))
+    val offerData: DLCOffer = DLCWalletUtil.sampleDLCOffer
+
+    for {
+      oldBalanceA <- walletA.getBalance()
+      oldReservedA <- walletA.spendingInfoDAO.findByTxoState(TxoState.Reserved)
+      _ = assert(oldReservedA.isEmpty)
+
+      oldBalanceB <- walletB.getBalance()
+      oldReservedB <- walletB.spendingInfoDAO.findByTxoState(TxoState.Reserved)
+      _ = assert(oldReservedB.isEmpty)
+
+      offer <- walletA.createDLCOffer(
+        offerData.contractInfo,
+        offerData.totalCollateral,
+        Some(offerData.feeRate),
+        offerData.timeouts.contractMaturity.toUInt32,
+        offerData.timeouts.contractTimeout.toUInt32
+      )
+      accept <- walletB.acceptDLCOffer(offer)
+      sign <- walletA.signDLC(accept)
+      _ <- walletB.addDLCSigs(sign)
+
+      dlcId = calcDLCId(offer.fundingInputs.map(_.outPoint))
+
+      _ <- walletA.cancelDLC(dlcId)
+      _ <- walletB.cancelDLC(dlcId)
+
+      balanceA <- walletA.getBalance()
+      reservedA <- walletA.spendingInfoDAO.findByTxoState(TxoState.Reserved)
+      dlcAOpt <- walletA.findDLC(dlcId)
+
+      balanceB <- walletB.getBalance()
+      reservedB <- walletB.spendingInfoDAO.findByTxoState(TxoState.Reserved)
+      dlcBOpt <- walletB.findDLC(dlcId)
+    } yield {
+      assert(balanceA == oldBalanceA)
+      assert(reservedA.isEmpty)
+      assert(dlcAOpt.isEmpty)
+
+      assert(balanceB == oldBalanceB)
+      assert(reservedB.isEmpty)
+      assert(dlcBOpt.isEmpty)
+    }
   }
 
-  it must "fail to sign dlc with cet sigs that are invalid" in {
-    FundedDLCWallets: (FundedDLCWallet, FundedDLCWallet) =>
-      val walletA = FundedDLCWallets._1.wallet
-      val walletB = FundedDLCWallets._2.wallet
+  it must "fail to cancel a broadcasted DLC" in { FundedDLCWallets: (FundedDLCWallet, FundedDLCWallet) =>
+    val walletA = FundedDLCWallets._1.wallet
+    val walletB = FundedDLCWallets._2.wallet
 
-      testDLCAcceptVerification(
-        walletA,
-        walletB,
-        (accept: DLCAccept) =>
-          accept.copy(
-            cetSigs = CETSignatures(DLCWalletUtil.dummyOutcomeSigs,
-                                    accept.cetSigs.refundSig)))
-  }
+    val offerData: DLCOffer = DLCWalletUtil.sampleDLCOffer
 
-  it must "fail to sign dlc with an invalid refund sig" in {
-    FundedDLCWallets: (FundedDLCWallet, FundedDLCWallet) =>
-      val walletA = FundedDLCWallets._1.wallet
-      val walletB = FundedDLCWallets._2.wallet
+    for {
+      offer <- walletA.createDLCOffer(
+        offerData.contractInfo,
+        offerData.totalCollateral,
+        Some(offerData.feeRate),
+        offerData.timeouts.contractMaturity.toUInt32,
+        offerData.timeouts.contractTimeout.toUInt32
+      )
+      accept <- walletB.acceptDLCOffer(offer)
+      sign <- walletA.signDLC(accept)
+      _ <- walletB.addDLCSigs(sign)
 
-      testDLCAcceptVerification(
-        walletA,
-        walletB,
-        (accept: DLCAccept) =>
-          accept.copy(
-            cetSigs = CETSignatures(accept.cetSigs.outcomeSigs,
-                                    DLCWalletUtil.dummyPartialSig)))
-  }
+      tx <- walletB.broadcastDLCFundingTx(sign.contractId)
+      // make sure other wallet sees it
+      _ <- walletA.processTransaction(tx, None)
 
-  it must "cancel an offered DLC" in {
-    FundedDLCWallets: (FundedDLCWallet, FundedDLCWallet) =>
-      val walletA = FundedDLCWallets._1.wallet
+      dlcId = calcDLCId(offer.fundingInputs.map(_.outPoint))
 
-      val offerData: DLCOffer = DLCWalletUtil.sampleDLCOffer
+      _ <- recoverToSucceededIf[IllegalArgumentException](walletA.cancelDLC(dlcId))
 
-      val announcementTLVs =
-        offerData.contractInfo.oracleInfo.singleOracleInfos.map(_.announcement)
-      assert(announcementTLVs.size == 1)
-      val announcementTLV = announcementTLVs.head
-
-      for {
-        oldBalance <- walletA.getBalance()
-        oldReserved <- walletA.spendingInfoDAO.findByTxoState(TxoState.Reserved)
-        _ = assert(oldReserved.isEmpty)
-
-        offer <- walletA.createDLCOffer(
-          offerData.contractInfo,
-          offerData.totalCollateral,
-          Some(offerData.feeRate),
-          offerData.timeouts.contractMaturity.toUInt32,
-          offerData.timeouts.contractTimeout.toUInt32
-        )
-
-        dlcId = calcDLCId(offer.fundingInputs.map(_.outPoint))
-
-        _ <- walletA.cancelDLC(dlcId)
-
-        announcementData <- walletA.announcementDAO.findByPublicKey(
-          announcementTLV.publicKey)
-        nonceDbs <- walletA.oracleNonceDAO.findByAnnouncementIds(
-          announcementData.map(_.id.get))
-
-        balance <- walletA.getBalance()
-        reserved <- walletA.spendingInfoDAO.findByTxoState(TxoState.Reserved)
-        dlcOpt <- walletA.findDLC(dlcId)
-      } yield {
-        assert(balance == oldBalance)
-        assert(reserved.isEmpty)
-        assert(dlcOpt.isEmpty)
-
-        // Check we persist the announcements
-        assert(announcementData.nonEmpty)
-        assert(nonceDbs.nonEmpty)
-      }
-  }
-
-  it must "cancel an accepted DLC" in {
-    FundedDLCWallets: (FundedDLCWallet, FundedDLCWallet) =>
-      val walletA = FundedDLCWallets._1.wallet
-      val walletB = FundedDLCWallets._2.wallet
-
-      val offerData: DLCOffer = DLCWalletUtil.sampleDLCOffer
-
-      for {
-        oldBalance <- walletB.getBalance()
-        oldReserved <- walletB.spendingInfoDAO.findByTxoState(TxoState.Reserved)
-        _ = assert(oldReserved.isEmpty)
-
-        offer <- walletA.createDLCOffer(
-          offerData.contractInfo,
-          offerData.totalCollateral,
-          Some(offerData.feeRate),
-          offerData.timeouts.contractMaturity.toUInt32,
-          offerData.timeouts.contractTimeout.toUInt32
-        )
-        _ <- walletB.acceptDLCOffer(offer)
-
-        dlcId = calcDLCId(offer.fundingInputs.map(_.outPoint))
-
-        _ <- walletB.cancelDLC(dlcId)
-
-        balance <- walletB.getBalance()
-        reserved <- walletB.spendingInfoDAO.findByTxoState(TxoState.Reserved)
-        dlcOpt <- walletB.findDLC(dlcId)
-      } yield {
-        assert(balance == oldBalance)
-        assert(reserved.isEmpty)
-        assert(dlcOpt.isEmpty)
-      }
-  }
-
-  it must "cancel a signed DLC" in {
-    FundedDLCWallets: (FundedDLCWallet, FundedDLCWallet) =>
-      val walletA = FundedDLCWallets._1.wallet
-      val walletB = FundedDLCWallets._2.wallet
-
-      val offerData: DLCOffer = DLCWalletUtil.sampleDLCOffer
-
-      for {
-        oldBalanceA <- walletA.getBalance()
-        oldReservedA <- walletA.spendingInfoDAO.findByTxoState(
-          TxoState.Reserved)
-        _ = assert(oldReservedA.isEmpty)
-
-        oldBalanceB <- walletB.getBalance()
-        oldReservedB <- walletB.spendingInfoDAO.findByTxoState(
-          TxoState.Reserved)
-        _ = assert(oldReservedB.isEmpty)
-
-        offer <- walletA.createDLCOffer(
-          offerData.contractInfo,
-          offerData.totalCollateral,
-          Some(offerData.feeRate),
-          offerData.timeouts.contractMaturity.toUInt32,
-          offerData.timeouts.contractTimeout.toUInt32
-        )
-        accept <- walletB.acceptDLCOffer(offer)
-        sign <- walletA.signDLC(accept)
-        _ <- walletB.addDLCSigs(sign)
-
-        dlcId = calcDLCId(offer.fundingInputs.map(_.outPoint))
-
-        _ <- walletA.cancelDLC(dlcId)
-        _ <- walletB.cancelDLC(dlcId)
-
-        balanceA <- walletA.getBalance()
-        reservedA <- walletA.spendingInfoDAO.findByTxoState(TxoState.Reserved)
-        dlcAOpt <- walletA.findDLC(dlcId)
-
-        balanceB <- walletB.getBalance()
-        reservedB <- walletB.spendingInfoDAO.findByTxoState(TxoState.Reserved)
-        dlcBOpt <- walletB.findDLC(dlcId)
-      } yield {
-        assert(balanceA == oldBalanceA)
-        assert(reservedA.isEmpty)
-        assert(dlcAOpt.isEmpty)
-
-        assert(balanceB == oldBalanceB)
-        assert(reservedB.isEmpty)
-        assert(dlcBOpt.isEmpty)
-      }
-  }
-
-  it must "fail to cancel a broadcasted DLC" in {
-    FundedDLCWallets: (FundedDLCWallet, FundedDLCWallet) =>
-      val walletA = FundedDLCWallets._1.wallet
-      val walletB = FundedDLCWallets._2.wallet
-
-      val offerData: DLCOffer = DLCWalletUtil.sampleDLCOffer
-
-      for {
-        offer <- walletA.createDLCOffer(
-          offerData.contractInfo,
-          offerData.totalCollateral,
-          Some(offerData.feeRate),
-          offerData.timeouts.contractMaturity.toUInt32,
-          offerData.timeouts.contractTimeout.toUInt32
-        )
-        accept <- walletB.acceptDLCOffer(offer)
-        sign <- walletA.signDLC(accept)
-        _ <- walletB.addDLCSigs(sign)
-
-        tx <- walletB.broadcastDLCFundingTx(sign.contractId)
-        // make sure other wallet sees it
-        _ <- walletA.processTransaction(tx, None)
-
-        dlcId = calcDLCId(offer.fundingInputs.map(_.outPoint))
-
-        _ <- recoverToSucceededIf[IllegalArgumentException](
-          walletA.cancelDLC(dlcId))
-
-        _ <- recoverToSucceededIf[IllegalArgumentException](
-          walletB.cancelDLC(dlcId))
-      } yield succeed
+      _ <- recoverToSucceededIf[IllegalArgumentException](walletB.cancelDLC(dlcId))
+    } yield succeed
   }
 
   it must "fail to refund a DLC that hasn't reached its timeout" in {
@@ -680,128 +628,117 @@ class WalletDLCSetupTest extends BitcoinSDualWalletTest {
 
         dlcId = calcDLCId(offer.fundingInputs.map(_.outPoint))
 
-        _ <- recoverToSucceededIf[IllegalArgumentException](
-          walletA.executeDLCRefund(sign.contractId))
+        _ <- recoverToSucceededIf[IllegalArgumentException](walletA.executeDLCRefund(sign.contractId))
 
-        _ <- recoverToSucceededIf[IllegalArgumentException](
-          walletB.executeDLCRefund(sign.contractId))
+        _ <- recoverToSucceededIf[IllegalArgumentException](walletB.executeDLCRefund(sign.contractId))
       } yield succeed
   }
 
-  it must "setup and execute with oracle example" in {
-    FundedDLCWallets: (FundedDLCWallet, FundedDLCWallet) =>
-      val walletA = FundedDLCWallets._1.wallet
-      val walletB = FundedDLCWallets._2.wallet
+  it must "setup and execute with oracle example" in { FundedDLCWallets: (FundedDLCWallet, FundedDLCWallet) =>
+    val walletA = FundedDLCWallets._1.wallet
+    val walletB = FundedDLCWallets._2.wallet
 
-      val winStr = "Democrat_win"
-      val loseStr = "Republican_win"
-      val drawStr = "other"
+    val winStr = "Democrat_win"
+    val loseStr = "Republican_win"
+    val drawStr = "other"
 
-      val betSize = 10000
+    val betSize = 10000
 
-      val contractDescriptor: EnumContractDescriptor =
-        EnumContractDescriptor.fromStringVec(
-          Vector(winStr -> Satoshis(betSize),
-                 loseStr -> Satoshis.zero,
-                 drawStr -> Satoshis(betSize / 2)))
+    val contractDescriptor: EnumContractDescriptor =
+      EnumContractDescriptor.fromStringVec(
+        Vector(winStr -> Satoshis(betSize), loseStr -> Satoshis.zero, drawStr -> Satoshis(betSize / 2)))
 
-      val oracleInfo = EnumSingleOracleInfo(OracleAnnouncementTLV(
-        "fdd824b4caaec7479cc9d37003f5add6504d035054ffeac8637a990305a45cfecc1062044c3f68b45318f57e41c4544a4a950c0744e2a80854349a3426b00ad86da5090b9e942dc6df2ae87f007b45b0ccd63e6c354d92c4545fc099ea3e137e54492d1efdd822500001a6a09c7c83c50b34f9db560a2e14fef2eab5224c15b18c7114331756364bfce65ffe3800fdd8062400030c44656d6f637261745f77696e0e52657075626c6963616e5f77696e056f746865720161"))
+    val oracleInfo = EnumSingleOracleInfo(OracleAnnouncementTLV(
+      "fdd824b4caaec7479cc9d37003f5add6504d035054ffeac8637a990305a45cfecc1062044c3f68b45318f57e41c4544a4a950c0744e2a80854349a3426b00ad86da5090b9e942dc6df2ae87f007b45b0ccd63e6c354d92c4545fc099ea3e137e54492d1efdd822500001a6a09c7c83c50b34f9db560a2e14fef2eab5224c15b18c7114331756364bfce65ffe3800fdd8062400030c44656d6f637261745f77696e0e52657075626c6963616e5f77696e056f746865720161"))
 
-      val offerData = DLCOffer(
-        ContractInfo(contractDescriptor, oracleInfo),
-        dummyDLCKeys,
-        Satoshis(5000),
-        Vector(dummyFundingInputs.head),
-        dummyAddress,
-        payoutSerialId = UInt64.zero,
-        changeSerialId = UInt64.one,
-        fundOutputSerialId = UInt64.max,
-        SatoshisPerVirtualByte(Satoshis(3)),
-        dummyTimeouts
+    val offerData = DLCOffer(
+      ContractInfo(contractDescriptor, oracleInfo),
+      dummyDLCKeys,
+      Satoshis(5000),
+      Vector(dummyFundingInputs.head),
+      dummyAddress,
+      payoutSerialId = UInt64.zero,
+      changeSerialId = UInt64.one,
+      fundOutputSerialId = UInt64.max,
+      SatoshisPerVirtualByte(Satoshis(3)),
+      dummyTimeouts
+    )
+
+    val oracleSig = SchnorrDigitalSignature(
+      "a6a09c7c83c50b34f9db560a2e14fef2eab5224c15b18c7114331756364bfce6c59736cdcfe1e0a89064f846d5dbde0902f82688dde34dc1833965a60240f287")
+
+    val sig = OracleSignatures(oracleInfo, Vector(oracleSig))
+
+    for {
+      offer <- walletA.createDLCOffer(
+        offerData.contractInfo,
+        offerData.totalCollateral,
+        Some(offerData.feeRate),
+        offerData.timeouts.contractMaturity.toUInt32,
+        offerData.timeouts.contractTimeout.toUInt32
       )
+      _ = {
+        assert(offer.oracleInfo == offerData.oracleInfo)
+        assert(offer.contractInfo == offerData.contractInfo)
+        assert(offer.totalCollateral == offerData.totalCollateral)
+        assert(offer.feeRate == offerData.feeRate)
+        assert(offer.timeouts == offerData.timeouts)
+        assert(offer.fundingInputs.nonEmpty)
+        assert(offer.changeAddress.value.nonEmpty)
+      }
 
-      val oracleSig = SchnorrDigitalSignature(
-        "a6a09c7c83c50b34f9db560a2e14fef2eab5224c15b18c7114331756364bfce6c59736cdcfe1e0a89064f846d5dbde0902f82688dde34dc1833965a60240f287")
+      dlcId = calcDLCId(offer.fundingInputs.map(_.outPoint))
 
-      val sig = OracleSignatures(oracleInfo, Vector(oracleSig))
+      accept <- walletB.acceptDLCOffer(offer)
+      _ = {
+        assert(accept.fundingInputs.nonEmpty)
+        assert(accept.totalCollateral == offer.contractInfo.max - offer.totalCollateral)
+        assert(accept.changeAddress.value.nonEmpty)
+      }
 
-      for {
-        offer <- walletA.createDLCOffer(
-          offerData.contractInfo,
-          offerData.totalCollateral,
-          Some(offerData.feeRate),
-          offerData.timeouts.contractMaturity.toUInt32,
-          offerData.timeouts.contractTimeout.toUInt32
-        )
-        _ = {
-          assert(offer.oracleInfo == offerData.oracleInfo)
-          assert(offer.contractInfo == offerData.contractInfo)
-          assert(offer.totalCollateral == offerData.totalCollateral)
-          assert(offer.feeRate == offerData.feeRate)
-          assert(offer.timeouts == offerData.timeouts)
-          assert(offer.fundingInputs.nonEmpty)
-          assert(offer.changeAddress.value.nonEmpty)
-        }
+      sign <- walletA.signDLC(accept)
+      _ = {
+        assert(sign.fundingSigs.length == offerData.fundingInputs.size)
+      }
 
-        dlcId = calcDLCId(offer.fundingInputs.map(_.outPoint))
+      dlcDb <- walletB.addDLCSigs(sign)
+      outcomeSigs <- walletB.dlcSigsDAO.findByDLCId(dlcId)
 
-        accept <- walletB.acceptDLCOffer(offer)
-        _ = {
-          assert(accept.fundingInputs.nonEmpty)
-          assert(
-            accept.totalCollateral == offer.contractInfo.max - offer.totalCollateral)
-          assert(accept.changeAddress.value.nonEmpty)
-        }
+      refundSigsA <- walletA.dlcRefundSigDAO.findByDLCId(dlcId)
+      refundSigsB <- walletB.dlcRefundSigDAO.findByDLCId(dlcId)
 
-        sign <- walletA.signDLC(accept)
-        _ = {
-          assert(sign.fundingSigs.length == offerData.fundingInputs.size)
-        }
+      walletAChange <- walletA.addressDAO.read(offer.changeAddress)
+      walletAFinal <- walletA.addressDAO.read(offer.pubKeys.payoutAddress)
 
-        dlcDb <- walletB.addDLCSigs(sign)
-        outcomeSigs <- walletB.dlcSigsDAO.findByDLCId(dlcId)
+      walletBChange <- walletB.addressDAO.read(accept.changeAddress)
+      walletBFinal <- walletB.addressDAO.read(accept.pubKeys.payoutAddress)
 
-        refundSigsA <- walletA.dlcRefundSigDAO.findByDLCId(dlcId)
-        refundSigsB <- walletB.dlcRefundSigDAO.findByDLCId(dlcId)
+      _ = {
+        assert(dlcDb.contractIdOpt.get == sign.contractId)
 
-        walletAChange <- walletA.addressDAO.read(offer.changeAddress)
-        walletAFinal <- walletA.addressDAO.read(offer.pubKeys.payoutAddress)
+        assert(refundSigsA.isDefined)
+        assert(refundSigsB.isDefined)
+        assert(refundSigsA.get.initiatorSig.isDefined)
+        assert(refundSigsA.get.initiatorSig == refundSigsB.get.initiatorSig)
+        assert(refundSigsA.get.accepterSig == refundSigsB.get.accepterSig)
 
-        walletBChange <- walletB.addressDAO.read(accept.changeAddress)
-        walletBFinal <- walletB.addressDAO.read(accept.pubKeys.payoutAddress)
+        assert(sign.cetSigs.outcomeSigs.forall { case (outcome, sig) =>
+          outcomeSigs.exists(dbSig => (dbSig.sigPoint, dbSig.initiatorSig.get) == ((outcome, sig)))
+        })
 
-        _ = {
-          assert(dlcDb.contractIdOpt.get == sign.contractId)
+        // Test that the Addresses are in the wallet's database
+        assert(walletAChange.isDefined)
+        assert(walletAFinal.isDefined)
+        assert(walletBChange.isDefined)
+        assert(walletBFinal.isDefined)
+      }
 
-          assert(refundSigsA.isDefined)
-          assert(refundSigsB.isDefined)
-          assert(refundSigsA.get.initiatorSig.isDefined)
-          assert(refundSigsA.get.initiatorSig == refundSigsB.get.initiatorSig)
-          assert(refundSigsA.get.accepterSig == refundSigsB.get.accepterSig)
+      tx <- walletB.broadcastDLCFundingTx(sign.contractId)
+      _ <- walletA.processTransaction(tx, None)
 
-          assert(sign.cetSigs.outcomeSigs.forall { case (outcome, sig) =>
-            outcomeSigs.exists(dbSig =>
-              (dbSig.sigPoint, dbSig.initiatorSig.get) == ((outcome, sig)))
-          })
-
-          // Test that the Addresses are in the wallet's database
-          assert(walletAChange.isDefined)
-          assert(walletAFinal.isDefined)
-          assert(walletBChange.isDefined)
-          assert(walletBFinal.isDefined)
-        }
-
-        tx <- walletB.broadcastDLCFundingTx(sign.contractId)
-        _ <- walletA.processTransaction(tx, None)
-
-        func = (wallet: DLCWallet) => wallet.executeDLC(sign.contractId, sig)
-        result <- dlcExecutionTest(dlcA = walletA,
-                                   dlcB = walletB,
-                                   asInitiator = true,
-                                   func = func,
-                                   expectedOutputs = 1)
-      } yield assert(result)
+      func = (wallet: DLCWallet) => wallet.executeDLC(sign.contractId, sig)
+      result <- dlcExecutionTest(dlcA = walletA, dlcB = walletB, asInitiator = true, func = func, expectedOutputs = 1)
+    } yield assert(result)
   }
 
   it must "accept 2 offers with the same oracle info" in { wallets =>
@@ -852,8 +789,7 @@ class WalletDLCSetupTest extends BitcoinSDualWalletTest {
         UInt32.max
       )
       accept <- walletB.acceptDLCOffer(offer)
-      res <- recoverToSucceededIf[IllegalArgumentException](
-        walletB.signDLC(accept))
+      res <- recoverToSucceededIf[IllegalArgumentException](walletB.signDLC(accept))
     } yield res
   }
 

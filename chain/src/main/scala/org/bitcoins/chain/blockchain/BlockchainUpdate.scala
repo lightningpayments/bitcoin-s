@@ -28,10 +28,7 @@ object BlockchainUpdate {
     * with a height assigned to it this happens after
     * calling [[org.bitcoins.chain.blockchain.ChainHandler.processHeaders ChainHandler.processHeaders]]
     */
-  case class Successful(
-      blockchain: Blockchain,
-      successfulHeaders: Vector[BlockHeaderDb])
-      extends BlockchainUpdate {
+  case class Successful(blockchain: Blockchain, successfulHeaders: Vector[BlockHeaderDb]) extends BlockchainUpdate {
     if (successfulHeaders.nonEmpty) {
       require(
         blockchain.tip == successfulHeaders.head,
@@ -51,9 +48,7 @@ object BlockchainUpdate {
       failedHeader: BlockHeader,
       tipUpdateFailure: TipUpdateResult.Failure)
       extends BlockchainUpdate {
-    require(
-      !blockchain.contains(failedHeader),
-      s"Our blockchain should not contain the failed header=${failedHeader}")
+    require(!blockchain.contains(failedHeader), s"Our blockchain should not contain the failed header=${failedHeader}")
 
     if (successfulHeaders.nonEmpty) {
       require(

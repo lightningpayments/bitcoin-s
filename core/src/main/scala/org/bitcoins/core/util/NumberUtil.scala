@@ -17,9 +17,7 @@ sealed abstract class NumberUtil extends CryptoNumberUtil {
 
   /** Takes 2^^num. */
   def pow2(exponent: Int): BigInt = {
-    require(
-      exponent < 64,
-      "We cannot have anything larger than 2^64 - 1 in a long, you tried to do 2^" + exponent)
+    require(exponent < 64, "We cannot have anything larger than 2^64 - 1 in a long, you tried to do 2^" + exponent)
     BigInt(1) << exponent
   }
 
@@ -52,14 +50,11 @@ sealed abstract class NumberUtil extends CryptoNumberUtil {
     val eight = UInt32(8)
     val fromU8 = UInt8(from.toLong.toShort)
     if (from > eight || to > eight) {
-      Failure(
-        new IllegalArgumentException(
-          "Can't have convert bits 'from' or 'to' parameter greater than 8"))
+      Failure(new IllegalArgumentException("Can't have convert bits 'from' or 'to' parameter greater than 8"))
     } else {
       data.map { h: UInt8 =>
         if ((h >> fromU8.toInt) != UInt8.zero) {
-          Failure(
-            new IllegalArgumentException("Invalid input for bech32: " + h))
+          Failure(new IllegalArgumentException("Invalid input for bech32: " + h))
         } else {
           acc = (acc << from) | UInt32(h.toLong)
           bits = bits + from
@@ -106,9 +101,7 @@ sealed abstract class NumberUtil extends CryptoNumberUtil {
 
   }
 
-  def convertUInt5sToUInt8(
-      u5s: Vector[UInt5],
-      pad: Boolean = false): Vector[UInt8] = {
+  def convertUInt5sToUInt8(u5s: Vector[UInt5], pad: Boolean = false): Vector[UInt8] = {
     val u8s = u5s.map(_.toUInt8)
     val u8sTry =
       NumberUtil.convert[UInt8](u8s,
@@ -374,8 +367,7 @@ sealed abstract class NumberUtil extends CryptoNumberUtil {
     ByteVector(bytes)
   }
 
-  def lexicographicalOrdering[T](implicit
-      ord: Ordering[T]): Ordering[Vector[T]] = {
+  def lexicographicalOrdering[T](implicit ord: Ordering[T]): Ordering[Vector[T]] = {
     new Ordering[Vector[T]] {
       override def compare(x: Vector[T], y: Vector[T]): Int = {
         val xe = x.iterator
@@ -395,12 +387,8 @@ sealed abstract class NumberUtil extends CryptoNumberUtil {
     * @see https://github.com/scala/scala/blob/4aae0b91cd266f02b9f3d911db49381a300b5103/src/library/scala/collection/IndexedSeq.scala#L117
     */
   @tailrec
-  final def search[A, B >: A, Wrapper](
-      seq: IndexedSeq[Wrapper],
-      elem: B,
-      from: Int,
-      to: Int,
-      unwrap: Wrapper => A)(implicit ord: Ordering[B]): Int = {
+  final def search[A, B >: A, Wrapper](seq: IndexedSeq[Wrapper], elem: B, from: Int, to: Int, unwrap: Wrapper => A)(
+      implicit ord: Ordering[B]): Int = {
     if (from < 0) search(seq, elem, from = 0, to, unwrap)
     else if (to > seq.length) search(seq, elem, from, seq.length, unwrap)
     else if (to <= from) from
@@ -414,20 +402,16 @@ sealed abstract class NumberUtil extends CryptoNumberUtil {
     }
   }
 
-  def search[A, B >: A, Wrapper](
-      seq: IndexedSeq[Wrapper],
-      elem: B,
-      unwrap: Wrapper => A)(implicit ord: Ordering[B]): Int = {
+  def search[A, B >: A, Wrapper](seq: IndexedSeq[Wrapper], elem: B, unwrap: Wrapper => A)(implicit
+      ord: Ordering[B]): Int = {
     search(seq, elem, from = 0, to = seq.length, unwrap)
   }
 
-  def search[A, B >: A](seq: IndexedSeq[A], elem: B, from: Int, to: Int)(
-      implicit ord: Ordering[B]): Int = {
+  def search[A, B >: A](seq: IndexedSeq[A], elem: B, from: Int, to: Int)(implicit ord: Ordering[B]): Int = {
     search(seq, elem, from, to, identity[A])
   }
 
-  def search[A, B >: A](seq: IndexedSeq[A], elem: B)(implicit
-      ord: Ordering[B]): Int = {
+  def search[A, B >: A](seq: IndexedSeq[A], elem: B)(implicit ord: Ordering[B]): Int = {
     search(seq, elem, from = 0, to = seq.length)
   }
 }

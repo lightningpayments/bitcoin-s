@@ -32,23 +32,21 @@ trait V20MultisigRpc extends MultisigRpc { self: Client =>
       }
 
     val params =
-      List(JsNumber(minSignatures),
-           JsArray(keys.map(keyToString)),
-           JsString(account)) ++ addressType.map(Json.toJson(_)).toList
+      List(JsNumber(minSignatures), JsArray(keys.map(keyToString)), JsString(account)) ++ addressType
+        .map(Json.toJson(_))
+        .toList
 
     self.version.flatMap {
       case V20 | V21 | Unknown =>
         bitcoindCall[MultiSigResultPostV20]("addmultisigaddress", params)
       case version @ (V16 | V17 | V18 | V19 | Experimental) =>
-        throw new RuntimeException(
-          s"Cannot use v20MultisigRpc on an older version, got $version")
+        throw new RuntimeException(s"Cannot use v20MultisigRpc on an older version, got $version")
     }
   }
 
   override def addMultiSigAddress(
       minSignatures: Int,
-      keys: Vector[Either[ECPublicKey, P2PKHAddress]]): Future[
-    MultiSigResultPostV20] =
+      keys: Vector[Either[ECPublicKey, P2PKHAddress]]): Future[MultiSigResultPostV20] =
     addMultiSigAddress(minSignatures, keys, addressType = None)
 
   override def addMultiSigAddress(
@@ -76,13 +74,11 @@ trait V20MultisigRpc extends MultisigRpc { self: Client =>
       walletNameOpt: Option[String] = None): Future[MultiSigResultPostV20] = {
     self.version.flatMap {
       case V20 | V21 | Unknown =>
-        bitcoindCall[MultiSigResultPostV20](
-          "createmultisig",
-          List(JsNumber(minSignatures), Json.toJson(keys.map(_.hex))),
-          uriExtensionOpt = walletNameOpt.map(walletExtension))
+        bitcoindCall[MultiSigResultPostV20]("createmultisig",
+                                            List(JsNumber(minSignatures), Json.toJson(keys.map(_.hex))),
+                                            uriExtensionOpt = walletNameOpt.map(walletExtension))
       case version @ (V16 | V17 | V18 | V19 | Experimental) =>
-        throw new RuntimeException(
-          s"Cannot use v20MultisigRpc on an older version, got $version")
+        throw new RuntimeException(s"Cannot use v20MultisigRpc on an older version, got $version")
     }
   }
 }

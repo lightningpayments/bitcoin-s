@@ -18,10 +18,7 @@ import org.bitcoins.core.crypto.ECPrivateKeyUtil
 import org.bitcoins.core.util.StartStopAsync
 import org.bitcoins.crypto.{ECPrivateKey, ECPrivateKeyBytes}
 import org.bitcoins.rpc.BitcoindException
-import org.bitcoins.rpc.config.BitcoindAuthCredentials.{
-  CookieBased,
-  PasswordBased
-}
+import org.bitcoins.rpc.config.BitcoindAuthCredentials.{CookieBased, PasswordBased}
 import org.bitcoins.rpc.config.{
   BitcoindAuthCredentials,
   BitcoindInstance,
@@ -46,10 +43,7 @@ import scala.util.{Failure, Success}
   * client, like data directories, log files
   * and whether or not the client is started.
   */
-trait Client
-    extends Logging
-    with StartStopAsync[BitcoindRpcClient]
-    with NativeProcessFactory {
+trait Client extends Logging with StartStopAsync[BitcoindRpcClient] with NativeProcessFactory {
   def version: Future[BitcoindVersion]
   protected val instance: BitcoindInstance
 
@@ -133,8 +127,7 @@ trait Client
   override lazy val cmd: String = {
     instance match {
       case _: BitcoindInstanceRemote =>
-        logger.warn(
-          s"Cannot start remote instance with local binary command. You've likely misconfigured something")
+        logger.warn(s"Cannot start remote instance with local binary command. You've likely misconfigured something")
         ""
       case local: BitcoindInstanceLocal =>
         val binaryPath = local.binary.getAbsolutePath
@@ -142,8 +135,7 @@ trait Client
                        "-datadir=" + local.datadir,
                        "-rpcport=" + instance.rpcUri.getPort,
                        "-port=" + instance.uri.getPort)
-        logger.debug(
-          s"starting bitcoind with datadir ${local.datadir} and binary path $binaryPath")
+        logger.debug(s"starting bitcoind with datadir ${local.datadir} and binary path $binaryPath")
 
         cmd.mkString(" ")
 
@@ -179,8 +171,7 @@ trait Client
       case false =>
         instance match {
           case _: BitcoindInstanceRemote =>
-            sys.error(
-              s"Cannot start a remote instance, it needs to be started on the remote host machine")
+            sys.error(s"Cannot start a remote instance, it needs to be started on the remote host machine")
           case local: BitcoindInstanceLocal =>
             val versionCheckF = version.map { v =>
               if (v != BitcoindVersion.Unknown) {
@@ -198,9 +189,7 @@ trait Client
               _ <- startedF
               _ <- awaitCookie(instance.authCredentials)
               _ = isStartedFlag.set(true)
-              _ <- AsyncUtil.retryUntilSatisfiedF(() => isStartedF,
-                                                  interval = 1.seconds,
-                                                  maxTries = 120)
+              _ <- AsyncUtil.retryUntilSatisfiedF(() => isStartedF, interval = 1.seconds, maxTries = 120)
             } yield this.asInstanceOf[BitcoindRpcClient]
         }
       case true =>
@@ -213,8 +202,7 @@ trait Client
     started.onComplete {
       case Success(_) => logger.debug(s"started bitcoind")
       case Failure(exc) =>
-        logger.info(
-          s"Could not start bitcoind instance! Message: ${exc.getMessage}")
+        logger.info(s"Could not start bitcoind instance! Message: ${exc.getMessage}")
         // When we're unable to start bitcoind that's most likely
         // either a configuration error or bug in Bitcoin-S. In either
         // case it's much easier to debug this with conf and logs
@@ -262,8 +250,7 @@ trait Client
     }
 
     parsedF.recover {
-      case exc: StreamTcpException
-          if exc.getMessage.contains("Connection refused") =>
+      case exc: StreamTcpException if exc.getMessage.contains("Connection refused") =>
         false
       case _: JsonParseException =>
         //see https://github.com/bitcoin-s/bitcoin-s/issues/527
@@ -368,9 +355,7 @@ trait Client
       params: JsArray,
       uriExtensionOpt: Option[String] = None): HttpRequest = {
     val uuid = UUID.randomUUID().toString
-    val m: Map[String, JsValue] = Map("method" -> JsString(methodName),
-                                      "params" -> params,
-                                      "id" -> JsString(uuid))
+    val m: Map[String, JsValue] = Map("method" -> JsString(methodName), "params" -> params, "id" -> JsString(uuid))
 
     val jsObject = JsObject(m)
 
@@ -381,12 +366,10 @@ trait Client
       "http://" + instance.rpcUri.getHost + ":" + instance.rpcUri.getPort + uriExtension
     val username = instance.authCredentials.username
     val password = instance.authCredentials.password
-    HttpRequest(
-      method = HttpMethods.POST,
-      uri,
-      entity = HttpEntity(ContentTypes.`application/json`, jsObject.toString()))
-      .addCredentials(
-        HttpCredentials.createBasicHttpCredentials(username, password))
+    HttpRequest(method = HttpMethods.POST,
+                uri,
+                entity = HttpEntity(ContentTypes.`application/json`, jsObject.toString()))
+      .addCredentials(HttpCredentials.createBasicHttpCredentials(username, password))
   }
 
   /** Cached http client to send requests to bitcoind with */
@@ -395,11 +378,9 @@ trait Client
   private lazy val httpConnectionPoolSettings: ConnectionPoolSettings = {
     instance match {
       case remote: BitcoindInstanceRemote =>
-        Socks5ClientTransport.createConnectionPoolSettings(instance.rpcUri,
-                                                           remote.proxyParams)
+        Socks5ClientTransport.createConnectionPoolSettings(instance.rpcUri, remote.proxyParams)
       case _: BitcoindInstanceLocal =>
-        Socks5ClientTransport.createConnectionPoolSettings(instance.rpcUri,
-                                                           None)
+        Socks5ClientTransport.createConnectionPoolSettings(instance.rpcUri, None)
     }
   }
 
@@ -446,17 +427,13 @@ trait Client
             val errString =
               s"Error when parsing result of '$command': ${JsError.toJson(res).toString}!"
             if (printError) logger.error(errString + s"JSON: $jsonResult")
-            throw new IllegalArgumentException(
-              s"Could not parse JsResult: $jsonResult! Error: $errString")
+            throw new IllegalArgumentException(s"Could not parse JsResult: $jsonResult! Error: $errString")
         }
     }
   }
 
   // Catches errors thrown by calls with Unit as the expected return type (which isn't handled by UnitReads)
-  private def checkUnitError[T](
-      result: JsResult[T],
-      json: JsValue,
-      printError: Boolean): Unit = {
+  private def checkUnitError[T](result: JsResult[T], json: JsValue, printError: Boolean): Unit = {
     if (result == JsSuccess(())) {
       (json \ errorKey).validate[BitcoindException] match {
         case JsSuccess(err, _) =>

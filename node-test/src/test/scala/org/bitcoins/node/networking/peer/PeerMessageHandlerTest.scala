@@ -6,11 +6,7 @@ import org.bitcoins.server.BitcoinSAppConfig
 import org.bitcoins.testkit.BitcoinSTestAppConfig
 import org.bitcoins.testkit.async.TestAsyncUtil
 import org.bitcoins.testkit.chain.ChainUnitTest
-import org.bitcoins.testkit.node.{
-  CachedBitcoinSAppConfig,
-  NodeTestWithCachedBitcoindNewest,
-  NodeUnitTest
-}
+import org.bitcoins.testkit.node.{CachedBitcoinSAppConfig, NodeTestWithCachedBitcoindNewest, NodeUnitTest}
 import org.bitcoins.testkit.util.TorUtil
 import org.scalatest.{FutureOutcome, Outcome}
 
@@ -19,9 +15,7 @@ import scala.concurrent.duration.DurationInt
 
 /** Created by chris on 7/1/16.
   */
-class PeerMessageHandlerTest
-    extends NodeTestWithCachedBitcoindNewest
-    with CachedBitcoinSAppConfig {
+class PeerMessageHandlerTest extends NodeTestWithCachedBitcoindNewest with CachedBitcoinSAppConfig {
 
   /** Wallet config with data directory set to user temp directory */
   override protected def getFreshConfig: BitcoinSAppConfig =
@@ -66,8 +60,7 @@ class PeerMessageHandlerTest
 
       _ = peerMsgSender.connect()
 
-      _ <- TestAsyncUtil.retryUntilSatisfiedF(() => p2pClient.isConnected(),
-                                              interval = 500.millis)
+      _ <- TestAsyncUtil.retryUntilSatisfiedF(() => p2pClient.isConnected(), interval = 500.millis)
 
       _ <- TestAsyncUtil.retryUntilSatisfiedF(() => p2pClient.isInitialized())
       _ <- peerMsgSender.disconnect()

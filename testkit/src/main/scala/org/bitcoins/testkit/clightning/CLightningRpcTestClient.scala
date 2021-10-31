@@ -5,11 +5,7 @@ import com.bitcoins.clightning.rpc.CLightningRpcClient
 import com.bitcoins.clightning.rpc.config.CLightningInstanceLocal
 import org.bitcoins.rpc.client.common.BitcoindRpcClient
 import org.bitcoins.testkit.async.TestAsyncUtil
-import org.bitcoins.testkit.util.{
-  RpcBinaryUtil,
-  SbtBinaryFactory,
-  TestkitBinaries
-}
+import org.bitcoins.testkit.util.{RpcBinaryUtil, SbtBinaryFactory, TestkitBinaries}
 
 import java.io.File
 import java.nio.file.{Files, Path}
@@ -17,12 +13,10 @@ import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt
 
 /** Helper class to start a clightning client with the given binary */
-case class CLightningRpcTestClient(
-    override val binary: Path,
-    bitcoindOpt: Option[BitcoindRpcClient])(implicit system: ActorSystem)
+case class CLightningRpcTestClient(override val binary: Path, bitcoindOpt: Option[BitcoindRpcClient])(implicit
+    system: ActorSystem)
     extends RpcBinaryUtil[CLightningRpcClient] {
-  require(Files.exists(binary),
-          s"Path did not exist! got=${binary.toAbsolutePath.toString}")
+  require(Files.exists(binary), s"Path did not exist! got=${binary.toAbsolutePath.toString}")
   import system.dispatcher
 
   /** Cached client. This is defined if start() has been called
@@ -56,10 +50,9 @@ case class CLightningRpcTestClient(
 
           _ <- clightning.start()
           // wait for rpc server to start
-          _ <- TestAsyncUtil.awaitCondition(
-            () => clightning.instance.rpcFile.exists(),
-            interval = 1.second,
-            maxTries = 500)
+          _ <- TestAsyncUtil.awaitCondition(() => clightning.instance.rpcFile.exists(),
+                                            interval = 1.second,
+                                            maxTries = 500)
           _ <- TestAsyncUtil.nonBlockingSleep(7.seconds)
         } yield {
           clientOpt = Some(clightning)
@@ -72,8 +65,7 @@ case class CLightningRpcTestClient(
     clientOpt match {
       case Some(cli) => cli.stop()
       case None =>
-        Future.failed(
-          new RuntimeException(s"CLightningRpcClient was not defined!"))
+        Future.failed(new RuntimeException(s"CLightningRpcClient was not defined!"))
     }
   }
 }
@@ -89,21 +81,17 @@ object CLightningRpcTestClient extends SbtBinaryFactory {
       clightningVersionOpt: Option[String] = None
   )(implicit system: ActorSystem): Option[CLightningRpcTestClient] = {
     val fileOpt =
-      getBinary(clightningVersionOpt = clightningVersionOpt,
-                binaryDirectory = sbtBinaryDirectory)
+      getBinary(clightningVersionOpt = clightningVersionOpt, binaryDirectory = sbtBinaryDirectory)
 
     for {
       file <- fileOpt
     } yield CLightningRpcTestClient(binary = file.toPath, bitcoindRpcClientOpt)
   }
 
-  def fromSbtDownload(
-      bitcoindRpcClientOpt: Option[BitcoindRpcClient],
-      clightningVersionOpt: Option[String] = None)(implicit
-      system: ActorSystem): CLightningRpcTestClient = {
-    val clightningOpt = fromSbtDownloadOpt(
-      bitcoindRpcClientOpt = bitcoindRpcClientOpt,
-      clightningVersionOpt = clightningVersionOpt)
+  def fromSbtDownload(bitcoindRpcClientOpt: Option[BitcoindRpcClient], clightningVersionOpt: Option[String] = None)(
+      implicit system: ActorSystem): CLightningRpcTestClient = {
+    val clightningOpt =
+      fromSbtDownloadOpt(bitcoindRpcClientOpt = bitcoindRpcClientOpt, clightningVersionOpt = clightningVersionOpt)
     clightningOpt match {
       case Some(client) => client
       case None =>
@@ -115,9 +103,7 @@ object CLightningRpcTestClient extends SbtBinaryFactory {
   }
 
   /** Path to executable downloaded for clightning, if it exists */
-  def getBinary(
-      clightningVersionOpt: Option[String],
-      binaryDirectory: Path): Option[File] = {
+  def getBinary(clightningVersionOpt: Option[String], binaryDirectory: Path): Option[File] = {
     val versionStr = clightningVersionOpt.getOrElse(CLightningRpcClient.version)
 
     val path = binaryDirectory

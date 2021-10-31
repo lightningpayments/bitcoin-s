@@ -49,15 +49,7 @@ trait WalletDAOFixture extends BitcoinSFixture with EmbeddedPg {
     val outgoingTx = OutgoingTransactionDAO()
     val scriptPubKey = ScriptPubKeyDAO()
     val stateDescriptorDAO = WalletStateDescriptorDAO()
-    WalletDAOs(account,
-               address,
-               tags,
-               utxo,
-               tx,
-               incomingTx,
-               outgoingTx,
-               scriptPubKey,
-               stateDescriptorDAO)
+    WalletDAOs(account, address, tags, utxo, tx, incomingTx, outgoingTx, scriptPubKey, stateDescriptorDAO)
   }
 
   override def withFixture(test: OneArgAsyncTest): FutureOutcome = {

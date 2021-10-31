@@ -33,9 +33,7 @@ class AcceptOfferDialog extends CliCommandProducer[AcceptDLCCliCommand] {
 
   private var dialogOpt: Option[Dialog[Option[AcceptDLCCliCommand]]] = None
 
-  def showAndWait(
-      parentWindow: Window,
-      hex: String = ""): Option[AcceptDLCCliCommand] = {
+  def showAndWait(parentWindow: Window, hex: String = ""): Option[AcceptDLCCliCommand] = {
     val dialog = new Dialog[Option[AcceptDLCCliCommand]]() {
       initOwner(parentWindow)
       title = "Accept DLC Offer"
@@ -146,8 +144,7 @@ class AcceptOfferDialog extends CliCommandProducer[AcceptDLCCliCommand] {
 
       gridPane.add(
         new Label("Your Collateral") {
-          tooltip =
-            Tooltip("How much funds you will be putting up for this DLC.")
+          tooltip = Tooltip("How much funds you will be putting up for this DLC.")
           tooltip.value.setShowDelay(new javafx.util.Duration(100))
         },
         0,
@@ -190,8 +187,7 @@ class AcceptOfferDialog extends CliCommandProducer[AcceptDLCCliCommand] {
               new TextField() {
                 text = satoshis.toString
                 editable = false
-                tooltip = Tooltip(
-                  s"""Amount you will win if the oracle signs for "$str".""")
+                tooltip = Tooltip(s"""Amount you will win if the oracle signs for "$str".""")
                 tooltip.value.setShowDelay(new javafx.util.Duration(100))
               },
               1,
@@ -206,12 +202,11 @@ class AcceptOfferDialog extends CliCommandProducer[AcceptDLCCliCommand] {
 
           val previewGraphButton: Button = new Button("Preview Graph") {
             onAction = _ => {
-              DLCPlotUtil.plotCETsWithOriginalCurve(
-                base = 2,
-                descriptor.numDigits,
-                descriptor.outcomeValueFunc,
-                offer.contractInfo.totalCollateral,
-                RoundingIntervals.fromTLV(v1.roundingIntervals))
+              DLCPlotUtil.plotCETsWithOriginalCurve(base = 2,
+                                                    descriptor.numDigits,
+                                                    descriptor.outcomeValueFunc,
+                                                    offer.contractInfo.totalCollateral,
+                                                    RoundingIntervals.fromTLV(v1.roundingIntervals))
               ()
             }
           }
@@ -223,8 +218,7 @@ class AcceptOfferDialog extends CliCommandProducer[AcceptDLCCliCommand] {
 
       gridPane.add(
         new Label("Fee Rate") {
-          tooltip = Tooltip(
-            "Fee rate to be used for both funding and closing transactions.")
+          tooltip = Tooltip("Fee rate to be used for both funding and closing transactions.")
           tooltip.value.setShowDelay(new javafx.util.Duration(100))
         },
         0,
@@ -240,8 +234,7 @@ class AcceptOfferDialog extends CliCommandProducer[AcceptDLCCliCommand] {
 
       gridPane.add(
         new Label("Refund Date") {
-          tooltip = Tooltip(
-            "If no oracle signatures are given, the DLC can be refunded after this date.")
+          tooltip = Tooltip("If no oracle signatures are given, the DLC can be refunded after this date.")
           tooltip.value.setShowDelay(new javafx.util.Duration(100))
         },
         0,
@@ -260,9 +253,7 @@ class AcceptOfferDialog extends CliCommandProducer[AcceptDLCCliCommand] {
 
     def onOfferKeyTyped() = {
       if (!dlcDetailsShown) {
-        Try(
-          LnMessageFactory(DLCOfferTLV).fromHex(
-            offerTLVTF.text.value.trim)) match {
+        Try(LnMessageFactory(DLCOfferTLV).fromHex(offerTLVTF.text.value.trim)) match {
           case Failure(_) => ()
           case Success(lnMessage) =>
             dlcDetailsShown = true

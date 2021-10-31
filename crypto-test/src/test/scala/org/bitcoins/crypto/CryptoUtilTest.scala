@@ -70,23 +70,21 @@ class CryptoUtilTest extends BitcoinSCryptoTest {
   }
 
   it must "recover the 2 public keys from a digital signature" in {
-    forAll(CryptoGenerators.privateKey, CryptoGenerators.sha256Digest) {
-      case (privKey, hash) =>
-        val pubKey = privKey.publicKey
-        val message = hash.bytes
-        val sig = privKey.sign(message)
-        val (recovPub1, recovPub2) = CryptoUtil.recoverPublicKey(sig, message)
-        assert(recovPub1 == pubKey || recovPub2 == pubKey)
+    forAll(CryptoGenerators.privateKey, CryptoGenerators.sha256Digest) { case (privKey, hash) =>
+      val pubKey = privKey.publicKey
+      val message = hash.bytes
+      val sig = privKey.sign(message)
+      val (recovPub1, recovPub2) = CryptoUtil.recoverPublicKey(sig, message)
+      assert(recovPub1 == pubKey || recovPub2 == pubKey)
     }
   }
 
   it must "be able to recover and verify a siganture for a message" in {
-    forAll(CryptoGenerators.privateKey, CryptoGenerators.sha256Digest) {
-      (privKey, hash) =>
-        val message = hash.bytes
-        val sig = privKey.sign(message)
-        val (recovPub1, recovPub2) = CryptoUtil.recoverPublicKey(sig, message)
-        assert(recovPub1.verify(message, sig) && recovPub2.verify(message, sig))
+    forAll(CryptoGenerators.privateKey, CryptoGenerators.sha256Digest) { (privKey, hash) =>
+      val message = hash.bytes
+      val sig = privKey.sign(message)
+      val (recovPub1, recovPub2) = CryptoUtil.recoverPublicKey(sig, message)
+      assert(recovPub1.verify(message, sig) && recovPub2.verify(message, sig))
     }
   }
 
@@ -142,14 +140,12 @@ class CryptoUtilTest extends BitcoinSCryptoTest {
 
     val nonComposite = "fi"
     assert(
-      CryptoUtil.serializeForHash(nonComposite) == ByteVector.fromValidHex(
-        "6669")
+      CryptoUtil.serializeForHash(nonComposite) == ByteVector.fromValidHex("6669")
     )
 
     val accentString = "éléphant"
     assert(
-      CryptoUtil.serializeForHash(accentString) == ByteVector.fromValidHex(
-        "c3a96cc3a97068616e74")
+      CryptoUtil.serializeForHash(accentString) == ByteVector.fromValidHex("c3a96cc3a97068616e74")
     )
   }
 
@@ -159,24 +155,21 @@ class CryptoUtilTest extends BitcoinSCryptoTest {
     assert(
       singletons
         .map(CryptoUtil.sha256)
-        .forall(_ == Sha256Digest(
-          "0a94dc9d420d1142d6b71de60f9bf7e2f345a4d62c9f141b091539769ddf3075"))
+        .forall(_ == Sha256Digest("0a94dc9d420d1142d6b71de60f9bf7e2f345a4d62c9f141b091539769ddf3075"))
     )
 
     val canonicalComposites = Vector("\u00f4", "\u006f\u0302")
     assert(
       canonicalComposites
         .map(CryptoUtil.sha256)
-        .forall(_ == Sha256Digest(
-          "cc912dbca598fd80ca7f5d98ece5d846b447f4a9ae3f73c352e2687eb293eef5"))
+        .forall(_ == Sha256Digest("cc912dbca598fd80ca7f5d98ece5d846b447f4a9ae3f73c352e2687eb293eef5"))
     )
 
     val multipleCombiningMarks = Vector("\u1e69", "\u0073\u0323\u0307")
     assert(
       multipleCombiningMarks
         .map(CryptoUtil.sha256)
-        .forall(_ == Sha256Digest(
-          "ceca1ea456e95ee498463622915209bb08a018e8ee9741b46b64ef1a08fb56ab"))
+        .forall(_ == Sha256Digest("ceca1ea456e95ee498463622915209bb08a018e8ee9741b46b64ef1a08fb56ab"))
     )
 
     val compatibilityComposite = "\ufb01"

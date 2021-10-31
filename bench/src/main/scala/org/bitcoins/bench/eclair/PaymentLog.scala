@@ -3,11 +3,7 @@ package org.bitcoins.bench.eclair
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.BiFunction
 
-import org.bitcoins.commons.jsonmodels.eclair.WebSocketEvent.{
-  PaymentFailed,
-  PaymentReceived,
-  PaymentSent
-}
+import org.bitcoins.commons.jsonmodels.eclair.WebSocketEvent.{PaymentFailed, PaymentReceived, PaymentSent}
 import org.bitcoins.commons.jsonmodels.eclair.{PaymentId, WebSocketEvent}
 import org.bitcoins.core.seqUtil
 import org.bitcoins.crypto.Sha256Digest
@@ -25,8 +21,7 @@ object PaymentLog {
       eventReceivedAt: Long = 0) {
 
     def withPaymentHash(paymentHash: Sha256Digest): PaymentLogEntry =
-      copy(paymentHash = Some(paymentHash),
-           paymentSentAt = System.currentTimeMillis())
+      copy(paymentHash = Some(paymentHash), paymentSentAt = System.currentTimeMillis())
 
     def withPaymentId(id: PaymentId): PaymentLogEntry =
       copy(id = Some(id), paymentIdReceivedAt = System.currentTimeMillis())
@@ -46,8 +41,7 @@ object PaymentLog {
                 case Some(part) =>
                   part.timestamp.toEpochMilli
                 case None =>
-                  throw new RuntimeException(
-                    s"PaymentReceived but with no parts, got $e")
+                  throw new RuntimeException(s"PaymentReceived but with no parts, got $e")
               }
             case PaymentFailed(_, _, _, timestamp) => timestamp.toEpochMilli
             case _: WebSocketEvent =>
@@ -67,8 +61,7 @@ object PaymentLog {
   object PaymentLogEntry {
 
     def apply(paymentHash: Sha256Digest): PaymentLogEntry = {
-      PaymentLogEntry(paymentSentAt = System.currentTimeMillis(),
-                      paymentHash = Some(paymentHash))
+      PaymentLogEntry(paymentSentAt = System.currentTimeMillis(), paymentHash = Some(paymentHash))
     }
   }
 
@@ -85,15 +78,11 @@ object PaymentLog {
     entry
   }
 
-  def logPaymentId(
-      paymentHash: Sha256Digest,
-      paymentId: PaymentId): PaymentLogEntry = {
+  def logPaymentId(paymentHash: Sha256Digest, paymentId: PaymentId): PaymentLogEntry = {
     paymentLog.compute(
       paymentHash,
       new BiFunction[Sha256Digest, PaymentLogEntry, PaymentLogEntry] {
-        override def apply(
-            hash: Sha256Digest,
-            old: PaymentLogEntry): PaymentLogEntry = {
+        override def apply(hash: Sha256Digest, old: PaymentLogEntry): PaymentLogEntry = {
           val log = if (old == null) {
             PaymentLogEntry(paymentSentAt = 0, paymentHash = Some(hash))
           } else {
@@ -119,9 +108,7 @@ object PaymentLog {
     val entry = paymentLog.compute(
       hash,
       new BiFunction[Sha256Digest, PaymentLogEntry, PaymentLogEntry] {
-        override def apply(
-            hash: Sha256Digest,
-            old: PaymentLogEntry): PaymentLogEntry = {
+        override def apply(hash: Sha256Digest, old: PaymentLogEntry): PaymentLogEntry = {
           val log = if (old == null) {
             PaymentLogEntry(paymentSentAt = 0, paymentHash = Some(hash))
           } else {
@@ -134,9 +121,7 @@ object PaymentLog {
     promises.compute(
       hash,
       new BiFunction[Sha256Digest, Promise[Unit], Promise[Unit]] {
-        override def apply(
-            hash: Sha256Digest,
-            old: Promise[Unit]): Promise[Unit] = {
+        override def apply(hash: Sha256Digest, old: Promise[Unit]): Promise[Unit] = {
           val promise = if (old == null) {
             Promise[Unit]()
           } else {

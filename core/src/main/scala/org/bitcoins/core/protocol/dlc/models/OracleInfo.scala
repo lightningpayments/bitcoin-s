@@ -29,8 +29,7 @@ sealed trait NumericOracleInfo extends OracleInfo {
   override def singleOracleInfos: Vector[NumericSingleOracleInfo]
 }
 
-object OracleInfo
-    extends TLVDeserializable[OracleInfoTLV, OracleInfo](OracleInfoTLV) {
+object OracleInfo extends TLVDeserializable[OracleInfoTLV, OracleInfo](OracleInfoTLV) {
 
   override def fromTLV(tlv: OracleInfoTLV): OracleInfo = {
     tlv match {
@@ -42,22 +41,16 @@ object OracleInfo
 
   def getOracleParamsOpt(oracleInfo: OracleInfo): Option[OracleParamsV0TLV] = {
     oracleInfo match {
-      case _: SingleOracleInfo | _: NumericExactMultiOracleInfo |
-          _: EnumMultiOracleInfo =>
+      case _: SingleOracleInfo | _: NumericExactMultiOracleInfo | _: EnumMultiOracleInfo =>
         None
       case numeric: NumericMultiOracleInfo =>
-        Some(
-          OracleParamsV0TLV(numeric.maxErrorExp,
-                            numeric.minFailExp,
-                            numeric.maximizeCoverage))
+        Some(OracleParamsV0TLV(numeric.maxErrorExp, numeric.minFailExp, numeric.maximizeCoverage))
     }
   }
 }
 
 /** Specifies a single oracles' information through an announcement */
-sealed trait SingleOracleInfo
-    extends OracleInfo
-    with TLVSerializable[OracleInfoV0TLV] {
+sealed trait SingleOracleInfo extends OracleInfo with TLVSerializable[OracleInfoV0TLV] {
   override val numOracles: Int = 1
   override val threshold: Int = 1
 
@@ -93,9 +86,7 @@ sealed trait SingleOracleInfo
   override def toTLV: OracleInfoV0TLV = OracleInfoV0TLV(announcement)
 }
 
-object SingleOracleInfo
-    extends TLVDeserializable[OracleInfoV0TLV, SingleOracleInfo](
-      OracleInfoV0TLV) {
+object SingleOracleInfo extends TLVDeserializable[OracleInfoV0TLV, SingleOracleInfo](OracleInfoV0TLV) {
 
   def apply(announcement: OracleAnnouncementTLV): SingleOracleInfo = {
     announcement.eventTLV.eventDescriptor match {
@@ -118,9 +109,7 @@ object SingleOracleInfo
 /** Specifies a single oracles' information for an Enumerated Outcome DLC
   * through an announcement
   */
-case class EnumSingleOracleInfo(announcement: OracleAnnouncementTLV)
-    extends SingleOracleInfo
-    with EnumOracleInfo {
+case class EnumSingleOracleInfo(announcement: OracleAnnouncementTLV) extends SingleOracleInfo with EnumOracleInfo {
   require(announcement.eventTLV.eventDescriptor
             .isInstanceOf[EnumEventDescriptorV0TLV],
           s"Enum OracleInfo requires EnumEventDescriptor, $announcement")
@@ -128,39 +117,28 @@ case class EnumSingleOracleInfo(announcement: OracleAnnouncementTLV)
   val nonce: SchnorrNonce = announcement.eventTLV.nonces.head
 
   /** @inheritdoc */
-  override def verifySigs(
-      outcome: DLCOutcomeType,
-      sigs: OracleSignatures): Boolean = {
+  override def verifySigs(outcome: DLCOutcomeType, sigs: OracleSignatures): Boolean = {
     outcome match {
       case EnumOutcome(outcome) =>
         sigs match {
           case _: NumericOracleSignatures =>
-            throw new IllegalArgumentException(
-              s"Expected one signature, got $sigs")
+            throw new IllegalArgumentException(s"Expected one signature, got $sigs")
           case EnumOracleSignature(_, sig) =>
             if (sig.rx != nonce) {
-              throw new IllegalArgumentException(
-                s"Expected R value of $nonce, got $sig")
+              throw new IllegalArgumentException(s"Expected R value of $nonce, got $sig")
             } else {
-              publicKey.verify(CryptoUtil.sha256DLCAttestation(outcome).bytes,
-                               sig)
+              publicKey.verify(CryptoUtil.sha256DLCAttestation(outcome).bytes, sig)
             }
         }
       case UnsignedNumericOutcome(_) | _: SignedNumericOutcome =>
-        throw new IllegalArgumentException(
-          s"Expected EnumOutcome, got $outcome")
+        throw new IllegalArgumentException(s"Expected EnumOutcome, got $outcome")
     }
   }
 }
 
-object EnumSingleOracleInfo
-    extends TLVDeserializable[OracleInfoV0TLV, EnumSingleOracleInfo](
-      OracleInfoV0TLV) {
+object EnumSingleOracleInfo extends TLVDeserializable[OracleInfoV0TLV, EnumSingleOracleInfo](OracleInfoV0TLV) {
 
-  def dummyForKeys(
-      privKey: ECPrivateKey,
-      nonce: SchnorrNonce,
-      events: Vector[EnumOutcome]): EnumSingleOracleInfo = {
+  def dummyForKeys(privKey: ECPrivateKey, nonce: SchnorrNonce, events: Vector[EnumOutcome]): EnumSingleOracleInfo = {
     EnumSingleOracleInfo(
       OracleAnnouncementV0TLV
         .dummyForEventsAndKeys(privKey, nonce, events))
@@ -182,29 +160,20 @@ case class NumericSingleOracleInfo(announcement: OracleAnnouncementTLV)
           s"Numeric OracleInfo requires NumericEventDescriptor, $announcement")
 
   /** @inheritdoc */
-  override def verifySigs(
-      outcome: DLCOutcomeType,
-      sigs: OracleSignatures): Boolean = {
+  override def verifySigs(outcome: DLCOutcomeType, sigs: OracleSignatures): Boolean = {
     require(sigs.nonEmpty, "At least one signature is required")
-    require(
-      sigs.length <= nonces.length,
-      s"Too many signatures (expected at most ${nonces.length}), got $sigs")
+    require(sigs.length <= nonces.length, s"Too many signatures (expected at most ${nonces.length}), got $sigs")
 
     outcome match {
       case EnumOutcome(_) | _: SignedNumericOutcome =>
-        throw new IllegalArgumentException(
-          s"Expected numeric outcome, got $outcome")
+        throw new IllegalArgumentException(s"Expected numeric outcome, got $outcome")
       case UnsignedNumericOutcome(digits) =>
         digits
           .zip(sigs.take(digits.length).zip(nonces.take(digits.length)))
-          .foldLeft(digits.length <= sigs.length) {
-            case (result, (digit, (sig, nonce))) =>
-              require(sig.rx == nonce,
-                      s"Unexpected nonce in ${sig.hex}, expected ${nonce.hex}")
+          .foldLeft(digits.length <= sigs.length) { case (result, (digit, (sig, nonce))) =>
+            require(sig.rx == nonce, s"Unexpected nonce in ${sig.hex}, expected ${nonce.hex}")
 
-              result && publicKey.verify(
-                CryptoUtil.sha256DLCAttestation(digit.toString).bytes,
-                sig)
+            result && publicKey.verify(CryptoUtil.sha256DLCAttestation(digit.toString).bytes, sig)
           }
     }
   }
@@ -212,27 +181,21 @@ case class NumericSingleOracleInfo(announcement: OracleAnnouncementTLV)
 
 object NumericSingleOracleInfo {
 
-  def dummyForKeys(
-      privKey: ECPrivateKey,
-      nonces: Vector[SchnorrNonce]): NumericSingleOracleInfo = {
-    NumericSingleOracleInfo(
-      OracleAnnouncementV0TLV.dummyForKeys(privKey, nonces))
+  def dummyForKeys(privKey: ECPrivateKey, nonces: Vector[SchnorrNonce]): NumericSingleOracleInfo = {
+    NumericSingleOracleInfo(OracleAnnouncementV0TLV.dummyForKeys(privKey, nonces))
   }
 }
 
 /** Represents the oracle information for more than one oracle through
   * multiple announcements.
   */
-sealed trait MultiOracleInfo[+T <: SingleOracleInfo]
-    extends OracleInfo
-    with TLVSerializable[MultiOracleInfoTLV] {
+sealed trait MultiOracleInfo[+T <: SingleOracleInfo] extends OracleInfo with TLVSerializable[MultiOracleInfoTLV] {
   override def numOracles: Int = announcements.length
 
   def announcements: OrderedAnnouncements
 
-  require(
-    announcements.length >= threshold,
-    s"Cannot have threshold ($threshold) above the number of oracles (${announcements.length})")
+  require(announcements.length >= threshold,
+          s"Cannot have threshold ($threshold) above the number of oracles (${announcements.length})")
 
   // Override this with a val to invoke requirements
   def singleOracleInfos: Vector[T]
@@ -250,9 +213,7 @@ sealed trait ExactMultiOracleInfo[+T <: SingleOracleInfo]
 }
 
 object ExactMultiOracleInfo
-    extends TLVDeserializable[
-      OracleInfoV1TLV,
-      ExactMultiOracleInfo[SingleOracleInfo]](OracleInfoV1TLV) {
+    extends TLVDeserializable[OracleInfoV1TLV, ExactMultiOracleInfo[SingleOracleInfo]](OracleInfoV1TLV) {
 
   def apply(tlv: OracleInfoV1TLV): ExactMultiOracleInfo[SingleOracleInfo] = {
     tlv.oracles.head.eventTLV.eventDescriptor match {
@@ -263,8 +224,7 @@ object ExactMultiOracleInfo
     }
   }
 
-  override def fromTLV(
-      tlv: OracleInfoV1TLV): ExactMultiOracleInfo[SingleOracleInfo] = {
+  override def fromTLV(tlv: OracleInfoV1TLV): ExactMultiOracleInfo[SingleOracleInfo] = {
     ExactMultiOracleInfo(tlv)
   }
 }
@@ -272,9 +232,7 @@ object ExactMultiOracleInfo
 /** Represents the oracle information for more than one oracle where
   * all oracles sign exactly corresponding messages from isomorphic Enums.
   */
-case class EnumMultiOracleInfo(
-    threshold: Int,
-    announcements: OrderedAnnouncements)
+case class EnumMultiOracleInfo(threshold: Int, announcements: OrderedAnnouncements)
     extends ExactMultiOracleInfo[EnumSingleOracleInfo]
     with EnumOracleInfo {
 
@@ -285,9 +243,7 @@ case class EnumMultiOracleInfo(
 /** Represents the oracle information for more than one oracle where
   * all oracles sign exactly equal numeric outcomes.
   */
-case class NumericExactMultiOracleInfo(
-    threshold: Int,
-    announcements: OrderedAnnouncements)
+case class NumericExactMultiOracleInfo(threshold: Int, announcements: OrderedAnnouncements)
     extends ExactMultiOracleInfo[NumericSingleOracleInfo]
     with NumericOracleInfo {
 
@@ -312,28 +268,16 @@ case class NumericMultiOracleInfo(
     announcements.toVector.map(NumericSingleOracleInfo.apply)
 
   override def toTLV: OracleInfoV2TLV = {
-    OracleInfoV2TLV(
-      threshold,
-      announcements,
-      OracleParamsV0TLV(maxErrorExp, minFailExp, maximizeCoverage))
+    OracleInfoV2TLV(threshold, announcements, OracleParamsV0TLV(maxErrorExp, minFailExp, maximizeCoverage))
   }
 }
 
-object NumericMultiOracleInfo
-    extends TLVDeserializable[OracleInfoV2TLV, NumericMultiOracleInfo](
-      OracleInfoV2TLV) {
+object NumericMultiOracleInfo extends TLVDeserializable[OracleInfoV2TLV, NumericMultiOracleInfo](OracleInfoV2TLV) {
 
-  def apply(
-      threshold: Int,
-      announcements: OrderedAnnouncements,
-      params: OracleParamsTLV): NumericMultiOracleInfo = {
+  def apply(threshold: Int, announcements: OrderedAnnouncements, params: OracleParamsTLV): NumericMultiOracleInfo = {
     params match {
       case OracleParamsV0TLV(maxErrorExp, minFailExp, maximizeCoverage) =>
-        NumericMultiOracleInfo(threshold,
-                               announcements,
-                               maxErrorExp,
-                               minFailExp,
-                               maximizeCoverage)
+        NumericMultiOracleInfo(threshold, announcements, maxErrorExp, minFailExp, maximizeCoverage)
     }
   }
 

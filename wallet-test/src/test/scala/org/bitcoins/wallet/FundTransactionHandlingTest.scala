@@ -5,28 +5,20 @@ import org.bitcoins.core.protocol.transaction.TransactionOutput
 import org.bitcoins.core.wallet.builder.RawTxSigner
 import org.bitcoins.core.wallet.utxo.StorageLocationTag.HotStorage
 import org.bitcoins.core.wallet.utxo._
-import org.bitcoins.testkit.wallet.{
-  BitcoinSWalletTestCachedBitcoindNewest,
-  WalletTestUtil,
-  WalletWithBitcoind
-}
+import org.bitcoins.testkit.wallet.{BitcoinSWalletTestCachedBitcoindNewest, WalletTestUtil, WalletWithBitcoind}
 import org.bitcoins.testkitcore.util.TestUtil
 import org.scalatest.{Assertion, FutureOutcome, Outcome}
 
 import scala.concurrent.Future
 
-class FundTransactionHandlingTest
-    extends BitcoinSWalletTestCachedBitcoindNewest {
+class FundTransactionHandlingTest extends BitcoinSWalletTestCachedBitcoindNewest {
 
   override type FixtureParam = WalletWithBitcoind
 
   override def withFixture(test: OneArgAsyncTest): FutureOutcome = {
     val f: Future[Outcome] = for {
       bitcoind <- cachedBitcoindWithFundsF
-      futOutcome = withFundedWalletAndBitcoindCached(
-        test,
-        getBIP39PasswordOpt(),
-        bitcoind)(getFreshWalletAppConfig)
+      futOutcome = withFundedWalletAndBitcoindCached(test, getBIP39PasswordOpt(), bitcoind)(getFreshWalletAppConfig)
       fut <- futOutcome.toFuture
     } yield fut
     new FutureOutcome(f)
@@ -35,66 +27,56 @@ class FundTransactionHandlingTest
   val destination: TransactionOutput =
     TransactionOutput(Bitcoins(0.5), TestUtil.p2pkhScriptPubKey)
 
-  it must "fund a simple raw transaction that requires one utxo" in {
-    fundedWallet: WalletWithBitcoind =>
-      val wallet = fundedWallet.wallet
-      for {
-        feeRate <- wallet.getFeeRate
-        fundedTx <- wallet.fundRawTransaction(destinations =
-                                                Vector(destination),
-                                              feeRate = feeRate,
-                                              fromTagOpt = None,
-                                              markAsReserved = false)
-      } yield {
-        assert(fundedTx.inputs.length == 1,
-               s"We should only need one input to fund this tx")
-        assert(fundedTx.outputs.contains(destination))
-        assert(fundedTx.outputs.length == 2,
-               s"We must have a single destination output and a change output")
-      }
+  it must "fund a simple raw transaction that requires one utxo" in { fundedWallet: WalletWithBitcoind =>
+    val wallet = fundedWallet.wallet
+    for {
+      feeRate <- wallet.getFeeRate
+      fundedTx <- wallet.fundRawTransaction(destinations = Vector(destination),
+                                            feeRate = feeRate,
+                                            fromTagOpt = None,
+                                            markAsReserved = false)
+    } yield {
+      assert(fundedTx.inputs.length == 1, s"We should only need one input to fund this tx")
+      assert(fundedTx.outputs.contains(destination))
+      assert(fundedTx.outputs.length == 2, s"We must have a single destination output and a change output")
+    }
   }
 
-  it must "fund a transaction that requires all utxos in our wallet" in {
-    fundedWallet: WalletWithBitcoind =>
-      val amt = Bitcoins(5.5)
-      val newDestination = destination.copy(value = amt)
-      val wallet = fundedWallet.wallet
-      for {
-        feeRate <- wallet.getFeeRate
-        fundedTx <- wallet.fundRawTransaction(destinations =
-                                                Vector(newDestination),
-                                              feeRate = feeRate,
-                                              fromTagOpt = None,
-                                              markAsReserved = false)
-      } yield {
-        assert(fundedTx.inputs.length == 3,
-               s"We should need 3 inputs to fund this tx")
-        assert(fundedTx.outputs.contains(newDestination))
-        assert(fundedTx.outputs.length == 2,
-               s"We must have a 2 destination output and a change output")
-      }
+  it must "fund a transaction that requires all utxos in our wallet" in { fundedWallet: WalletWithBitcoind =>
+    val amt = Bitcoins(5.5)
+    val newDestination = destination.copy(value = amt)
+    val wallet = fundedWallet.wallet
+    for {
+      feeRate <- wallet.getFeeRate
+      fundedTx <- wallet.fundRawTransaction(destinations = Vector(newDestination),
+                                            feeRate = feeRate,
+                                            fromTagOpt = None,
+                                            markAsReserved = false)
+    } yield {
+      assert(fundedTx.inputs.length == 3, s"We should need 3 inputs to fund this tx")
+      assert(fundedTx.outputs.contains(newDestination))
+      assert(fundedTx.outputs.length == 2, s"We must have a 2 destination output and a change output")
+    }
   }
 
-  it must "not care about the number of destinations" in {
-    fundedWallet: WalletWithBitcoind =>
-      val destinations = Vector.fill(5)(destination)
-      val wallet = fundedWallet.wallet
+  it must "not care about the number of destinations" in { fundedWallet: WalletWithBitcoind =>
+    val destinations = Vector.fill(5)(destination)
+    val wallet = fundedWallet.wallet
 
-      for {
-        feeRate <- wallet.getFeeRate
-        fundedTx <- wallet.fundRawTransaction(destinations = destinations,
-                                              feeRate = feeRate,
-                                              fromTagOpt = None,
-                                              markAsReserved = false)
-      } yield {
-        // Can be different depending on waste calculation
-        assert(fundedTx.inputs.length == 1 || fundedTx.inputs.length == 2,
-               s"We should only need one or two inputs to fund this tx")
+    for {
+      feeRate <- wallet.getFeeRate
+      fundedTx <- wallet.fundRawTransaction(destinations = destinations,
+                                            feeRate = feeRate,
+                                            fromTagOpt = None,
+                                            markAsReserved = false)
+    } yield {
+      // Can be different depending on waste calculation
+      assert(fundedTx.inputs.length == 1 || fundedTx.inputs.length == 2,
+             s"We should only need one or two inputs to fund this tx")
 
-        destinations.foreach(d => assert(fundedTx.outputs.contains(d)))
-        assert(fundedTx.outputs.length == 6,
-               s"We must have a 6 destination output and a change output")
-      }
+      destinations.foreach(d => assert(fundedTx.outputs.contains(d)))
+      assert(fundedTx.outputs.length == 6, s"We must have a 6 destination output and a change output")
+    }
 
   }
 
@@ -107,8 +89,7 @@ class FundTransactionHandlingTest
 
       val fundedTxF = for {
         feeRate <- wallet.getFeeRate
-        fundedTx <- wallet.fundRawTransaction(destinations =
-                                                Vector(tooBigOutput),
+        fundedTx <- wallet.fundRawTransaction(destinations = Vector(tooBigOutput),
                                               feeRate = feeRate,
                                               fromTagOpt = None,
                                               markAsReserved = false)
@@ -128,8 +109,7 @@ class FundTransactionHandlingTest
 
       val fundedTxF = for {
         feeRate <- wallet.getFeeRate
-        fundedTx <- wallet.fundRawTransaction(destinations =
-                                                Vector(tooBigOutput),
+        fundedTx <- wallet.fundRawTransaction(destinations = Vector(tooBigOutput),
                                               feeRate = feeRate,
                                               fromTagOpt = None,
                                               markAsReserved = false)
@@ -140,99 +120,88 @@ class FundTransactionHandlingTest
       }
   }
 
-  it must "fund from a specific account" in {
-    fundedWallet: WalletWithBitcoind =>
-      //we want to fund from account 1, not hte default account
-      //account 1 has 1 btc in it
-      val amt = Bitcoins(0.1)
-      val newDestination = destination.copy(value = amt)
-      val wallet = fundedWallet.wallet
-      val account1 = WalletTestUtil.getHdAccount1(wallet.walletConfig)
-      val account1DbF = wallet.accountDAO.findByAccount(account1)
-      for {
-        feeRate <- wallet.getFeeRate
-        account1DbOpt <- account1DbF
-        fundedTx <- wallet.fundRawTransaction(Vector(newDestination),
-                                              feeRate,
-                                              account1DbOpt.get)
-      } yield {
-        assert(fundedTx.inputs.nonEmpty)
-        assert(fundedTx.outputs.contains(newDestination))
-        assert(fundedTx.outputs.length == 2)
-      }
+  it must "fund from a specific account" in { fundedWallet: WalletWithBitcoind =>
+    //we want to fund from account 1, not hte default account
+    //account 1 has 1 btc in it
+    val amt = Bitcoins(0.1)
+    val newDestination = destination.copy(value = amt)
+    val wallet = fundedWallet.wallet
+    val account1 = WalletTestUtil.getHdAccount1(wallet.walletConfig)
+    val account1DbF = wallet.accountDAO.findByAccount(account1)
+    for {
+      feeRate <- wallet.getFeeRate
+      account1DbOpt <- account1DbF
+      fundedTx <- wallet.fundRawTransaction(Vector(newDestination), feeRate, account1DbOpt.get)
+    } yield {
+      assert(fundedTx.inputs.nonEmpty)
+      assert(fundedTx.outputs.contains(newDestination))
+      assert(fundedTx.outputs.length == 2)
+    }
   }
 
-  it must "fail to fund from an account that does not have the funds" in {
-    fundedWallet: WalletWithBitcoind =>
-      //account 1 should only have 1 btc in it
-      val amt = Bitcoins(1.1)
-      val newDestination = destination.copy(value = amt)
-      val wallet = fundedWallet.wallet
-      val account1 = WalletTestUtil.getHdAccount1(wallet.walletConfig)
-      val account1DbF = wallet.accountDAO.findByAccount(account1)
-      val fundedTxF = for {
-        feeRate <- wallet.getFeeRate
-        account1DbOpt <- account1DbF
-        fundedTx <- wallet.fundRawTransaction(Vector(newDestination),
-                                              feeRate,
-                                              account1DbOpt.get)
-      } yield fundedTx
+  it must "fail to fund from an account that does not have the funds" in { fundedWallet: WalletWithBitcoind =>
+    //account 1 should only have 1 btc in it
+    val amt = Bitcoins(1.1)
+    val newDestination = destination.copy(value = amt)
+    val wallet = fundedWallet.wallet
+    val account1 = WalletTestUtil.getHdAccount1(wallet.walletConfig)
+    val account1DbF = wallet.accountDAO.findByAccount(account1)
+    val fundedTxF = for {
+      feeRate <- wallet.getFeeRate
+      account1DbOpt <- account1DbF
+      fundedTx <- wallet.fundRawTransaction(Vector(newDestination), feeRate, account1DbOpt.get)
+    } yield fundedTx
 
-      recoverToSucceededIf[RuntimeException] {
-        fundedTxF
-      }
+    recoverToSucceededIf[RuntimeException] {
+      fundedTxF
+    }
   }
 
-  it must "fail to fund from an account with only immature coinbases" in {
-    fundedWallet: WalletWithBitcoind =>
-      val wallet = fundedWallet.wallet
-      val bitcoind = fundedWallet.bitcoind
-      val fundedTxF = for {
-        feeRate <- wallet.getFeeRate
-        _ <- wallet.createNewAccount(wallet.keyManager.kmParams)
-        accounts <- wallet.accountDAO.findAll()
-        account2 = accounts.find(_.hdAccount.index == 2).get
+  it must "fail to fund from an account with only immature coinbases" in { fundedWallet: WalletWithBitcoind =>
+    val wallet = fundedWallet.wallet
+    val bitcoind = fundedWallet.bitcoind
+    val fundedTxF = for {
+      feeRate <- wallet.getFeeRate
+      _ <- wallet.createNewAccount(wallet.keyManager.kmParams)
+      accounts <- wallet.accountDAO.findAll()
+      account2 = accounts.find(_.hdAccount.index == 2).get
 
-        addr <- wallet.getNewAddress(account2)
+      addr <- wallet.getNewAddress(account2)
 
-        hash <- bitcoind.generateToAddress(1, addr).map(_.head)
-        block <- bitcoind.getBlockRaw(hash)
-        _ <- wallet.processBlock(block)
+      hash <- bitcoind.generateToAddress(1, addr).map(_.head)
+      block <- bitcoind.getBlockRaw(hash)
+      _ <- wallet.processBlock(block)
 
-        utxos <- wallet.listUtxos(account2.hdAccount)
-        _ = assert(utxos.size == 1)
+      utxos <- wallet.listUtxos(account2.hdAccount)
+      _ = assert(utxos.size == 1)
 
-        fundedTx <-
-          wallet.fundRawTransaction(Vector(destination), feeRate, account2)
-      } yield fundedTx
+      fundedTx <-
+        wallet.fundRawTransaction(Vector(destination), feeRate, account2)
+    } yield fundedTx
 
-      recoverToSucceededIf[RuntimeException] {
-        fundedTxF
-      }
+    recoverToSucceededIf[RuntimeException] {
+      fundedTxF
+    }
   }
 
-  it must "mark utxos as reserved after building a transaction" in {
-    fundedWallet: WalletWithBitcoind =>
-      val wallet = fundedWallet.wallet
-      for {
-        feeRate <- wallet.getFeeRate
-        fundedTx <- wallet.fundRawTransaction(destinations =
-                                                Vector(destination),
-                                              feeRate = feeRate,
-                                              fromTagOpt = None,
-                                              markAsReserved = true)
+  it must "mark utxos as reserved after building a transaction" in { fundedWallet: WalletWithBitcoind =>
+    val wallet = fundedWallet.wallet
+    for {
+      feeRate <- wallet.getFeeRate
+      fundedTx <- wallet.fundRawTransaction(destinations = Vector(destination),
+                                            feeRate = feeRate,
+                                            fromTagOpt = None,
+                                            markAsReserved = true)
 
-        spendingInfos <- wallet.spendingInfoDAO.findOutputsBeingSpent(fundedTx)
-        reserved <- wallet.spendingInfoDAO.findByTxoState(TxoState.Reserved)
-      } yield {
-        assert(spendingInfos.exists(_.state == TxoState.Reserved))
-        assert(reserved.size == spendingInfos.size)
-      }
+      spendingInfos <- wallet.spendingInfoDAO.findOutputsBeingSpent(fundedTx)
+      reserved <- wallet.spendingInfoDAO.findByTxoState(TxoState.Reserved)
+    } yield {
+      assert(spendingInfos.exists(_.state == TxoState.Reserved))
+      assert(reserved.size == spendingInfos.size)
+    }
   }
 
-  def testAddressTagFunding(
-      wallet: Wallet,
-      tag: AddressTag): Future[Assertion] = {
+  def testAddressTagFunding(wallet: Wallet, tag: AddressTag): Future[Assertion] = {
     for {
       account <- wallet.getDefaultAccount()
       feeRate <- wallet.getFeeRate
@@ -256,24 +225,21 @@ class FundTransactionHandlingTest
       val utx = txBuilder.buildTx()
       val tx = RawTxSigner.sign(utx, utxoInfos, feeRate)
 
-      assert(tx.inputs.forall(input =>
-        expectedUtxos.exists(_.outPoint == input.previousOutput)))
+      assert(tx.inputs.forall(input => expectedUtxos.exists(_.outPoint == input.previousOutput)))
     }
   }
 
-  it must "fund a transaction with only utxos with an unknown address tag" in {
-    fundedWallet: WalletWithBitcoind =>
-      val wallet = fundedWallet.wallet
-      val exampleTag: UnknownAddressTag =
-        UnknownAddressTag("Example", "ExampleTagType")
+  it must "fund a transaction with only utxos with an unknown address tag" in { fundedWallet: WalletWithBitcoind =>
+    val wallet = fundedWallet.wallet
+    val exampleTag: UnknownAddressTag =
+      UnknownAddressTag("Example", "ExampleTagType")
 
-      testAddressTagFunding(wallet, exampleTag)
+    testAddressTagFunding(wallet, exampleTag)
   }
 
-  it must "fund a transaction with only utxos with an internal address tag" in {
-    fundedWallet: WalletWithBitcoind =>
-      val wallet = fundedWallet.wallet
+  it must "fund a transaction with only utxos with an internal address tag" in { fundedWallet: WalletWithBitcoind =>
+    val wallet = fundedWallet.wallet
 
-      testAddressTagFunding(wallet, HotStorage)
+    testAddressTagFunding(wallet, HotStorage)
   }
 }

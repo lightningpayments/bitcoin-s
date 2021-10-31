@@ -1,10 +1,6 @@
 package org.bitcoins.rpc.client.common
 
-import org.bitcoins.commons.jsonmodels.bitcoind.{
-  AnalyzePsbtResult,
-  DecodePsbtResult,
-  FinalizePsbtResult
-}
+import org.bitcoins.commons.jsonmodels.bitcoind.{AnalyzePsbtResult, DecodePsbtResult, FinalizePsbtResult}
 import org.bitcoins.commons.serializers.JsonSerializers._
 import org.bitcoins.commons.serializers.JsonWriters._
 import org.bitcoins.core.currency.{Bitcoins, CurrencyUnit}
@@ -37,8 +33,7 @@ trait PsbtRpc {
   }
 
   def utxoUpdatePsbt(psbt: PSBT, descriptors: Seq[String]): Future[PSBT] = {
-    bitcoindCall[PSBT]("utxoupdatepsbt",
-                       List(JsString(psbt.base64), Json.toJson(descriptors)))
+    bitcoindCall[PSBT]("utxoupdatepsbt", List(JsString(psbt.base64), Json.toJson(descriptors)))
   }
 
   def convertToPsbt(
@@ -62,23 +57,15 @@ trait PsbtRpc {
           addr -> Bitcoins(curr.satoshis)
         }
       }
-    bitcoindCall[PSBT]("createpsbt",
-                       List(Json.toJson(inputs),
-                            outputsJson,
-                            JsNumber(locktime),
-                            JsBoolean(replacable)))
+    bitcoindCall[PSBT]("createpsbt", List(Json.toJson(inputs), outputsJson, JsNumber(locktime), JsBoolean(replacable)))
   }
 
   def combinePsbt(psbts: Vector[PSBT]): Future[PSBT] = {
     bitcoindCall[PSBT]("combinepsbt", List(Json.toJson(psbts)))
   }
 
-  def finalizePsbt(
-      psbt: PSBT,
-      extract: Boolean = true): Future[FinalizePsbtResult] = {
-    bitcoindCall[FinalizePsbtResult](
-      "finalizepsbt",
-      List(JsString(psbt.base64), JsBoolean(extract)))
+  def finalizePsbt(psbt: PSBT, extract: Boolean = true): Future[FinalizePsbtResult] = {
+    bitcoindCall[FinalizePsbtResult]("finalizepsbt", List(JsString(psbt.base64), JsBoolean(extract)))
   }
 
   def decodePsbt(psbt: PSBT): Future[DecodePsbtResult] =

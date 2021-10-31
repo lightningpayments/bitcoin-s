@@ -13,15 +13,8 @@ import org.bitcoins.node.config.NodeAppConfig
 import org.bitcoins.node.models.Peer
 import org.bitcoins.node.networking.P2PClient.NodeCommand
 import org.bitcoins.node.networking.peer.PeerMessageReceiver.NetworkMessageReceived
-import org.bitcoins.node.networking.peer.PeerMessageReceiverState.{
-  Disconnected,
-  Initializing,
-  Normal
-}
-import org.bitcoins.node.networking.peer.{
-  PeerMessageReceiver,
-  PeerMessageReceiverState
-}
+import org.bitcoins.node.networking.peer.PeerMessageReceiverState.{Disconnected, Initializing, Normal}
+import org.bitcoins.node.networking.peer.{PeerMessageReceiver, PeerMessageReceiverState}
 import org.bitcoins.node.util.BitcoinSNodeUtil
 import org.bitcoins.tor.Socks5Connection.{Socks5Connect, Socks5Connected}
 import org.bitcoins.tor.{Socks5Connection, Socks5ProxyParams}
@@ -96,9 +89,7 @@ case class P2PClientActor(
     * This actor signifies the node we are connected to on the p2p network
     * This is the context we are in after we received a [[Tcp.Connected]] message
     */
-  private def awaitNetworkRequest(
-      peerConnection: ActorRef,
-      unalignedBytes: ByteVector): Receive =
+  private def awaitNetworkRequest(peerConnection: ActorRef, unalignedBytes: ByteVector): Receive =
     LoggingReceive {
       case message: NetworkMessage =>
         sendNetworkMessage(message, peerConnection)
@@ -110,8 +101,7 @@ case class P2PClientActor(
           handleEvent(message, peerConnection, unalignedBytes)
         context.become(awaitNetworkRequest(peerConnection, newUnalignedBytes))
       case P2PClient.CloseCommand =>
-        handleNodeCommand(cmd = P2PClient.CloseCommand,
-                          peerConnectionOpt = Some(peerConnection))
+        handleNodeCommand(cmd = P2PClient.CloseCommand, peerConnectionOpt = Some(peerConnection))
       case metaMsg: P2PClient.MetaMsg =>
         sender() ! handleMetaMsg(metaMsg)
       case Terminated(actor) if actor == peerConnection =>
@@ -142,8 +132,7 @@ case class P2PClientActor(
     LoggingReceive {
       case Tcp.CommandFailed(c: Tcp.Connect) =>
         val peerOrProxyAddress = c.remoteAddress
-        logger.error(
-          s"connection failed to ${peerOrProxyAddress} ${proxyParams}")
+        logger.error(s"connection failed to ${peerOrProxyAddress} ${proxyParams}")
         reconnect()
 
       case event @ Tcp.Connected(peerOrProxyAddress, _) =>
@@ -153,19 +142,14 @@ case class P2PClientActor(
             val proxyAddress = peerOrProxyAddress
             val remoteAddress = peer.socket
             logger.info(s"connected to SOCKS5 proxy ${proxyAddress}")
-            logger.info(
-              s"connecting to ${remoteAddress} via SOCKS5 ${proxyAddress}")
+            logger.info(s"connecting to ${remoteAddress} via SOCKS5 ${proxyAddress}")
             val proxy =
-              context.actorOf(Socks5Connection.props(
-                                sender(),
-                                Socks5ProxyParams.proxyCredentials(proxyParams),
-                                Socks5Connect(remoteAddress)),
+              context.actorOf(Socks5Connection.props(sender(),
+                                                     Socks5ProxyParams.proxyCredentials(proxyParams),
+                                                     Socks5Connect(remoteAddress)),
                               "Socks5Connection")
             context watch proxy
-            context become socks5Connecting(event,
-                                            proxy,
-                                            remoteAddress,
-                                            proxyAddress)
+            context become socks5Connecting(event, proxy, remoteAddress, proxyAddress)
           case None =>
             val peerAddress = peerOrProxyAddress
             logger.info(s"connected to ${peerAddress}")
@@ -182,12 +166,10 @@ case class P2PClientActor(
       remoteAddress: InetSocketAddress,
       proxyAddress: InetSocketAddress): Receive = LoggingReceive {
     case Tcp.CommandFailed(_: Socks5Connect) =>
-      logger.error(
-        s"connection failed to ${remoteAddress} via SOCKS5 ${proxyAddress}")
+      logger.error(s"connection failed to ${remoteAddress} via SOCKS5 ${proxyAddress}")
       reconnect()
     case Socks5Connected(_) =>
-      logger.info(
-        s"connected to ${remoteAddress} via SOCKS5 proxy ${proxyAddress}")
+      logger.info(s"connected to ${remoteAddress} via SOCKS5 proxy ${proxyAddress}")
       val _ = handleEvent(event, proxy, ByteVector.empty)
     case Terminated(actor) if actor == proxy =>
       reconnect()
@@ -197,8 +179,7 @@ case class P2PClientActor(
 
   override def unhandled(message: Any): Unit = message match {
     case payload: NetworkPayload =>
-      logger.error(
-        s"Cannot send a message to our peer when we are not connected! payload=${payload} peer=${peer}")
+      logger.error(s"Cannot send a message to our peer when we are not connected! payload=${payload} peer=${peer}")
     case _ =>
       logger.warn(s"unhandled message=$message")
   }
@@ -231,15 +212,12 @@ case class P2PClientActor(
 
   private def reconnect(): Unit = {
     currentPeerMsgHandlerRecv.state match {
-      case _: PeerMessageReceiverState.InitializedDisconnect |
-          _: PeerMessageReceiverState.InitializedDisconnectDone =>
+      case _: PeerMessageReceiverState.InitializedDisconnect | _: PeerMessageReceiverState.InitializedDisconnectDone =>
         logger.warn(
           s"Ignoring reconnection attempts as we initialized disconnect from peer=$peer, state=${currentPeerMsgHandlerRecv.state}")
         ()
-      case PeerMessageReceiverState.Preconnection | _: Initializing |
-          _: Normal | _: Disconnected =>
-        logger.info(
-          s"Attempting to reconnect to peer=$peer, previous state=${currentPeerMsgHandlerRecv.state}")
+      case PeerMessageReceiverState.Preconnection | _: Initializing | _: Normal | _: Disconnected =>
+        logger.info(s"Attempting to reconnect to peer=$peer, previous state=${currentPeerMsgHandlerRecv.state}")
         currentPeerMsgHandlerRecv = initPeerMsgHandlerReceiver
 
         if (reconnectionTry >= maxReconnectionTries) {
@@ -250,8 +228,7 @@ case class P2PClientActor(
           reconnectionTry = reconnectionTry + 1
 
           import context.dispatcher
-          context.system.scheduler.scheduleOnce(delay)(
-            self ! P2PClient.ReconnectCommand)
+          context.system.scheduler.scheduleOnce(delay)(self ! P2PClient.ReconnectCommand)
 
           context.become(reconnecting)
         }
@@ -260,14 +237,10 @@ case class P2PClientActor(
 
   /** This function is responsible for handling a [[Tcp.Event]] algebraic data type
     */
-  private def handleEvent(
-      event: Tcp.Event,
-      peerConnection: ActorRef,
-      unalignedBytes: ByteVector): ByteVector = {
+  private def handleEvent(event: Tcp.Event, peerConnection: ActorRef, unalignedBytes: ByteVector): ByteVector = {
     event match {
       case Tcp.Bound(localAddress) =>
-        logger.debug(
-          s"Actor is now bound to the local address: ${localAddress}")
+        logger.debug(s"Actor is now bound to the local address: ${localAddress}")
         context.parent ! Tcp.Bound(localAddress)
 
         unalignedBytes
@@ -285,15 +258,12 @@ case class P2PClientActor(
         peerConnection ! Tcp.Register(self)
         peerConnection ! Tcp.ResumeReading
 
-        currentPeerMsgHandlerRecv =
-          currentPeerMsgHandlerRecv.connect(P2PClient(self, peer))
+        currentPeerMsgHandlerRecv = currentPeerMsgHandlerRecv.connect(P2PClient(self, peer))
         context.become(awaitNetworkRequest(peerConnection, unalignedBytes))
         unalignedBytes
 
-      case closeCmd @ (Tcp.ConfirmedClosed | Tcp.Closed | Tcp.Aborted |
-          Tcp.PeerClosed | Tcp.ErrorClosed(_)) =>
-        logger.info(
-          s"We've been disconnected by $peer command=${closeCmd} state=${currentPeerMsgHandlerRecv.state}")
+      case closeCmd @ (Tcp.ConfirmedClosed | Tcp.Closed | Tcp.Aborted | Tcp.PeerClosed | Tcp.ErrorClosed(_)) =>
+        logger.info(s"We've been disconnected by $peer command=${closeCmd} state=${currentPeerMsgHandlerRecv.state}")
         currentPeerMsgHandlerRecv = currentPeerMsgHandlerRecv.disconnect()
         unalignedBytes
 
@@ -330,9 +300,7 @@ case class P2PClientActor(
           logger.trace(s"Unaligned bytes: ${newUnalignedBytes.toHex}")
         }
 
-        val f: (
-            PeerMessageReceiver,
-            NetworkMessage) => Future[PeerMessageReceiver] = {
+        val f: (PeerMessageReceiver, NetworkMessage) => Future[PeerMessageReceiver] = {
           case (peerMsgRecv: PeerMessageReceiver, m: NetworkMessage) =>
             logger.trace(s"Processing message=${m}")
             val msg = NetworkMessageReceived(m, P2PClient(self, peer))
@@ -345,8 +313,7 @@ case class P2PClientActor(
 
         logger.trace(s"About to process ${messages.length} messages")
         val newMsgReceiverF =
-          FutureUtil.foldLeftAsync(currentPeerMsgHandlerRecv, messages)(f)(
-            context.dispatcher)
+          FutureUtil.foldLeftAsync(currentPeerMsgHandlerRecv, messages)(f)(context.dispatcher)
 
         val newMsgReceiver = Await.result(newMsgReceiverF, timeout)
         currentPeerMsgHandlerRecv = newMsgReceiver
@@ -372,9 +339,7 @@ case class P2PClientActor(
 
   /** Sends a network request to our peer on the network
     */
-  private def sendNetworkMessage(
-      message: NetworkMessage,
-      peerConnection: ActorRef): Unit = {
+  private def sendNetworkMessage(message: NetworkMessage, peerConnection: ActorRef): Unit = {
 
     val byteMessage = CompactByteString(message.bytes.toArray)
     peerConnection ! Tcp.Write(byteMessage)
@@ -385,9 +350,7 @@ case class P2PClientActor(
     * @param cmd the command to execute
     * @param peerConnectionOpt the connection to a peer, if it exists
     */
-  private def handleNodeCommand(
-      cmd: NodeCommand,
-      peerConnectionOpt: Option[ActorRef]): Unit = {
+  private def handleNodeCommand(cmd: NodeCommand, peerConnectionOpt: Option[ActorRef]): Unit = {
     cmd match {
       case P2PClient.ConnectCommand =>
         connect()
@@ -397,12 +360,10 @@ case class P2PClientActor(
         peerConnectionOpt match {
           case Some(peerConnection) =>
             logger.info(s"Disconnecting from peer $peer")
-            currentPeerMsgHandlerRecv =
-              currentPeerMsgHandlerRecv.initializeDisconnect()
+            currentPeerMsgHandlerRecv = currentPeerMsgHandlerRecv.initializeDisconnect()
             peerConnection ! Tcp.Close
           case None =>
-            logger.warn(
-              s"Attempting to disconnect peer that was not connected!")
+            logger.warn(s"Attempting to disconnect peer that was not connected!")
         }
     }
   }
@@ -412,27 +373,21 @@ case class P2PClientActor(
 case class P2PClient(actor: ActorRef, peer: Peer) extends P2PLogger {
   import akka.pattern.ask
 
-  def isConnected()(implicit
-      timeout: Timeout,
-      ec: ExecutionContext): Future[Boolean] = {
+  def isConnected()(implicit timeout: Timeout, ec: ExecutionContext): Future[Boolean] = {
     val isConnectedF = actor.ask(P2PClient.IsConnected).mapTo[Boolean]
     isConnectedF.recoverWith { case _: Throwable =>
       Future.successful(false)
     }
   }
 
-  def isInitialized()(implicit
-      timeout: Timeout,
-      ec: ExecutionContext): Future[Boolean] = {
+  def isInitialized()(implicit timeout: Timeout, ec: ExecutionContext): Future[Boolean] = {
     val isInitF = actor.ask(P2PClient.IsInitialized).mapTo[Boolean]
     isInitF.recoverWith { case _: Throwable =>
       Future.successful(false)
     }
   }
 
-  def isDisconnected()(implicit
-      timeout: Timeout,
-      ec: ExecutionContext): Future[Boolean] = {
+  def isDisconnected()(implicit timeout: Timeout, ec: ExecutionContext): Future[Boolean] = {
     val isDisconnect: Future[Boolean] =
       actor.ask(P2PClient.IsDisconnected).mapTo[Boolean]
 
@@ -471,27 +426,18 @@ object P2PClient extends P2PLogger {
     */
   final case object IsDisconnected extends MetaMsg
 
-  def props(
-      peer: Peer,
-      peerMsgHandlerReceiver: PeerMessageReceiver,
-      onReconnect: () => Future[Unit])(implicit
+  def props(peer: Peer, peerMsgHandlerReceiver: PeerMessageReceiver, onReconnect: () => Future[Unit])(implicit
       config: NodeAppConfig
   ): Props =
-    Props(classOf[P2PClientActor],
-          peer,
-          peerMsgHandlerReceiver,
-          onReconnect,
-          config)
+    Props(classOf[P2PClientActor], peer, peerMsgHandlerReceiver, onReconnect, config)
 
   def apply(
       context: ActorRefFactory,
       peer: Peer,
       peerMessageReceiver: PeerMessageReceiver,
-      onReconnect: () => Future[Unit])(implicit
-      config: NodeAppConfig): P2PClient = {
-    val actorRef = context.actorOf(
-      props = props(peer, peerMessageReceiver, onReconnect),
-      name = BitcoinSNodeUtil.createActorName(getClass))
+      onReconnect: () => Future[Unit])(implicit config: NodeAppConfig): P2PClient = {
+    val actorRef = context.actorOf(props = props(peer, peerMessageReceiver, onReconnect),
+                                   name = BitcoinSNodeUtil.createActorName(getClass))
 
     P2PClient(actorRef, peer)
   }
@@ -502,17 +448,13 @@ object P2PClient extends P2PLogger {
     * @param bytes the bytes that need to be parsed into individual messages
     * @return the parsed [[NetworkMessage]]'s and the unaligned bytes that did not parse to a message
     */
-  private[bitcoins] def parseIndividualMessages(
-      bytes: ByteVector): (Vector[NetworkMessage], ByteVector) = {
+  private[bitcoins] def parseIndividualMessages(bytes: ByteVector): (Vector[NetworkMessage], ByteVector) = {
     @tailrec
-    def loop(
-        remainingBytes: ByteVector,
-        accum: Vector[NetworkMessage]): (Vector[NetworkMessage], ByteVector) = {
+    def loop(remainingBytes: ByteVector, accum: Vector[NetworkMessage]): (Vector[NetworkMessage], ByteVector) = {
       if (remainingBytes.length <= 0) {
         (accum, remainingBytes)
       } else {
-        val headerTry = Try(
-          NetworkHeader.fromBytes(remainingBytes.take(NetworkHeader.bytesSize)))
+        val headerTry = Try(NetworkHeader.fromBytes(remainingBytes.take(NetworkHeader.bytesSize)))
         headerTry match {
           case Success(header) =>
             val payloadBytes = remainingBytes
@@ -535,8 +477,7 @@ object P2PClient extends P2PLogger {
                   (accum, remainingBytes)
               }
             } else if (payloadBytes.size == header.payloadSize.toInt) { // If we've received the entire unknown message
-              logger.info(
-                s"Received unknown network message ${header.commandName}")
+              logger.info(s"Received unknown network message ${header.commandName}")
               loop(newRemainingBytes, accum)
             } else {
               // If we can't parse the entire unknown message, continue on until we can

@@ -9,8 +9,7 @@ import scala.concurrent.{ExecutionContext, Future}
   */
 object ScalaTestUtil {
 
-  def toAssertF(vecFut: Vector[Future[Assertion]])(implicit
-      ec: ExecutionContext): Future[Assertion] = {
+  def toAssertF(vecFut: Vector[Future[Assertion]])(implicit ec: ExecutionContext): Future[Assertion] = {
     val futVec = Future.sequence(vecFut)
     futVec.map(_.foldLeft(Assertions.succeed) { case (_, next) =>
       next

@@ -1,12 +1,7 @@
 package org.bitcoins.gui
 
 import grizzled.slf4j.Logging
-import org.bitcoins.core.protocol.tlv.{
-  ContractInfoV0TLV,
-  MultiOracleInfoTLV,
-  OracleAnnouncementV0TLV,
-  OracleInfoV0TLV
-}
+import org.bitcoins.core.protocol.tlv.{ContractInfoV0TLV, MultiOracleInfoTLV, OracleAnnouncementV0TLV, OracleInfoV0TLV}
 import org.bitcoins.gui.contract.GlobalContractData
 
 import scalafx.beans.property._
@@ -23,8 +18,7 @@ class ContractGUIModel() extends Logging {
     ObjectProperty[Window](null.asInstanceOf[Window])
 
   // Text paste handler
-  def addEvent(eventHex: String): Option[
-    (OracleAnnouncementV0TLV, Option[ContractInfoV0TLV])] = {
+  def addEvent(eventHex: String): Option[(OracleAnnouncementV0TLV, Option[ContractInfoV0TLV])] = {
     OracleAnnouncementV0TLV.fromHexT(eventHex) match {
       case Failure(_) =>
         ContractInfoV0TLV.fromHexT(eventHex) match {
@@ -32,14 +26,10 @@ class ContractGUIModel() extends Logging {
           case Success(contractInfo) =>
             contractInfo.oracleInfo match {
               case OracleInfoV0TLV(announcement) =>
-                onAddContract(
-                  announcement.asInstanceOf[OracleAnnouncementV0TLV],
-                  Some(contractInfo))
+                onAddContract(announcement.asInstanceOf[OracleAnnouncementV0TLV], Some(contractInfo))
               case multi: MultiOracleInfoTLV =>
                 // todo display all oracles
-                onAddContract(
-                  multi.oracles.head.asInstanceOf[OracleAnnouncementV0TLV],
-                  Some(contractInfo))
+                onAddContract(multi.oracles.head.asInstanceOf[OracleAnnouncementV0TLV], Some(contractInfo))
             }
         }
       case Success(announcement) =>
@@ -50,8 +40,7 @@ class ContractGUIModel() extends Logging {
   // Add an announcement/contract to GlobalContractData.announcements
   def onAddContract(
       announcement: OracleAnnouncementV0TLV,
-      contractInfoOpt: Option[ContractInfoV0TLV]): Option[
-    (OracleAnnouncementV0TLV, Option[ContractInfoV0TLV])] = {
+      contractInfoOpt: Option[ContractInfoV0TLV]): Option[(OracleAnnouncementV0TLV, Option[ContractInfoV0TLV])] = {
     val tup = (announcement, contractInfoOpt)
     // Check for a duplicate announcement/contract
     if (!GlobalContractData.announcements.contains(tup)) {
@@ -61,9 +50,7 @@ class ContractGUIModel() extends Logging {
   }
 
   // Remove an announcement/contract from GlobalContractData.announcements
-  def onRemoveContract(
-      announcement: OracleAnnouncementV0TLV,
-      contractInfoOpt: Option[ContractInfoV0TLV]): Unit = {
+  def onRemoveContract(announcement: OracleAnnouncementV0TLV, contractInfoOpt: Option[ContractInfoV0TLV]): Unit = {
     GlobalContractData.announcements -= ((announcement, contractInfoOpt))
   }
 

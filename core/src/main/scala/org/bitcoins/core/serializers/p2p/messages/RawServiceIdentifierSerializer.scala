@@ -9,8 +9,7 @@ import scodec.bits.ByteVector
   * service identifier in a network message
   * @see https://bitcoin.org/en/developer-reference#version
   */
-trait RawServiceIdentifierSerializer
-    extends RawBitcoinSerializer[ServiceIdentifier] {
+trait RawServiceIdentifierSerializer extends RawBitcoinSerializer[ServiceIdentifier] {
 
   override def read(bytes: ByteVector): ServiceIdentifier = {
     val serviceBytes = bytes.take(8)

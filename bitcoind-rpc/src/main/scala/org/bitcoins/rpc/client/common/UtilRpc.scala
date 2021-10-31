@@ -14,10 +14,8 @@ import scala.concurrent.Future
  */
 trait UtilRpc { self: Client =>
 
-  def validateAddress(
-      address: BitcoinAddress): Future[ValidateAddressResult] = {
-    bitcoindCall[ValidateAddressResultImpl]("validateaddress",
-                                            List(JsString(address.toString)))
+  def validateAddress(address: BitcoinAddress): Future[ValidateAddressResult] = {
+    bitcoindCall[ValidateAddressResultImpl]("validateaddress", List(JsString(address.toString)))
   }
 
   def decodeScript(script: ScriptPubKey): Future[DecodeScriptResult] = {
@@ -29,22 +27,16 @@ trait UtilRpc { self: Client =>
       case V21 | Unknown =>
         bitcoindCall[Map[String, IndexInfoResult]]("getindexinfo")
       case V16 | V17 | V18 | V19 | V20 | Experimental =>
-        Future.failed(
-          new RuntimeException(
-            s"getIndexInfo is only for version V21+, got $version"))
+        Future.failed(new RuntimeException(s"getIndexInfo is only for version V21+, got $version"))
     }
   }
 
   def getIndexInfo(indexName: String): Future[IndexInfoResult] = {
     version.flatMap {
       case V21 | Unknown =>
-        bitcoindCall[Map[String, IndexInfoResult]](
-          "getindexinfo",
-          List(JsString(indexName))).map(_.head._2)
+        bitcoindCall[Map[String, IndexInfoResult]]("getindexinfo", List(JsString(indexName))).map(_.head._2)
       case V16 | V17 | V18 | V19 | V20 | Experimental =>
-        Future.failed(
-          new RuntimeException(
-            s"getIndexInfo is only for version V21+, got $version"))
+        Future.failed(new RuntimeException(s"getIndexInfo is only for version V21+, got $version"))
     }
 
   }

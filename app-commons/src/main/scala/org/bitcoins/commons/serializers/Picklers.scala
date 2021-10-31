@@ -36,12 +36,11 @@ object Picklers {
     readwriter[String].bimap(_.toString, str => new File(str).toPath)
 
   implicit val inetSocketAddress: ReadWriter[InetSocketAddress] =
-    readwriter[String].bimap(
-      addr => s"${addr.getHostName}:${addr.getPort}",
-      str => {
-        val uri = new URI("tcp://" + str)
-        InetSocketAddress.createUnresolved(uri.getHost, uri.getPort)
-      })
+    readwriter[String].bimap(addr => s"${addr.getHostName}:${addr.getPort}",
+                             str => {
+                               val uri = new URI("tcp://" + str)
+                               InetSocketAddress.createUnresolved(uri.getHost, uri.getPort)
+                             })
 
   implicit val byteVectorPickler: ReadWriter[ByteVector] =
     readwriter[String].bimap(_.toHex, str => ByteVector.fromValidHex(str))
@@ -59,14 +58,11 @@ object Picklers {
   implicit val schnorrNoncePickler: ReadWriter[SchnorrNonce] =
     readwriter[String].bimap(_.hex, SchnorrNonce.fromHex)
 
-  implicit val enumEventDescriptorPickler: ReadWriter[
-    EnumEventDescriptorV0TLV] =
+  implicit val enumEventDescriptorPickler: ReadWriter[EnumEventDescriptorV0TLV] =
     readwriter[String].bimap(_.hex, EnumEventDescriptorV0TLV.fromHex)
 
-  implicit val digitDecompEventDescriptorPickler: ReadWriter[
-    DigitDecompositionEventDescriptorV0TLV] =
-    readwriter[String].bimap(_.hex,
-                             DigitDecompositionEventDescriptorV0TLV.fromHex)
+  implicit val digitDecompEventDescriptorPickler: ReadWriter[DigitDecompositionEventDescriptorV0TLV] =
+    readwriter[String].bimap(_.hex, DigitDecompositionEventDescriptorV0TLV.fromHex)
 
   implicit val eventDescriptorPickler: ReadWriter[EventDescriptorTLV] =
     readwriter[String].bimap(_.hex, EventDescriptorTLV.fromHex)
@@ -95,8 +91,7 @@ object Picklers {
   implicit val uInt32Pickler: ReadWriter[UInt32] =
     readwriter[Long].bimap(_.toLong, long => UInt32(long))
 
-  implicit val satoshisPerVirtualBytePickler: ReadWriter[
-    SatoshisPerVirtualByte] =
+  implicit val satoshisPerVirtualBytePickler: ReadWriter[SatoshisPerVirtualByte] =
     readwriter[Long]
       .bimap(_.toLong, long => SatoshisPerVirtualByte(Satoshis(long)))
 
@@ -112,8 +107,7 @@ object Picklers {
   implicit val contractInfoTLVPickler: ReadWriter[ContractInfoV0TLV] =
     readwriter[String].bimap(_.hex, ContractInfoV0TLV.fromHex)
 
-  implicit val schnorrDigitalSignaturePickler: ReadWriter[
-    SchnorrDigitalSignature] =
+  implicit val schnorrDigitalSignaturePickler: ReadWriter[SchnorrDigitalSignature] =
     readwriter[String].bimap(_.hex, SchnorrDigitalSignature.fromHex)
 
   implicit val partialSignaturePickler: ReadWriter[PartialSignature] =
@@ -125,8 +119,7 @@ object Picklers {
   implicit val dlcAcceptTLVPickler: ReadWriter[DLCAcceptTLV] =
     readwriter[String].bimap(_.hex, DLCAcceptTLV.fromHex)
 
-  implicit val lnMessageDLCAcceptTLVPickler: ReadWriter[
-    LnMessage[DLCAcceptTLV]] =
+  implicit val lnMessageDLCAcceptTLVPickler: ReadWriter[LnMessage[DLCAcceptTLV]] =
     readwriter[String].bimap(_.hex, LnMessageFactory(DLCAcceptTLV).fromHex)
 
   implicit val dlcSignTLVPickler: ReadWriter[DLCSignTLV] =
@@ -156,8 +149,7 @@ object Picklers {
   implicit val addressLabelTagPickler: ReadWriter[AddressLabelTag] =
     readwriter[String].bimap(_.name, AddressLabelTag)
 
-  implicit val lockUnspentOutputParameterPickler: ReadWriter[
-    LockUnspentOutputParameter] =
+  implicit val lockUnspentOutputParameterPickler: ReadWriter[LockUnspentOutputParameter] =
     readwriter[Value].bimap(_.toJson, LockUnspentOutputParameter.fromJson)
 
   // can't make implicit because it will overlap with ones needed for cli
@@ -187,10 +179,9 @@ object Picklers {
                           "descriptor" -> descriptorJson,
                           "eventId" -> Str(announcement.eventTLV.eventId))
 
-      Obj(
-        "announcementSignature" -> Str(announcement.announcementSignature.hex),
-        "publicKey" -> Str(announcement.publicKey.hex),
-        "event" -> eventJson)
+      Obj("announcementSignature" -> Str(announcement.announcementSignature.hex),
+          "publicKey" -> Str(announcement.publicKey.hex),
+          "event" -> eventJson)
     }
 
   // can't make implicit because it will overlap with ones needed for cli
@@ -205,9 +196,7 @@ object Picklers {
       val sigsJson = attestments.sigs.map(sig => Str(sig.hex))
       val valuesJson = attestments.outcomes.map(Str(_))
 
-      Obj("eventId" -> Str(attestments.eventId),
-          "signatures" -> sigsJson,
-          "values" -> valuesJson)
+      Obj("eventId" -> Str(attestments.eventId), "signatures" -> sigsJson, "values" -> valuesJson)
     }
 
   implicit val fundingInputV0Writer: Writer[FundingInputTLV] =
@@ -272,8 +261,7 @@ object Picklers {
       val pointsArr = obj(PicklerKeys.pointsKey).arr
       val points: Vector[TLVPoint] = pointsArr.map {
         case x @ (_: Arr | _: Num | Null | _: Bool | _: Str) =>
-          sys.error(
-            s"Cannot have $x when parsing payout curve points, expected json object")
+          sys.error(s"Cannot have $x when parsing payout curve points, expected json object")
         case obj: Obj =>
           upickle.default.read[TLVPoint](obj)
       }.toVector
@@ -288,8 +276,7 @@ object Picklers {
       import roundingIntervals._
 
       val intervalsJs = intervalStarts.map { i =>
-        Obj("beginInterval" -> Num(i._1.toDouble),
-            "roundingMod" -> Num(i._2.toLong.toDouble))
+        Obj("beginInterval" -> Num(i._1.toDouble), "roundingMod" -> Num(i._2.toLong.toDouble))
       }
 
       Obj("intervals" -> intervalsJs)
@@ -329,17 +316,14 @@ object Picklers {
 
   implicit val oracleInfoV0TLVWriter: Writer[OracleInfoV0TLV] =
     writer[Obj].comap { oracleInfo =>
-      Obj(
-        "announcement" -> writeJs(oracleInfo.announcement)(
-          oracleAnnouncementTLVJsonWriter))
+      Obj("announcement" -> writeJs(oracleInfo.announcement)(oracleAnnouncementTLVJsonWriter))
     }
 
   implicit val oracleInfoV1TLVWriter: Writer[OracleInfoV1TLV] =
     writer[Obj].comap { oracleInfo =>
       import oracleInfo._
       Obj("threshold" -> Num(threshold.toDouble),
-          "announcements" -> oracles.map(o =>
-            writeJs(o)(oracleAnnouncementTLVJsonWriter)))
+          "announcements" -> oracles.map(o => writeJs(o)(oracleAnnouncementTLVJsonWriter)))
     }
 
   implicit val oracleParamsV0TLVWriter: Writer[OracleParamsV0TLV] =
@@ -359,8 +343,7 @@ object Picklers {
     writer[Obj].comap { oracleInfo =>
       import oracleInfo._
       Obj("threshold" -> Num(threshold.toDouble),
-          "announcements" -> oracles.map(o =>
-            writeJs(o)(oracleAnnouncementTLVJsonWriter)),
+          "announcements" -> oracles.map(o => writeJs(o)(oracleAnnouncementTLVJsonWriter)),
           "params" -> writeJs(params))
     }
 
@@ -391,8 +374,7 @@ object Picklers {
         "fundingPubKey" -> Str(fundingPubKey.hex),
         "payoutSPK" -> Str(payoutSPK.hex),
         "payoutSerialId" -> Num(payoutSerialId.toBigInt.toDouble),
-        "offerCollateralSatoshis" -> Num(
-          totalCollateralSatoshis.toLong.toDouble),
+        "offerCollateralSatoshis" -> Num(totalCollateralSatoshis.toLong.toDouble),
         "fundingInputs" -> fundingInputs.map(i => writeJs(i)),
         "changeSPK" -> Str(changeSPK.hex),
         "changeSerialId" -> Num(changeSerialId.toBigInt.toDouble),
@@ -413,10 +395,8 @@ object Picklers {
         "lastUpdated" -> Str(iso8601ToString(lastUpdated)),
         "tempContractId" -> Str(tempContractId.hex),
         "contractInfo" -> Str(contractInfo.hex),
-        "contractMaturity" -> Num(
-          timeouts.contractMaturity.toUInt32.toLong.toDouble),
-        "contractTimeout" -> Num(
-          timeouts.contractTimeout.toUInt32.toLong.toDouble),
+        "contractMaturity" -> Num(timeouts.contractMaturity.toUInt32.toLong.toDouble),
+        "contractTimeout" -> Num(timeouts.contractTimeout.toUInt32.toLong.toDouble),
         "feeRate" -> Num(feeRate.toLong.toDouble),
         "totalCollateral" -> Num(totalCollateral.satoshis.toLong.toDouble),
         "localCollateral" -> Num(localCollateral.satoshis.toLong.toDouble),
@@ -434,10 +414,8 @@ object Picklers {
       "tempContractId" -> Str(tempContractId.hex),
       "contractId" -> Str(contractId.toHex),
       "contractInfo" -> Str(contractInfo.hex),
-      "contractMaturity" -> Num(
-        timeouts.contractMaturity.toUInt32.toLong.toDouble),
-      "contractTimeout" -> Num(
-        timeouts.contractTimeout.toUInt32.toLong.toDouble),
+      "contractMaturity" -> Num(timeouts.contractMaturity.toUInt32.toLong.toDouble),
+      "contractTimeout" -> Num(timeouts.contractTimeout.toUInt32.toLong.toDouble),
       "feeRate" -> Num(feeRate.toLong.toDouble),
       "totalCollateral" -> Num(totalCollateral.satoshis.toLong.toDouble),
       "localCollateral" -> Num(localCollateral.satoshis.toLong.toDouble),
@@ -455,10 +433,8 @@ object Picklers {
       "tempContractId" -> Str(tempContractId.hex),
       "contractId" -> Str(contractId.toHex),
       "contractInfo" -> Str(contractInfo.hex),
-      "contractMaturity" -> Num(
-        timeouts.contractMaturity.toUInt32.toLong.toDouble),
-      "contractTimeout" -> Num(
-        timeouts.contractTimeout.toUInt32.toLong.toDouble),
+      "contractMaturity" -> Num(timeouts.contractMaturity.toUInt32.toLong.toDouble),
+      "contractTimeout" -> Num(timeouts.contractTimeout.toUInt32.toLong.toDouble),
       "feeRate" -> Num(feeRate.toLong.toDouble),
       "totalCollateral" -> Num(totalCollateral.satoshis.toLong.toDouble),
       "localCollateral" -> Num(localCollateral.satoshis.toLong.toDouble),
@@ -478,10 +454,8 @@ object Picklers {
         "tempContractId" -> Str(tempContractId.hex),
         "contractId" -> Str(contractId.toHex),
         "contractInfo" -> Str(contractInfo.hex),
-        "contractMaturity" -> Num(
-          timeouts.contractMaturity.toUInt32.toLong.toDouble),
-        "contractTimeout" -> Num(
-          timeouts.contractTimeout.toUInt32.toLong.toDouble),
+        "contractMaturity" -> Num(timeouts.contractMaturity.toUInt32.toLong.toDouble),
+        "contractTimeout" -> Num(timeouts.contractTimeout.toUInt32.toLong.toDouble),
         "feeRate" -> Num(feeRate.toLong.toDouble),
         "totalCollateral" -> Num(totalCollateral.satoshis.toLong.toDouble),
         "localCollateral" -> Num(localCollateral.satoshis.toLong.toDouble),
@@ -501,10 +475,8 @@ object Picklers {
         "tempContractId" -> Str(tempContractId.hex),
         "contractId" -> Str(contractId.toHex),
         "contractInfo" -> Str(contractInfo.hex),
-        "contractMaturity" -> Num(
-          timeouts.contractMaturity.toUInt32.toLong.toDouble),
-        "contractTimeout" -> Num(
-          timeouts.contractTimeout.toUInt32.toLong.toDouble),
+        "contractMaturity" -> Num(timeouts.contractMaturity.toUInt32.toLong.toDouble),
+        "contractTimeout" -> Num(timeouts.contractTimeout.toUInt32.toLong.toDouble),
         "feeRate" -> Num(feeRate.toLong.toDouble),
         "totalCollateral" -> Num(totalCollateral.satoshis.toLong.toDouble),
         "localCollateral" -> Num(localCollateral.satoshis.toLong.toDouble),
@@ -519,11 +491,9 @@ object Picklers {
     import claimed._
     val (oraclesJs, outcomesJs) = oracleOutcome match {
       case EnumOracleOutcome(oracles, outcome) =>
-        (Arr.from(oracles.map(o => Str(o.announcement.hex))),
-         Str(outcome.outcome))
+        (Arr.from(oracles.map(o => Str(o.announcement.hex))), Str(outcome.outcome))
       case numeric: NumericOracleOutcome =>
-        (Arr.from(numeric.oracles.map(_.announcement.hex)),
-         Arr.from(numeric.outcomes.map(o => Arr.from(o.digits))))
+        (Arr.from(numeric.oracles.map(_.announcement.hex)), Arr.from(numeric.outcomes.map(o => Arr.from(o.digits))))
     }
 
     Obj(
@@ -534,10 +504,8 @@ object Picklers {
       "tempContractId" -> Str(tempContractId.hex),
       "contractId" -> Str(contractId.toHex),
       "contractInfo" -> Str(contractInfo.hex),
-      "contractMaturity" -> Num(
-        timeouts.contractMaturity.toUInt32.toLong.toDouble),
-      "contractTimeout" -> Num(
-        timeouts.contractTimeout.toUInt32.toLong.toDouble),
+      "contractMaturity" -> Num(timeouts.contractMaturity.toUInt32.toLong.toDouble),
+      "contractTimeout" -> Num(timeouts.contractTimeout.toUInt32.toLong.toDouble),
       "feeRate" -> Num(feeRate.toLong.toDouble),
       "totalCollateral" -> Num(totalCollateral.satoshis.toLong.toDouble),
       "localCollateral" -> Num(localCollateral.satoshis.toLong.toDouble),
@@ -548,8 +516,7 @@ object Picklers {
       "outcomes" -> outcomesJs,
       "oracles" -> oraclesJs,
       PicklerKeys.myPayout -> Num(claimed.myPayout.satoshis.toLong.toDouble),
-      counterPartyPayoutKey -> Num(
-        claimed.counterPartyPayout.satoshis.toLong.toDouble),
+      counterPartyPayoutKey -> Num(claimed.counterPartyPayout.satoshis.toLong.toDouble),
       PicklerKeys.pnl -> Num(claimed.pnl.satoshis.toLong.toDouble),
       PicklerKeys.rateOfReturn -> Num(claimed.rateOfReturn.toDouble)
     )
@@ -560,11 +527,9 @@ object Picklers {
       import remoteClaimed._
       val (oraclesJs, outcomesJs) = oracleOutcome match {
         case EnumOracleOutcome(oracles, outcome) =>
-          (Arr.from(oracles.map(o => Str(o.announcement.hex))),
-           Str(outcome.outcome))
+          (Arr.from(oracles.map(o => Str(o.announcement.hex))), Str(outcome.outcome))
         case numeric: NumericOracleOutcome =>
-          (Arr.from(numeric.oracles.map(_.announcement.hex)),
-           Arr.from(numeric.outcomes.map(o => Arr.from(o.digits))))
+          (Arr.from(numeric.oracles.map(_.announcement.hex)), Arr.from(numeric.outcomes.map(o => Arr.from(o.digits))))
       }
 
       Obj(
@@ -575,10 +540,8 @@ object Picklers {
         "tempContractId" -> Str(tempContractId.hex),
         "contractId" -> Str(contractId.toHex),
         "contractInfo" -> Str(contractInfo.hex),
-        "contractMaturity" -> Num(
-          timeouts.contractMaturity.toUInt32.toLong.toDouble),
-        "contractTimeout" -> Num(
-          timeouts.contractTimeout.toUInt32.toLong.toDouble),
+        "contractMaturity" -> Num(timeouts.contractMaturity.toUInt32.toLong.toDouble),
+        "contractTimeout" -> Num(timeouts.contractTimeout.toUInt32.toLong.toDouble),
         "feeRate" -> Num(feeRate.toLong.toDouble),
         "totalCollateral" -> Num(totalCollateral.satoshis.toLong.toDouble),
         "localCollateral" -> Num(localCollateral.satoshis.toLong.toDouble),
@@ -588,10 +551,8 @@ object Picklers {
         "oracleSigs" -> oracleSigs.map(sig => Str(sig.hex)),
         "outcomes" -> outcomesJs,
         "oracles" -> oraclesJs,
-        PicklerKeys.myPayout -> Num(
-          remoteClaimed.myPayout.satoshis.toLong.toDouble),
-        counterPartyPayoutKey -> Num(
-          remoteClaimed.counterPartyPayout.satoshis.toLong.toDouble),
+        PicklerKeys.myPayout -> Num(remoteClaimed.myPayout.satoshis.toLong.toDouble),
+        counterPartyPayoutKey -> Num(remoteClaimed.counterPartyPayout.satoshis.toLong.toDouble),
         PicklerKeys.pnl -> Num(remoteClaimed.pnl.satoshis.toLong.toDouble),
         PicklerKeys.rateOfReturn -> Num(remoteClaimed.rateOfReturn.toDouble)
       )
@@ -607,10 +568,8 @@ object Picklers {
       "tempContractId" -> Str(tempContractId.hex),
       "contractId" -> Str(contractId.toHex),
       "contractInfo" -> Str(contractInfo.hex),
-      "contractMaturity" -> Num(
-        timeouts.contractMaturity.toUInt32.toLong.toDouble),
-      "contractTimeout" -> Num(
-        timeouts.contractTimeout.toUInt32.toLong.toDouble),
+      "contractMaturity" -> Num(timeouts.contractMaturity.toUInt32.toLong.toDouble),
+      "contractTimeout" -> Num(timeouts.contractTimeout.toUInt32.toLong.toDouble),
       "feeRate" -> Num(feeRate.toLong.toDouble),
       "totalCollateral" -> Num(totalCollateral.satoshis.toLong.toDouble),
       "localCollateral" -> Num(localCollateral.satoshis.toLong.toDouble),
@@ -618,8 +577,7 @@ object Picklers {
       "fundingTxId" -> Str(fundingTxId.hex),
       "closingTxId" -> Str(closingTxId.hex),
       PicklerKeys.myPayout -> Num(refunded.myPayout.satoshis.toLong.toDouble),
-      counterPartyPayoutKey -> Num(
-        refunded.counterPartyPayout.satoshis.toLong.toDouble),
+      counterPartyPayoutKey -> Num(refunded.counterPartyPayout.satoshis.toLong.toDouble),
       PicklerKeys.pnl -> Num(refunded.pnl.satoshis.toLong.toDouble),
       PicklerKeys.rateOfReturn -> Num(refunded.rateOfReturn.toDouble)
     )
@@ -684,8 +642,7 @@ object Picklers {
 
     lazy val oracleOutcome = outcomes.head match {
       case outcome: EnumOutcome =>
-        EnumOracleOutcome(oracles.asInstanceOf[Vector[EnumSingleOracleInfo]],
-                          outcome)
+        EnumOracleOutcome(oracles.asInstanceOf[Vector[EnumSingleOracleInfo]], outcome)
       case UnsignedNumericOutcome(_) =>
         val numericOutcomes =
           outcomes.map(_.asInstanceOf[UnsignedNumericOutcome])
@@ -790,8 +747,7 @@ object Picklers {
           counterPartyPayout = theirPayoutOpt.get
         )
       case DLCState.RemoteClaimed =>
-        require(oracleSigs.size == 1,
-                "Remote claimed should only have one oracle sig")
+        require(oracleSigs.size == 1, "Remote claimed should only have one oracle sig")
         RemoteClaimed(
           dlcId,
           isInitiator,
@@ -833,14 +789,10 @@ object Picklers {
   implicit val dlcWalletAccountingWriter: Writer[DLCWalletAccounting] = {
     writer[Obj].comap { walletAccounting: DLCWalletAccounting =>
       Obj(
-        PicklerKeys.myCollateral -> Num(
-          walletAccounting.myCollateral.satoshis.toLong.toDouble),
-        PicklerKeys.theirCollateral -> Num(
-          walletAccounting.theirCollateral.satoshis.toLong.toDouble),
-        PicklerKeys.myPayout -> Num(
-          walletAccounting.myPayout.satoshis.toLong.toDouble),
-        PicklerKeys.theirPayout -> Num(
-          walletAccounting.theirPayout.satoshis.toLong.toDouble),
+        PicklerKeys.myCollateral -> Num(walletAccounting.myCollateral.satoshis.toLong.toDouble),
+        PicklerKeys.theirCollateral -> Num(walletAccounting.theirCollateral.satoshis.toLong.toDouble),
+        PicklerKeys.myPayout -> Num(walletAccounting.myPayout.satoshis.toLong.toDouble),
+        PicklerKeys.theirPayout -> Num(walletAccounting.theirPayout.satoshis.toLong.toDouble),
         PicklerKeys.pnl -> Num(walletAccounting.pnl.satoshis.toLong.toDouble),
         PicklerKeys.rateOfReturn -> Num(walletAccounting.rateOfReturn.toDouble)
       )
@@ -848,9 +800,7 @@ object Picklers {
   }
 
   implicit val mnemonicCodePickler: ReadWriter[MnemonicCode] =
-    readwriter[String].bimap(
-      _.words.mkString(" "),
-      str => MnemonicCode.fromWords(str.split(' ').toVector))
+    readwriter[String].bimap(_.words.mkString(" "), str => MnemonicCode.fromWords(str.split(' ').toVector))
 
   implicit val extPrivateKeyPickler: ReadWriter[ExtPrivateKey] =
     readwriter[String].bimap(ExtKey.toString, ExtPrivateKey.fromString)
@@ -872,10 +822,9 @@ object Picklers {
 
   def parseContractDescriptor(payoutsVal: Value): ContractDescriptorV0TLV = {
     val outcomes = payoutsVal(PicklerKeys.outcomesKey)
-    val payouts: Vector[(String, Satoshis)] = outcomes.obj.toVector.map {
-      case (outcome, payoutJs) =>
-        val payout = jsToSatoshis(payoutJs.num)
-        (outcome, payout)
+    val payouts: Vector[(String, Satoshis)] = outcomes.obj.toVector.map { case (outcome, payoutJs) =>
+      val payout = jsToSatoshis(payoutJs.num)
+      (outcome, payout)
     }
     ContractDescriptorV0TLV(outcomes = payouts)
   }

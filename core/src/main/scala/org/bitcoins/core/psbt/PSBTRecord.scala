@@ -5,12 +5,7 @@ import org.bitcoins.core.hd.BIP32Path
 import org.bitcoins.core.number.UInt32
 import org.bitcoins.core.protocol.CompactSizeUInt
 import org.bitcoins.core.protocol.script._
-import org.bitcoins.core.protocol.transaction.{
-  BaseTransaction,
-  NonWitnessTransaction,
-  Transaction,
-  TransactionOutput
-}
+import org.bitcoins.core.protocol.transaction.{BaseTransaction, NonWitnessTransaction, Transaction, TransactionOutput}
 import org.bitcoins.core.script.crypto.HashType
 import org.bitcoins.core.serializers.script.RawScriptWitnessParser
 import org.bitcoins.core.util.BytesUtil
@@ -60,29 +55,22 @@ sealed trait GlobalPSBTRecord extends PSBTRecord {
 object GlobalPSBTRecord extends Factory[GlobalPSBTRecord] {
   import org.bitcoins.core.psbt.PSBTGlobalKeyId._
 
-  case class UnsignedTransaction(transaction: NonWitnessTransaction)
-      extends GlobalPSBTRecord {
-    require(
-      transaction.inputs.forall(_.scriptSignature == EmptyScriptSignature),
-      s"All ScriptSignatures must be empty, got $transaction")
+  case class UnsignedTransaction(transaction: NonWitnessTransaction) extends GlobalPSBTRecord {
+    require(transaction.inputs.forall(_.scriptSignature == EmptyScriptSignature),
+            s"All ScriptSignatures must be empty, got $transaction")
 
     override type KeyId = UnsignedTransactionKeyId.type
     override val key: ByteVector = ByteVector(UnsignedTransactionKeyId.byte)
     override val value: ByteVector = transaction.bytes
   }
 
-  case class XPubKey(
-      xpub: ExtPublicKey,
-      masterFingerprint: ByteVector,
-      derivationPath: BIP32Path)
+  case class XPubKey(xpub: ExtPublicKey, masterFingerprint: ByteVector, derivationPath: BIP32Path)
       extends GlobalPSBTRecord {
     require(
       derivationPath.length == xpub.depth.toInt,
       s"Derivation path length does not match xpubkey depth, difference: ${derivationPath.length - xpub.depth.toInt}"
     )
-    require(
-      masterFingerprint.length == 4,
-      s"Master key fingerprints are 4 bytes long, got: $masterFingerprint")
+    require(masterFingerprint.length == 4, s"Master key fingerprints are 4 bytes long, got: $masterFingerprint")
 
     override type KeyId = XPubKeyKeyId.type
     override val key: ByteVector = ByteVector(XPubKeyKeyId.byte) ++ xpub.bytes
@@ -97,12 +85,10 @@ object GlobalPSBTRecord extends Factory[GlobalPSBTRecord] {
     override val value: ByteVector = version.bytesLE
   }
 
-  case class Unknown(key: ByteVector, value: ByteVector)
-      extends GlobalPSBTRecord {
+  case class Unknown(key: ByteVector, value: ByteVector) extends GlobalPSBTRecord {
     override type KeyId = UnknownKeyId.type
     private val keyId = PSBTGlobalKeyId.fromBytes(key)
-    require(keyId == UnknownKeyId,
-            s"Cannot make an Unknown record with a $keyId")
+    require(keyId == UnknownKeyId, s"Cannot make an Unknown record with a $keyId")
   }
 
   override def fromBytes(bytes: ByteVector): GlobalPSBTRecord = {
@@ -111,8 +97,7 @@ object GlobalPSBTRecord extends Factory[GlobalPSBTRecord] {
     val (key, value) = PSBTRecord.fromBytes(bytes)
     PSBTGlobalKeyId.fromByte(key.head) match {
       case UnsignedTransactionKeyId =>
-        require(key.size == 1,
-                s"The key must only contain the 1 byte type, got: ${key.size}")
+        require(key.size == 1, s"The key must only contain the 1 byte type, got: ${key.size}")
 
         UnsignedTransaction(BaseTransaction.fromBytes(value))
       case XPubKeyKeyId =>
@@ -121,13 +106,11 @@ object GlobalPSBTRecord extends Factory[GlobalPSBTRecord] {
         val path = BIP32Path.fromBytesLE(value.drop(4))
         XPubKey(xpub, fingerprint, path)
       case VersionKeyId =>
-        require(key.size == 1,
-                s"The key must only contain the 1 byte type, got: ${key.size}")
+        require(key.size == 1, s"The key must only contain the 1 byte type, got: ${key.size}")
 
         val version = UInt32.fromBytesLE(value)
 
-        require(PSBT.knownVersions.contains(version),
-                s"Unknown version number given: $version")
+        require(PSBT.knownVersions.contains(version), s"Unknown version number given: $version")
         Version(version)
       case UnknownKeyId =>
         GlobalPSBTRecord.Unknown(key, value)
@@ -142,26 +125,20 @@ sealed trait InputPSBTRecord extends PSBTRecord {
 object InputPSBTRecord extends Factory[InputPSBTRecord] {
   import org.bitcoins.core.psbt.PSBTInputKeyId._
 
-  case class NonWitnessOrUnknownUTXO(transactionSpent: Transaction)
-      extends InputPSBTRecord {
+  case class NonWitnessOrUnknownUTXO(transactionSpent: Transaction) extends InputPSBTRecord {
     override type KeyId = NonWitnessUTXOKeyId.type
     override val key: ByteVector = ByteVector(NonWitnessUTXOKeyId.byte)
     override val value: ByteVector = transactionSpent.bytes
   }
 
-  case class WitnessUTXO(witnessUTXO: TransactionOutput)
-      extends InputPSBTRecord {
+  case class WitnessUTXO(witnessUTXO: TransactionOutput) extends InputPSBTRecord {
     override type KeyId = WitnessUTXOKeyId.type
     override val key: ByteVector = ByteVector(WitnessUTXOKeyId.byte)
     override val value: ByteVector = witnessUTXO.bytes
   }
 
-  case class PartialSignature(
-      pubKey: ECPublicKeyBytes,
-      signature: ECDigitalSignature)
-      extends InputPSBTRecord {
-    require(pubKey.byteSize == 33,
-            s"pubKey must be 33 bytes, got: ${pubKey.byteSize}")
+  case class PartialSignature(pubKey: ECPublicKeyBytes, signature: ECDigitalSignature) extends InputPSBTRecord {
+    require(pubKey.byteSize == 33, s"pubKey must be 33 bytes, got: ${pubKey.byteSize}")
 
     override type KeyId = PartialSignatureKeyId.type
 
@@ -172,14 +149,11 @@ object InputPSBTRecord extends Factory[InputPSBTRecord] {
 
   object PartialSignature extends Factory[PartialSignature] {
 
-    def apply(
-        pubKey: ECPublicKey,
-        signature: ECDigitalSignature): PartialSignature = {
+    def apply(pubKey: ECPublicKey, signature: ECDigitalSignature): PartialSignature = {
       PartialSignature(pubKey.toPublicKeyBytes(), signature)
     }
 
-    def dummyPartialSig(
-        pubKey: ECPublicKey = ECPublicKey.freshPublicKey): PartialSignature = {
+    def dummyPartialSig(pubKey: ECPublicKey = ECPublicKey.freshPublicKey): PartialSignature = {
       PartialSignature(pubKey, DummyECDigitalSignature)
     }
 
@@ -188,15 +162,12 @@ object InputPSBTRecord extends Factory[InputPSBTRecord] {
         case partialSignature: PartialSignature =>
           partialSignature
         case other: InputPSBTRecord =>
-          throw new IllegalArgumentException(
-            s"Invalid PartialSignature encoding, got: $other")
+          throw new IllegalArgumentException(s"Invalid PartialSignature encoding, got: $other")
       }
 
     def vecFromBytes(bytes: ByteVector): Vector[PartialSignature] = {
       @scala.annotation.tailrec
-      def loop(
-          remainingBytes: ByteVector,
-          accum: Vector[PartialSignature]): Vector[PartialSignature] = {
+      def loop(remainingBytes: ByteVector, accum: Vector[PartialSignature]): Vector[PartialSignature] = {
         if (remainingBytes.isEmpty) {
           accum
         } else {
@@ -227,20 +198,15 @@ object InputPSBTRecord extends Factory[InputPSBTRecord] {
     override val value: ByteVector = redeemScript.asmBytes
   }
 
-  case class WitnessScript(witnessScript: RawScriptPubKey)
-      extends InputPSBTRecord {
+  case class WitnessScript(witnessScript: RawScriptPubKey) extends InputPSBTRecord {
     override type KeyId = WitnessScriptKeyId.type
     override val key: ByteVector = ByteVector(WitnessScriptKeyId.byte)
     override val value: ByteVector = witnessScript.asmBytes
   }
 
-  case class BIP32DerivationPath(
-      pubKey: ECPublicKey,
-      masterFingerprint: ByteVector,
-      path: BIP32Path)
+  case class BIP32DerivationPath(pubKey: ECPublicKey, masterFingerprint: ByteVector, path: BIP32Path)
       extends InputPSBTRecord {
-    require(pubKey.byteSize == 33,
-            s"pubKey must be 33 bytes, got: ${pubKey.byteSize}")
+    require(pubKey.byteSize == 33, s"pubKey must be 33 bytes, got: ${pubKey.byteSize}")
 
     override type KeyId = BIP32DerivationPathKeyId.type
 
@@ -251,26 +217,22 @@ object InputPSBTRecord extends Factory[InputPSBTRecord] {
       path.foldLeft(masterFingerprint)(_ ++ _.toUInt32.bytesLE)
   }
 
-  case class FinalizedScriptSig(scriptSig: ScriptSignature)
-      extends InputPSBTRecord {
+  case class FinalizedScriptSig(scriptSig: ScriptSignature) extends InputPSBTRecord {
     override type KeyId = FinalizedScriptSigKeyId.type
     override val key: ByteVector = ByteVector(FinalizedScriptSigKeyId.byte)
     override val value: ByteVector = scriptSig.asmBytes
   }
 
-  case class FinalizedScriptWitness(scriptWitness: ScriptWitness)
-      extends InputPSBTRecord {
+  case class FinalizedScriptWitness(scriptWitness: ScriptWitness) extends InputPSBTRecord {
     override type KeyId = FinalizedScriptWitnessKeyId.type
     override val key: ByteVector = ByteVector(FinalizedScriptWitnessKeyId.byte)
     override val value: ByteVector = scriptWitness.bytes
   }
 
-  case class ProofOfReservesCommitment(porCommitment: ByteVector)
-      extends InputPSBTRecord {
+  case class ProofOfReservesCommitment(porCommitment: ByteVector) extends InputPSBTRecord {
     override type KeyId = ProofOfReservesCommitmentKeyId.type
 
-    override val key: ByteVector = ByteVector(
-      ProofOfReservesCommitmentKeyId.byte)
+    override val key: ByteVector = ByteVector(ProofOfReservesCommitmentKeyId.byte)
     override val value: ByteVector = porCommitment
   }
 
@@ -322,12 +284,10 @@ object InputPSBTRecord extends Factory[InputPSBTRecord] {
     override val value: ByteVector = preImage
   }
 
-  case class Unknown(key: ByteVector, value: ByteVector)
-      extends InputPSBTRecord {
+  case class Unknown(key: ByteVector, value: ByteVector) extends InputPSBTRecord {
     override type KeyId = UnknownKeyId.type
     private val keyId = PSBTInputKeyId.fromBytes(key)
-    require(keyId == UnknownKeyId,
-            s"Cannot make an Unknown record with a $keyId")
+    require(keyId == UnknownKeyId, s"Cannot make an Unknown record with a $keyId")
   }
 
   override def fromBytes(bytes: ByteVector): InputPSBTRecord = {
@@ -336,13 +296,11 @@ object InputPSBTRecord extends Factory[InputPSBTRecord] {
     val (key, value) = PSBTRecord.fromBytes(bytes)
     PSBTInputKeyId.fromByte(key.head) match {
       case NonWitnessUTXOKeyId =>
-        require(key.size == 1,
-                s"The key must only contain the 1 byte type, got: ${key.size}")
+        require(key.size == 1, s"The key must only contain the 1 byte type, got: ${key.size}")
 
         NonWitnessOrUnknownUTXO(Transaction(value))
       case WitnessUTXOKeyId =>
-        require(key.size == 1,
-                s"The key must only contain the 1 byte type, got: ${key.size}")
+        require(key.size == 1, s"The key must only contain the 1 byte type, got: ${key.size}")
 
         WitnessUTXO(TransactionOutput.fromBytes(value))
       case PartialSignatureKeyId =>
@@ -350,18 +308,15 @@ object InputPSBTRecord extends Factory[InputPSBTRecord] {
         val sig = ECDigitalSignature(value)
         PartialSignature(pubKey, sig)
       case SigHashTypeKeyId =>
-        require(key.size == 1,
-                s"The key must only contain the 1 byte type, got: ${key.size}")
+        require(key.size == 1, s"The key must only contain the 1 byte type, got: ${key.size}")
 
         SigHashType(HashType.fromBytesLE(value))
       case PSBTInputKeyId.RedeemScriptKeyId =>
-        require(key.size == 1,
-                s"The key must only contain the 1 byte type, got: ${key.size}")
+        require(key.size == 1, s"The key must only contain the 1 byte type, got: ${key.size}")
 
         InputPSBTRecord.RedeemScript(ScriptPubKey.fromAsmBytes(value))
       case PSBTInputKeyId.WitnessScriptKeyId =>
-        require(key.size == 1,
-                s"The key must only contain the 1 byte type, got: ${key.size}")
+        require(key.size == 1, s"The key must only contain the 1 byte type, got: ${key.size}")
 
         InputPSBTRecord.WitnessScript(RawScriptPubKey.fromAsmBytes(value))
       case PSBTInputKeyId.BIP32DerivationPathKeyId =>
@@ -370,57 +325,43 @@ object InputPSBTRecord extends Factory[InputPSBTRecord] {
         val path = BIP32Path.fromBytesLE(value.drop(4))
         InputPSBTRecord.BIP32DerivationPath(pubKey, fingerprint, path)
       case FinalizedScriptSigKeyId =>
-        require(key.size == 1,
-                s"The key must only contain the 1 byte type, got: ${key.size}")
+        require(key.size == 1, s"The key must only contain the 1 byte type, got: ${key.size}")
 
         val sig = ScriptSignature.fromAsmBytes(value)
         FinalizedScriptSig(sig)
       case FinalizedScriptWitnessKeyId =>
-        require(key.size == 1,
-                s"The key must only contain the 1 byte type, got: ${key.size}")
+        require(key.size == 1, s"The key must only contain the 1 byte type, got: ${key.size}")
 
         FinalizedScriptWitness(RawScriptWitnessParser.read(value))
       case ProofOfReservesCommitmentKeyId =>
         ProofOfReservesCommitment(value)
       case RIPEMD160PreImageKeyId =>
-        require(
-          key.size == 21,
-          s"The key must contain the 1 byte type followed by the 20 byte hash, got: $key")
+        require(key.size == 21, s"The key must contain the 1 byte type followed by the 20 byte hash, got: $key")
 
         val hash = key.tail
         val record = RIPEMD160PreImage(value)
-        require(record.hash.bytes == hash,
-                "Received invalid RIPEMD160PreImage, hash does not match")
+        require(record.hash.bytes == hash, "Received invalid RIPEMD160PreImage, hash does not match")
         record
       case SHA256PreImageKeyId =>
-        require(
-          key.size == 33,
-          s"The key must contain the 1 byte type followed by the 32 byte hash, got: $key")
+        require(key.size == 33, s"The key must contain the 1 byte type followed by the 32 byte hash, got: $key")
 
         val hash = key.tail
         val record = SHA256PreImage(value)
-        require(record.hash.bytes == hash,
-                "Received invalid SHA256PreImage, hash does not match")
+        require(record.hash.bytes == hash, "Received invalid SHA256PreImage, hash does not match")
         record
       case HASH160PreImageKeyId =>
-        require(
-          key.size == 21,
-          s"The key must contain the 1 byte type followed by the 20 byte hash, got: $key")
+        require(key.size == 21, s"The key must contain the 1 byte type followed by the 20 byte hash, got: $key")
 
         val hash = key.tail
         val record = HASH160PreImage(value)
-        require(record.hash.bytes == hash,
-                "Received invalid HASH160PreImage, hash does not match")
+        require(record.hash.bytes == hash, "Received invalid HASH160PreImage, hash does not match")
         record
       case HASH256PreImageKeyId =>
-        require(
-          key.size == 21,
-          s"The key must contain the 1 byte type followed by the 32 byte hash, got: $key")
+        require(key.size == 21, s"The key must contain the 1 byte type followed by the 32 byte hash, got: $key")
 
         val hash = key.tail
         val record = HASH256PreImage(value)
-        require(record.hash.bytes == hash,
-                "Received invalid HASH256PreImage, hash does not match")
+        require(record.hash.bytes == hash, "Received invalid HASH256PreImage, hash does not match")
         record
       case UnknownKeyId =>
         InputPSBTRecord.Unknown(key, value)
@@ -441,20 +382,15 @@ object OutputPSBTRecord extends Factory[OutputPSBTRecord] {
     override val value: ByteVector = redeemScript.asmBytes
   }
 
-  case class WitnessScript(witnessScript: ScriptPubKey)
-      extends OutputPSBTRecord {
+  case class WitnessScript(witnessScript: ScriptPubKey) extends OutputPSBTRecord {
     override type KeyId = WitnessScriptKeyId.type
     override val key: ByteVector = ByteVector(WitnessScriptKeyId.byte)
     override val value: ByteVector = witnessScript.asmBytes
   }
 
-  case class BIP32DerivationPath(
-      pubKey: ECPublicKey,
-      masterFingerprint: ByteVector,
-      path: BIP32Path)
+  case class BIP32DerivationPath(pubKey: ECPublicKey, masterFingerprint: ByteVector, path: BIP32Path)
       extends OutputPSBTRecord {
-    require(pubKey.byteSize == 33,
-            s"pubKey must be 33 bytes, got: ${pubKey.byteSize}")
+    require(pubKey.byteSize == 33, s"pubKey must be 33 bytes, got: ${pubKey.byteSize}")
 
     override type KeyId = BIP32DerivationPathKeyId.type
 
@@ -465,25 +401,21 @@ object OutputPSBTRecord extends Factory[OutputPSBTRecord] {
       path.foldLeft(masterFingerprint)(_ ++ _.toUInt32.bytesLE)
   }
 
-  case class Unknown(key: ByteVector, value: ByteVector)
-      extends OutputPSBTRecord {
+  case class Unknown(key: ByteVector, value: ByteVector) extends OutputPSBTRecord {
     override type KeyId = UnknownKeyId.type
     private val keyId = PSBTOutputKeyId.fromBytes(key)
-    require(keyId == UnknownKeyId,
-            s"Cannot make an Unknown record with a $keyId")
+    require(keyId == UnknownKeyId, s"Cannot make an Unknown record with a $keyId")
   }
 
   override def fromBytes(bytes: ByteVector): OutputPSBTRecord = {
     val (key, value) = PSBTRecord.fromBytes(bytes)
     PSBTOutputKeyId.fromByte(key.head) match {
       case PSBTOutputKeyId.RedeemScriptKeyId =>
-        require(key.size == 1,
-                s"The key must only contain the 1 byte type, got: ${key.size}")
+        require(key.size == 1, s"The key must only contain the 1 byte type, got: ${key.size}")
 
         OutputPSBTRecord.RedeemScript(ScriptPubKey.fromAsmBytes(value))
       case PSBTOutputKeyId.WitnessScriptKeyId =>
-        require(key.size == 1,
-                s"The key must only contain the 1 byte type, got: ${key.size}")
+        require(key.size == 1, s"The key must only contain the 1 byte type, got: ${key.size}")
 
         OutputPSBTRecord.WitnessScript(ScriptPubKey.fromAsmBytes(value))
       case PSBTOutputKeyId.BIP32DerivationPathKeyId =>

@@ -95,14 +95,11 @@ case class PreExecutionScriptProgram(
     this.copy(script = tokens.toList)
   }
 
-  def updateOriginalScript(
-      tokens: Seq[ScriptToken]): PreExecutionScriptProgram = {
+  def updateOriginalScript(tokens: Seq[ScriptToken]): PreExecutionScriptProgram = {
     this.copy(originalScript = tokens.toList)
   }
 
-  def updateStackAndScript(
-      stackTokens: Seq[ScriptToken],
-      scriptTokens: Seq[ScriptToken]): PreExecutionScriptProgram = {
+  def updateStackAndScript(stackTokens: Seq[ScriptToken], scriptTokens: Seq[ScriptToken]): PreExecutionScriptProgram = {
     val updatedStack = this.updateStack(stackTokens)
     val updatedScript = updatedStack.updateScript(scriptTokens)
     require(updatedStack.stack == stackTokens)
@@ -244,8 +241,7 @@ case class ExecutionInProgressScriptProgram(
     this.toExecutedProgram.failExecution(error)
   }
 
-  def replaceFlags(
-      newFlags: Seq[ScriptFlag]): ExecutionInProgressScriptProgram = {
+  def replaceFlags(newFlags: Seq[ScriptFlag]): ExecutionInProgressScriptProgram = {
     this.copy(flags = newFlags)
   }
 
@@ -300,36 +296,29 @@ case class ExecutionInProgressScriptProgram(
     this.replaceFlags(Seq.empty)
   }
 
-  def updateStack(
-      tokens: Seq[ScriptToken]): ExecutionInProgressScriptProgram = {
+  def updateStack(tokens: Seq[ScriptToken]): ExecutionInProgressScriptProgram = {
     this.copy(stack = tokens.toList)
   }
 
-  def updateAltStack(
-      tokens: Seq[ScriptToken]): ExecutionInProgressScriptProgram = {
+  def updateAltStack(tokens: Seq[ScriptToken]): ExecutionInProgressScriptProgram = {
     this.copy(altStack = tokens.toList)
   }
 
-  def updateScript(
-      tokens: Seq[ScriptToken]): ExecutionInProgressScriptProgram = {
+  def updateScript(tokens: Seq[ScriptToken]): ExecutionInProgressScriptProgram = {
     this.copy(script = tokens.toList)
   }
 
-  def updateStackAndScript(
-      stack: Seq[ScriptToken],
-      script: Seq[ScriptToken]): ExecutionInProgressScriptProgram = {
+  def updateStackAndScript(stack: Seq[ScriptToken], script: Seq[ScriptToken]): ExecutionInProgressScriptProgram = {
     this
       .updateStack(stack)
       .updateScript(script)
   }
 
-  def updateOriginalScript(
-      tokens: Seq[ScriptToken]): ExecutionInProgressScriptProgram = {
+  def updateOriginalScript(tokens: Seq[ScriptToken]): ExecutionInProgressScriptProgram = {
     this.copy(originalScript = tokens.toList)
   }
 
-  def updateLastCodeSeparator(
-      newLastCodeSeparator: Int): ExecutionInProgressScriptProgram = {
+  def updateLastCodeSeparator(newLastCodeSeparator: Int): ExecutionInProgressScriptProgram = {
     this.copy(lastCodeSeparator = Some(newLastCodeSeparator))
   }
 }

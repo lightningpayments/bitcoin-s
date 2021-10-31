@@ -3,10 +3,7 @@ package org.bitcoins.core.util.testprotocol
 import ujson._
 import upickle.default._
 
-case class ConfigParams(
-    addrTypeOrIsCompressed: Either[String, Boolean],
-    isPrivKey: Boolean,
-    isTestNet: Boolean)
+case class ConfigParams(addrTypeOrIsCompressed: Either[String, Boolean], isPrivKey: Boolean, isTestNet: Boolean)
 
 object ConfigParams {
   val addrTypeKey = "addrType"
@@ -14,15 +11,14 @@ object ConfigParams {
   val isPrivKeyKey = "isPrivkey"
   val isTestNetKey = "isTestnet"
 
-  implicit val configParamsR: Reader[ConfigParams] = reader[Value].map {
-    value =>
-      val obj = value.obj
-      val addrTypeOrPrivKey: Either[String, Boolean] =
-        parseAddrTypeOrPrivKey(obj)
-      val isPrivKey = obj(isPrivKeyKey).bool
-      val isTestNet = obj(isTestNetKey).bool
+  implicit val configParamsR: Reader[ConfigParams] = reader[Value].map { value =>
+    val obj = value.obj
+    val addrTypeOrPrivKey: Either[String, Boolean] =
+      parseAddrTypeOrPrivKey(obj)
+    val isPrivKey = obj(isPrivKeyKey).bool
+    val isTestNet = obj(isTestNetKey).bool
 
-      ConfigParams(addrTypeOrPrivKey, isPrivKey, isTestNet)
+    ConfigParams(addrTypeOrPrivKey, isPrivKey, isTestNet)
   }
 
   def parseAddrTypeOrPrivKey(obj: Obj): Either[String, Boolean] = {

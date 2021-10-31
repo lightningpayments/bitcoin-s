@@ -12,10 +12,7 @@ import org.bitcoins.core.hd.{
   NestedSegWitHDPath,
   SegWitHDPath
 }
-import org.bitcoins.core.protocol.blockchain.{
-  ChainParams,
-  RegTestNetChainParams
-}
+import org.bitcoins.core.protocol.blockchain.{ChainParams, RegTestNetChainParams}
 import org.bitcoins.core.protocol.transaction.Transaction
 
 object WalletTestUtil {
@@ -46,22 +43,13 @@ object WalletTestUtil {
              "car"))
 
   lazy val sampleSegwitPath =
-    SegWitHDPath(hdCoinType,
-                 accountIndex = 0,
-                 HDChainType.External,
-                 addressIndex = 0)
+    SegWitHDPath(hdCoinType, accountIndex = 0, HDChainType.External, addressIndex = 0)
 
   /** Sample legacy HD path */
-  lazy val sampleLegacyPath = LegacyHDPath(hdCoinType,
-                                           accountIndex = 0,
-                                           HDChainType.Change,
-                                           addressIndex = 0)
+  lazy val sampleLegacyPath = LegacyHDPath(hdCoinType, accountIndex = 0, HDChainType.Change, addressIndex = 0)
 
   lazy val sampleNestedSegwitPath: NestedSegWitHDPath =
-    NestedSegWitHDPath(hdCoinType,
-                       accountIndex = 0,
-                       HDChainType.External,
-                       addressIndex = 0)
+    NestedSegWitHDPath(hdCoinType, accountIndex = 0, HDChainType.External, addressIndex = 0)
 
   val defaultHdAccount: HDAccount =
     HDAccount(HDCoin(HDPurposes.SegWit, hdCoinType), 0)

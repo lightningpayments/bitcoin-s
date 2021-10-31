@@ -22,8 +22,7 @@ sealed abstract class FeeUnit {
     */
   def scaleFactor: Long = factory.scaleFactor
 
-  require(scaleFactor > 0,
-          s"Scale factor cannot be less than or equal to 0, got $scaleFactor")
+  require(scaleFactor > 0, s"Scale factor cannot be less than or equal to 0, got $scaleFactor")
 
   /** Takes the given transaction returns a size that will be used for calculating the fee rate.
     * This is generally the denominator in the unit, ie sats/byte
@@ -47,8 +46,7 @@ trait FeeUnitFactory[+T <: FeeUnit] {
     */
   def scaleFactor: Long
 
-  require(scaleFactor > 0,
-          s"Scale factor cannot be less than or equal to 0, got $scaleFactor")
+  require(scaleFactor > 0, s"Scale factor cannot be less than or equal to 0, got $scaleFactor")
 
   /** Takes the given transaction returns a size that will be used for calculating the fee rate.
     * This is generally the denominator in the unit, ie sats/byte
@@ -109,8 +107,7 @@ object SatoshisPerByte extends FeeUnitFactory[SatoshisPerByte] {
 
 /** KiloBytes here are defined as 1000 bytes.
   */
-case class SatoshisPerKiloByte(currencyUnit: CurrencyUnit)
-    extends BitcoinFeeUnit {
+case class SatoshisPerKiloByte(currencyUnit: CurrencyUnit) extends BitcoinFeeUnit {
 
   lazy val toSatPerByteExact: SatoshisPerByte = {
     val conversionOpt = (currencyUnit.toBigDecimal / 1000.0).toBigIntExact
@@ -120,8 +117,7 @@ case class SatoshisPerKiloByte(currencyUnit: CurrencyUnit)
         SatoshisPerByte(sat)
 
       case None =>
-        throw new RuntimeException(
-          s"Failed to convert sat/kb -> sat/byte (loss of precision) for $currencyUnit")
+        throw new RuntimeException(s"Failed to convert sat/kb -> sat/byte (loss of precision) for $currencyUnit")
     }
   }
 
@@ -163,8 +159,7 @@ object SatoshisPerKiloByte extends FeeUnitFactory[SatoshisPerKiloByte] {
   * has the weight of 4 bytes in the [[org.bitcoins.core.protocol.transaction.TransactionWitness]]
   * of a [[org.bitcoins.core.protocol.transaction.WitnessTransaction]]
   */
-case class SatoshisPerVirtualByte(currencyUnit: CurrencyUnit)
-    extends BitcoinFeeUnit {
+case class SatoshisPerVirtualByte(currencyUnit: CurrencyUnit) extends BitcoinFeeUnit {
 
   override def factory: FeeUnitFactory[SatoshisPerVirtualByte] =
     SatoshisPerVirtualByte
@@ -235,10 +230,7 @@ object SatoshisPerKW extends FeeUnitFactory[SatoshisPerKW] {
 
 object FeeUnit extends StringFactory[FeeUnit] {
 
-  val factories = Vector(SatoshisPerVirtualByte,
-                         SatoshisPerByte,
-                         SatoshisPerKiloByte,
-                         SatoshisPerKW)
+  val factories = Vector(SatoshisPerVirtualByte, SatoshisPerByte, SatoshisPerKiloByte, SatoshisPerKW)
 
   override def fromString(string: String): FeeUnit = {
     val arr = string.split(" ")

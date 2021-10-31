@@ -13,8 +13,7 @@ import scala.annotation.tailrec
 /** Created by chris on 8/15/16.
   * [[https://bitcoin.org/en/developer-reference#merkleblock]]
   */
-sealed abstract class RawMerkleBlockSerializer
-    extends RawBitcoinSerializer[MerkleBlock] {
+sealed abstract class RawMerkleBlockSerializer extends RawBitcoinSerializer[MerkleBlock] {
 
   def read(bytes: ByteVector): MerkleBlock = {
     val (headerBytes, afterHeader) = bytes.splitAt(80)
@@ -53,8 +52,7 @@ sealed abstract class RawMerkleBlockSerializer
         .map(BitVector(_).reverse)
         .foldLeft(ByteVector.empty)(_ ++ _.bytes)
     }
-    val flagCount = CompactSizeUInt(
-      UInt64(Math.ceil(partialMerkleTree.bits.size.toDouble / 8).toInt))
+    val flagCount = CompactSizeUInt(UInt64(Math.ceil(partialMerkleTree.bits.size.toDouble / 8).toInt))
     val hashes: ByteVector = BytesUtil.toByteVector(merkleBlock.hashes)
     merkleBlock.blockHeader.bytes ++
       merkleBlock.transactionCount.bytes.reverse ++
@@ -74,15 +72,11 @@ sealed abstract class RawMerkleBlockSerializer
     def loop(
         remainingHashes: Long,
         remainingBytes: ByteVector,
-        accum: List[DoubleSha256Digest]): (
-        Seq[DoubleSha256Digest],
-        ByteVector) = {
+        accum: List[DoubleSha256Digest]): (Seq[DoubleSha256Digest], ByteVector) = {
       if (remainingHashes <= 0) (accum.reverse, remainingBytes)
       else {
         val (hashBytes, newRemainingBytes) = remainingBytes.splitAt(32)
-        loop(remainingHashes - 1,
-             newRemainingBytes,
-             DoubleSha256Digest(hashBytes) :: accum)
+        loop(remainingHashes - 1, newRemainingBytes, DoubleSha256Digest(hashBytes) :: accum)
       }
     }
     loop(hashCount.num.toInt, bytes, Nil)

@@ -1,11 +1,7 @@
 package org.bitcoins.core.wallet.utxo
 
 import org.bitcoins.core.currency.CurrencyUnit
-import org.bitcoins.core.protocol.script.{
-  SigVersionBase,
-  SigVersionWitnessV0,
-  SignatureVersion
-}
+import org.bitcoins.core.protocol.script.{SigVersionBase, SigVersionWitnessV0, SignatureVersion}
 import org.bitcoins.core.protocol.transaction._
 import org.bitcoins.core.script.crypto.HashType
 import org.bitcoins.crypto.Sign
@@ -46,8 +42,7 @@ sealed trait InputSigningInfo[+InputType <: InputInfo] {
 
   def sigVersion: SignatureVersion =
     inputInfo match {
-      case _: SegwitV0NativeInputInfo | _: UnassignedSegwitNativeInputInfo |
-          _: P2SHNestedSegwitV0InputInfo =>
+      case _: SegwitV0NativeInputInfo | _: UnassignedSegwitNativeInputInfo | _: P2SHNestedSegwitV0InputInfo =>
         SigVersionWitnessV0
       case _: P2SHNonSegwitInputInfo | _: RawInputInfo =>
         SigVersionBase
@@ -65,9 +60,8 @@ case class ScriptSignatureParams[+InputType <: InputInfo](
     extends InputSigningInfo[InputType] {
 
   def signer: Sign = {
-    require(
-      signers.length == 1,
-      "This method is for spending infos with a single signer, if you mean signers.head be explicit")
+    require(signers.length == 1,
+            "This method is for spending infos with a single signer, if you mean signers.head be explicit")
 
     signers.head
   }
@@ -82,8 +76,7 @@ case class ScriptSignatureParams[+InputType <: InputInfo](
     }
   }
 
-  def mapInfo[T <: InputInfo](
-      func: InputType => T): ScriptSignatureParams[T] = {
+  def mapInfo[T <: InputInfo](func: InputType => T): ScriptSignatureParams[T] = {
     this.copy(inputInfo = func(this.inputInfo))
   }
 

@@ -96,9 +96,7 @@ sealed trait UnknownService extends ServiceIdentifier {
   override def toString(): String = s"UnknownService(${num.toLong})"
 }
 
-object ServiceIdentifier
-    extends Factory[ServiceIdentifier]
-    with StringFactory[ServiceIdentifier] {
+object ServiceIdentifier extends Factory[ServiceIdentifier] with StringFactory[ServiceIdentifier] {
 
   /** This node is not a full node.
     * It may not be able to provide any data except for the transactions it originates.
@@ -151,8 +149,7 @@ object ServiceIdentifier
     */
   val NODE_NETWORK_LIMITED: ServiceIdentifier = ServiceIdentifier(1 << 10)
 
-  private case class ServiceIdentifierImpl(num: UInt64)
-      extends ServiceIdentifier
+  private case class ServiceIdentifierImpl(num: UInt64) extends ServiceIdentifier
 
   def fromBytes(bytes: ByteVector): ServiceIdentifier =
     RawServiceIdentifierSerializer.read(bytes)
@@ -167,8 +164,7 @@ object ServiceIdentifier
       case "COMPACT_FILTERS" => NODE_COMPACT_FILTERS
       case "XTHIN"           => NODE_XTHIN
       case _: String =>
-        throw new IllegalArgumentException(
-          s""""$string" does not represent a ServiceIdentifier""")
+        throw new IllegalArgumentException(s""""$string" does not represent a ServiceIdentifier""")
     }
 
   def apply(num: BigInt): ServiceIdentifier = ServiceIdentifier(UInt64(num))

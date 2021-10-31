@@ -6,10 +6,7 @@ import org.bitcoins.server.routes.{CommonRoutes, ServerCommand}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.wordspec.AnyWordSpec
 
-class CommonRoutesSpec
-    extends AnyWordSpec
-    with ScalatestRouteTest
-    with MockFactory {
+class CommonRoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
 
   val commonRoutes = CommonRoutes()
 

@@ -10,8 +10,7 @@ import scodec.bits.ByteVector
 
 /** @see [[https://github.com/bitcoin/bips/blob/master/bip-0157.mediawiki#cfilter BIP157]]
   */
-object RawCompactFilterMessageSerializer
-    extends RawBitcoinSerializer[CompactFilterMessage] {
+object RawCompactFilterMessageSerializer extends RawBitcoinSerializer[CompactFilterMessage] {
 
   def read(bytes: ByteVector): CompactFilterMessage = {
     val filterType = FilterType.fromBytes(bytes.take(1))

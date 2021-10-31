@@ -9,8 +9,7 @@ import scodec.bits.ByteVector
 
 /** @see [[https://github.com/bitcoin/bips/blob/master/bip-0157.mediawiki#getcfheaders BIP157]]
   */
-object RawGetCompactFilterHeadersMessageSerializer
-    extends RawBitcoinSerializer[GetCompactFilterHeadersMessage] {
+object RawGetCompactFilterHeadersMessageSerializer extends RawBitcoinSerializer[GetCompactFilterHeadersMessage] {
 
   def read(bytes: ByteVector): GetCompactFilterHeadersMessage = {
     val filterType = FilterType.fromBytes(bytes.take(1))

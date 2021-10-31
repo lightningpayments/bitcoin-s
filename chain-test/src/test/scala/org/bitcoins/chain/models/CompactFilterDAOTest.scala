@@ -3,11 +3,7 @@ package org.bitcoins.chain.models
 import org.bitcoins.core.api.chain.db.{BlockHeaderDb, CompactFilterDb}
 import org.bitcoins.core.gcs.FilterType
 import org.bitcoins.crypto.{CryptoUtil, ECPrivateKey}
-import org.bitcoins.testkit.chain.{
-  BlockHeaderHelper,
-  ChainDbUnitTest,
-  ChainTestUtil
-}
+import org.bitcoins.testkit.chain.{BlockHeaderHelper, ChainDbUnitTest, ChainTestUtil}
 import org.bitcoins.testkitcore.gen.CryptoGenerators
 import org.scalatest.FutureOutcome
 
@@ -20,10 +16,9 @@ class CompactFilterDAOTest extends ChainDbUnitTest {
 
   behavior of "CompactFilterDAO"
 
-  it must "retrieve getBestFilter when there are no filters in the db" in {
-    compactFilterDAO: CompactFilterDAO =>
-      compactFilterDAO.getBestFilter
-        .map(opt => assert(opt.isEmpty))
+  it must "retrieve getBestFilter when there are no filters in the db" in { compactFilterDAO: CompactFilterDAO =>
+    compactFilterDAO.getBestFilter
+      .map(opt => assert(opt.isEmpty))
   }
 
   it must "create and read a filter from the database" in { compactFilterDAO =>
@@ -64,11 +59,10 @@ class CompactFilterDAOTest extends ChainDbUnitTest {
     }
   }
 
-  it must "get filters between heights when there are no filters" in {
-    compactFilterDAO =>
-      compactFilterDAO.getBetweenHeights(0, 1).map { result =>
-        assert(result.isEmpty)
-      }
+  it must "get filters between heights when there are no filters" in { compactFilterDAO =>
+    compactFilterDAO.getBetweenHeights(0, 1).map { result =>
+      assert(result.isEmpty)
+    }
   }
 
   it must "get max height when there are no filters" in { compactFilterDAO =>
@@ -84,9 +78,8 @@ class CompactFilterDAOTest extends ChainDbUnitTest {
     }
 
     val blockHeaderDbHeavyWork = {
-      blockHeaderDbLightWork.copy(
-        chainWork = blockHeaderDbLightWork.chainWork + 1,
-        hashBE = CryptoGenerators.doubleSha256Digest.sample.get.flip)
+      blockHeaderDbLightWork.copy(chainWork = blockHeaderDbLightWork.chainWork + 1,
+                                  hashBE = CryptoGenerators.doubleSha256Digest.sample.get.flip)
     }
     val headers = Vector(blockHeaderDbLightWork, blockHeaderDbHeavyWork)
     val blockHeaderDbF = blockHeaderDAO.createAll(headers)

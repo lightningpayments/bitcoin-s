@@ -24,9 +24,7 @@ import java.time.Instant
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
-case class WalletRoutes(wallet: AnyDLCHDWalletApi)(implicit
-    system: ActorSystem,
-    walletConf: WalletAppConfig)
+case class WalletRoutes(wallet: AnyDLCHDWalletApi)(implicit system: ActorSystem, walletConf: WalletAppConfig)
     extends ServerRoute {
   import system.dispatcher
 
@@ -45,9 +43,7 @@ case class WalletRoutes(wallet: AnyDLCHDWalletApi)(implicit
   implicit val materializer: Materializer =
     Materializer.createMaterializer(system)
 
-  private def handleBroadcastable(
-      tx: Transaction,
-      noBroadcast: Boolean): Future[NetworkElement] = {
+  private def handleBroadcastable(tx: Transaction, noBroadcast: Boolean): Future[NetworkElement] = {
     if (noBroadcast) {
       Future.successful(tx)
     } else {
@@ -85,39 +81,36 @@ case class WalletRoutes(wallet: AnyDLCHDWalletApi)(implicit
       }
 
     case ServerCommand("getbalance", arr) =>
-      withValidServerCommand(GetBalance.fromJsArr(arr)) {
-        case GetBalance(isSats) =>
-          complete {
-            wallet.getBalance().map { balance =>
-              val result: Double =
-                formatCurrencyUnit(currencyUnit = balance, isSats = isSats)
-              Server.httpSuccess(result)
-            }
+      withValidServerCommand(GetBalance.fromJsArr(arr)) { case GetBalance(isSats) =>
+        complete {
+          wallet.getBalance().map { balance =>
+            val result: Double =
+              formatCurrencyUnit(currencyUnit = balance, isSats = isSats)
+            Server.httpSuccess(result)
           }
+        }
       }
 
     case ServerCommand("getconfirmedbalance", arr) =>
-      withValidServerCommand(GetBalance.fromJsArr(arr)) {
-        case GetBalance(isSats) =>
-          complete {
-            wallet.getConfirmedBalance().map { balance =>
-              val result: Double =
-                formatCurrencyUnit(currencyUnit = balance, isSats = isSats)
-              Server.httpSuccess(result)
-            }
+      withValidServerCommand(GetBalance.fromJsArr(arr)) { case GetBalance(isSats) =>
+        complete {
+          wallet.getConfirmedBalance().map { balance =>
+            val result: Double =
+              formatCurrencyUnit(currencyUnit = balance, isSats = isSats)
+            Server.httpSuccess(result)
           }
+        }
       }
 
     case ServerCommand("getunconfirmedbalance", arr) =>
-      withValidServerCommand(GetBalance.fromJsArr(arr)) {
-        case GetBalance(isSats) =>
-          complete {
-            wallet.getUnconfirmedBalance().map { balance =>
-              val result: Double =
-                formatCurrencyUnit(currencyUnit = balance, isSats = isSats)
-              Server.httpSuccess(result)
-            }
+      withValidServerCommand(GetBalance.fromJsArr(arr)) { case GetBalance(isSats) =>
+        complete {
+          wallet.getUnconfirmedBalance().map { balance =>
+            val result: Double =
+              formatCurrencyUnit(currencyUnit = balance, isSats = isSats)
+            Server.httpSuccess(result)
           }
+        }
       }
 
     case ServerCommand("getbalances", arr) =>
@@ -136,12 +129,9 @@ case class WalletRoutes(wallet: AnyDLCHDWalletApi)(implicit
               val total = confirmed + unconfirmed + reserved
 
               val json = Obj(
-                "confirmed" -> Num(
-                  formatCurrencyUnit(confirmed, isSats).toDouble),
-                "unconfirmed" -> Num(
-                  formatCurrencyUnit(unconfirmed, isSats).toDouble),
-                "reserved" -> Num(
-                  formatCurrencyUnit(reserved, isSats).toDouble),
+                "confirmed" -> Num(formatCurrencyUnit(confirmed, isSats).toDouble),
+                "unconfirmed" -> Num(formatCurrencyUnit(unconfirmed, isSats).toDouble),
+                "reserved" -> Num(formatCurrencyUnit(reserved, isSats).toDouble),
                 "total" -> Num(formatCurrencyUnit(total, isSats).toDouble)
               )
               Server.httpSuccess(json)
@@ -150,104 +140,94 @@ case class WalletRoutes(wallet: AnyDLCHDWalletApi)(implicit
       }
 
     case ServerCommand("getnewaddress", arr) =>
-      withValidServerCommand(GetNewAddress.fromJsArr(arr)) {
-        case GetNewAddress(labelOpt) =>
-          complete {
-            val labelVec = Vector(labelOpt).flatten
-            wallet.getNewAddress(labelVec).map { address =>
-              Server.httpSuccess(address)
-            }
+      withValidServerCommand(GetNewAddress.fromJsArr(arr)) { case GetNewAddress(labelOpt) =>
+        complete {
+          val labelVec = Vector(labelOpt).flatten
+          wallet.getNewAddress(labelVec).map { address =>
+            Server.httpSuccess(address)
           }
+        }
       }
 
     case ServerCommand("gettransaction", arr) =>
-      withValidServerCommand(GetTransaction.fromJsArr(arr)) {
-        case GetTransaction(txId) =>
-          complete {
-            wallet.findTransaction(txId).map {
-              case None =>
-                Server.httpSuccess(ujson.Null)
-              case Some(txDb) =>
-                Server.httpSuccess(txDb.transaction.hex)
-            }
+      withValidServerCommand(GetTransaction.fromJsArr(arr)) { case GetTransaction(txId) =>
+        complete {
+          wallet.findTransaction(txId).map {
+            case None =>
+              Server.httpSuccess(ujson.Null)
+            case Some(txDb) =>
+              Server.httpSuccess(txDb.transaction.hex)
           }
+        }
       }
 
     case ServerCommand("lockunspent", arr) =>
-      withValidServerCommand(LockUnspent.fromJsArr(arr)) {
-        case LockUnspent(unlock, outputParams) =>
-          complete {
-            val func: Vector[SpendingInfoDb] => Future[Vector[SpendingInfoDb]] =
-              utxos => {
-                if (unlock) wallet.unmarkUTXOsAsReserved(utxos)
-                else wallet.markUTXOsAsReserved(utxos)
-              }
+      withValidServerCommand(LockUnspent.fromJsArr(arr)) { case LockUnspent(unlock, outputParams) =>
+        complete {
+          val func: Vector[SpendingInfoDb] => Future[Vector[SpendingInfoDb]] =
+            utxos => {
+              if (unlock) wallet.unmarkUTXOsAsReserved(utxos)
+              else wallet.markUTXOsAsReserved(utxos)
+            }
 
-            for {
-              utxos <-
-                if (unlock) {
-                  wallet.listUtxos(TxoState.Reserved)
-                } else wallet.listUtxos()
+          for {
+            utxos <-
+              if (unlock) {
+                wallet.listUtxos(TxoState.Reserved)
+              } else wallet.listUtxos()
 
-              filtered =
-                if (outputParams.nonEmpty) {
-                  utxos.filter(utxo =>
-                    outputParams.exists(_.outPoint == utxo.outPoint))
-                } else utxos
+            filtered =
+              if (outputParams.nonEmpty) {
+                utxos.filter(utxo => outputParams.exists(_.outPoint == utxo.outPoint))
+              } else utxos
 
-              reserved <- func(filtered)
-            } yield Server.httpSuccess(reserved.nonEmpty)
-          }
+            reserved <- func(filtered)
+          } yield Server.httpSuccess(reserved.nonEmpty)
+        }
       }
 
     case ServerCommand("labeladdress", arr) =>
-      withValidServerCommand(LabelAddress.fromJsArr(arr)) {
-        case LabelAddress(address, label) =>
-          complete {
-            wallet.tagAddress(address, label).map { tagDb =>
-              Server.httpSuccess(
-                s"Added label \'${tagDb.tagName.name}\' to ${tagDb.address.value}")
-            }
+      withValidServerCommand(LabelAddress.fromJsArr(arr)) { case LabelAddress(address, label) =>
+        complete {
+          wallet.tagAddress(address, label).map { tagDb =>
+            Server.httpSuccess(s"Added label \'${tagDb.tagName.name}\' to ${tagDb.address.value}")
           }
+        }
       }
 
     case ServerCommand("getaddresstags", arr) =>
-      withValidServerCommand(GetAddressTags.fromJsArr(arr)) {
-        case GetAddressTags(address) =>
-          complete {
-            wallet.getAddressTags(address).map { tagDbs =>
-              val retStr = tagDbs.map(_.tagName.name)
-              Server.httpSuccess(retStr)
-            }
+      withValidServerCommand(GetAddressTags.fromJsArr(arr)) { case GetAddressTags(address) =>
+        complete {
+          wallet.getAddressTags(address).map { tagDbs =>
+            val retStr = tagDbs.map(_.tagName.name)
+            Server.httpSuccess(retStr)
           }
+        }
       }
 
     case ServerCommand("getaddresslabels", arr) =>
-      withValidServerCommand(GetAddressLabels.fromJsArr(arr)) {
-        case GetAddressLabels(address) =>
-          complete {
-            wallet.getAddressTags(address, AddressLabelTagType).map { tagDbs =>
-              val retStr = tagDbs.map(_.tagName.name)
-              Server.httpSuccess(retStr)
-            }
+      withValidServerCommand(GetAddressLabels.fromJsArr(arr)) { case GetAddressLabels(address) =>
+        complete {
+          wallet.getAddressTags(address, AddressLabelTagType).map { tagDbs =>
+            val retStr = tagDbs.map(_.tagName.name)
+            Server.httpSuccess(retStr)
           }
+        }
       }
 
     case ServerCommand("dropaddresslabels", arr) =>
-      withValidServerCommand(DropAddressLabels.fromJsArr(arr)) {
-        case DropAddressLabels(address) =>
-          complete {
-            wallet.dropAddressTagType(address, AddressLabelTagType).map {
-              numDropped =>
-                if (numDropped <= 0) {
-                  Server.httpSuccess(s"Address had no labels")
-                } else if (numDropped == 1) {
-                  Server.httpSuccess(s"$numDropped label dropped")
-                } else {
-                  Server.httpSuccess(s"$numDropped labels dropped")
-                }
+      withValidServerCommand(DropAddressLabels.fromJsArr(arr)) { case DropAddressLabels(address) =>
+        complete {
+          wallet.dropAddressTagType(address, AddressLabelTagType).map { numDropped =>
+            if (numDropped <= 0) {
+              Server.httpSuccess(s"Address had no labels")
+            } else if (numDropped == 1) {
+              Server.httpSuccess(s"$numDropped label dropped")
+            } else {
+              Server.httpSuccess(s"$numDropped labels dropped")
             }
           }
+        }
       }
 
     case ServerCommand("getdlcs", _) =>
@@ -287,12 +267,7 @@ case class WalletRoutes(wallet: AnyDLCHDWalletApi)(implicit
       CreateDLCOffer.fromJsArr(arr) match {
         case Failure(exception) =>
           reject(ValidationRejection("failure", Some(exception)))
-        case Success(
-              CreateDLCOffer(contractInfo,
-                             collateral,
-                             feeRateOpt,
-                             locktime,
-                             refundLT)) =>
+        case Success(CreateDLCOffer(contractInfo, collateral, feeRateOpt, locktime, refundLT)) =>
           complete {
             val announcements = contractInfo.oracleInfo match {
               case OracleInfoV0TLV(announcement)        => Vector(announcement)
@@ -300,17 +275,12 @@ case class WalletRoutes(wallet: AnyDLCHDWalletApi)(implicit
               case OracleInfoV2TLV(_, announcements, _) => announcements
             }
             if (!announcements.forall(_.validateSignature)) {
-              throw new RuntimeException(
-                s"Received Oracle announcement with invalid signature! ${announcements
-                  .map(_.hex)}")
+              throw new RuntimeException(s"Received Oracle announcement with invalid signature! ${announcements
+                .map(_.hex)}")
             }
 
             wallet
-              .createDLCOffer(contractInfo,
-                              collateral,
-                              feeRateOpt,
-                              locktime,
-                              refundLT)
+              .createDLCOffer(contractInfo, collateral, feeRateOpt, locktime, refundLT)
               .map { offer =>
                 Server.httpSuccess(offer.toMessage.hex)
               }
@@ -392,8 +362,7 @@ case class WalletRoutes(wallet: AnyDLCHDWalletApi)(implicit
         case Success(AddDLCSigs(sigs)) =>
           complete {
             wallet.addDLCSigs(sigs.tlv).map { db =>
-              Server.httpSuccess(
-                s"Successfully added sigs to DLC ${db.contractIdOpt.get.toHex}")
+              Server.httpSuccess(s"Successfully added sigs to DLC ${db.contractIdOpt.get.toHex}")
             }
           }
       }
@@ -410,8 +379,7 @@ case class WalletRoutes(wallet: AnyDLCHDWalletApi)(implicit
             val signMessage = LnMessageFactory(DLCSignTLV).fromHex(hex)
 
             wallet.addDLCSigs(signMessage.tlv).map { db =>
-              Server.httpSuccess(
-                s"Successfully added sigs to DLC ${db.contractIdOpt.get.toHex}")
+              Server.httpSuccess(s"Successfully added sigs to DLC ${db.contractIdOpt.get.toHex}")
             }
           }
       }
@@ -501,15 +469,10 @@ case class WalletRoutes(wallet: AnyDLCHDWalletApi)(implicit
 
     case ServerCommand("sendtoaddress", arr) =>
       withValidServerCommand(SendToAddress.fromJsArr(arr)) {
-        case SendToAddress(address,
-                           bitcoins,
-                           satoshisPerVirtualByteOpt,
-                           noBroadcast) =>
+        case SendToAddress(address, bitcoins, satoshisPerVirtualByteOpt, noBroadcast) =>
           complete {
             for {
-              tx <- wallet.sendToAddress(address,
-                                         bitcoins,
-                                         satoshisPerVirtualByteOpt)
+              tx <- wallet.sendToAddress(address, bitcoins, satoshisPerVirtualByteOpt)
               retStr <- handleBroadcastable(tx, noBroadcast)
             } yield {
               Server.httpSuccess(retStr.hex)
@@ -519,30 +482,23 @@ case class WalletRoutes(wallet: AnyDLCHDWalletApi)(implicit
 
     case ServerCommand("sendfromoutpoints", arr) =>
       withValidServerCommand(SendFromOutpoints.fromJsArr(arr)) {
-        case SendFromOutpoints(outPoints,
-                               address,
-                               bitcoins,
-                               satoshisPerVirtualByteOpt) =>
+        case SendFromOutpoints(outPoints, address, bitcoins, satoshisPerVirtualByteOpt) =>
           complete {
             for {
-              tx <- wallet.sendFromOutPoints(outPoints,
-                                             address,
-                                             bitcoins,
-                                             satoshisPerVirtualByteOpt)
+              tx <- wallet.sendFromOutPoints(outPoints, address, bitcoins, satoshisPerVirtualByteOpt)
               _ <- wallet.broadcastTransaction(tx)
             } yield Server.httpSuccess(tx.txIdBE)
           }
       }
 
     case ServerCommand("sweepwallet", arr) =>
-      withValidServerCommand(SweepWallet.fromJsArr(arr)) {
-        case SweepWallet(address, feeRateOpt) =>
-          complete {
-            for {
-              tx <- wallet.sweepWallet(address, feeRateOpt)
-              _ <- wallet.broadcastTransaction(tx)
-            } yield Server.httpSuccess(tx.txIdBE)
-          }
+      withValidServerCommand(SweepWallet.fromJsArr(arr)) { case SweepWallet(address, feeRateOpt) =>
+        complete {
+          for {
+            tx <- wallet.sweepWallet(address, feeRateOpt)
+            _ <- wallet.broadcastTransaction(tx)
+          } yield Server.httpSuccess(tx.txIdBE)
+        }
       }
 
     case ServerCommand("sendwithalgo", arr) =>
@@ -550,10 +506,7 @@ case class WalletRoutes(wallet: AnyDLCHDWalletApi)(implicit
         case SendWithAlgo(address, bitcoins, satoshisPerVirtualByteOpt, algo) =>
           complete {
             for {
-              tx <- wallet.sendWithAlgo(address,
-                                        bitcoins,
-                                        satoshisPerVirtualByteOpt,
-                                        algo)
+              tx <- wallet.sendWithAlgo(address, bitcoins, satoshisPerVirtualByteOpt, algo)
               _ <- wallet.broadcastTransaction(tx)
             } yield Server.httpSuccess(tx.txIdBE)
           }
@@ -573,9 +526,7 @@ case class WalletRoutes(wallet: AnyDLCHDWalletApi)(implicit
         case OpReturnCommit(message, hashMessage, satoshisPerVirtualByteOpt) =>
           complete {
             for {
-              tx <- wallet.makeOpReturnCommitment(message,
-                                                  hashMessage,
-                                                  satoshisPerVirtualByteOpt)
+              tx <- wallet.makeOpReturnCommitment(message, hashMessage, satoshisPerVirtualByteOpt)
               _ <- wallet.broadcastTransaction(tx)
             } yield {
               Server.httpSuccess(tx.txIdBE)
@@ -584,46 +535,38 @@ case class WalletRoutes(wallet: AnyDLCHDWalletApi)(implicit
       }
 
     case ServerCommand("bumpfeerbf", arr) =>
-      withValidServerCommand(BumpFee.fromJsArr(arr)) {
-        case BumpFee(txId, feeRate) =>
-          complete {
-            for {
-              tx <- wallet.bumpFeeRBF(txId, feeRate)
-              _ <- wallet.broadcastTransaction(tx)
-            } yield Server.httpSuccess(tx.txIdBE)
-          }
+      withValidServerCommand(BumpFee.fromJsArr(arr)) { case BumpFee(txId, feeRate) =>
+        complete {
+          for {
+            tx <- wallet.bumpFeeRBF(txId, feeRate)
+            _ <- wallet.broadcastTransaction(tx)
+          } yield Server.httpSuccess(tx.txIdBE)
+        }
       }
 
     case ServerCommand("bumpfeecpfp", arr) =>
-      withValidServerCommand(BumpFee.fromJsArr(arr)) {
-        case BumpFee(txId, feeRate) =>
-          complete {
-            for {
-              tx <- wallet.bumpFeeCPFP(txId, feeRate)
-              _ <- wallet.broadcastTransaction(tx)
-            } yield Server.httpSuccess(tx.txIdBE)
-          }
+      withValidServerCommand(BumpFee.fromJsArr(arr)) { case BumpFee(txId, feeRate) =>
+        complete {
+          for {
+            tx <- wallet.bumpFeeCPFP(txId, feeRate)
+            _ <- wallet.broadcastTransaction(tx)
+          } yield Server.httpSuccess(tx.txIdBE)
+        }
       }
 
     case ServerCommand("rescan", arr) =>
       withValidServerCommand(Rescan.fromJsArr(arr)) {
-        case Rescan(batchSize,
-                    startBlock,
-                    endBlock,
-                    force,
-                    ignoreCreationTime) =>
+        case Rescan(batchSize, startBlock, endBlock, force, ignoreCreationTime) =>
           complete {
             val res = for {
               empty <- wallet.isEmpty()
               msg <-
                 if (force || empty) {
                   wallet
-                    .rescanNeutrinoWallet(
-                      startOpt = startBlock,
-                      endOpt = endBlock,
-                      addressBatchSize =
-                        batchSize.getOrElse(wallet.discoveryBatchSize()),
-                      useCreationTime = !ignoreCreationTime)
+                    .rescanNeutrinoWallet(startOpt = startBlock,
+                                          endOpt = endBlock,
+                                          addressBatchSize = batchSize.getOrElse(wallet.discoveryBatchSize()),
+                                          useCreationTime = !ignoreCreationTime)
                   Future.successful("Rescan started.")
                 } else {
                   Future.successful(
@@ -700,20 +643,19 @@ case class WalletRoutes(wallet: AnyDLCHDWalletApi)(implicit
       }
 
     case ServerCommand("getaddressinfo", arr) =>
-      withValidServerCommand(GetAddressInfo.fromJsArr(arr)) {
-        case GetAddressInfo(address) =>
-          complete {
-            wallet.getAddressInfo(address).map {
-              case Some(addressInfo) =>
-                val json = Obj(
-                  "pubkey" -> Str(addressInfo.pubkey.hex),
-                  "path" -> Str(addressInfo.path.toString)
-                )
-                Server.httpSuccess(json)
-              case None =>
-                Server.httpSuccess("Wallet does not contain address")
-            }
+      withValidServerCommand(GetAddressInfo.fromJsArr(arr)) { case GetAddressInfo(address) =>
+        complete {
+          wallet.getAddressInfo(address).map {
+            case Some(addressInfo) =>
+              val json = Obj(
+                "pubkey" -> Str(addressInfo.pubkey.hex),
+                "path" -> Str(addressInfo.path.toString)
+              )
+              Server.httpSuccess(json)
+            case None =>
+              Server.httpSuccess("Wallet does not contain address")
           }
+        }
       }
 
     case ServerCommand("createnewaccount", _) =>
@@ -732,77 +674,69 @@ case class WalletRoutes(wallet: AnyDLCHDWalletApi)(implicit
         case KeyManagerPassphraseChange(oldPassword, newPassword) =>
           complete {
             val path = walletConf.seedPath
-            WalletStorage.changeAesPassword(path,
-                                            Some(oldPassword),
-                                            Some(newPassword))
+            WalletStorage.changeAesPassword(path, Some(oldPassword), Some(newPassword))
 
             Server.httpSuccess(ujson.Null)
           }
       }
 
     case ServerCommand("keymanagerpassphraseset", arr) =>
-      withValidServerCommand(KeyManagerPassphraseSet.fromJsArr(arr)) {
-        case KeyManagerPassphraseSet(password) =>
-          complete {
-            val path = walletConf.seedPath
-            WalletStorage.changeAesPassword(path, None, Some(password))
+      withValidServerCommand(KeyManagerPassphraseSet.fromJsArr(arr)) { case KeyManagerPassphraseSet(password) =>
+        complete {
+          val path = walletConf.seedPath
+          WalletStorage.changeAesPassword(path, None, Some(password))
 
-            Server.httpSuccess(ujson.Null)
-          }
+          Server.httpSuccess(ujson.Null)
+        }
       }
 
     case ServerCommand("importseed", arr) =>
-      withValidServerCommand(ImportSeed.fromJsArr(arr)) {
-        case ImportSeed(walletName, mnemonic, passwordOpt) =>
-          complete {
-            val seedPath = kmConf.seedFolder.resolve(
-              s"$walletName-${WalletStorage.ENCRYPTED_SEED_FILE_NAME}")
+      withValidServerCommand(ImportSeed.fromJsArr(arr)) { case ImportSeed(walletName, mnemonic, passwordOpt) =>
+        complete {
+          val seedPath = kmConf.seedFolder.resolve(s"$walletName-${WalletStorage.ENCRYPTED_SEED_FILE_NAME}")
 
-            val creationTime = Instant.ofEpochSecond(WalletStorage.GENESIS_TIME)
+          val creationTime = Instant.ofEpochSecond(WalletStorage.GENESIS_TIME)
 
-            val mnemonicState = passwordOpt match {
-              case Some(pass) =>
-                DecryptedMnemonic(mnemonic, creationTime).encrypt(pass)
-              case None =>
-                DecryptedMnemonic(mnemonic, creationTime)
-            }
-
-            WalletStorage.writeSeedToDisk(seedPath, mnemonicState)
-
-            Server.httpSuccess(ujson.Null)
+          val mnemonicState = passwordOpt match {
+            case Some(pass) =>
+              DecryptedMnemonic(mnemonic, creationTime).encrypt(pass)
+            case None =>
+              DecryptedMnemonic(mnemonic, creationTime)
           }
+
+          WalletStorage.writeSeedToDisk(seedPath, mnemonicState)
+
+          Server.httpSuccess(ujson.Null)
+        }
       }
 
     case ServerCommand("importxprv", arr) =>
-      withValidServerCommand(ImportXprv.fromJsArr(arr)) {
-        case ImportXprv(walletName, xprv, passwordOpt) =>
-          complete {
-            val seedPath = kmConf.seedFolder.resolve(
-              s"$walletName-${WalletStorage.ENCRYPTED_SEED_FILE_NAME}")
+      withValidServerCommand(ImportXprv.fromJsArr(arr)) { case ImportXprv(walletName, xprv, passwordOpt) =>
+        complete {
+          val seedPath = kmConf.seedFolder.resolve(s"$walletName-${WalletStorage.ENCRYPTED_SEED_FILE_NAME}")
 
-            val creationTime = Instant.ofEpochSecond(WalletStorage.GENESIS_TIME)
+          val creationTime = Instant.ofEpochSecond(WalletStorage.GENESIS_TIME)
 
-            val mnemonicState = passwordOpt match {
-              case Some(pass) =>
-                DecryptedExtPrivKey(xprv, creationTime).encrypt(pass)
-              case None =>
-                DecryptedExtPrivKey(xprv, creationTime)
-            }
-
-            WalletStorage.writeSeedToDisk(seedPath, mnemonicState)
-
-            Server.httpSuccess(ujson.Null)
+          val mnemonicState = passwordOpt match {
+            case Some(pass) =>
+              DecryptedExtPrivKey(xprv, creationTime).encrypt(pass)
+            case None =>
+              DecryptedExtPrivKey(xprv, creationTime)
           }
+
+          WalletStorage.writeSeedToDisk(seedPath, mnemonicState)
+
+          Server.httpSuccess(ujson.Null)
+        }
       }
 
     case ServerCommand("sendrawtransaction", arr) =>
-      withValidServerCommand(SendRawTransaction.fromJsArr(arr)) {
-        case SendRawTransaction(tx) =>
-          complete {
-            wallet.broadcastTransaction(tx).map { _ =>
-              Server.httpSuccess(tx.txIdBE)
-            }
+      withValidServerCommand(SendRawTransaction.fromJsArr(arr)) { case SendRawTransaction(tx) =>
+        complete {
+          wallet.broadcastTransaction(tx).map { _ =>
+            Server.httpSuccess(tx.txIdBE)
           }
+        }
       }
 
     case ServerCommand("estimatefee", _) =>
@@ -850,9 +784,7 @@ case class WalletRoutes(wallet: AnyDLCHDWalletApi)(implicit
     }
   }
 
-  private def formatCurrencyUnit(
-      currencyUnit: CurrencyUnit,
-      isSats: Boolean): Double = {
+  private def formatCurrencyUnit(currencyUnit: CurrencyUnit, isSats: Boolean): Double = {
     if (isSats) {
       currencyUnit.satoshis.toBigDecimal.toDouble
     } else {

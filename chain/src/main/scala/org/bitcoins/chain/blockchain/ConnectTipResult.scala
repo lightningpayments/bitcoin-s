@@ -23,10 +23,7 @@ sealed trait ConnectTipResult {
 object ConnectTipResult {
 
   /** Indicates we sucuessfully extended our chain by one block */
-  case class ExtendChain(
-      tipUpdateResult: TipUpdateResult.Success,
-      newChain: Blockchain)
-      extends ConnectTipResult {
+  case class ExtendChain(tipUpdateResult: TipUpdateResult.Success, newChain: Blockchain) extends ConnectTipResult {
     require(
       headerDb == newChain.tip,
       s"Cannot extend chain without having tipUpdate be our best tip, tipUpdateResult=${tipUpdateResult.header} chain.tip=${newChain.tip}"
@@ -39,10 +36,7 @@ object ConnectTipResult {
     * @param tipUpdateResult the successful connection
     * @param newChain the new chain where the best tip is the header we passed in
     */
-  case class Reorg(
-      tipUpdateResult: TipUpdateResult.Success,
-      newChain: Blockchain)
-      extends ConnectTipResult {
+  case class Reorg(tipUpdateResult: TipUpdateResult.Success, newChain: Blockchain) extends ConnectTipResult {
     require(
       headerDb == newChain.tip,
       s"Cannot reorg without having tipUpdate be our best tip, tipUpdateResult=${tipUpdateResult.header} chain.tip=${newChain.tip}")
@@ -51,7 +45,6 @@ object ConnectTipResult {
   }
 
   /** Means we could not connect the header to anything in the given blockchain */
-  case class BadTip(tipUpdateResult: TipUpdateResult.Failure)
-      extends ConnectTipResult
+  case class BadTip(tipUpdateResult: TipUpdateResult.Failure) extends ConnectTipResult
 
 }

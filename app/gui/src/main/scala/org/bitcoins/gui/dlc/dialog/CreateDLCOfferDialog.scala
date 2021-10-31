@@ -22,9 +22,7 @@ import java.time.ZoneOffset
 import scala.collection._
 import scala.util.{Failure, Success, Try}
 
-class CreateDLCOfferDialog
-    extends Logging
-    with CliCommandProducer[CreateDLCOffer] {
+class CreateDLCOfferDialog extends Logging with CliCommandProducer[CreateDLCOffer] {
 
   override def getCliCommand(): CreateDLCOffer = {
     createDLCOffer()
@@ -32,9 +30,7 @@ class CreateDLCOfferDialog
 
   private var dialogOpt: Option[Dialog[Option[CreateDLCOffer]]] = None
 
-  def showAndWait(
-      parentWindow: Window,
-      hex: String = ""): Option[CreateDLCOffer] = {
+  def showAndWait(parentWindow: Window, hex: String = ""): Option[CreateDLCOffer] = {
     val dialog = new Dialog[Option[CreateDLCOffer]]() {
       initOwner(parentWindow)
       title = "Create DLC Offer"
@@ -71,14 +67,10 @@ class CreateDLCOfferDialog
   private lazy val announcementOrContractInfoTF = new TextField()
   private var decompOpt: Option[DigitDecompositionEventDescriptorV0TLV] = None
 
-  private val pointMap: scala.collection.mutable.Map[
-    Int,
-    (TextField, TextField, CheckBox)] =
+  private val pointMap: scala.collection.mutable.Map[Int, (TextField, TextField, CheckBox)] =
     scala.collection.mutable.Map.empty
 
-  private val roundingMap: scala.collection.mutable.Map[
-    Int,
-    (TextField, TextField)] =
+  private val roundingMap: scala.collection.mutable.Map[Int, (TextField, TextField)] =
     scala.collection.mutable.Map.empty
 
   private lazy val feeRateTF = new TextField() {
@@ -106,8 +98,7 @@ class CreateDLCOfferDialog
 
       add(
         new Label("Oracle Announcement/Contract Info") {
-          tooltip = Tooltip(
-            "An oracle announcement or a contract info can be entered here.")
+          tooltip = Tooltip("An oracle announcement or a contract info can be entered here.")
           tooltip.value.setShowDelay(new javafx.util.Duration(100))
         },
         0,
@@ -126,9 +117,7 @@ class CreateDLCOfferDialog
       spacing = 10
     }
 
-    def addEnumOutcomeRow(
-        outcomeText: String,
-        amtOpt: Option[Satoshis]): Unit = {
+    def addEnumOutcomeRow(outcomeText: String, amtOpt: Option[Satoshis]): Unit = {
 
       val outcomeTF = new TextField() {
         styleClass += "enum-outcome-textfield"
@@ -139,8 +128,7 @@ class CreateDLCOfferDialog
       val amtTF = new TextField() {
         styleClass += "enum-payout-textfield"
         promptText = "Satoshis"
-        tooltip = Tooltip(
-          s"""Amount you will win if the oracle signs for "$outcomeText".""")
+        tooltip = Tooltip(s"""Amount you will win if the oracle signs for "$outcomeText".""")
         tooltip.value.setShowDelay(new javafx.util.Duration(100))
         text = amtOpt match {
           case Some(amt) => numberFormatter.format(amt.toLong)
@@ -175,8 +163,7 @@ class CreateDLCOfferDialog
         new Label("Payout") {
           maxWidth = Double.MaxValue
           alignment = Pos.Center
-          tooltip = Tooltip(
-            "Amount you will win if the oracle signs for the given outcome.")
+          tooltip = Tooltip("Amount you will win if the oracle signs for the given outcome.")
           tooltip.value.setShowDelay(new javafx.util.Duration(100))
         },
         1,
@@ -254,9 +241,7 @@ class CreateDLCOfferDialog
           0)
     }
 
-    def addRoundingRow(
-        outcomeOpt: Option[Long],
-        levelOpt: Option[Satoshis]): Unit = {
+    def addRoundingRow(outcomeOpt: Option[Long], levelOpt: Option[Satoshis]): Unit = {
 
       val outcomeTF = new TextField() {
         styleClass += "rounding-outcome-textfield"
@@ -311,10 +296,9 @@ class CreateDLCOfferDialog
 
     val previewGraphButton: Button = new Button("Preview Graph") {
       onAction = _ => {
-        val (totalCollateral, descriptor) = getNumericContractInfo(
-          decompOpt,
-          pointMap.toVector.sortBy(_._1).map(_._2),
-          roundingMap.toVector.sortBy(_._1).map(_._2))
+        val (totalCollateral, descriptor) = getNumericContractInfo(decompOpt,
+                                                                   pointMap.toVector.sortBy(_._1).map(_._2),
+                                                                   roundingMap.toVector.sortBy(_._1).map(_._2))
 
         // Could add to Figure like DLCPlotUtil:155-161 here to show breakeven line like dust...
         DLCPlotUtil.plotCETsWithOriginalCurve(base = 2,
@@ -330,8 +314,7 @@ class CreateDLCOfferDialog
       var nextRow = 0
       detailsGridPane.add(
         new Label("Your Collateral") {
-          tooltip =
-            Tooltip("How much funds you will be putting up for this DLC.")
+          tooltip = Tooltip("How much funds you will be putting up for this DLC.")
           tooltip.value.setShowDelay(new javafx.util.Duration(100))
         },
         0,
@@ -342,8 +325,7 @@ class CreateDLCOfferDialog
 
       detailsGridPane.add(
         new Label("Fee Rate (sats/vbyte)") {
-          tooltip = Tooltip(
-            "Fee rate to be used for both funding and closing transactions.")
+          tooltip = Tooltip("Fee rate to be used for both funding and closing transactions.")
           tooltip.value.setShowDelay(new javafx.util.Duration(100))
         },
         0,
@@ -354,8 +336,7 @@ class CreateDLCOfferDialog
 
       detailsGridPane.add(
         new Label("Refund Date") {
-          tooltip = Tooltip(
-            "If no oracle signatures are given, the DLC can be refunded after this date.")
+          tooltip = Tooltip("If no oracle signatures are given, the DLC can be refunded after this date.")
           tooltip.value.setShowDelay(new javafx.util.Duration(100))
         },
         0,
@@ -380,14 +361,10 @@ class CreateDLCOfferDialog
               case Success(contractInfo) =>
                 contractInfo.oracleInfo match {
                   case OracleInfoV0TLV(announcement) =>
-                    onAnnouncementEntered(
-                      announcement.asInstanceOf[OracleAnnouncementV0TLV],
-                      Some(contractInfo))
+                    onAnnouncementEntered(announcement.asInstanceOf[OracleAnnouncementV0TLV], Some(contractInfo))
                   case multi: MultiOracleInfoTLV =>
                     // todo display all oracles
-                    onAnnouncementEntered(
-                      multi.oracles.head.asInstanceOf[OracleAnnouncementV0TLV],
-                      Some(contractInfo))
+                    onAnnouncementEntered(multi.oracles.head.asInstanceOf[OracleAnnouncementV0TLV], Some(contractInfo))
                 }
             }
           case Success(announcement) =>
@@ -428,11 +405,9 @@ class CreateDLCOfferDialog
             case Some(contractInfo) =>
               contractInfo.contractDescriptor match {
                 case ContractDescriptorV0TLV(outcomes) =>
-                  outcomes.foreach(outcome =>
-                    addEnumOutcomeRow(outcome._1, Some(outcome._2)))
+                  outcomes.foreach(outcome => addEnumOutcomeRow(outcome._1, Some(outcome._2)))
                 case _: ContractDescriptorV1TLV =>
-                  throw new RuntimeException(
-                    "Got incompatible contract info and announcement")
+                  throw new RuntimeException("Got incompatible contract info and announcement")
               }
             case None =>
               outcomes.foreach(str => addEnumOutcomeRow(str.normStr, None))
@@ -455,30 +430,26 @@ class CreateDLCOfferDialog
             case Some(contractInfo) =>
               contractInfo.contractDescriptor match {
                 case ContractDescriptorV0TLV(_) =>
-                  throw new RuntimeException(
-                    "Got incompatible contract info and announcement")
+                  throw new RuntimeException("Got incompatible contract info and announcement")
                 case descriptor: ContractDescriptorV1TLV =>
                   descriptor.payoutFunction.points.init.foreach { point =>
-                    addPointRow(
-                      xOpt = Some(numberFormatter.format(point.outcome)),
-                      yOpt = Some(numberFormatter.format(point.value.toLong)),
-                      isEndPoint = point.isEndpoint)
+                    addPointRow(xOpt = Some(numberFormatter.format(point.outcome)),
+                                yOpt = Some(numberFormatter.format(point.value.toLong)),
+                                isEndPoint = point.isEndpoint)
                   }
                   // handle last specially so user can add more rows
                   val last = descriptor.payoutFunction.points.last
 
                   addPointRow(xOpt = Some(numberFormatter.format(last.outcome)),
-                              yOpt =
-                                Some(numberFormatter.format(last.value.toLong)),
+                              yOpt = Some(numberFormatter.format(last.value.toLong)),
                               isEndPoint = last.isEndpoint,
                               row = 9999)
                   nextPointRow -= 1 // do this so the max is the last row
 
                   // add rounding intervals
                   if (descriptor.roundingIntervals.intervalStarts.nonEmpty) {
-                    descriptor.roundingIntervals.intervalStarts.foreach {
-                      case (outcome, value) =>
-                        addRoundingRow(Some(outcome), Some(value))
+                    descriptor.roundingIntervals.intervalStarts.foreach { case (outcome, value) =>
+                      addRoundingRow(Some(outcome), Some(value))
                     }
                   } else {
                     // add empty rounding intervals
@@ -488,8 +459,7 @@ class CreateDLCOfferDialog
               }
             case None =>
               addPointRow(Some("0"))
-              addPointRow(Some(numberFormatter.format(digitDecomp.maxNum)),
-                          row = 9999)
+              addPointRow(Some(numberFormatter.format(digitDecomp.maxNum)), row = 9999)
               nextPointRow -= 1 // do this so the max is the last row
 
               // add empty rounding intervals
@@ -497,16 +467,11 @@ class CreateDLCOfferDialog
               addRoundingRow(None, None)
           }
 
-          vbox.children.addAll(new Separator(),
-                               label,
-                               pointGrid,
-                               roundingAccordion,
-                               previewGraphButton)
+          vbox.children.addAll(new Separator(), label, pointGrid, roundingAccordion, previewGraphButton)
           nextRow = 4
           addRemainingFields()
         case _: SignedDigitDecompositionEventDescriptor =>
-          throw new RuntimeException(
-            s"SignedDigitDecompositionEventDescriptors are not supported yet")
+          throw new RuntimeException(s"SignedDigitDecompositionEventDescriptors are not supported yet")
       }
       if (dialogOpt.isDefined)
         dialogOpt.get.dialogPane().getScene.getWindow.sizeToScene()
@@ -528,11 +493,9 @@ class CreateDLCOfferDialog
   }
 
   def getOracleInfo: Option[OracleInfo] = {
-    OracleAnnouncementV0TLV.fromHexT(
-      announcementOrContractInfoTF.text.value) match {
+    OracleAnnouncementV0TLV.fromHexT(announcementOrContractInfoTF.text.value) match {
       case Failure(_) =>
-        ContractInfoV0TLV.fromHexT(
-          announcementOrContractInfoTF.text.value) match {
+        ContractInfoV0TLV.fromHexT(announcementOrContractInfoTF.text.value) match {
           case Failure(_) => None
           case Success(contractInfo) =>
             Some(OracleInfo.fromTLV(contractInfo.oracleInfo))
@@ -566,8 +529,7 @@ class CreateDLCOfferDialog
         val missingOutcomes = fields.values.filter(_._2.text.value.isEmpty)
         if (missingOutcomes.nonEmpty) {
           val missing = missingOutcomes.map(_._1.text.value).mkString(", ")
-          throw new RuntimeException(
-            s"You missed outcomes $missing. Please enter payouts for these situations")
+          throw new RuntimeException(s"You missed outcomes $missing. Please enter payouts for these situations")
         }
 
         val inputs = fields.values.flatMap { case (str, value) =>
@@ -585,10 +547,9 @@ class CreateDLCOfferDialog
 
         ContractInfo(descriptor, oracleInfo).toTLV
       case oracleInfo: NumericOracleInfo =>
-        val (totalCol, numeric) = getNumericContractInfo(
-          decompOpt,
-          pointMap.toVector.sortBy(_._1).map(_._2),
-          roundingMap.toVector.sortBy(_._1).map(_._2))
+        val (totalCol, numeric) = getNumericContractInfo(decompOpt,
+                                                         pointMap.toVector.sortBy(_._1).map(_._2),
+                                                         roundingMap.toVector.sortBy(_._1).map(_._2))
 
         ContractInfo(totalCol, numeric, oracleInfo).toTLV
     }
@@ -608,52 +569,38 @@ object CreateDLCOfferDialog {
   def getNumericContractInfo(
       decompOpt: Option[DigitDecompositionEventDescriptorV0TLV],
       pointVec: Vector[(TextField, TextField, CheckBox)],
-      roundingVec: Vector[(TextField, TextField)]): (
-      Satoshis,
-      NumericContractDescriptor) = {
+      roundingVec: Vector[(TextField, TextField)]): (Satoshis, NumericContractDescriptor) = {
     decompOpt match {
       case Some(decomp) =>
         val contractInfoT = Try {
           val numDigits = decomp.numDigits.toInt
 
-          val outcomesValuePoints = pointVec.flatMap {
-            case (xTF, yTF, checkBox) =>
-              if (xTF.text.value.nonEmpty && yTF.text.value.nonEmpty) {
-                val x = numberFormatter.parse(xTF.text.value).longValue()
-                val y = numberFormatter.parse(yTF.text.value).longValue()
-                Some(
-                  OutcomePayoutPoint(x, Satoshis(y), checkBox.selected.value))
-              } else {
-                None
-              }
+          val outcomesValuePoints = pointVec.flatMap { case (xTF, yTF, checkBox) =>
+            if (xTF.text.value.nonEmpty && yTF.text.value.nonEmpty) {
+              val x = numberFormatter.parse(xTF.text.value).longValue()
+              val y = numberFormatter.parse(yTF.text.value).longValue()
+              Some(OutcomePayoutPoint(x, Satoshis(y), checkBox.selected.value))
+            } else {
+              None
+            }
           }
           val totalCollateral = outcomesValuePoints.map(_.roundedPayout).max
 
-          val roundingIntervalsStarts = roundingVec.flatMap {
-            case (outcomeTF, roundingModTF) =>
-              if (
-                outcomeTF.text.value.nonEmpty && roundingModTF.text.value.nonEmpty
-              ) {
-                val outcome =
-                  numberFormatter.parse(outcomeTF.text.value).doubleValue()
-                val roundingMod =
-                  numberFormatter.parse(roundingModTF.text.value).longValue()
-                Some(
-                  RoundingIntervals.IntervalStart(BigDecimal(outcome),
-                                                  roundingMod))
-              } else None
+          val roundingIntervalsStarts = roundingVec.flatMap { case (outcomeTF, roundingModTF) =>
+            if (outcomeTF.text.value.nonEmpty && roundingModTF.text.value.nonEmpty) {
+              val outcome =
+                numberFormatter.parse(outcomeTF.text.value).doubleValue()
+              val roundingMod =
+                numberFormatter.parse(roundingModTF.text.value).longValue()
+              Some(RoundingIntervals.IntervalStart(BigDecimal(outcome), roundingMod))
+            } else None
           }
 
           val sorted = outcomesValuePoints.sortBy(_.outcome)
-          require(sorted == outcomesValuePoints,
-                  s"Must be sorted by outcome, got $outcomesValuePoints")
+          require(sorted == outcomesValuePoints, s"Must be sorted by outcome, got $outcomesValuePoints")
 
           val func = DLCPayoutCurve(outcomesValuePoints)
-          (totalCollateral,
-           NumericContractDescriptor(
-             func,
-             numDigits,
-             RoundingIntervals(roundingIntervalsStarts)))
+          (totalCollateral, NumericContractDescriptor(func, numDigits, RoundingIntervals(roundingIntervalsStarts)))
         }
         contractInfoT match {
           case Success(contractInfo) => contractInfo

@@ -7,9 +7,8 @@ import org.scalacheck.{Prop, Properties}
   */
 class P2PKHScriptSignatureSpec extends Properties("P2PKHSpec") {
 
-  property("Serialization symmetry") =
-    Prop.forAll(ScriptGenerators.p2pkhScriptSignature) { p2pkhScriptSig =>
-      P2PKHScriptSignature(p2pkhScriptSig.hex) == p2pkhScriptSig
+  property("Serialization symmetry") = Prop.forAll(ScriptGenerators.p2pkhScriptSignature) { p2pkhScriptSig =>
+    P2PKHScriptSignature(p2pkhScriptSig.hex) == p2pkhScriptSig
 
-    }
+  }
 }

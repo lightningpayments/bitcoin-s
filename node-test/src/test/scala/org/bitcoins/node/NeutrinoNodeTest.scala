@@ -25,9 +25,7 @@ class NeutrinoNodeTest extends NodeTestWithCachedBitcoindPair {
     val outcomeF: Future[Outcome] = for {
       _ <- torClientF
       bitcoinds <- clientsF
-      outcome = withNeutrinoNodeConnectedToBitcoinds(test, bitcoinds.toVector)(
-        system,
-        getFreshConfig)
+      outcome = withNeutrinoNodeConnectedToBitcoinds(test, bitcoinds.toVector)(system, getFreshConfig)
       f <- outcome.toFuture
     } yield f
     new FutureOutcome(outcomeF)

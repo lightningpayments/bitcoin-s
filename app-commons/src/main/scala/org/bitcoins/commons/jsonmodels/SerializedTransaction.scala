@@ -4,16 +4,8 @@ import org.bitcoins.core.number.{Int32, UInt32}
 import org.bitcoins.core.protocol.script._
 import org.bitcoins.core.protocol.transaction._
 import org.bitcoins.commons.serializers.JsonSerializers._
-import org.bitcoins.core.script.constant.{
-  ScriptConstant,
-  ScriptNumberOperation,
-  ScriptToken
-}
-import org.bitcoins.crypto.{
-  DoubleSha256DigestBE,
-  ECDigitalSignature,
-  ECPublicKeyBytes
-}
+import org.bitcoins.core.script.constant.{ScriptConstant, ScriptNumberOperation, ScriptToken}
+import org.bitcoins.crypto.{DoubleSha256DigestBE, ECDigitalSignature, ECPublicKeyBytes}
 import play.api.libs.json._
 import scodec.bits.ByteVector
 
@@ -64,8 +56,7 @@ object SerializedTransaction {
     }
   }
 
-  def decodeRawTransactionWitness(
-      witness: ScriptWitness): Option[SerializedTransactionWitness] = {
+  def decodeRawTransactionWitness(witness: ScriptWitness): Option[SerializedTransactionWitness] = {
     witness match {
       case EmptyScriptWitness => None
       case p2wpkh: P2WPKHWitnessV0 =>
@@ -80,17 +71,14 @@ object SerializedTransaction {
         Some(
           SerializedTransactionWitness(hex = p2wsh.hex,
                                        scriptType = Some("P2WSH"),
-                                       script =
-                                         Some(p2wsh.redeemScript.asm.toVector),
+                                       script = Some(p2wsh.redeemScript.asm.toVector),
                                        pubKey = None,
                                        signature = None,
                                        stack = Some(p2wsh.stack.toVector.tail)))
     }
   }
 
-  def decodeTransactionInput(
-      input: TransactionInput,
-      witnessOpt: Option[ScriptWitness]): SerializedTransactionInput = {
+  def decodeTransactionInput(input: TransactionInput, witnessOpt: Option[ScriptWitness]): SerializedTransactionInput = {
     val decodedWitnessOpt = witnessOpt.flatMap(decodeRawTransactionWitness)
 
     SerializedTransactionInput(
@@ -103,9 +91,7 @@ object SerializedTransaction {
     )
   }
 
-  def decodeTransactionOutput(
-      output: TransactionOutput,
-      index: Int): SerializedTransactionOutput = {
+  def decodeTransactionOutput(output: TransactionOutput, index: Int): SerializedTransactionOutput = {
     SerializedTransactionOutput(value = output.value.toBigDecimal,
                                 n = UInt32(index),
                                 scriptPubKey = output.scriptPubKey.asm.toVector,

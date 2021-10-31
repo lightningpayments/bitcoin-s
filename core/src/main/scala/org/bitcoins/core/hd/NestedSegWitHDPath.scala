@@ -12,8 +12,7 @@ object NestedSegWitHDPath extends HDPathFactory[NestedSegWitHDPath] {
     */
   override val PURPOSE: Int = 49
 
-  private case class NestedSegWitHDPathImpl(address: HDAddress)
-      extends NestedSegWitHDPath
+  private case class NestedSegWitHDPathImpl(address: HDAddress) extends NestedSegWitHDPath
 
   override def apply(
       coinType: HDCoinType,

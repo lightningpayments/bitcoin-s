@@ -8,9 +8,8 @@ class CRUDTestPostgres extends TestPostgresDAOFixture {
     testCreate(testDAO).map(result => assert(result))
   }
 
-  it must "successfully create multiple db row and read them back" in {
-    testDAO =>
-      testCreateAll(testDAO).map(result => assert(result))
+  it must "successfully create multiple db row and read them back" in { testDAO =>
+    testCreateAll(testDAO).map(result => assert(result))
   }
 
   it must "successfully delete a db row" in { testDAO =>
@@ -25,17 +24,15 @@ class CRUDTestPostgres extends TestPostgresDAOFixture {
     testUpsert(testDAO).map(result => assert(result))
   }
 
-  it must "successfully upsert multiple db row and read them back" in {
-    testDAO =>
-      testUpsertAll(testDAO).map(result => assert(result))
+  it must "successfully upsert multiple db row and read them back" in { testDAO =>
+    testUpsertAll(testDAO).map(result => assert(result))
   }
 
   it must "successfully update a db row and read it back" in { testDAO =>
     testUpdate(testDAO).map(result => assert(result))
   }
 
-  it must "successfully update multiple db rows and read them back" in {
-    testDAO =>
-      testUpdateAll(testDAO).map(result => assert(result))
+  it must "successfully update multiple db rows and read them back" in { testDAO =>
+    testUpdateAll(testDAO).map(result => assert(result))
   }
 }

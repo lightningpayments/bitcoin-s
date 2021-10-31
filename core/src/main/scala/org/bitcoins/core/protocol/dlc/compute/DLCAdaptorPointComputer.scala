@@ -1,15 +1,7 @@
 package org.bitcoins.core.protocol.dlc.compute
 
-import org.bitcoins.core.protocol.dlc.models.{
-  ContractInfo,
-  EnumContractDescriptor,
-  NumericContractDescriptor
-}
-import org.bitcoins.core.protocol.tlv.{
-  EnumOutcome,
-  SignedNumericOutcome,
-  UnsignedNumericOutcome
-}
+import org.bitcoins.core.protocol.dlc.models.{ContractInfo, EnumContractDescriptor, NumericContractDescriptor}
+import org.bitcoins.core.protocol.tlv.{EnumOutcome, SignedNumericOutcome, UnsignedNumericOutcome}
 import org.bitcoins.crypto._
 import scodec.bits.ByteVector
 
@@ -31,10 +23,7 @@ object DLCAdaptorPointComputer {
     * where outcomeHash is as specified in the DLC spec.
     * @see https://github.com/discreetlogcontracts/dlcspecs/blob/master/Oracle.md#signing-algorithm
     */
-  def computePoint(
-      pubKey: SchnorrPublicKey,
-      nonce: ECPublicKey,
-      outcome: ByteVector): ECPublicKey = {
+  def computePoint(pubKey: SchnorrPublicKey, nonce: ECPublicKey, outcome: ByteVector): ECPublicKey = {
     val hash = CryptoUtil
       .sha256SchnorrChallenge(
         nonce.schnorrNonce.bytes ++ pubKey.bytes ++ CryptoUtil
@@ -88,8 +77,7 @@ object DLCAdaptorPointComputer {
       if (digits.isEmpty) { // Then we have arrived at our result
         point match {
           case SecpPointInfinity =>
-            throw new IllegalArgumentException(
-              "Sum cannot be point at infinity.")
+            throw new IllegalArgumentException("Sum cannot be point at infinity.")
           case point: SecpPointFinite => point.toPublicKey
         }
       } else {
@@ -112,8 +100,7 @@ object DLCAdaptorPointComputer {
   object AdditionTrieNode {
 
     /** Creates a fresh AdditionTreeNode for a given preComputeTable */
-    def makeRoot(
-        preComputeTable: Vector[Vector[ECPublicKey]]): AdditionTrieNode = {
+    def makeRoot(preComputeTable: Vector[Vector[ECPublicKey]]): AdditionTrieNode = {
       AdditionTrieNode(preComputeTable, pointOpt = Some(SecpPointInfinity))
     }
   }
@@ -168,8 +155,7 @@ object DLCAdaptorPointComputer {
                 )
               case UnsignedNumericOutcome(digits) => digits
               case _: SignedNumericOutcome =>
-                throw new UnsupportedOperationException(
-                  "Signed numeric outcomes not supported!")
+                throw new UnsupportedOperationException("Signed numeric outcomes not supported!")
             }
 
             outcomeIndices.zipWithIndex.map { case (outcomeIndex, nonceIndex) =>
@@ -192,8 +178,7 @@ object DLCAdaptorPointComputer {
               case UnsignedNumericOutcome(digits) =>
                 additionTries(oracleIndex).computeSum(digits)
               case _: SignedNumericOutcome =>
-                throw new UnsupportedOperationException(
-                  "Signed numeric outcomes not supported!")
+                throw new UnsupportedOperationException("Signed numeric outcomes not supported!")
             }
           }
       }

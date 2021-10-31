@@ -1,10 +1,7 @@
 package org.bitcoins.core.serializers.transaction
 
 import org.bitcoins.core.number.UInt32
-import org.bitcoins.core.protocol.transaction.{
-  EmptyTransactionOutPoint,
-  TransactionOutPoint
-}
+import org.bitcoins.core.protocol.transaction.{EmptyTransactionOutPoint, TransactionOutPoint}
 import org.bitcoins.core.serializers.RawBitcoinSerializer
 import org.bitcoins.crypto.DoubleSha256Digest
 import scodec.bits.ByteVector
@@ -12,8 +9,7 @@ import scodec.bits.ByteVector
 /** Source for serialization
   * https://bitcoin.org/en/developer-reference#outpoint
   */
-sealed abstract class RawTransactionOutPointParser
-    extends RawBitcoinSerializer[TransactionOutPoint] {
+sealed abstract class RawTransactionOutPointParser extends RawBitcoinSerializer[TransactionOutPoint] {
 
   override def read(bytes: ByteVector): TransactionOutPoint = {
     val txId: ByteVector = bytes.take(32)

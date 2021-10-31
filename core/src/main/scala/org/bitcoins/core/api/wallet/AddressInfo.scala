@@ -7,7 +7,4 @@ import org.bitcoins.crypto.ECPublicKey
 /** This class represents the result of querying for address info
   * from our wallet
   */
-case class AddressInfo(
-    pubkey: ECPublicKey,
-    network: NetworkParameters,
-    path: HDPath)
+case class AddressInfo(pubkey: ECPublicKey, network: NetworkParameters, path: HDPath)

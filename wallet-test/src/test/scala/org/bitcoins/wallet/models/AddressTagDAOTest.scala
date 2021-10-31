@@ -2,12 +2,7 @@ package org.bitcoins.wallet.models
 
 import org.bitcoins.core.api.wallet.db.AddressTagDb
 import org.bitcoins.core.wallet.utxo.StorageLocationTag.HotStorage
-import org.bitcoins.core.wallet.utxo.{
-  AddressTag,
-  UnknownAddressTag,
-  UnknownAddressTagName,
-  UnknownAddressTagType
-}
+import org.bitcoins.core.wallet.utxo.{AddressTag, UnknownAddressTag, UnknownAddressTagName, UnknownAddressTagType}
 import org.bitcoins.testkit.fixtures.WalletDAOFixture
 import org.bitcoins.testkit.wallet.WalletTestUtil
 import org.bitcoins.testkitcore.util.TestUtil
@@ -21,12 +16,9 @@ class AddressTagDAOTest extends WalletDAOFixture {
   behavior of "AddressTagDAO"
 
   val exampleTag: UnknownAddressTag =
-    UnknownAddressTag(UnknownAddressTagName("Example"),
-                      UnknownAddressTagType("ExampleTagType"))
+    UnknownAddressTag(UnknownAddressTagName("Example"), UnknownAddressTagType("ExampleTagType"))
 
-  def testInsertionFailure(
-      daos: FixtureParam,
-      tag: AddressTag): Future[Assertion] = {
+  def testInsertionFailure(daos: FixtureParam, tag: AddressTag): Future[Assertion] = {
     val tagDAO = daos.addressTagDAO
     val addr = TestUtil.testBitcoinAddress
     val tagDb = AddressTagDb(addr, tag.tagName, tag.tagType)
@@ -74,13 +66,11 @@ class AddressTagDAOTest extends WalletDAOFixture {
       testInsertionFailure(daos, HotStorage)
   }
 
-  it should "insert and read an unknown address tag into the database" in {
-    daos =>
-      testInsertion(daos, exampleTag)
+  it should "insert and read an unknown address tag into the database" in { daos =>
+    testInsertion(daos, exampleTag)
   }
 
-  it should "insert and read an internal address tag into the database" in {
-    daos =>
-      testInsertion(daos, HotStorage)
+  it should "insert and read an internal address tag into the database" in { daos =>
+    testInsertion(daos, HotStorage)
   }
 }

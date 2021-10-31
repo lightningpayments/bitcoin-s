@@ -9,8 +9,6 @@ sealed trait WalletWithBitcoind {
   def bitcoind: BitcoindRpcClient
 }
 
-case class WalletWithBitcoindRpc(wallet: Wallet, bitcoind: BitcoindRpcClient)
-    extends WalletWithBitcoind
+case class WalletWithBitcoindRpc(wallet: Wallet, bitcoind: BitcoindRpcClient) extends WalletWithBitcoind
 
-case class WalletWithBitcoindV19(wallet: Wallet, bitcoind: BitcoindV19RpcClient)
-    extends WalletWithBitcoind
+case class WalletWithBitcoindV19(wallet: Wallet, bitcoind: BitcoindV19RpcClient) extends WalletWithBitcoind

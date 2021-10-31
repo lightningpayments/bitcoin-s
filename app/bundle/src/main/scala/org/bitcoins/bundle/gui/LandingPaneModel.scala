@@ -17,9 +17,7 @@ import java.nio.file.Files
 import scala.concurrent._
 import scala.concurrent.duration.DurationInt
 
-class LandingPaneModel(serverArgParser: ServerArgParser)(implicit
-    system: ActorSystem)
-    extends Logging {
+class LandingPaneModel(serverArgParser: ServerArgParser)(implicit system: ActorSystem) extends Logging {
 
   var taskRunner: TaskRunner = _
 
@@ -44,8 +42,7 @@ class LandingPaneModel(serverArgParser: ServerArgParser)(implicit
 
         val networkConfigF: Future[Config] = {
           val tmpConf =
-            BitcoinSAppConfig.fromConfig(
-              bundleConf.withFallback(appConfig.config))
+            BitcoinSAppConfig.fromConfig(bundleConf.withFallback(appConfig.config))
           val netConfF: Future[Config] = tmpConf.nodeConf.nodeType match {
             case _: InternalImplementationNodeType =>
               // If we are connecting to a node we cannot
@@ -59,8 +56,7 @@ class LandingPaneModel(serverArgParser: ServerArgParser)(implicit
                   .map { info =>
                     val networkStr =
                       DatadirUtil.networkStrToDirName(info.chain.name)
-                    ConfigFactory.parseString(
-                      s"bitcoin-s.network = $networkStr")
+                    ConfigFactory.parseString(s"bitcoin-s.network = $networkStr")
                   }
               } else {
                 //we cannot connect to bitcoind and determine
@@ -88,13 +84,11 @@ class LandingPaneModel(serverArgParser: ServerArgParser)(implicit
 
         val startedF = networkConfigF.map { networkConfig =>
           val finalAppConfig =
-            BitcoinSAppConfig.fromDatadir(appConfig.nodeConf.baseDatadir,
-                                          networkConfig)
+            BitcoinSAppConfig.fromDatadir(appConfig.nodeConf.baseDatadir, networkConfig)
           // use class base constructor to share the actor system
 
-          GlobalData.setBitcoinNetwork(
-            finalAppConfig.nodeConf.network,
-            finalAppConfig.nodeConf.socks5ProxyParams.isDefined)
+          GlobalData.setBitcoinNetwork(finalAppConfig.nodeConf.network,
+                                       finalAppConfig.nodeConf.socks5ProxyParams.isDefined)
           new BitcoinSServerMain(serverArgParser)(system, finalAppConfig)
             .run()
         }

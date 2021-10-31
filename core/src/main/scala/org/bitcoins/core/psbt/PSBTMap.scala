@@ -40,8 +40,7 @@ sealed trait PSBTMap[+RecordType <: PSBTRecord] extends NetworkElement {
       .filterNot(element => keyIdFactory.fromByte(element.key.head) == key)
   }
 
-  protected def distinctByKey[rType <: PSBTRecord](
-      records: Vector[rType]): Vector[rType] = {
+  protected def distinctByKey[rType <: PSBTRecord](records: Vector[rType]): Vector[rType] = {
     records.groupBy(_.key).map(_._2.head).toVector
   }
 }
@@ -50,10 +49,7 @@ object PSBTMap {
   final val separatorByte: Byte = 0x00.byteValue
 }
 
-sealed trait PSBTMapFactory[
-    RecordType <: PSBTRecord,
-    MapType <: PSBTMap[RecordType]]
-    extends Factory[MapType] {
+sealed trait PSBTMapFactory[RecordType <: PSBTRecord, MapType <: PSBTMap[RecordType]] extends Factory[MapType] {
   def recordFactory: Factory[RecordType]
 
   def constructMap(elements: Vector[RecordType]): MapType
@@ -62,9 +58,7 @@ sealed trait PSBTMapFactory[
 
   override def fromBytes(bytes: ByteVector): MapType = {
     @tailrec
-    def loop(
-        remainingBytes: ByteVector,
-        accum: Vector[RecordType]): Vector[RecordType] = {
+    def loop(remainingBytes: ByteVector, accum: Vector[RecordType]): Vector[RecordType] = {
       if (remainingBytes.head == PSBTMap.separatorByte) {
         accum
       } else {
@@ -84,8 +78,7 @@ case class GlobalPSBTMap(elements: Vector[GlobalPSBTRecord])
     with PSBTMap[GlobalPSBTRecord] {
   import org.bitcoins.core.psbt.GlobalPSBTRecord._
   import org.bitcoins.core.psbt.PSBTGlobalKeyId._
-  require(getRecords(UnsignedTransactionKeyId).nonEmpty,
-          "A GlobalPSBTMap must have a Unsigned Transaction")
+  require(getRecords(UnsignedTransactionKeyId).nonEmpty, "A GlobalPSBTMap must have a Unsigned Transaction")
   override val wrapped: Vector[GlobalPSBTRecord] = elements
 
   def unsignedTransaction: UnsignedTransaction = {
@@ -122,12 +115,10 @@ case class GlobalPSBTMap(elements: Vector[GlobalPSBTRecord])
     // We must keep the highest version number
     // https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki#version-numbers
     if (this.version.version > other.version.version) {
-      val newElements = distinctByKey(
-        this.elements ++ other.filterRecords(VersionKeyId))
+      val newElements = distinctByKey(this.elements ++ other.filterRecords(VersionKeyId))
       GlobalPSBTMap(newElements)
     } else if (this.version.version < other.version.version) {
-      val newElements = distinctByKey(
-        this.filterRecords(VersionKeyId) ++ other.elements)
+      val newElements = distinctByKey(this.filterRecords(VersionKeyId) ++ other.elements)
       GlobalPSBTMap(newElements)
     } else {
       val newElements = distinctByKey(this.elements ++ other.elements)
@@ -202,11 +193,9 @@ case class InputPSBTMap(elements: Vector[InputPSBTRecord])
     *
     * @param spk The [[ScriptPubKey]] of the script to calculate from
     */
-  private def missingSigsFromScript(
-      spk: ScriptPubKey): Vector[Sha256Hash160Digest] = {
+  private def missingSigsFromScript(spk: ScriptPubKey): Vector[Sha256Hash160Digest] = {
     spk match {
-      case EmptyScriptPubKey | _: WitnessCommitment |
-          _: NonStandardScriptPubKey | _: UnassignedWitnessScriptPubKey =>
+      case EmptyScriptPubKey | _: WitnessCommitment | _: NonStandardScriptPubKey | _: UnassignedWitnessScriptPubKey =>
         Vector.empty
       case p2pk: P2PKScriptPubKey =>
         if (partialSignatures.isEmpty) {
@@ -218,8 +207,7 @@ case class InputPSBTMap(elements: Vector[InputPSBTRecord])
         } else Vector.empty
       case multi: MultiSignatureScriptPubKey =>
         if (partialSignatures.size < multi.requiredSigs) {
-          val keys = multi.publicKeys.filterNot(key =>
-            partialSignatures.exists(_.pubKey == key))
+          val keys = multi.publicKeys.filterNot(key => partialSignatures.exists(_.pubKey == key))
           keys.map(key => CryptoUtil.sha256Hash160(key.bytes)).toVector
         } else Vector.empty
       case p2wpkh: P2WPKHWitnessSPKV0 =>
@@ -326,13 +314,10 @@ case class InputPSBTMap(elements: Vector[InputPSBTRecord])
   }
 
   def isFinalized: Boolean =
-    getRecords(FinalizedScriptSigKeyId).nonEmpty || getRecords(
-      FinalizedScriptWitnessKeyId).nonEmpty
+    getRecords(FinalizedScriptSigKeyId).nonEmpty || getRecords(FinalizedScriptWitnessKeyId).nonEmpty
 
   def isBIP143Vulnerable: Boolean = {
-    if (
-      !isFinalized && witnessUTXOOpt.isDefined && nonWitnessOrUnknownUTXOOpt.isEmpty
-    ) {
+    if (!isFinalized && witnessUTXOOpt.isDefined && nonWitnessOrUnknownUTXOOpt.isEmpty) {
 
       val isNativeV0 = witnessUTXOOpt.get.witnessUTXO.scriptPubKey
         .isInstanceOf[WitnessScriptPubKeyV0]
@@ -359,9 +344,7 @@ case class InputPSBTMap(elements: Vector[InputPSBTRecord])
 
         (witnessUTXOOpt, nonWitnessUTXOOpt) match {
           case (None, None) =>
-            Failure(
-              new IllegalStateException(
-                s"Cannot finalize without UTXO record: $this"))
+            Failure(new IllegalStateException(s"Cannot finalize without UTXO record: $this"))
           case (Some(witnessUtxo), _) =>
             Success(witnessUtxo.witnessUTXO.scriptPubKey)
           case (_, Some(utxo)) =>
@@ -378,9 +361,7 @@ case class InputPSBTMap(elements: Vector[InputPSBTRecord])
   private def finalize(spkToSatisfy: ScriptPubKey): Try[InputPSBTMap] = {
 
     /** Removes non-utxo and non-unkown records, replacing them with finalized records */
-    def wipeAndAdd(
-        scriptSig: ScriptSignature,
-        witnessOpt: Option[ScriptWitness] = None): InputPSBTMap = {
+    def wipeAndAdd(scriptSig: ScriptSignature, witnessOpt: Option[ScriptWitness] = None): InputPSBTMap = {
       val utxos =
         getRecords(WitnessUTXOKeyId) ++ getRecords(NonWitnessUTXOKeyId)
       val unknowns =
@@ -400,17 +381,14 @@ case class InputPSBTMap(elements: Vector[InputPSBTRecord])
     /** Turns the required PartialSignatures into a ScriptSignature and calls wipeAndAdd
       * @return None if the requirement is not met
       */
-    def collectSigs(
-        required: Int,
-        constructScriptSig: Seq[PartialSignature] => ScriptSignature): Try[
-      InputPSBTMap] = {
+    def collectSigs(required: Int, constructScriptSig: Seq[PartialSignature] => ScriptSignature): Try[InputPSBTMap] = {
       val sigs = getRecords(PartialSignatureKeyId)
       if (sigs.length != required) {
-        Failure(new IllegalArgumentException(
-          s"Could not collect $required signatures when only the following were present: $sigs"))
+        Failure(
+          new IllegalArgumentException(
+            s"Could not collect $required signatures when only the following were present: $sigs"))
       } else {
-        val scriptSig = constructScriptSig(
-          sigs.map(sig => PartialSignature(sig.pubKey, sig.signature)))
+        val scriptSig = constructScriptSig(sigs.map(sig => PartialSignature(sig.pubKey, sig.signature)))
 
         val newInputMap = wipeAndAdd(scriptSig)
 
@@ -422,9 +400,7 @@ case class InputPSBTMap(elements: Vector[InputPSBTRecord])
       opt match {
         case Some(elem) => Success(elem)
         case None =>
-          Failure(
-            new IllegalStateException(
-              s"Cannot finalize the following input because $reason: $this"))
+          Failure(new IllegalStateException(s"Cannot finalize the following input because $reason: $this"))
       }
     }
 
@@ -432,35 +408,31 @@ case class InputPSBTMap(elements: Vector[InputPSBTRecord])
       case _: P2SHScriptPubKey =>
         val redeemScriptOpt =
           getRecords(RedeemScriptKeyId).headOption
-        toTry(redeemScriptOpt, "there is no redeem script record").flatMap {
-          case RedeemScript(redeemScript) =>
-            finalize(redeemScript).map { inputMap =>
-              val nestedScriptSig = inputMap
-                .getRecords(FinalizedScriptSigKeyId)
-                .head
-              val witnessOpt = inputMap
-                .getRecords(FinalizedScriptWitnessKeyId)
-                .headOption
+        toTry(redeemScriptOpt, "there is no redeem script record").flatMap { case RedeemScript(redeemScript) =>
+          finalize(redeemScript).map { inputMap =>
+            val nestedScriptSig = inputMap
+              .getRecords(FinalizedScriptSigKeyId)
+              .head
+            val witnessOpt = inputMap
+              .getRecords(FinalizedScriptWitnessKeyId)
+              .headOption
 
-              val scriptSig =
-                P2SHScriptSignature(nestedScriptSig.scriptSig, redeemScript)
-              wipeAndAdd(scriptSig, witnessOpt.map(_.scriptWitness))
-            }
+            val scriptSig =
+              P2SHScriptSignature(nestedScriptSig.scriptSig, redeemScript)
+            wipeAndAdd(scriptSig, witnessOpt.map(_.scriptWitness))
+          }
         }
       case _: P2WSHWitnessSPKV0 =>
         val redeemScriptOpt =
           getRecords(WitnessScriptKeyId).headOption
-        toTry(redeemScriptOpt, "there is no witness script record").flatMap {
-          case WitnessScript(redeemScript) =>
-            finalize(redeemScript).map { inputMap =>
-              val nestedScriptSig = inputMap
-                .getRecords(FinalizedScriptSigKeyId)
-                .head
-              val scriptSig = EmptyScriptSignature
-              wipeAndAdd(
-                scriptSig,
-                Some(P2WSHWitnessV0(redeemScript, nestedScriptSig.scriptSig)))
-            }
+        toTry(redeemScriptOpt, "there is no witness script record").flatMap { case WitnessScript(redeemScript) =>
+          finalize(redeemScript).map { inputMap =>
+            val nestedScriptSig = inputMap
+              .getRecords(FinalizedScriptSigKeyId)
+              .head
+            val scriptSig = EmptyScriptSignature
+            wipeAndAdd(scriptSig, Some(P2WSHWitnessV0(redeemScript, nestedScriptSig.scriptSig)))
+          }
         }
       case _: P2WPKHWitnessSPKV0 =>
         val sigOpt =
@@ -475,14 +447,11 @@ case class InputPSBTMap(elements: Vector[InputPSBTRecord])
           getRecords(PartialSignatureKeyId).headOption
         toTry(sigOpt, "there is no partial signature record").flatMap { sig =>
           if (sig.pubKey == p2pkWithTimeout.pubKey) {
-            val scriptSig = P2PKWithTimeoutScriptSignature(beforeTimeout = true,
-                                                           signature =
-                                                             sig.signature)
+            val scriptSig = P2PKWithTimeoutScriptSignature(beforeTimeout = true, signature = sig.signature)
             Success(wipeAndAdd(scriptSig, None))
           } else if (sig.pubKey == p2pkWithTimeout.timeoutPubKey) {
             val scriptSig =
-              P2PKWithTimeoutScriptSignature(beforeTimeout = false,
-                                             signature = sig.signature)
+              P2PKWithTimeoutScriptSignature(beforeTimeout = false, signature = sig.signature)
             Success(wipeAndAdd(scriptSig, None))
           } else {
             Failure(new IllegalArgumentException(
@@ -491,10 +460,7 @@ case class InputPSBTMap(elements: Vector[InputPSBTRecord])
         }
       case conditional: ConditionalScriptPubKey =>
         val builder =
-          Vector.newBuilder[(
-              ConditionalPath,
-              Vector[Sha256Hash160Digest],
-              RawScriptPubKey)]
+          Vector.newBuilder[(ConditionalPath, Vector[Sha256Hash160Digest], RawScriptPubKey)]
 
         /** Traverses the ConditionalScriptPubKey tree for leaves and adds them to builder */
         def addLeaves(rawSPK: RawScriptPubKey, path: Vector[Boolean]): Unit = {
@@ -503,48 +469,32 @@ case class InputPSBTMap(elements: Vector[InputPSBTRecord])
               addLeaves(conditional.trueSPK, path :+ true)
               addLeaves(conditional.falseSPK, path :+ false)
             case p2pkWithTimeout: P2PKWithTimeoutScriptPubKey =>
-              addLeaves(P2PKScriptPubKey.fromP2PKWithTimeout(p2pkWithTimeout,
-                                                             timeoutBranch =
-                                                               false),
-                        path :+ true)
+              addLeaves(P2PKScriptPubKey.fromP2PKWithTimeout(p2pkWithTimeout, timeoutBranch = false), path :+ true)
               val timeoutSPK = CLTVScriptPubKey(
                 p2pkWithTimeout.lockTime,
-                P2PKScriptPubKey.fromP2PKWithTimeout(p2pkWithTimeout,
-                                                     timeoutBranch = true))
+                P2PKScriptPubKey.fromP2PKWithTimeout(p2pkWithTimeout, timeoutBranch = true))
               addLeaves(timeoutSPK, path :+ false)
             case cltv: CLTVScriptPubKey =>
               addLeaves(cltv.nestedScriptPubKey, path)
             case csv: CSVScriptPubKey =>
               addLeaves(csv.nestedScriptPubKey, path)
             case p2pkh: P2PKHScriptPubKey =>
-              builder += ((ConditionalPath.fromBranch(path),
-                           Vector(p2pkh.pubKeyHash),
-                           p2pkh))
+              builder += ((ConditionalPath.fromBranch(path), Vector(p2pkh.pubKeyHash), p2pkh))
             case p2pk: P2PKScriptPubKey =>
               val hash = CryptoUtil.sha256Hash160(p2pk.publicKey.bytes)
-              builder += ((ConditionalPath.fromBranch(path),
-                           Vector(hash),
-                           p2pk))
+              builder += ((ConditionalPath.fromBranch(path), Vector(hash), p2pk))
             case multiSig: MultiSignatureScriptPubKey =>
               // If no sigs are required we handle in a special way below
               if (multiSig.requiredSigs == 0) {
-                builder += ((ConditionalPath.fromBranch(path),
-                             Vector.empty,
-                             multiSig))
+                builder += ((ConditionalPath.fromBranch(path), Vector.empty, multiSig))
               } else {
-                val hashes = multiSig.publicKeys.toVector.map(pubKey =>
-                  CryptoUtil.sha256Hash160(pubKey.bytes))
-                builder += ((ConditionalPath.fromBranch(path),
-                             hashes,
-                             multiSig))
+                val hashes = multiSig.publicKeys.toVector.map(pubKey => CryptoUtil.sha256Hash160(pubKey.bytes))
+                builder += ((ConditionalPath.fromBranch(path), hashes, multiSig))
               }
             case EmptyScriptPubKey =>
-              builder += ((ConditionalPath.fromBranch(path),
-                           Vector.empty,
-                           EmptyScriptPubKey))
+              builder += ((ConditionalPath.fromBranch(path), Vector.empty, EmptyScriptPubKey))
             case _: NonStandardScriptPubKey | _: WitnessCommitment =>
-              throw new UnsupportedOperationException(
-                s"$rawSPK is not yet supported")
+              throw new UnsupportedOperationException(s"$rawSPK is not yet supported")
           }
         }
 
@@ -561,9 +511,7 @@ case class InputPSBTMap(elements: Vector[InputPSBTRecord])
           leaves.find(leaf => hashes.forall(leaf._2.contains))
         }
 
-        val leafT = toTry(
-          leafOpt,
-          s"no conditional branch using $sigs in $conditional could be found")
+        val leafT = toTry(leafOpt, s"no conditional branch using $sigs in $conditional could be found")
 
         leafT.flatMap { case (path, _, spk) =>
           val finalizedOpt = finalize(spk)
@@ -572,28 +520,21 @@ case class InputPSBTMap(elements: Vector[InputPSBTRecord])
               .getRecords(FinalizedScriptSigKeyId)
               .head
             val scriptSig =
-              ConditionalScriptSignature.fromNestedScriptSig(
-                nestedScriptSig.scriptSig,
-                path)
+              ConditionalScriptSignature.fromNestedScriptSig(nestedScriptSig.scriptSig, path)
             wipeAndAdd(scriptSig)
           }
         }
       case locktime: LockTimeScriptPubKey =>
         finalize(locktime.nestedScriptPubKey)
       case _: P2PKHScriptPubKey =>
-        collectSigs(
-          required = 1,
-          sigs => P2PKHScriptSignature(sigs.head.signature, sigs.head.pubKey))
+        collectSigs(required = 1, sigs => P2PKHScriptSignature(sigs.head.signature, sigs.head.pubKey))
       case _: P2PKScriptPubKey =>
-        collectSigs(required = 1,
-                    sigs => P2PKScriptSignature(sigs.head.signature))
+        collectSigs(required = 1, sigs => P2PKScriptSignature(sigs.head.signature))
       case multiSig: MultiSignatureScriptPubKey =>
-        def generateScriptSig(
-            sigs: Seq[PartialSignature]): MultiSignatureScriptSignature = {
+        def generateScriptSig(sigs: Seq[PartialSignature]): MultiSignatureScriptSignature = {
           val sortedSigs = sigs
             .map { partialSig =>
-              (partialSig.signature,
-               multiSig.publicKeys.indexOf(partialSig.pubKey))
+              (partialSig.signature, multiSig.publicKeys.indexOf(partialSig.pubKey))
             }
             .sortBy(_._2)
             .map(_._1)
@@ -605,11 +546,8 @@ case class InputPSBTMap(elements: Vector[InputPSBTRecord])
       case EmptyScriptPubKey =>
         val scriptSig = TrivialTrueScriptSignature
         Success(wipeAndAdd(scriptSig))
-      case _: NonStandardScriptPubKey | _: UnassignedWitnessScriptPubKey |
-          _: WitnessCommitment =>
-        Failure(
-          new UnsupportedOperationException(
-            s"$spkToSatisfy is not yet supported"))
+      case _: NonStandardScriptPubKey | _: UnassignedWitnessScriptPubKey | _: WitnessCommitment =>
+        Failure(new UnsupportedOperationException(s"$spkToSatisfy is not yet supported"))
     }
   }
 
@@ -632,8 +570,7 @@ case class InputPSBTMap(elements: Vector[InputPSBTRecord])
   def toUTXOSatisfyingInfoUsingSigners(
       txIn: TransactionInput,
       signers: Vector[Sign],
-      conditionalPath: ConditionalPath =
-        ConditionalPath.NoCondition): ScriptSignatureParams[InputInfo] = {
+      conditionalPath: ConditionalPath = ConditionalPath.NoCondition): ScriptSignatureParams[InputInfo] = {
     require(!isFinalized, s"Cannot update an InputPSBTMap that is finalized")
 
     val infoSingle =
@@ -680,11 +617,9 @@ case class InputPSBTMap(elements: Vector[InputPSBTRecord])
         scriptSig.scriptSig match {
           case p2sh: P2SHScriptSignature =>
             Some(p2sh.redeemScript)
-          case TrivialTrueScriptSignature | EmptyScriptSignature |
-              _: CLTVScriptSignature | _: CSVScriptSignature |
-              _: ConditionalScriptSignature | _: MultiSignatureScriptSignature |
-              _: NonStandardScriptSignature | _: P2PKHScriptSignature |
-              _: P2PKScriptSignature =>
+          case TrivialTrueScriptSignature | EmptyScriptSignature | _: CLTVScriptSignature | _: CSVScriptSignature |
+              _: ConditionalScriptSignature | _: MultiSignatureScriptSignature | _: NonStandardScriptSignature |
+              _: P2PKHScriptSignature | _: P2PKScriptSignature =>
             None
         }
       case None => None
@@ -692,12 +627,7 @@ case class InputPSBTMap(elements: Vector[InputPSBTRecord])
 
     val scriptWitnessOpt = finalizedScriptWitnessOpt.map(_.scriptWitness)
 
-    InputInfo(outPoint,
-              output,
-              redeemScriptOpt,
-              scriptWitnessOpt,
-              conditionalPath,
-              preImages)
+    InputInfo(outPoint, output, redeemScriptOpt, scriptWitnessOpt, conditionalPath, preImages)
   }
 
   private def toInputInfoNonFinalized(
@@ -715,8 +645,7 @@ case class InputPSBTMap(elements: Vector[InputPSBTRecord])
       val tx = txVec.head.transactionSpent
       tx.outputs(txIn.previousOutput.vout.toInt)
     } else {
-      throw new RuntimeException(
-        "Not enough information in the InputPSBTMap to get a valid InputInfo")
+      throw new RuntimeException("Not enough information in the InputPSBTMap to get a valid InputInfo")
     }
 
     val redeemScriptOpt = this.redeemScriptOpt.map(_.redeemScript)
@@ -727,36 +656,27 @@ case class InputPSBTMap(elements: Vector[InputPSBTRecord])
         Some(P2WSHWitnessV0(scriptWitnessVec.head.witnessScript))
       } else if (
         output.scriptPubKey
-          .isInstanceOf[P2WPKHWitnessSPKV0] || redeemScriptOpt.exists(
-          _.isInstanceOf[P2WPKHWitnessSPKV0])
+          .isInstanceOf[P2WPKHWitnessSPKV0] || redeemScriptOpt.exists(_.isInstanceOf[P2WPKHWitnessSPKV0])
       ) {
-        require(preImages.size == 1,
-                "P2WPKHWitnessV0 must have it's public key as a pre-image")
+        require(preImages.size == 1, "P2WPKHWitnessV0 must have it's public key as a pre-image")
 
         preImages.head match {
           case pubKey: ECPublicKey =>
             Some(P2WPKHWitnessV0(pubKey))
           case _: NetworkElement =>
-            throw new IllegalArgumentException(
-              "P2WPKHWitnessV0 must have it's public key as a pre-image")
+            throw new IllegalArgumentException("P2WPKHWitnessV0 must have it's public key as a pre-image")
         }
       } else {
         None
       }
 
-    InputInfo(outPoint,
-              output,
-              redeemScriptOpt,
-              scriptWitnessOpt,
-              conditionalPath,
-              preImages)
+    InputInfo(outPoint, output, redeemScriptOpt, scriptWitnessOpt, conditionalPath, preImages)
   }
 
   def toUTXOSigningInfo(
       txIn: TransactionInput,
       signer: Sign,
-      conditionalPath: ConditionalPath =
-        ConditionalPath.NoCondition): ECSignatureParams[InputInfo] = {
+      conditionalPath: ConditionalPath = ConditionalPath.NoCondition): ECSignatureParams[InputInfo] = {
     require(!isFinalized, s"Cannot update an InputPSBTMap that is finalized")
     val txVec = getRecords(NonWitnessUTXOKeyId)
 
@@ -770,8 +690,7 @@ case class InputPSBTMap(elements: Vector[InputPSBTRecord])
     ECSignatureParams(inputInfo, txVec.head.transactionSpent, signer, hashType)
   }
 
-  private def changeToWitnessUTXO(
-      transactionOutput: TransactionOutput): InputPSBTMap = {
+  private def changeToWitnessUTXO(transactionOutput: TransactionOutput): InputPSBTMap = {
     val newElements = transactionOutput.scriptPubKey match {
       case _: P2SHScriptPubKey =>
         if (redeemScriptOpt.isDefined) {
@@ -789,10 +708,8 @@ case class InputPSBTMap(elements: Vector[InputPSBTRecord])
         } else {
           elements
         }
-      case _: WitnessScriptPubKeyV0 | _: P2PKHScriptPubKey |
-          _: P2PKScriptPubKey | _: P2PKWithTimeoutScriptPubKey |
-          _: MultiSignatureScriptPubKey | EmptyScriptPubKey |
-          _: LockTimeScriptPubKey | _: NonStandardScriptPubKey |
+      case _: WitnessScriptPubKeyV0 | _: P2PKHScriptPubKey | _: P2PKScriptPubKey | _: P2PKWithTimeoutScriptPubKey |
+          _: MultiSignatureScriptPubKey | EmptyScriptPubKey | _: LockTimeScriptPubKey | _: NonStandardScriptPubKey |
           _: WitnessCommitment | _: ConditionalScriptPubKey =>
         elements
       case _: WitnessScriptPubKey =>
@@ -821,8 +738,7 @@ case class InputPSBTMap(elements: Vector[InputPSBTRecord])
             val out = nonWitUtxo.outputs(txIn.previousOutput.vout.toInt)
             changeToWitnessUTXO(out).elements
           } else {
-            throw new IllegalArgumentException(
-              s"Invalid txIn given, got: $txIn")
+            throw new IllegalArgumentException(s"Invalid txIn given, got: $txIn")
           }
         } else {
           elements
@@ -849,8 +765,7 @@ object InputPSBTMap extends PSBTMapFactory[InputPSBTRecord, InputPSBTMap] {
     val utxos = spendingInfo.inputInfo match {
       case _: UnassignedSegwitNativeInputInfo =>
         Vector(WitnessUTXO(spendingInfo.output))
-      case _: RawInputInfo | _: P2SHNonSegwitInputInfo |
-          _: SegwitV0NativeInputInfo | _: P2SHNestedSegwitV0InputInfo =>
+      case _: RawInputInfo | _: P2SHNonSegwitInputInfo | _: SegwitV0NativeInputInfo | _: P2SHNestedSegwitV0InputInfo =>
         Vector(NonWitnessOrUnknownUTXO(spendingInfo.prevTransaction))
     }
 
@@ -876,13 +791,9 @@ object InputPSBTMap extends PSBTMapFactory[InputPSBTRecord, InputPSBTMap] {
     * from a NewSpendingInfoFull, the corresponding PSBT's unsigned transaction,
     * and if this is a non-witness spend, the transaction being spent
     */
-  def fromUTXOInfo(
-      spendingInfo: ScriptSignatureParams[InputInfo],
-      unsignedTx: Transaction): InputPSBTMap = {
+  def fromUTXOInfo(spendingInfo: ScriptSignatureParams[InputInfo], unsignedTx: Transaction): InputPSBTMap = {
     val sigs = spendingInfo.toSingles.map { spendingInfoSingle =>
-      BitcoinSigner.signSingle(spendingInfoSingle,
-                               unsignedTx,
-                               isDummySignature = false)
+      BitcoinSigner.signSingle(spendingInfoSingle, unsignedTx, isDummySignature = false)
     }
 
     val builder = Vector.newBuilder[InputPSBTRecord]
@@ -890,8 +801,7 @@ object InputPSBTMap extends PSBTMapFactory[InputPSBTRecord, InputPSBTMap] {
     spendingInfo.inputInfo match {
       case _: UnassignedSegwitNativeInputInfo =>
         builder.+=(WitnessUTXO(spendingInfo.output))
-      case _: RawInputInfo | _: P2SHNonSegwitInputInfo |
-          _: SegwitV0NativeInputInfo | _: P2SHNestedSegwitV0InputInfo =>
+      case _: RawInputInfo | _: P2SHNonSegwitInputInfo | _: SegwitV0NativeInputInfo | _: P2SHNestedSegwitV0InputInfo =>
         builder.+=(NonWitnessOrUnknownUTXO(spendingInfo.prevTransaction))
     }
 
@@ -912,8 +822,7 @@ object InputPSBTMap extends PSBTMapFactory[InputPSBTRecord, InputPSBTMap] {
         }
       case p2wsh: P2WSHV0InputInfo =>
         builder.+=(WitnessScript(p2wsh.scriptWitness.redeemScript))
-      case _: RawInputInfo | _: P2WPKHV0InputInfo |
-          _: UnassignedSegwitNativeInputInfo =>
+      case _: RawInputInfo | _: P2WPKHV0InputInfo | _: UnassignedSegwitNativeInputInfo =>
         ()
     }
 

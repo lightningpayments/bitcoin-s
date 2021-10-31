@@ -60,9 +60,7 @@ sealed trait PartialMerkleTree {
         remainingBits: BitVector,
         height: Int,
         pos: Int,
-        accumMatches: Seq[DoubleSha256Digest]): (
-        Seq[DoubleSha256Digest],
-        BitVector) = {
+        accumMatches: Seq[DoubleSha256Digest]): (Seq[DoubleSha256Digest], BitVector) = {
       if (height == maxHeight)
         extractLeafMatch(accumMatches, remainingBits, subTree)
       else {
@@ -72,25 +70,12 @@ sealed trait PartialMerkleTree {
           subTree match {
             case n: Node[DoubleSha256Digest] =>
               //since we are just trying to extract bloom filter matches, recurse into the two subtrees
-              val (leftTreeMatches, leftRemainingBits) = loop(
-                n.l,
-                remainingBits.tail,
-                height + 1,
-                (2 * pos),
-                accumMatches)
+              val (leftTreeMatches, leftRemainingBits) =
+                loop(n.l, remainingBits.tail, height + 1, (2 * pos), accumMatches)
               //check to see if we have a right subtree
-              if (
-                PartialMerkleTree.existsRightSubTree(pos,
-                                                     numTransactions,
-                                                     maxHeight,
-                                                     height)
-              ) {
+              if (PartialMerkleTree.existsRightSubTree(pos, numTransactions, maxHeight, height)) {
                 val (rightTreeMatches, rightRemainingBits) =
-                  loop(n.r,
-                       leftRemainingBits,
-                       height + 1,
-                       (2 * pos) + 1,
-                       leftTreeMatches)
+                  loop(n.r, leftRemainingBits, height + 1, (2 * pos) + 1, leftTreeMatches)
                 (rightTreeMatches, rightRemainingBits)
               } else (leftTreeMatches, leftRemainingBits)
             case _: Leaf[DoubleSha256Digest] =>
@@ -115,9 +100,7 @@ sealed trait PartialMerkleTree {
   private def extractLeafMatch(
       accumMatches: Seq[DoubleSha256Digest],
       remainingBits: BitVector,
-      subTree: BinaryTree[DoubleSha256Digest]): (
-      Seq[DoubleSha256Digest],
-      BitVector) = {
+      subTree: BinaryTree[DoubleSha256Digest]): (Seq[DoubleSha256Digest], BitVector) = {
     if (remainingBits.head) {
       //means we have a txid node that matched the filter
       subTree match {
@@ -125,8 +108,9 @@ sealed trait PartialMerkleTree {
           val newAccumMatches = l.v +: accumMatches
           (newAccumMatches, remainingBits.tail)
         case x @ (_: Node[DoubleSha256Digest] | Empty) =>
-          throw new IllegalArgumentException("We cannot have a " +
-            "Node or Empty node when we supposedly have a txid node -- txid nodes should always be leaves, got: " + x)
+          throw new IllegalArgumentException(
+            "We cannot have a " +
+              "Node or Empty node when we supposedly have a txid node -- txid nodes should always be leaves, got: " + x)
       }
     } else {
       //means we have a txid node, but it did not match the filter
@@ -143,12 +127,10 @@ object PartialMerkleTree {
       bits: BitVector,
       hashes: Seq[DoubleSha256Digest])
       extends PartialMerkleTree {
-    require(bits.size % 8 == 0,
-            "As per BIP37, bits must be padded to the nearest byte")
+    require(bits.size % 8 == 0, "As per BIP37, bits must be padded to the nearest byte")
   }
 
-  def apply(
-      txMatches: Seq[(Boolean, DoubleSha256Digest)]): PartialMerkleTree = {
+  def apply(txMatches: Seq[(Boolean, DoubleSha256Digest)]): PartialMerkleTree = {
     val txIds = txMatches.map(_._2)
     val (bits, hashes) = build(txMatches)
     val tree = reconstruct(txIds.size, hashes, bits)
@@ -162,9 +144,7 @@ object PartialMerkleTree {
     *         merkle tree, and the hashes needed to be inserted
     *         according to the flags inside of bits
     */
-  private def build(txMatches: Seq[(Boolean, DoubleSha256Digest)]): (
-      BitVector,
-      Seq[DoubleSha256Digest]) = {
+  private def build(txMatches: Seq[(Boolean, DoubleSha256Digest)]): (BitVector, Seq[DoubleSha256Digest]) = {
     val maxHeight = calcMaxHeight(txMatches.size)
 
     /** This loops through our merkle tree building `bits` so we can instruct another node how to create the partial merkle tree
@@ -176,11 +156,9 @@ object PartialMerkleTree {
       * @return the binary tree that represents the partial merkle tree, the bits needed to reconstruct this partial merkle tree, and the hashes needed to be inserted
       *         according to the flags inside of bits
       */
-    def loop(
-        bits: BitVector,
-        hashes: Seq[DoubleSha256Digest],
-        height: Int,
-        pos: Int): (BitVector, Seq[DoubleSha256Digest]) = {
+    def loop(bits: BitVector, hashes: Seq[DoubleSha256Digest], height: Int, pos: Int): (
+        BitVector,
+        Seq[DoubleSha256Digest]) = {
       val parentOfMatch =
         matchesTx(maxHeight, maxHeight - height, pos, txMatches)
       val newBits = parentOfMatch +: bits
@@ -208,11 +186,7 @@ object PartialMerkleTree {
   }
 
   /** Checks if a node at given the given height and position matches a transaction in the sequence */
-  def matchesTx(
-      maxHeight: Int,
-      height: Int,
-      pos: Int,
-      matchedTx: Seq[(Boolean, DoubleSha256Digest)]): Boolean = {
+  def matchesTx(maxHeight: Int, height: Int, pos: Int, matchedTx: Seq[(Boolean, DoubleSha256Digest)]): Boolean = {
     //mimics this functionality inside of bitcoin core
     //https://github.com/bitcoin/bitcoin/blob/b7b48c8bbdf7a90861610b035d8b0a247ef78c45/src/merkleblock.cpp#L78
     val inverseHeight = maxHeight - height
@@ -232,10 +206,7 @@ object PartialMerkleTree {
     (numTransactions + (1 << height) - 1) >> height
 
   /** Calculates the hash of a node in the merkle tree */
-  private def calcHash(
-      height: Int,
-      pos: Int,
-      txIds: Seq[DoubleSha256Digest]): DoubleSha256Digest = {
+  private def calcHash(height: Int, pos: Int, txIds: Seq[DoubleSha256Digest]): DoubleSha256Digest = {
     //TODO: Optimize this to tailrec function
     //follows this function inside of bitcoin core
     //https://github.com/bitcoin/bitcoin/blob/master/src/merkleblock.cpp#L63
@@ -255,10 +226,7 @@ object PartialMerkleTree {
     * @param bits the bits used indicate the structure of the partial merkle tree
     * @return
     */
-  def apply(
-      transactionCount: UInt32,
-      hashes: Seq[DoubleSha256Digest],
-      bits: BitVector): PartialMerkleTree = {
+  def apply(transactionCount: UInt32, hashes: Seq[DoubleSha256Digest], bits: BitVector): PartialMerkleTree = {
     val tree = reconstruct(transactionCount.toInt, hashes, bits)
     PartialMerkleTree(tree, transactionCount, bits, hashes)
   }
@@ -293,33 +261,22 @@ object PartialMerkleTree {
         remainingHashes: Seq[DoubleSha256Digest],
         remainingMatches: BitVector,
         height: Int,
-        pos: Int): (
-        BinaryTree[DoubleSha256Digest],
-        Seq[DoubleSha256Digest],
-        BitVector) = {
+        pos: Int): (BinaryTree[DoubleSha256Digest], Seq[DoubleSha256Digest], BitVector) = {
       if (height == maxHeight) {
         //means we have a txid node
-        (Leaf(remainingHashes.head),
-         remainingHashes.tail,
-         remainingMatches.tail)
+        (Leaf(remainingHashes.head), remainingHashes.tail, remainingMatches.tail)
       } else {
         //means we have a non txid node
         if (remainingMatches.head) {
           val nextHeight = height + 1
           val leftNodePos = pos * 2
           val rightNodePos = (pos * 2) + 1
-          val (leftNode, leftRemainingHashes, leftRemainingBits) = loop(
-            remainingHashes,
-            remainingMatches.tail,
-            nextHeight,
-            leftNodePos)
+          val (leftNode, leftRemainingHashes, leftRemainingBits) =
+            loop(remainingHashes, remainingMatches.tail, nextHeight, leftNodePos)
           val (rightNode, rightRemainingHashes, rightRemainingBits) = {
             if (existsRightSubTree(pos, numTransaction, maxHeight, height)) {
               val (rightNode, rightRemainingHashes, rightRemainingBits) =
-                loop(leftRemainingHashes,
-                     leftRemainingBits,
-                     nextHeight,
-                     rightNodePos)
+                loop(leftRemainingHashes, leftRemainingBits, nextHeight, rightNodePos)
               //https://github.com/bitcoin/bitcoin/blob/b7b48c8bbdf7a90861610b035d8b0a247ef78c45/src/merkleblock.cpp#L121-L125
               if (nextHeight != maxHeight) {
                 //we cannot the same two hashes as child nodes UNLESS we are the max height in the binary tree
@@ -333,14 +290,11 @@ object PartialMerkleTree {
               (rightNode, rightRemainingHashes, rightRemainingBits)
             } else (leftNode, leftRemainingHashes, leftRemainingBits)
           }
-          val nodeHash = CryptoUtil.doubleSHA256(
-            leftNode.value.get.bytes ++ rightNode.value.get.bytes)
+          val nodeHash = CryptoUtil.doubleSHA256(leftNode.value.get.bytes ++ rightNode.value.get.bytes)
           val node = Node(nodeHash, leftNode, rightNode)
           (node, rightRemainingHashes, rightRemainingBits)
         } else {
-          (Leaf(remainingHashes.head),
-           remainingHashes.tail,
-           remainingMatches.tail)
+          (Leaf(remainingHashes.head), remainingHashes.tail, remainingMatches.tail)
         }
       }
     }
@@ -348,9 +302,8 @@ object PartialMerkleTree {
 
     //require(remainingBits.isEmpty, s"Remainging bits should be empty, got ${remainingBits}")
     //we must have used all the hashes provided to us to reconstruct the partial merkle tree as per BIP37
-    require(
-      remainingHashes.isEmpty,
-      "We should not have any left over hashes after building our partial merkle tree, got: " + remainingHashes)
+    require(remainingHashes.isEmpty,
+            "We should not have any left over hashes after building our partial merkle tree, got: " + remainingHashes)
     //we must not have any matches remaining, unless the remaining bits were use to pad our byte vector to 8 bits
     //for instance, we could have had 5 bits to indicate how to build the merkle tree, but we need to pad it with 3 bits
     //to give us a full byte to serialize and send over the network
@@ -371,19 +324,12 @@ object PartialMerkleTree {
     * are building a partial merkle tree from bottom up, NOT TOP DOWN. If we are building a
     * tree from top down use it's counterpart that does NOT take a maxHeight parameter
     */
-  private def existsRightSubTree(
-      pos: Int,
-      numTransaction: Int,
-      maxHeight: Int,
-      height: Int): Boolean = {
+  private def existsRightSubTree(pos: Int, numTransaction: Int, maxHeight: Int, height: Int): Boolean = {
     (pos * 2) + 1 < calcTreeWidth(numTransaction, maxHeight - height - 1)
   }
 
   /** Determines if the right sub tree can exist inside of the partial merkle tree */
-  private def existsRightSubTree(
-      pos: Int,
-      numTransaction: Int,
-      height: Int): Boolean = {
+  private def existsRightSubTree(pos: Int, numTransaction: Int, height: Int): Boolean = {
     (pos * 2) + 1 < calcTreeWidth(numTransaction, height - 1)
   }
 
@@ -391,9 +337,7 @@ object PartialMerkleTree {
     * in a byte array when reconstruction a partial merkle tree
     * [[https://github.com/bitcoin/bitcoin/blob/b7b48c8bbdf7a90861610b035d8b0a247ef78c45/src/merkleblock.cpp#L174-L175]]
     */
-  private def usedAllBits(
-      bits: BitVector,
-      remainingBits: BitVector): Boolean = {
+  private def usedAllBits(bits: BitVector, remainingBits: BitVector): Boolean = {
     val bitsUsed = bits.size - remainingBits.size
     ((bitsUsed + 7) / 8) == ((bits.size + 7) / 8)
   }

@@ -13,9 +13,7 @@ class NumberUtilTest extends BitcoinSUnitTest {
 
   behavior of "NumberUtil"
 
-  private def runTest(
-      nBits: UInt32,
-      expected: BlockHeader.TargetDifficultyHelper): Assertion = {
+  private def runTest(nBits: UInt32, expected: BlockHeader.TargetDifficultyHelper): Assertion = {
     val expansion = NumberUtil.targetExpansion(nBits)
     assert(expansion == expected)
   }
@@ -94,9 +92,7 @@ class NumberUtilTest extends BitcoinSUnitTest {
   it must "expand the minimum difficulty on bitcoin main network" in {
     //https://stackoverflow.com/questions/22059359/trying-to-understand-nbits-value-from-stratum-protocol
     val nBits = UInt32.fromHex("1d00ffff")
-    val expected = new BigInteger(
-      "00ffff0000000000000000000000000000000000000000000000000000",
-      16)
+    val expected = new BigInteger("00ffff0000000000000000000000000000000000000000000000000000", 16)
     val diffHelper = {
       BlockHeader.TargetDifficultyHelper(
         expected,
@@ -167,18 +163,14 @@ class NumberUtilTest extends BitcoinSUnitTest {
 
     NumberUtil.targetCompression(expanded10) must be(UInt32.fromHex("01120000"))
 
-    NumberUtil.targetCompression(bigInt = BigInt(0x80),
-                                 isNegative = false) must be(
-      UInt32.fromHex("02008000"))
+    NumberUtil.targetCompression(bigInt = BigInt(0x80), isNegative = false) must be(UInt32.fromHex("02008000"))
     val expanded11 = NumberUtil.targetExpansion(UInt32.fromHex("01fedcba"))
 
     expanded11.difficulty must be(126)
     expanded11.isNegative must be(true)
     NumberUtil.targetCompression(expanded11) must be(UInt32.fromHex("01fe0000"))
 
-    NumberUtil.targetCompression(bigInt = BigInt(0x80),
-                                 isNegative = false) must be(
-      UInt32.fromHex("02008000"))
+    NumberUtil.targetCompression(bigInt = BigInt(0x80), isNegative = false) must be(UInt32.fromHex("02008000"))
 
     val expanded12 = NumberUtil.targetExpansion(UInt32.fromHex("02123456"))
     NumberUtil.targetCompression(expanded12) must be(UInt32.fromHex("02123400"))
@@ -236,35 +228,33 @@ class NumberUtilTest extends BitcoinSUnitTest {
   it must "correctly decompose in any base" in {
     assert(NumberUtil.decompose(255, 16, 2) == Vector(15, 15))
 
-    forAll(Gen.choose(2, 256), Gen.choose(0L, Long.MaxValue)) {
-      case (base, num) =>
-        val numStr = num.toString
-        val expectedBase10 = numStr
-          .foldLeft(Vector.empty[Int]) { case (vec, char) =>
-            vec :+ (char.toInt - '0'.toInt)
-          }
-        val base10 = NumberUtil.decompose(num, 10, numStr.length)
-        assert(base10 == expectedBase10)
-
-        // Add some extra digits for leading zeroes
-        val numDigits = (Math.log(num.toDouble) / Math.log(base)).toInt + 5
-        val decomposed = NumberUtil.decompose(num, base, numDigits)
-        assert(decomposed.head == 0)
-
-        @tailrec
-        def pow(base: BigInt, exp: Int, prodSoFar: BigInt = 1): BigInt = {
-          if (exp == 0) {
-            prodSoFar
-          } else {
-            pow(base, exp - 1, base * prodSoFar)
-          }
+    forAll(Gen.choose(2, 256), Gen.choose(0L, Long.MaxValue)) { case (base, num) =>
+      val numStr = num.toString
+      val expectedBase10 = numStr
+        .foldLeft(Vector.empty[Int]) { case (vec, char) =>
+          vec :+ (char.toInt - '0'.toInt)
         }
+      val base10 = NumberUtil.decompose(num, 10, numStr.length)
+      assert(base10 == expectedBase10)
 
-        val computedNum = decomposed.reverse.zipWithIndex.foldLeft(BigInt(0)) {
-          case (sumSoFar, (digit, position)) =>
-            sumSoFar + digit * pow(BigInt(base), position)
+      // Add some extra digits for leading zeroes
+      val numDigits = (Math.log(num.toDouble) / Math.log(base)).toInt + 5
+      val decomposed = NumberUtil.decompose(num, base, numDigits)
+      assert(decomposed.head == 0)
+
+      @tailrec
+      def pow(base: BigInt, exp: Int, prodSoFar: BigInt = 1): BigInt = {
+        if (exp == 0) {
+          prodSoFar
+        } else {
+          pow(base, exp - 1, base * prodSoFar)
         }
-        assert(computedNum.toLong == num)
+      }
+
+      val computedNum = decomposed.reverse.zipWithIndex.foldLeft(BigInt(0)) { case (sumSoFar, (digit, position)) =>
+        sumSoFar + digit * pow(BigInt(base), position)
+      }
+      assert(computedNum.toLong == num)
     }
   }
 
@@ -301,12 +291,11 @@ class NumberUtilTest extends BitcoinSUnitTest {
   }
 
   it must "correctly invert decompose" in {
-    forAll(Gen.choose(2, 256), Gen.choose(0L, Long.MaxValue)) {
-      case (base, num) =>
-        // Add some extra digits for leading zeroes
-        val numDigits = (Math.log(num.toDouble) / Math.log(base)).toInt + 5
-        val digits = NumberUtil.decompose(num, base, numDigits)
-        assert(NumberUtil.fromDigits(digits, base, numDigits) == num)
+    forAll(Gen.choose(2, 256), Gen.choose(0L, Long.MaxValue)) { case (base, num) =>
+      // Add some extra digits for leading zeroes
+      val numDigits = (Math.log(num.toDouble) / Math.log(base)).toInt + 5
+      val digits = NumberUtil.decompose(num, base, numDigits)
+      assert(NumberUtil.fromDigits(digits, base, numDigits) == num)
     }
   }
 }

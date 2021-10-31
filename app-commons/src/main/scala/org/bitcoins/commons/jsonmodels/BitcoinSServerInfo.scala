@@ -5,10 +5,7 @@ import org.bitcoins.crypto.DoubleSha256DigestBE
 import ujson._
 
 /** Basic information about the chain state of the Bitcoin-S server */
-case class BitcoinSServerInfo(
-    network: BitcoinNetwork,
-    blockHeight: Int,
-    blockHash: DoubleSha256DigestBE) {
+case class BitcoinSServerInfo(network: BitcoinNetwork, blockHeight: Int, blockHash: DoubleSha256DigestBE) {
 
   lazy val toJson: Value = {
     Obj(

@@ -83,8 +83,7 @@ object WalletStorage extends KeyManagerLogger {
       import MnemonicJsonKeys._
       ujson.Obj(
         MNEMONIC_SEED -> mnemonicCode.toVector,
-        CREATION_TIME -> ujson.Num(
-          mnemonic.creationTime.getEpochSecond.toDouble)
+        CREATION_TIME -> ujson.Num(mnemonic.creationTime.getEpochSecond.toDouble)
       )
     }
 
@@ -129,8 +128,7 @@ object WalletStorage extends KeyManagerLogger {
 
     if (hasMnemonic) {
       logger.info(s"$seedPath already exists")
-      throw new RuntimeException(
-        s"Attempting to overwrite an existing seed, this is dangerous! path: $seedPath")
+      throw new RuntimeException(s"Attempting to overwrite an existing seed, this is dangerous! path: $seedPath")
     } else {
       logger.trace(s"$seedPath does not exist")
       writeJsToDisk()
@@ -149,8 +147,7 @@ object WalletStorage extends KeyManagerLogger {
     }
   }
 
-  private def readJsonFromDisk(
-      seedPath: Path): Either[ReadMnemonicError, Value] = {
+  private def readJsonFromDisk(seedPath: Path): Either[ReadMnemonicError, Value] = {
     if (Files.isRegularFile(seedPath)) {
       val rawJson = Files.readAllLines(seedPath).asScala.mkString("\n")
       logger.debug(s"Read raw mnemonic from $seedPath")
@@ -169,17 +166,12 @@ object WalletStorage extends KeyManagerLogger {
     }
   }
 
-  case class RawEncryptedSeed(
-      rawIv: String,
-      rawCipherText: String,
-      rawSalt: String,
-      rawCreationTime: Long)
+  case class RawEncryptedSeed(rawIv: String, rawCipherText: String, rawSalt: String, rawCreationTime: Long)
 
   /** Reads the raw encrypted mnemonic from json,
     * performing no decryption
     */
-  private def readEncryptedMnemonicFromJson(
-      json: Value): Either[ReadMnemonicError, EncryptedSeed] = {
+  private def readEncryptedMnemonicFromJson(json: Value): Either[ReadMnemonicError, EncryptedSeed] = {
     import MnemonicJsonKeys._
     import ReadMnemonicError._
 
@@ -190,10 +182,7 @@ object WalletStorage extends KeyManagerLogger {
         val ivString = json(IV).str
         val cipherTextString = json(CIPHER_TEXT).str
         val rawSaltString = json(SALT).str
-        RawEncryptedSeed(ivString,
-                         cipherTextString,
-                         rawSaltString,
-                         creationTimeNum)
+        RawEncryptedSeed(ivString, cipherTextString, rawSaltString, creationTimeNum)
       } match {
         case Success(value) => Right(value)
         case Failure(exception) =>
@@ -201,37 +190,31 @@ object WalletStorage extends KeyManagerLogger {
       }
     }
 
-    readJsonTupleEither.flatMap {
-      case RawEncryptedSeed(rawIv, rawCipherText, rawSalt, rawCreationTime) =>
-        val encryptedOpt = for {
-          iv <- ByteVector.fromHex(rawIv).map(AesIV.fromValidBytes)
-          cipherText <- ByteVector.fromHex(rawCipherText)
-          salt <- ByteVector.fromHex(rawSalt).map(AesSalt(_))
-        } yield {
-          logger.debug(s"Parsed contents into an EncryptedMnemonic")
-          EncryptedSeed(AesEncryptedData(cipherText, iv),
-                        salt,
-                        Instant.ofEpochSecond(rawCreationTime))
-        }
+    readJsonTupleEither.flatMap { case RawEncryptedSeed(rawIv, rawCipherText, rawSalt, rawCreationTime) =>
+      val encryptedOpt = for {
+        iv <- ByteVector.fromHex(rawIv).map(AesIV.fromValidBytes)
+        cipherText <- ByteVector.fromHex(rawCipherText)
+        salt <- ByteVector.fromHex(rawSalt).map(AesSalt(_))
+      } yield {
+        logger.debug(s"Parsed contents into an EncryptedMnemonic")
+        EncryptedSeed(AesEncryptedData(cipherText, iv), salt, Instant.ofEpochSecond(rawCreationTime))
+      }
 
-        encryptedOpt match {
-          case Some(encrypted) => Right(encrypted)
-          case None =>
-            Left(JsonParsingError("JSON contents was not hex strings"))
-        }
+      encryptedOpt match {
+        case Some(encrypted) => Right(encrypted)
+        case None =>
+          Left(JsonParsingError("JSON contents was not hex strings"))
+      }
     }
   }
 
   /** Reads the raw unencrypted mnemonic from json */
-  private def readUnencryptedMnemonicFromJson(
-      json: Value): Either[ReadMnemonicError, DecryptedMnemonic] = {
+  private def readUnencryptedMnemonicFromJson(json: Value): Either[ReadMnemonicError, DecryptedMnemonic] = {
 
     import MnemonicJsonKeys._
     import ReadMnemonicError._
 
-    val readJsonTupleEither: Either[
-      ReadMnemonicError,
-      (Vector[String], Long)] = {
+    val readJsonTupleEither: Either[ReadMnemonicError, (Vector[String], Long)] = {
       logger.trace(s"Read mnemonic JSON: Masked(json)")
       Try {
         val creationTimeNum = parseCreationTime(json)
@@ -251,16 +234,14 @@ object WalletStorage extends KeyManagerLogger {
         case Success(mnemonicCode) =>
           logger.debug(s"Parsed contents into a DecryptedMnemonic")
           val decrypted =
-            DecryptedMnemonic(mnemonicCode,
-                              Instant.ofEpochSecond(rawCreationTime))
+            DecryptedMnemonic(mnemonicCode, Instant.ofEpochSecond(rawCreationTime))
           Right(decrypted)
       }
     }
   }
 
   /** Reads the raw unencrypted xprv from json */
-  private def readUnencryptedSeedFromJson(
-      json: Value): Either[ReadMnemonicError, DecryptedExtPrivKey] = {
+  private def readUnencryptedSeedFromJson(json: Value): Either[ReadMnemonicError, DecryptedExtPrivKey] = {
 
     import MnemonicJsonKeys._
     import ReadMnemonicError._
@@ -293,9 +274,7 @@ object WalletStorage extends KeyManagerLogger {
 
   private def decryptSeed(
       encrypted: EncryptedSeed,
-      passphrase: AesPassword): Either[
-    ReadMnemonicError,
-    DecryptedSeedState] = {
+      passphrase: AesPassword): Either[ReadMnemonicError, DecryptedSeedState] = {
     // attempt to decrypt as mnemonic
     encrypted.toMnemonic(passphrase) match {
       case Failure(_) =>
@@ -323,9 +302,7 @@ object WalletStorage extends KeyManagerLogger {
     */
   def decryptSeedFromDisk(
       seedPath: Path,
-      passphraseOpt: Option[AesPassword]): Either[
-    ReadMnemonicError,
-    DecryptedSeedState] = {
+      passphraseOpt: Option[AesPassword]): Either[ReadMnemonicError, DecryptedSeedState] = {
     import MnemonicJsonKeys._
     import ReadMnemonicError._
 
@@ -386,8 +363,7 @@ object WalletStorage extends KeyManagerLogger {
 
         Try(writeSeedToDisk(seedPath, toWrite)) match {
           case Failure(exception) =>
-            logger.error(
-              s"Failed to write new seed, backup of previous seed file can be found at $backup")
+            logger.error(s"Failed to write new seed, backup of previous seed file can be found at $backup")
             throw exception
           case Success(_) =>
             logger.info("Successfully wrote to disk, deleting backup file")
@@ -424,9 +400,7 @@ object ReadMnemonicError {
   /** Something went wrong while decrypting the mnemonic.
     * Most likely the passphrase was bad
     */
-  case object DecryptionError
-      extends Error(s"Could not decrypt mnemonic!")
-      with ReadMnemonicError
+  case object DecryptionError extends Error(s"Could not decrypt mnemonic!") with ReadMnemonicError
 
   /** Something went wrong while parsing the encrypted
     * mnemonic into valid JSON
@@ -436,7 +410,5 @@ object ReadMnemonicError {
       with ReadMnemonicError
 
   /** The encrypted mnemonic was not found on disk */
-  case object NotFoundError
-      extends Error("Could not find mnemonic!")
-      with ReadMnemonicError
+  case object NotFoundError extends Error("Could not find mnemonic!") with ReadMnemonicError
 }

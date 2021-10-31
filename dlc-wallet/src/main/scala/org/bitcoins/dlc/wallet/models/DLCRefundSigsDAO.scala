@@ -9,9 +9,7 @@ import slick.lifted.{ForeignKeyQuery, ProvenShape}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-case class DLCRefundSigsDAO()(implicit
-    val ec: ExecutionContext,
-    override val appConfig: DLCAppConfig)
+case class DLCRefundSigsDAO()(implicit val ec: ExecutionContext, override val appConfig: DLCAppConfig)
     extends CRUD[DLCRefundSigsDb, Sha256Digest]
     with SlickUtil[DLCRefundSigsDb, Sha256Digest] {
   private val mappers = new org.bitcoins.db.DbCommonsColumnMappers(profile)
@@ -25,26 +23,18 @@ case class DLCRefundSigsDAO()(implicit
     DLCDAO().table
   }
 
-  override def createAll(
-      ts: Vector[DLCRefundSigsDb]): Future[Vector[DLCRefundSigsDb]] =
+  override def createAll(ts: Vector[DLCRefundSigsDb]): Future[Vector[DLCRefundSigsDb]] =
     createAllNoAutoInc(ts, safeDatabase)
 
-  override protected def findByPrimaryKeys(ids: Vector[Sha256Digest]): Query[
-    DLCRefundSigTable,
-    DLCRefundSigsDb,
-    Seq] =
+  override protected def findByPrimaryKeys(ids: Vector[Sha256Digest]): Query[DLCRefundSigTable, DLCRefundSigsDb, Seq] =
     table.filter(_.dlcId.inSet(ids))
 
-  override def findByPrimaryKey(
-      id: Sha256Digest): Query[DLCRefundSigTable, DLCRefundSigsDb, Seq] = {
+  override def findByPrimaryKey(id: Sha256Digest): Query[DLCRefundSigTable, DLCRefundSigsDb, Seq] = {
     table
       .filter(_.dlcId === id)
   }
 
-  override def findAll(dlcs: Vector[DLCRefundSigsDb]): Query[
-    DLCRefundSigTable,
-    DLCRefundSigsDb,
-    Seq] =
+  override def findAll(dlcs: Vector[DLCRefundSigsDb]): Query[DLCRefundSigTable, DLCRefundSigsDb, Seq] =
     findByPrimaryKeys(dlcs.map(_.dlcId))
 
   def deleteByDLCId(dlcId: Sha256Digest): Future[Int] = {
@@ -58,8 +48,7 @@ case class DLCRefundSigsDAO()(implicit
     safeDatabase.runVec(q.result).map(_.headOption)
   }
 
-  class DLCRefundSigTable(tag: Tag)
-      extends Table[DLCRefundSigsDb](tag, schemaName, "refund_sigs") {
+  class DLCRefundSigTable(tag: Tag) extends Table[DLCRefundSigsDb](tag, schemaName, "refund_sigs") {
 
     def dlcId: Rep[Sha256Digest] = column("dlc_id", O.PrimaryKey)
 
@@ -68,12 +57,9 @@ case class DLCRefundSigsDAO()(implicit
     def initiatorSig: Rep[Option[PartialSignature]] = column("initiator_sig")
 
     def * : ProvenShape[DLCRefundSigsDb] =
-      (dlcId, accepterSig, initiatorSig).<>(DLCRefundSigsDb.tupled,
-                                            DLCRefundSigsDb.unapply)
+      (dlcId, accepterSig, initiatorSig).<>(DLCRefundSigsDb.tupled, DLCRefundSigsDb.unapply)
 
     def fk: ForeignKeyQuery[_, DLCDb] =
-      foreignKey("fk_dlc_id",
-                 sourceColumns = dlcId,
-                 targetTableQuery = dlcTable)(_.dlcId)
+      foreignKey("fk_dlc_id", sourceColumns = dlcId, targetTableQuery = dlcTable)(_.dlcId)
   }
 }

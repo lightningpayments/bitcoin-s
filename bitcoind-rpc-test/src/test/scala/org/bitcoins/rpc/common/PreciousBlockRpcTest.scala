@@ -2,10 +2,7 @@ package org.bitcoins.rpc.common
 
 import org.bitcoins.asyncutil.AsyncUtil
 import org.bitcoins.commons.jsonmodels.bitcoind.RpcOpts.AddNodeArgument
-import org.bitcoins.testkit.rpc.{
-  BitcoindFixturesCachedPairV17,
-  BitcoindRpcTestUtil
-}
+import org.bitcoins.testkit.rpc.{BitcoindFixturesCachedPairV17, BitcoindRpcTestUtil}
 
 class PreciousBlockRpcTest extends BitcoindFixturesCachedPairV17 {
 
@@ -19,8 +16,7 @@ class PreciousBlockRpcTest extends BitcoindFixturesCachedPairV17 {
 
       blocks1 <-
         freshClient.getNewAddress.flatMap(freshClient.generateToAddress(1, _))
-      blocks2 <- otherFreshClient.getNewAddress.flatMap(
-        otherFreshClient.generateToAddress(1, _))
+      blocks2 <- otherFreshClient.getNewAddress.flatMap(otherFreshClient.generateToAddress(1, _))
 
       bestHash1 <- freshClient.getBestBlockHash
       _ = assert(bestHash1 == blocks1.head)
@@ -30,8 +26,7 @@ class PreciousBlockRpcTest extends BitcoindFixturesCachedPairV17 {
       _ <-
         freshClient
           .addNode(otherFreshClient.getDaemon.uri, AddNodeArgument.OneTry)
-      _ <- AsyncUtil.retryUntilSatisfiedF(() =>
-        BitcoindRpcTestUtil.hasSeenBlock(otherFreshClient, bestHash1))
+      _ <- AsyncUtil.retryUntilSatisfiedF(() => BitcoindRpcTestUtil.hasSeenBlock(otherFreshClient, bestHash1))
 
       _ <- otherFreshClient.preciousBlock(bestHash1)
       newBestHash <- otherFreshClient.getBestBlockHash

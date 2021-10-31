@@ -13,10 +13,8 @@ class AddressDAOTest extends WalletDAOFixture {
   it should "preserve public key scripts" in { daos =>
     val addressDAO = daos.addressDAO
 
-    val addr1 = WalletTestUtil.getAddressDb(WalletTestUtil.firstAccountDb,
-                                            addressIndex = 0)
-    val addr2 = WalletTestUtil.getAddressDb(WalletTestUtil.firstAccountDb,
-                                            addressIndex = 1)
+    val addr1 = WalletTestUtil.getAddressDb(WalletTestUtil.firstAccountDb, addressIndex = 0)
+    val addr2 = WalletTestUtil.getAddressDb(WalletTestUtil.firstAccountDb, addressIndex = 1)
     assert(addr1.scriptPubKey != addr2.scriptPubKey)
 
     for {
@@ -26,9 +24,7 @@ class AddressDAOTest extends WalletDAOFixture {
     } yield {
       assert(addr1 == created1)
       assert(addr2 == created2)
-      assert(
-        Vector(addr1, addr2).sortBy(_.address.toString) == found.sortBy(
-          _.address.toString))
+      assert(Vector(addr1, addr2).sortBy(_.address.toString) == found.sortBy(_.address.toString))
     }
   }
 
@@ -43,29 +39,26 @@ class AddressDAOTest extends WalletDAOFixture {
       recoverToSucceededIf[SQLException](readF)
   }
 
-  it should "insert and read an address into the database with a corresponding public key script" in {
-    daos =>
-      val addressDAO = daos.addressDAO
-      for {
-        createdAddress <- {
-          val addressDb =
-            WalletTestUtil.getAddressDb(WalletTestUtil.firstAccountDb)
-          addressDAO.create(addressDb)
-        }
-        readAddress <- {
-          addressDAO.findAddress(createdAddress.address)
-        }
-      } yield assert(readAddress.contains(createdAddress))
+  it should "insert and read an address into the database with a corresponding public key script" in { daos =>
+    val addressDAO = daos.addressDAO
+    for {
+      createdAddress <- {
+        val addressDb =
+          WalletTestUtil.getAddressDb(WalletTestUtil.firstAccountDb)
+        addressDAO.create(addressDb)
+      }
+      readAddress <- {
+        addressDAO.findAddress(createdAddress.address)
+      }
+    } yield assert(readAddress.contains(createdAddress))
   }
 
   it should "find by script pub key" in { daos =>
     val addressDAO = daos.addressDAO
 
     val addr1 = WalletTestUtil.getAddressDb(WalletTestUtil.firstAccountDb)
-    val addr2 = WalletTestUtil.getAddressDb(WalletTestUtil.firstAccountDb,
-                                            addressIndex = 1)
-    val addr3 = WalletTestUtil.getAddressDb(WalletTestUtil.firstAccountDb,
-                                            addressIndex = 2)
+    val addr2 = WalletTestUtil.getAddressDb(WalletTestUtil.firstAccountDb, addressIndex = 1)
+    val addr3 = WalletTestUtil.getAddressDb(WalletTestUtil.firstAccountDb, addressIndex = 2)
     val spks = Vector(addr1.scriptPubKey, addr2.scriptPubKey)
 
     for {

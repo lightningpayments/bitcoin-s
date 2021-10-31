@@ -29,8 +29,7 @@ class DLCPane(glassPane: VBox)(implicit ec: ExecutionContext) {
   private val offerButton = new Button {
     text = "Offer"
     onAction = _ => model.onOffer()
-    tooltip = Tooltip(
-      "Initiates a DLC with the given oracle and contract parameters, generating an Offer message.")
+    tooltip = Tooltip("Initiates a DLC with the given oracle and contract parameters, generating an Offer message.")
     tooltip.value.setShowDelay(new javafx.util.Duration(100))
   }
 
@@ -51,8 +50,7 @@ class DLCPane(glassPane: VBox)(implicit ec: ExecutionContext) {
   private val broadcastDLCButton = new Button {
     text = "Broadcast DLC"
     onAction = _ => model.onBroadcastDLC()
-    tooltip = Tooltip(
-      "In response to a Sign, saves signatures and broadcasts the funding transaction.")
+    tooltip = Tooltip("In response to a Sign, saves signatures and broadcasts the funding transaction.")
     tooltip.value.setShowDelay(new javafx.util.Duration(100))
   }
 
@@ -62,8 +60,7 @@ class DLCPane(glassPane: VBox)(implicit ec: ExecutionContext) {
       model.onRefund()
       ()
     }
-    tooltip = Tooltip(
-      "After the refund timeout, broadcasts the refund transaction to the blockchain.")
+    tooltip = Tooltip("After the refund timeout, broadcasts the refund transaction to the blockchain.")
     tooltip.value.setShowDelay(new javafx.util.Duration(100))
   }
 
@@ -73,8 +70,7 @@ class DLCPane(glassPane: VBox)(implicit ec: ExecutionContext) {
       model.onExecute()
       ()
     }
-    tooltip = Tooltip(
-      "Given an oracle attestation, broadcasts the closing transaction to the blockchain.")
+    tooltip = Tooltip("Given an oracle attestation, broadcasts the closing transaction to the blockchain.")
     tooltip.value.setShowDelay(new javafx.util.Duration(100))
   }
 
@@ -92,11 +88,7 @@ class DLCPane(glassPane: VBox)(implicit ec: ExecutionContext) {
 
   private val buttonSpacer = new HBox {
     alignment = Pos.Center
-    children = Vector(initButtonBar,
-                      GUIUtil.getHSpacer(),
-                      acceptButtonBar,
-                      GUIUtil.getHSpacer(),
-                      execButtonBar)
+    children = Vector(initButtonBar, GUIUtil.getHSpacer(), acceptButtonBar, GUIUtil.getHSpacer(), execButtonBar)
   }
 
   private val textAreaHBox = new HBox {
@@ -105,8 +97,7 @@ class DLCPane(glassPane: VBox)(implicit ec: ExecutionContext) {
   }
 
   val exportResultButton: Button = new Button("Export Result") {
-    onAction = _ =>
-      GUIUtil.showSaveDialog("Result", Some(resultTextArea.text.value), None)
+    onAction = _ => GUIUtil.showSaveDialog("Result", Some(resultTextArea.text.value), None)
   }
 
   val copyResultButton: Button = new Button("Copy Result") {

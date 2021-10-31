@@ -4,11 +4,7 @@ import org.bitcoins.core.script.arithmetic.OP_1ADD
 import org.bitcoins.core.script.bitwise.{OP_EQUAL, OP_EQUALVERIFY}
 import org.bitcoins.core.script.constant._
 import org.bitcoins.core.script.control.{OP_ELSE, OP_ENDIF, OP_IF, OP_NOTIF}
-import org.bitcoins.core.script.crypto.{
-  OP_CHECKMULTISIG,
-  OP_CHECKSIG,
-  OP_HASH160
-}
+import org.bitcoins.core.script.crypto.{OP_CHECKMULTISIG, OP_CHECKSIG, OP_HASH160}
 import org.bitcoins.core.script.locktime.OP_CHECKLOCKTIMEVERIFY
 import org.bitcoins.core.script.reserved.OP_NOP
 import org.bitcoins.core.script.splice.OP_SIZE
@@ -31,19 +27,16 @@ class ScriptParserTest extends BitcoinSUnitTest {
   }
 
   it must "parse a number larger than an integer into a ScriptNumberImpl" in {
-    ScriptParser.fromString("2147483648") must be(
-      List(BytesToPushOntoStack(5), ScriptNumber(2147483648L)))
+    ScriptParser.fromString("2147483648") must be(List(BytesToPushOntoStack(5), ScriptNumber(2147483648L)))
   }
 
   it must "parse a decimal number and correctly add its corresponding BytesToPushOntoStack" in {
-    ScriptParser.fromString("127") must be(
-      List(BytesToPushOntoStack(1), ScriptNumber(127)))
+    ScriptParser.fromString("127") must be(List(BytesToPushOntoStack(1), ScriptNumber(127)))
   }
 
   it must "parse a decimal number that is pushed onto the stack" in {
     val str = "NOP 0x01 1"
-    ScriptParser.fromString(str) must be(
-      List(OP_NOP, BytesToPushOntoStack(1), ScriptConstant("51")))
+    ScriptParser.fromString(str) must be(List(OP_NOP, BytesToPushOntoStack(1), ScriptConstant("51")))
   }
 
   it must "parse a pay-to-pubkey-hash output script" in {
@@ -81,14 +74,12 @@ class ScriptParserTest extends BitcoinSUnitTest {
 
   it must "parse a script constant from 'Az' EQUAL" in {
     val str = "'Az' EQUAL"
-    ScriptParser.fromString(str) must equal(
-      List(BytesToPushOntoStack(2), ScriptConstant("417a"), OP_EQUAL))
+    ScriptParser.fromString(str) must equal(List(BytesToPushOntoStack(2), ScriptConstant("417a"), OP_EQUAL))
   }
 
   it must "parse a script number that has a leading zero" in {
     val str = "0x02 0x0100"
-    ScriptParser.fromString(str) must equal(
-      List(BytesToPushOntoStack(2), ScriptConstant("0100")))
+    ScriptParser.fromString(str) must equal(List(BytesToPushOntoStack(2), ScriptConstant("0100")))
   }
 
   it must "parse an OP_PICK" in {
@@ -104,11 +95,7 @@ class ScriptParserTest extends BitcoinSUnitTest {
   it must "parse a script that has a decimal and a hexadecimal number in it " in {
     val str = "32767 0x02 0xff7f EQUAL"
     ScriptParser.fromString(str) must equal(
-      List(BytesToPushOntoStack(2),
-           ScriptConstant("ff7f"),
-           BytesToPushOntoStack(2),
-           ScriptConstant("ff7f"),
-           OP_EQUAL))
+      List(BytesToPushOntoStack(2), ScriptConstant("ff7f"), BytesToPushOntoStack(2), ScriptConstant("ff7f"), OP_EQUAL))
   }
   it must "parse an OP_1" in {
     val str = "0x51"
@@ -135,12 +122,7 @@ class ScriptParserTest extends BitcoinSUnitTest {
   it must "parse an OP_IF OP_ENDIF block" in {
     val str = "1 0x01 0x80 IF 0 ENDIF"
     ScriptParser.fromString(str) must be(
-      List(OP_1,
-           BytesToPushOntoStack(1),
-           ScriptConstant("80"),
-           OP_IF,
-           OP_0,
-           OP_ENDIF))
+      List(OP_1, BytesToPushOntoStack(1), ScriptConstant("80"), OP_IF, OP_0, OP_ENDIF))
   }
 
   it must "parse an OP_PUSHDATA1 correctly" in {
@@ -227,8 +209,7 @@ class ScriptParserTest extends BitcoinSUnitTest {
         "30440220048e15422cf62349dc586ffb8c749d40280781edd5064ff27a5910ff5cf" +
           "225a802206a82685dbc2cf195d158c29309939d5a3cd41a889db6f766f3809fff3572230501"),
       BytesToPushOntoStack(33),
-      ScriptConstant(
-        "03dcfc9882c1b3ae4e03fb6cac08bdb39e284e81d70c7aa8b27612457b2774509b")
+      ScriptConstant("03dcfc9882c1b3ae4e03fb6cac08bdb39e284e81d70c7aa8b27612457b2774509b")
     )
 
     val scriptTokens: Vector[ScriptToken] = ScriptParser.fromHex(rawScriptSig)
@@ -245,16 +226,13 @@ class ScriptParserTest extends BitcoinSUnitTest {
 
   it must "parse a OP_PUSHDATA operation that pushes zero bytes correctly" in {
     val str = "0x4c 0x00"
-    ScriptParser.fromString(str) must be(
-      List(OP_PUSHDATA1, ScriptConstant("00")))
+    ScriptParser.fromString(str) must be(List(OP_PUSHDATA1, ScriptConstant("00")))
 
     val str1 = "0x4d 0x00"
-    ScriptParser.fromString(str1) must be(
-      List(OP_PUSHDATA2, ScriptConstant("00")))
+    ScriptParser.fromString(str1) must be(List(OP_PUSHDATA2, ScriptConstant("00")))
 
     val str2 = "0x4e 0x00"
-    ScriptParser.fromString(str2) must be(
-      List(OP_PUSHDATA4, ScriptConstant("00")))
+    ScriptParser.fromString(str2) must be(List(OP_PUSHDATA4, ScriptConstant("00")))
   }
 
   it must "parse a large string constant found inside of script_valid.json" in {
@@ -296,15 +274,13 @@ class ScriptParserTest extends BitcoinSUnitTest {
       OP_DUP,
       OP_HASH160,
       BytesToPushOntoStack(20),
-      ScriptConstant(
-        ByteVector.fromValidHex("14011f7254d96b819c76986c277d115efce6f7b5")),
+      ScriptConstant(ByteVector.fromValidHex("14011f7254d96b819c76986c277d115efce6f7b5")),
       OP_EQUAL,
       OP_IF,
       OP_CHECKSIG,
       OP_ELSE,
       BytesToPushOntoStack(33),
-      ScriptConstant(ByteVector.fromValidHex(
-        "0394854aa6eab5b2a8122cc726e9dded053a2184d88256816826d6231c068d4a5b")),
+      ScriptConstant(ByteVector.fromValidHex("0394854aa6eab5b2a8122cc726e9dded053a2184d88256816826d6231c068d4a5b")),
       OP_SWAP,
       OP_SIZE,
       BytesToPushOntoStack(1),
@@ -315,15 +291,13 @@ class ScriptParserTest extends BitcoinSUnitTest {
       OP_2,
       OP_SWAP,
       BytesToPushOntoStack(33),
-      ScriptConstant(ByteVector.fromValidHex(
-        "030d417a46946384f88d5f3337267c5e579765875dc4daca813e21734b140639e7")),
+      ScriptConstant(ByteVector.fromValidHex("030d417a46946384f88d5f3337267c5e579765875dc4daca813e21734b140639e7")),
       OP_2,
       OP_CHECKMULTISIG,
       OP_ELSE,
       OP_HASH160,
       BytesToPushOntoStack(20),
-      ScriptConstant(
-        ByteVector.fromValidHex("b43e1b38138a41b37f7cd9a1d274bc63e3a9b5d1")),
+      ScriptConstant(ByteVector.fromValidHex("b43e1b38138a41b37f7cd9a1d274bc63e3a9b5d1")),
       OP_EQUALVERIFY,
       OP_CHECKSIG,
       OP_ENDIF,
@@ -363,15 +337,13 @@ class ScriptParserTest extends BitcoinSUnitTest {
         OP_DUP,
         OP_HASH160,
         BytesToPushOntoStack(20),
-        ScriptConstant(
-          ByteVector.fromValidHex("14011f7254d96b819c76986c277d115efce6f7b5")),
+        ScriptConstant(ByteVector.fromValidHex("14011f7254d96b819c76986c277d115efce6f7b5")),
         OP_EQUAL,
         OP_IF,
         OP_CHECKSIG,
         OP_ELSE,
         BytesToPushOntoStack(33),
-        ScriptConstant(ByteVector.fromValidHex(
-          "0394854aa6eab5b2a8122cc726e9dded053a2184d88256816826d6231c068d4a5b")),
+        ScriptConstant(ByteVector.fromValidHex("0394854aa6eab5b2a8122cc726e9dded053a2184d88256816826d6231c068d4a5b")),
         OP_SWAP,
         OP_SIZE,
         BytesToPushOntoStack(1),
@@ -380,14 +352,12 @@ class ScriptParserTest extends BitcoinSUnitTest {
         OP_IF,
         OP_HASH160,
         BytesToPushOntoStack(20),
-        ScriptConstant(
-          ByteVector.fromValidHex("b8bcb07f6344b42ab04250c86a6e8b75d3fdbbc6")),
+        ScriptConstant(ByteVector.fromValidHex("b8bcb07f6344b42ab04250c86a6e8b75d3fdbbc6")),
         OP_EQUALVERIFY,
         OP_2,
         OP_SWAP,
         BytesToPushOntoStack(33),
-        ScriptConstant(ByteVector.fromValidHex(
-          "030d417a46946384f88d5f3337267c5e579765875dc4daca813e21734b140639e7")),
+        ScriptConstant(ByteVector.fromValidHex("030d417a46946384f88d5f3337267c5e579765875dc4daca813e21734b140639e7")),
         OP_2,
         OP_CHECKMULTISIG,
         OP_ELSE,

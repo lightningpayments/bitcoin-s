@@ -12,10 +12,5 @@ import scala.scalajs.js.annotation.JSImport
 @JSImport("bcrypto/lib/pbkdf2.js", JSImport.Namespace)
 object PBKDF2 extends js.Object {
 
-  def derive(
-      hash: Hasher,
-      pass: Buffer,
-      salt: Buffer,
-      iter: Int,
-      len: Int): Buffer = js.native
+  def derive(hash: Hasher, pass: Buffer, salt: Buffer, iter: Int, len: Int): Buffer = js.native
 }

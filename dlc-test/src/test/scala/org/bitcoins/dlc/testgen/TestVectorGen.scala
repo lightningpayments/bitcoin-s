@@ -28,9 +28,7 @@ trait TestVectorGen[T <: TestVector, Input] {
     writer.close()
   }
 
-  def writeTestVectorsToFile(
-      vecs: Vector[T],
-      file: File = defaultTestFile): Unit = {
+  def writeTestVectorsToFile(vecs: Vector[T], file: File = defaultTestFile): Unit = {
     val arr = JsArray(vecs.map(_.toJson))
     writeToFile(arr, file)
   }
@@ -48,13 +46,12 @@ trait TestVectorGen[T <: TestVector, Input] {
 
     Json.parse(str).validate[JsArray].flatMap { arr =>
       arr.value
-        .foldLeft[JsResult[Vector[T]]](JsSuccess(Vector.empty)) {
-          case (jsResultAccum, json) =>
-            jsResultAccum.flatMap { accum =>
-              testVectorParser.fromJson(json).map { testVec =>
-                accum :+ testVec
-              }
+        .foldLeft[JsResult[Vector[T]]](JsSuccess(Vector.empty)) { case (jsResultAccum, json) =>
+          jsResultAccum.flatMap { accum =>
+            testVectorParser.fromJson(json).map { testVec =>
+              accum :+ testVec
             }
+          }
         }
     }
   }
@@ -66,13 +63,12 @@ trait TestVectorGen[T <: TestVector, Input] {
 
     Json.parse(str).validate[JsArray].flatMap { arr =>
       arr.value
-        .foldLeft[JsResult[Vector[Input]]](JsSuccess(Vector.empty)) {
-          case (jsResultAccum, json) =>
-            jsResultAccum.flatMap { accum =>
-              inputFromJson((json \ inputStr).get).map { testVec =>
-                accum :+ testVec
-              }
+        .foldLeft[JsResult[Vector[Input]]](JsSuccess(Vector.empty)) { case (jsResultAccum, json) =>
+          jsResultAccum.flatMap { accum =>
+            inputFromJson((json \ inputStr).get).map { testVec =>
+              accum :+ testVec
             }
+          }
         }
     }
   }
@@ -90,9 +86,8 @@ trait TestVectorGen[T <: TestVector, Input] {
           val noChange = testVecResultT match {
             case Failure(_) | Success(JsError(_)) => false
             case Success(JsSuccess(testVecs, _)) =>
-              newTestVecs.zip(testVecs).foldLeft(true) {
-                case (sameSoFar, (oldVec, newVec)) =>
-                  sameSoFar && (oldVec == newVec)
+              newTestVecs.zip(testVecs).foldLeft(true) { case (sameSoFar, (oldVec, newVec)) =>
+                sameSoFar && (oldVec == newVec)
               }
           }
 
@@ -104,22 +99,18 @@ trait TestVectorGen[T <: TestVector, Input] {
               writeTestVectorsToFile(newTestVecs)
               Future.successful(true)
             } else {
-              Future.failed(
-                new RuntimeException(
-                  s"Was unable to delete ${defaultTestFile.getAbsolutePath}"))
+              Future.failed(new RuntimeException(s"Was unable to delete ${defaultTestFile.getAbsolutePath}"))
             }
           }
         }
       case JsError(err) =>
-        Future.failed(
-          new IllegalArgumentException(s"Could not read json from file: $err"))
+        Future.failed(new IllegalArgumentException(s"Could not read json from file: $err"))
     }
   }
 
   def generateTestVectors(): Future[Vector[T]]
 
-  def generateAndWriteTestVectors(
-      file: File = defaultTestFile): Future[Unit] = {
+  def generateAndWriteTestVectors(file: File = defaultTestFile): Future[Unit] = {
     generateTestVectors().map { testVectors =>
       writeTestVectorsToFile(testVectors, file)
     }

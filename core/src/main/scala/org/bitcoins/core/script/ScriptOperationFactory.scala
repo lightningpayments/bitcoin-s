@@ -28,8 +28,7 @@ trait ScriptOperationFactory[T <: ScriptOperation] extends StringFactory[T] {
     val result: Option[T] = operations.find(_.toString == str)
     if (result.isEmpty) {
       //try and remove the 'OP_' prefix on the operations and see if it matches anything.
-      operations.find(op =>
-        removeOP_Prefix(op.toString) == removeOP_Prefix(str))
+      operations.find(op => removeOP_Prefix(op.toString) == removeOP_Prefix(str))
     } else result
   }
 

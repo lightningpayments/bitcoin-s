@@ -26,8 +26,7 @@ import scala.util.{Failure, Success}
 object BitcoindRpcBackendUtil extends Logging {
 
   /** Has the wallet process all the blocks it has not seen up until bitcoind's chain tip */
-  def syncWalletToBitcoind(bitcoind: BitcoindRpcClient, wallet: Wallet)(implicit
-      system: ActorSystem): Future[Unit] = {
+  def syncWalletToBitcoind(bitcoind: BitcoindRpcClient, wallet: Wallet)(implicit system: ActorSystem): Future[Unit] = {
     logger.info("Syncing wallet to bitcoind")
     import system.dispatcher
     for {
@@ -42,16 +41,14 @@ object BitcoindRpcBackendUtil extends Logging {
               case None =>
                 for {
                   header <- bitcoind.getBestBlockHeader()
-                  _ <- wallet.stateDescriptorDAO.updateSyncHeight(header.hashBE,
-                                                                  header.height)
+                  _ <- wallet.stateDescriptorDAO.updateSyncHeight(header.hashBE, header.height)
                 } yield ()
               case Some(txDb) =>
                 for {
                   heightOpt <- bitcoind.getBlockHeight(txDb.blockHashOpt.get)
                   _ <- heightOpt match {
                     case Some(height) =>
-                      logger.info(
-                        s"Last tx occurred at block $height, syncing from there")
+                      logger.info(s"Last tx occurred at block $height, syncing from there")
                       doSync(height, bitcoindHeight, bitcoind, wallet)
                     case None => Future.unit
                   }
@@ -65,11 +62,8 @@ object BitcoindRpcBackendUtil extends Logging {
   }
 
   /** Helper method to sync the wallet until the bitcoind height */
-  private def doSync(
-      walletHeight: Int,
-      bitcoindHeight: Int,
-      bitcoind: BitcoindRpcClient,
-      wallet: Wallet)(implicit system: ActorSystem): Future[Wallet] = {
+  private def doSync(walletHeight: Int, bitcoindHeight: Int, bitcoind: BitcoindRpcClient, wallet: Wallet)(implicit
+      system: ActorSystem): Future[Wallet] = {
     if (walletHeight > bitcoindHeight) {
       val msg = s"Bitcoind and wallet are in incompatible states, " +
         s"wallet height: $walletHeight, bitcoind height: $bitcoindHeight"
@@ -109,18 +103,15 @@ object BitcoindRpcBackendUtil extends Logging {
     }
   }
 
-  def createWalletWithBitcoindCallbacks(
-      bitcoind: BitcoindRpcClient,
-      wallet: Wallet)(implicit system: ActorSystem): Wallet = {
+  def createWalletWithBitcoindCallbacks(bitcoind: BitcoindRpcClient, wallet: Wallet)(implicit
+      system: ActorSystem): Wallet = {
     // We need to create a promise so we can inject the wallet with the callback
     // after we have created it into SyncUtil.getNodeApiWalletCallback
     // so we don't lose the internal state of the wallet
     val walletCallbackP = Promise[Wallet]()
 
     val pairedWallet = Wallet(
-      nodeApi =
-        BitcoindRpcBackendUtil.getNodeApiWalletCallback(bitcoind,
-                                                        walletCallbackP.future),
+      nodeApi = BitcoindRpcBackendUtil.getNodeApiWalletCallback(bitcoind, walletCallbackP.future),
       chainQueryApi = bitcoind,
       feeRateApi = wallet.feeRateApi
     )(wallet.walletConfig, wallet.ec)
@@ -131,8 +122,7 @@ object BitcoindRpcBackendUtil extends Logging {
   }
 
   def startZMQWalletCallbacks(wallet: Wallet, zmqConfig: ZmqConfig): Unit = {
-    require(zmqConfig != ZmqConfig.empty,
-            "Must have the zmq raw configs defined to setup ZMQ callbacks")
+    require(zmqConfig != ZmqConfig.empty, "Must have the zmq raw configs defined to setup ZMQ callbacks")
 
     zmqConfig.rawTx.foreach { zmq =>
       val rawTxListener: Option[Transaction => Unit] = Some {
@@ -153,8 +143,7 @@ object BitcoindRpcBackendUtil extends Logging {
     zmqConfig.rawBlock.foreach { zmq =>
       val rawBlockListener: Option[Block => Unit] = Some {
         { block: Block =>
-          logger.debug(
-            s"Received block ${block.blockHeader.hashBE.hex}, processing")
+          logger.debug(s"Received block ${block.blockHeader.hashBE.hex}, processing")
           wallet.processBlock(block)
           ()
         }
@@ -168,18 +157,15 @@ object BitcoindRpcBackendUtil extends Logging {
     }
   }
 
-  def createDLCWalletWithBitcoindCallbacks(
-      bitcoind: BitcoindRpcClient,
-      wallet: DLCWallet)(implicit system: ActorSystem): DLCWallet = {
+  def createDLCWalletWithBitcoindCallbacks(bitcoind: BitcoindRpcClient, wallet: DLCWallet)(implicit
+      system: ActorSystem): DLCWallet = {
     // We need to create a promise so we can inject the wallet with the callback
     // after we have created it into SyncUtil.getNodeApiWalletCallback
     // so we don't lose the internal state of the wallet
     val walletCallbackP = Promise[Wallet]()
 
     val pairedWallet = DLCWallet(
-      nodeApi =
-        BitcoindRpcBackendUtil.getNodeApiWalletCallback(bitcoind,
-                                                        walletCallbackP.future),
+      nodeApi = BitcoindRpcBackendUtil.getNodeApiWalletCallback(bitcoind, walletCallbackP.future),
       chainQueryApi = bitcoind,
       feeRateApi = wallet.feeRateApi
     )(wallet.walletConfig, wallet.dlcConfig, wallet.ec)
@@ -189,10 +175,8 @@ object BitcoindRpcBackendUtil extends Logging {
     pairedWallet
   }
 
-  private def filterSync(
-      blockHashes: Vector[DoubleSha256Digest],
-      bitcoindRpcClient: V19BlockFilterRpc,
-      wallet: Wallet)(implicit system: ActorSystem): Future[Unit] = {
+  private def filterSync(blockHashes: Vector[DoubleSha256Digest], bitcoindRpcClient: V19BlockFilterRpc, wallet: Wallet)(
+      implicit system: ActorSystem): Future[Unit] = {
     import system.dispatcher
 
     logger.info("Starting filter sync")
@@ -201,8 +185,8 @@ object BitcoindRpcBackendUtil extends Logging {
     val numParallelism = Runtime.getRuntime.availableProcessors()
     val runStream: Future[Done] = Source(blockHashes)
       .mapAsync(parallelism = numParallelism) { hash =>
-        bitcoindRpcClient.getBlockFilter(hash.flip, FilterType.Basic).map {
-          res => (hash, res.filter)
+        bitcoindRpcClient.getBlockFilter(hash.flip, FilterType.Basic).map { res =>
+          (hash, res.filter)
         }
       }
       .batch(1000, filter => Vector(filter))(_ :+ _)
@@ -217,14 +201,12 @@ object BitcoindRpcBackendUtil extends Logging {
     }
   }
 
-  private def getNodeApiWalletCallback(
-      bitcoindRpcClient: BitcoindRpcClient,
-      walletF: Future[Wallet])(implicit system: ActorSystem): NodeApi = {
+  private def getNodeApiWalletCallback(bitcoindRpcClient: BitcoindRpcClient, walletF: Future[Wallet])(implicit
+      system: ActorSystem): NodeApi = {
     import system.dispatcher
     new NodeApi {
 
-      override def downloadBlocks(
-          blockHashes: Vector[DoubleSha256Digest]): Future[Unit] = {
+      override def downloadBlocks(blockHashes: Vector[DoubleSha256Digest]): Future[Unit] = {
         logger.info(s"Fetching ${blockHashes.length} blocks from bitcoind")
         val numParallelism = Runtime.getRuntime.availableProcessors()
         walletF
@@ -245,8 +227,7 @@ object BitcoindRpcBackendUtil extends Logging {
 
       /** Broadcasts the given transaction over the P2P network
         */
-      override def broadcastTransactions(
-          transactions: Vector[Transaction]): Future[Unit] = {
+      override def broadcastTransactions(transactions: Vector[Transaction]): Future[Unit] = {
         bitcoindRpcClient.broadcastTransactions(transactions)
       }
     }
@@ -259,10 +240,8 @@ object BitcoindRpcBackendUtil extends Logging {
     * @param interval The amount of time between polls, this should not be too aggressive
     *                 as the wallet will need to process the new blocks
     */
-  def startBitcoindBlockPolling(
-      wallet: WalletApi,
-      bitcoind: BitcoindRpcClient,
-      interval: FiniteDuration = 10.seconds)(implicit
+  def startBitcoindBlockPolling(wallet: WalletApi, bitcoind: BitcoindRpcClient, interval: FiniteDuration = 10.seconds)(
+      implicit
       system: ActorSystem,
       ec: ExecutionContext): Future[Cancellable] = {
     bitcoind.getBlockCount.map { startCount =>
@@ -292,21 +271,19 @@ object BitcoindRpcBackendUtil extends Logging {
               val requestsBlocksF = for {
                 hashes <- hashFs
                 _ <- wallet.nodeApi.downloadBlocks(hashes.toVector)
-              } yield logger.debug(
-                "Successfully polled bitcoind for new blocks")
+              } yield logger.debug("Successfully polled bitcoind for new blocks")
 
               requestsBlocksF.onComplete {
                 case Success(_) => ()
                 case Failure(err) =>
                   atomicPrevCount.set(prevCount)
-                  logger.error("Requesting blocks from bitcoind polling failed",
-                               err)
+                  logger.error("Requesting blocks from bitcoind polling failed", err)
               }
 
               requestsBlocksF
             } else if (prevCount > count) {
-              Future.failed(new RuntimeException(
-                s"Bitcoind is at a block height ($count) before the wallet's ($prevCount)"))
+              Future.failed(
+                new RuntimeException(s"Bitcoind is at a block height ($count) before the wallet's ($prevCount)"))
             } else Future.unit
           }
           ()

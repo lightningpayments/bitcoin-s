@@ -3,12 +3,7 @@ package org.bitcoins.commons.jsonmodels.eclair
 import org.bitcoins.commons.serializers.JsonReaders._
 import org.bitcoins.core.config.BitcoinNetwork
 import org.bitcoins.core.currency.Satoshis
-import org.bitcoins.core.protocol.ln.channel.{
-  ChannelId,
-  ChannelState,
-  FundedChannelId,
-  ShortChannelId
-}
+import org.bitcoins.core.protocol.ln.channel.{ChannelId, ChannelState, FundedChannelId, ShortChannelId}
 import org.bitcoins.core.protocol.ln.currency.MilliSatoshis
 import org.bitcoins.core.protocol.ln.fee.FeeProportionalMillionths
 import org.bitcoins.core.protocol.ln.node.{Feature, FeatureSupport, NodeId}
@@ -35,29 +30,19 @@ case class GetInfoResult(
     publicAddresses: Seq[InetSocketAddress],
     instanceId: UUID)
 
-case class PeerInfo(
-    nodeId: NodeId,
-    state: PeerState,
-    address: Option[String],
-    channels: Int)
+case class PeerInfo(nodeId: NodeId, state: PeerState, address: Option[String], channels: Int)
 
 case class ChannelCommandResult(
-    results: scala.collection.Map[
-      Either[ShortChannelId, FundedChannelId],
-      State]
+    results: scala.collection.Map[Either[ShortChannelId, FundedChannelId], State]
 )
 
-case class UpdateRelayFeeResult(
-    results: Map[Either[ShortChannelId, FundedChannelId], UpdateRelayFee])
+case class UpdateRelayFeeResult(results: Map[Either[ShortChannelId, FundedChannelId], UpdateRelayFee])
 
 sealed trait UpdateRelayFee
 
 object UpdateRelayFee {
 
-  case class OK(
-      channelId: ChannelId,
-      feeBaseMsat: MilliSatoshis,
-      feeProportionalMillionths: Long)
+  case class OK(channelId: ChannelId, feeBaseMsat: MilliSatoshis, feeProportionalMillionths: Long)
       extends UpdateRelayFee
 
   case class Error(message: String) extends UpdateRelayFee
@@ -127,9 +112,7 @@ case class ActivatedFeature(feature: Feature, support: FeatureSupport)
 
 case class UnknownFeature(bitIndex: Int)
 
-case class Features(
-    activated: Set[ActivatedFeature],
-    unknown: Set[UnknownFeature])
+case class Features(activated: Set[ActivatedFeature], unknown: Set[UnknownFeature])
 
 case class NodeInfo(
     signature: ECDigitalSignature,
@@ -352,14 +335,10 @@ object OutgoingPaymentStatus {
       completedAt: Instant //milliseconds
   ) extends OutgoingPaymentStatus
 
-  case class Failed(failures: Seq[PaymentFailure], completedAt: Instant)
-      extends OutgoingPaymentStatus
+  case class Failed(failures: Seq[PaymentFailure], completedAt: Instant) extends OutgoingPaymentStatus
 }
 
-case class PaymentFailure(
-    failureType: PaymentFailure.Type,
-    failureMessage: String,
-    failedRoute: Seq[Hop])
+case class PaymentFailure(failureType: PaymentFailure.Type, failureMessage: String, failedRoute: Seq[Hop])
 
 object PaymentFailure {
   sealed trait Type
@@ -368,10 +347,7 @@ object PaymentFailure {
   case object UnreadableRemote extends Type
 }
 
-case class Hop(
-    nodeId: NodeId,
-    nextNodeId: NodeId,
-    shortChannelId: Option[ShortChannelId])
+case class Hop(nodeId: NodeId, nextNodeId: NodeId, shortChannelId: Option[ShortChannelId])
 
 sealed trait WebSocketEvent
 

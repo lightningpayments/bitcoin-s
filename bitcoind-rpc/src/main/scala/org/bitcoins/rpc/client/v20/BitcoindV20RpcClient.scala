@@ -12,12 +12,7 @@ import org.bitcoins.core.protocol.transaction.Transaction
 import org.bitcoins.core.script.crypto.HashType
 import org.bitcoins.core.util.FutureUtil
 import org.bitcoins.crypto.{DoubleSha256DigestBE, ECPrivateKey}
-import org.bitcoins.rpc.client.common.{
-  BitcoindRpcClient,
-  BitcoindVersion,
-  DescriptorRpc,
-  PsbtRpc
-}
+import org.bitcoins.rpc.client.common.{BitcoindRpcClient, BitcoindVersion, DescriptorRpc, PsbtRpc}
 import org.bitcoins.rpc.client.v19.V19BlockFilterRpc
 import org.bitcoins.rpc.config.BitcoindInstance
 import play.api.libs.json._
@@ -27,8 +22,7 @@ import scala.util.Try
 
 /** Class for creating a BitcoindV20 instance that can access RPCs
   */
-class BitcoindV20RpcClient(override val instance: BitcoindInstance)(implicit
-    actorSystem: ActorSystem)
+class BitcoindV20RpcClient(override val instance: BitcoindInstance)(implicit actorSystem: ActorSystem)
     extends BitcoindRpcClient(instance)
     with DescriptorRpc
     with PsbtRpc
@@ -53,25 +47,21 @@ class BitcoindV20RpcClient(override val instance: BitcoindInstance)(implicit
       Future.sequence(filterFs)
     }
 
-    FutureUtil.batchAndSyncExecute(elements = allHeights.toVector,
-                                   f = f,
-                                   batchSize = 25)
+    FutureUtil.batchAndSyncExecute(elements = allHeights.toVector, f = f, batchSize = 25)
   }
 
   override def getFilterCount(): Future[Int] = getBlockCount
 
   override def getFilterHeaderCount(): Future[Int] = getBlockCount
 
-  override def getFilter(
-      hash: DoubleSha256DigestBE): Future[Option[CompactFilterDb]] = {
+  override def getFilter(hash: DoubleSha256DigestBE): Future[Option[CompactFilterDb]] = {
     for {
       header <- getBlockHeader(hash)
       filter <- getBlockFilter(hash, FilterType.Basic)
     } yield Some(filter.filterDb(header.height))
   }
 
-  override def getFiltersAtHeight(
-      height: Int): Future[Vector[CompactFilterDb]] = {
+  override def getFiltersAtHeight(height: Int): Future[Vector[CompactFilterDb]] = {
     for {
       hash <- getBlockHash(height)
       filter <- getBlockFilter(hash, FilterType.Basic)
@@ -88,14 +78,11 @@ class BitcoindV20RpcClient(override val instance: BitcoindInstance)(implicit
     */
   def signRawTransactionWithWallet(
       transaction: Transaction,
-      utxoDeps: Vector[RpcOpts.SignRawTransactionOutputParameter] =
-        Vector.empty,
+      utxoDeps: Vector[RpcOpts.SignRawTransactionOutputParameter] = Vector.empty,
       sigHash: HashType = HashType.sigHashAll
   ): Future[SignRawTransactionResult] =
     bitcoindCall[SignRawTransactionResult]("signrawtransactionwithwallet",
-                                           List(JsString(transaction.hex),
-                                                Json.toJson(utxoDeps),
-                                                Json.toJson(sigHash)))
+                                           List(JsString(transaction.hex), Json.toJson(utxoDeps), Json.toJson(sigHash)))
 
   /** $signRawTx
     *
@@ -105,15 +92,12 @@ class BitcoindV20RpcClient(override val instance: BitcoindInstance)(implicit
   def signRawTransactionWithKey(
       transaction: Transaction,
       keys: Vector[ECPrivateKey],
-      utxoDeps: Vector[RpcOpts.SignRawTransactionOutputParameter] =
-        Vector.empty,
+      utxoDeps: Vector[RpcOpts.SignRawTransactionOutputParameter] = Vector.empty,
       sigHash: HashType = HashType.sigHashAll
   ): Future[SignRawTransactionResult] =
-    bitcoindCall[SignRawTransactionResult]("signrawtransactionwithkey",
-                                           List(JsString(transaction.hex),
-                                                Json.toJson(keys),
-                                                Json.toJson(utxoDeps),
-                                                Json.toJson(sigHash)))
+    bitcoindCall[SignRawTransactionResult](
+      "signrawtransactionwithkey",
+      List(JsString(transaction.hex), Json.toJson(keys), Json.toJson(utxoDeps), Json.toJson(sigHash)))
 }
 
 object BitcoindV20RpcClient {
@@ -135,12 +119,10 @@ object BitcoindV20RpcClient {
     * advanced users, where you need fine grained control
     * over the RPC client.
     */
-  def withActorSystem(instance: BitcoindInstance)(implicit
-      system: ActorSystem): BitcoindV20RpcClient =
+  def withActorSystem(instance: BitcoindInstance)(implicit system: ActorSystem): BitcoindV20RpcClient =
     new BitcoindV20RpcClient(instance)(system)
 
-  def fromUnknownVersion(
-      rpcClient: BitcoindRpcClient): Try[BitcoindV20RpcClient] =
+  def fromUnknownVersion(rpcClient: BitcoindRpcClient): Try[BitcoindV20RpcClient] =
     Try {
       new BitcoindV20RpcClient(rpcClient.instance)(rpcClient.system)
     }

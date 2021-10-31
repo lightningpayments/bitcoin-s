@@ -9,18 +9,11 @@ case class DLCPublicKeys(fundingKey: ECPublicKey, payoutAddress: BitcoinAddress)
 
 object DLCPublicKeys {
 
-  def fromPrivKeys(
-      fundingPrivKey: ECPrivateKey,
-      payoutKey: ECPrivateKey,
-      network: BitcoinNetwork): DLCPublicKeys = {
+  def fromPrivKeys(fundingPrivKey: ECPrivateKey, payoutKey: ECPrivateKey, network: BitcoinNetwork): DLCPublicKeys = {
     fromPubKeys(fundingPrivKey.publicKey, payoutKey.publicKey, network)
   }
 
-  def fromPubKeys(
-      fundingKey: ECPublicKey,
-      payoutKey: ECPublicKey,
-      network: BitcoinNetwork): DLCPublicKeys = {
-    DLCPublicKeys(fundingKey,
-                  Bech32Address(P2WPKHWitnessSPKV0(payoutKey), network))
+  def fromPubKeys(fundingKey: ECPublicKey, payoutKey: ECPublicKey, network: BitcoinNetwork): DLCPublicKeys = {
+    DLCPublicKeys(fundingKey, Bech32Address(P2WPKHWitnessSPKV0(payoutKey), network))
   }
 }

@@ -2,10 +2,7 @@ package org.bitcoins.core.crypto
 
 import org.bitcoins.core.number.UInt32
 import org.bitcoins.core.policy.Policy
-import org.bitcoins.core.protocol.script.{
-  MultiSignatureScriptPubKey,
-  ScriptPubKey
-}
+import org.bitcoins.core.protocol.script.{MultiSignatureScriptPubKey, ScriptPubKey}
 import org.bitcoins.core.protocol.transaction._
 import org.bitcoins.core.script.constant.ScriptToken
 import org.bitcoins.crypto.{ECDigitalSignature, ECPublicKey, ECPublicKeyBytes}
@@ -35,15 +32,10 @@ class TransactionSignatureCheckerTest extends BitcoinSUnitTest {
 
   it must "validate a P2PK sig" in {
     val txSignatureComponent =
-      BaseTxSigComponent(transaction = p2pkTx,
-                         inputIndex = UInt32.zero,
-                         output = p2pkOutput,
-                         Policy.standardFlags)
+      BaseTxSigComponent(transaction = p2pkTx, inputIndex = UInt32.zero, output = p2pkOutput, Policy.standardFlags)
 
     val result =
-      TransactionSignatureChecker.checkSignature(txSignatureComponent,
-                                                 p2pkPubKey,
-                                                 p2pkSig)
+      TransactionSignatureChecker.checkSignature(txSignatureComponent, p2pkPubKey, p2pkSig)
 
     assert(result.isValid, s"result: $result")
   }
@@ -63,15 +55,10 @@ class TransactionSignatureCheckerTest extends BitcoinSUnitTest {
 
   it must "validate a P2PKH sig" in {
     val txSignatureComponent =
-      BaseTxSigComponent(transaction = p2pkhTx,
-                         inputIndex = UInt32.zero,
-                         output = p2pkhOutput,
-                         Policy.standardFlags)
+      BaseTxSigComponent(transaction = p2pkhTx, inputIndex = UInt32.zero, output = p2pkhOutput, Policy.standardFlags)
 
     val result =
-      TransactionSignatureChecker.checkSignature(txSignatureComponent,
-                                                 p2pkhPubKey,
-                                                 p2pkhSig)
+      TransactionSignatureChecker.checkSignature(txSignatureComponent, p2pkhPubKey, p2pkhSig)
     assert(result.isValid, s"result: $result")
   }
 
@@ -106,22 +93,20 @@ class TransactionSignatureCheckerTest extends BitcoinSUnitTest {
                          Policy.standardFlags)
 
     val result1 =
-      TransactionSignatureChecker.checkSignature(
-        txSignatureComponent,
-        p2shMultiRedeemScript.asm.toList,
-        p2shMultiPubKey1,
-        p2shMultiSig1,
-        Policy.standardFlags)
+      TransactionSignatureChecker.checkSignature(txSignatureComponent,
+                                                 p2shMultiRedeemScript.asm.toList,
+                                                 p2shMultiPubKey1,
+                                                 p2shMultiSig1,
+                                                 Policy.standardFlags)
 
     assert(result1.isValid, s"result: $result1")
 
     val result2 =
-      TransactionSignatureChecker.checkSignature(
-        txSignatureComponent,
-        p2shMultiRedeemScript.asm.toList,
-        p2shMultiPubKey2,
-        p2shMultiSig2,
-        Policy.standardFlags)
+      TransactionSignatureChecker.checkSignature(txSignatureComponent,
+                                                 p2shMultiRedeemScript.asm.toList,
+                                                 p2shMultiPubKey2,
+                                                 p2shMultiSig2,
+                                                 Policy.standardFlags)
 
     assert(result2.isValid, s"result: $result2")
 
@@ -145,8 +130,7 @@ class TransactionSignatureCheckerTest extends BitcoinSUnitTest {
   val p2wpkhOutput: TransactionOutput = TransactionOutput(
     "1027000000000000160014c5aff982b31b4c0f12978c56b37f6a814454df9d")
 
-  val p2wpkhPubKey: ECPublicKey = ECPublicKey(
-    "023b19cda60171c1660e95d9e42103d7c86a11a48e396271515d704e755b2bb2d2")
+  val p2wpkhPubKey: ECPublicKey = ECPublicKey("023b19cda60171c1660e95d9e42103d7c86a11a48e396271515d704e755b2bb2d2")
 
   val p2wpkhSig: ECDigitalSignature = ECDigitalSignature(
     "3045022100d7d5fabac9b8486f31b2a7c1217335fc24aa0aa1ff8abd3d78845bc2f8ff3bd3022018b9c79581c2bc2f7811f235fa4c21b23c6a2b478a46351c955adaba15acc4e201")
@@ -159,9 +143,7 @@ class TransactionSignatureCheckerTest extends BitcoinSUnitTest {
                                Policy.standardFlags)
 
     val result =
-      TransactionSignatureChecker.checkSignature(txSignatureComponent,
-                                                 p2wpkhPubKey,
-                                                 p2wpkhSig)
+      TransactionSignatureChecker.checkSignature(txSignatureComponent, p2wpkhPubKey, p2wpkhSig)
 
     assert(result.isValid, s"result: $result")
   }
@@ -190,12 +172,11 @@ class TransactionSignatureCheckerTest extends BitcoinSUnitTest {
                                 Policy.standardFlags)
 
     val result =
-      TransactionSignatureChecker.checkSignature(
-        txSignatureComponent,
-        p2shwpkhRedeemScript.asm.toList,
-        p2shwpkhPubKey,
-        p2shwpkhSig,
-        Policy.standardFlags)
+      TransactionSignatureChecker.checkSignature(txSignatureComponent,
+                                                 p2shwpkhRedeemScript.asm.toList,
+                                                 p2shwpkhPubKey,
+                                                 p2shwpkhSig,
+                                                 Policy.standardFlags)
 
     assert(result.isValid, s"result: $result")
   }
@@ -225,10 +206,7 @@ class TransactionSignatureCheckerTest extends BitcoinSUnitTest {
 
   it must "validate P2WSH(Multisig) signatures" in {
     val txSignatureComponent =
-      WitnessTxSigComponent(transaction = p2wshTx,
-                            inputIndex = UInt32.zero,
-                            output = p2wshOutput,
-                            Policy.standardFlags)
+      WitnessTxSigComponent(transaction = p2wshTx, inputIndex = UInt32.zero, output = p2wshOutput, Policy.standardFlags)
 
     val result1 =
       TransactionSignatureChecker.checkSignature(txSignatureComponent,
@@ -249,13 +227,12 @@ class TransactionSignatureCheckerTest extends BitcoinSUnitTest {
     assert(result2.isValid, s"result: $result2")
 
     val result3 =
-      TransactionSignatureChecker.multiSignatureEvaluator(
-        txSignatureComponent,
-        p2wshWitScript.asm.toList,
-        List(p2wshSig1, p2wshSig2),
-        List(p2wshPubKey1, p2wshPubKey2),
-        Policy.standardFlags,
-        2)
+      TransactionSignatureChecker.multiSignatureEvaluator(txSignatureComponent,
+                                                          p2wshWitScript.asm.toList,
+                                                          List(p2wshSig1, p2wshSig2),
+                                                          List(p2wshPubKey1, p2wshPubKey2),
+                                                          Policy.standardFlags,
+                                                          2)
 
     assert(result3.isValid, s"result: $result3")
   }
@@ -269,45 +246,30 @@ class TransactionSignatureCheckerTest extends BitcoinSUnitTest {
 
   it must "fail a P2PK sig with the wrong pubkey" in {
     val txSignatureComponent =
-      BaseTxSigComponent(transaction = p2pkTx,
-                         inputIndex = UInt32.zero,
-                         output = p2pkOutput,
-                         Policy.standardFlags)
+      BaseTxSigComponent(transaction = p2pkTx, inputIndex = UInt32.zero, output = p2pkOutput, Policy.standardFlags)
 
     val result =
-      TransactionSignatureChecker.checkSignature(txSignatureComponent,
-                                                 incorrectPubKey,
-                                                 p2pkSig)
+      TransactionSignatureChecker.checkSignature(txSignatureComponent, incorrectPubKey, p2pkSig)
 
     assert(!result.isValid, s"result: $result")
   }
 
   it must "fail a P2PK sig with the wrong output" in {
     val txSignatureComponent =
-      BaseTxSigComponent(transaction = p2pkTx,
-                         inputIndex = UInt32.zero,
-                         output = incorrectOutput,
-                         Policy.standardFlags)
+      BaseTxSigComponent(transaction = p2pkTx, inputIndex = UInt32.zero, output = incorrectOutput, Policy.standardFlags)
 
     val result =
-      TransactionSignatureChecker.checkSignature(txSignatureComponent,
-                                                 p2pkPubKey,
-                                                 p2pkSig)
+      TransactionSignatureChecker.checkSignature(txSignatureComponent, p2pkPubKey, p2pkSig)
 
     assert(!result.isValid, s"result: $result")
   }
 
   it must "fail a P2PK sig with the wrong tx" in {
     val txSignatureComponent =
-      BaseTxSigComponent(transaction = incorrectTx,
-                         inputIndex = UInt32.zero,
-                         output = p2pkOutput,
-                         Policy.standardFlags)
+      BaseTxSigComponent(transaction = incorrectTx, inputIndex = UInt32.zero, output = p2pkOutput, Policy.standardFlags)
 
     val result =
-      TransactionSignatureChecker.checkSignature(txSignatureComponent,
-                                                 p2pkPubKey,
-                                                 p2pkSig)
+      TransactionSignatureChecker.checkSignature(txSignatureComponent, p2pkPubKey, p2pkSig)
 
     assert(!result.isValid, s"result: $result")
   }
@@ -320,24 +282,17 @@ class TransactionSignatureCheckerTest extends BitcoinSUnitTest {
                          Policy.standardFlags)
 
     val result =
-      TransactionSignatureChecker.checkSignature(txSignatureComponent,
-                                                 p2pkPubKey,
-                                                 p2pkSig)
+      TransactionSignatureChecker.checkSignature(txSignatureComponent, p2pkPubKey, p2pkSig)
 
     assert(!result.isValid, s"result: $result")
   }
 
   it must "fail a P2PKH sig with the wrong pubkey" in {
     val txSignatureComponent =
-      BaseTxSigComponent(transaction = p2pkhTx,
-                         inputIndex = UInt32.zero,
-                         output = p2pkhOutput,
-                         Policy.standardFlags)
+      BaseTxSigComponent(transaction = p2pkhTx, inputIndex = UInt32.zero, output = p2pkhOutput, Policy.standardFlags)
 
     val result =
-      TransactionSignatureChecker.checkSignature(txSignatureComponent,
-                                                 incorrectPubKey,
-                                                 p2pkhSig)
+      TransactionSignatureChecker.checkSignature(txSignatureComponent, incorrectPubKey, p2pkhSig)
 
     assert(!result.isValid, s"result: $result")
   }
@@ -350,9 +305,7 @@ class TransactionSignatureCheckerTest extends BitcoinSUnitTest {
                          Policy.standardFlags)
 
     val result =
-      TransactionSignatureChecker.checkSignature(txSignatureComponent,
-                                                 p2pkhPubKey,
-                                                 p2pkhSig)
+      TransactionSignatureChecker.checkSignature(txSignatureComponent, p2pkhPubKey, p2pkhSig)
 
     assert(!result.isValid, s"result: $result")
   }
@@ -365,9 +318,7 @@ class TransactionSignatureCheckerTest extends BitcoinSUnitTest {
                          Policy.standardFlags)
 
     val result =
-      TransactionSignatureChecker.checkSignature(txSignatureComponent,
-                                                 p2pkhPubKey,
-                                                 p2pkhSig)
+      TransactionSignatureChecker.checkSignature(txSignatureComponent, p2pkhPubKey, p2pkhSig)
 
     assert(!result.isValid, s"result: $result")
   }
@@ -380,9 +331,7 @@ class TransactionSignatureCheckerTest extends BitcoinSUnitTest {
                          Policy.standardFlags)
 
     val result =
-      TransactionSignatureChecker.checkSignature(txSignatureComponent,
-                                                 p2pkhPubKey,
-                                                 p2pkhSig)
+      TransactionSignatureChecker.checkSignature(txSignatureComponent, p2pkhPubKey, p2pkhSig)
 
     assert(!result.isValid, s"result: $result")
   }
@@ -395,22 +344,20 @@ class TransactionSignatureCheckerTest extends BitcoinSUnitTest {
                          Policy.standardFlags)
 
     val result1 =
-      TransactionSignatureChecker.checkSignature(
-        txSignatureComponent,
-        p2shMultiRedeemScript.asm.toList,
-        incorrectPubKey,
-        p2shMultiSig1,
-        Policy.standardFlags)
+      TransactionSignatureChecker.checkSignature(txSignatureComponent,
+                                                 p2shMultiRedeemScript.asm.toList,
+                                                 incorrectPubKey,
+                                                 p2shMultiSig1,
+                                                 Policy.standardFlags)
 
     assert(!result1.isValid, s"result: $result1")
 
     val result2 =
-      TransactionSignatureChecker.checkSignature(
-        txSignatureComponent,
-        p2shMultiRedeemScript.asm.toList,
-        p2shMultiPubKey2,
-        p2shMultiSig2,
-        Policy.standardFlags)
+      TransactionSignatureChecker.checkSignature(txSignatureComponent,
+                                                 p2shMultiRedeemScript.asm.toList,
+                                                 p2shMultiPubKey2,
+                                                 p2shMultiSig2,
+                                                 Policy.standardFlags)
 
     assert(result2.isValid, s"result: $result2")
 
@@ -435,22 +382,20 @@ class TransactionSignatureCheckerTest extends BitcoinSUnitTest {
                          Policy.standardFlags)
 
     val result1 =
-      TransactionSignatureChecker.checkSignature(
-        txSignatureComponent,
-        p2shMultiRedeemScript.asm.toList,
-        p2shMultiPubKey1,
-        p2shMultiSig1,
-        Policy.standardFlags)
+      TransactionSignatureChecker.checkSignature(txSignatureComponent,
+                                                 p2shMultiRedeemScript.asm.toList,
+                                                 p2shMultiPubKey1,
+                                                 p2shMultiSig1,
+                                                 Policy.standardFlags)
 
     assert(result1.isValid, s"result: $result1")
 
     val result2 =
-      TransactionSignatureChecker.checkSignature(
-        txSignatureComponent,
-        p2shMultiRedeemScript.asm.toList,
-        incorrectPubKey,
-        p2shMultiSig2,
-        Policy.standardFlags)
+      TransactionSignatureChecker.checkSignature(txSignatureComponent,
+                                                 p2shMultiRedeemScript.asm.toList,
+                                                 incorrectPubKey,
+                                                 p2shMultiSig2,
+                                                 Policy.standardFlags)
 
     assert(!result2.isValid, s"result: $result2")
 
@@ -497,15 +442,10 @@ class TransactionSignatureCheckerTest extends BitcoinSUnitTest {
 
   it must "fail a P2WPKH sig with the wrong pubkey" in {
     val txSignatureComponent =
-      BaseTxSigComponent(transaction = p2wpkhTx,
-                         inputIndex = UInt32.zero,
-                         output = p2wpkhOutput,
-                         Policy.standardFlags)
+      BaseTxSigComponent(transaction = p2wpkhTx, inputIndex = UInt32.zero, output = p2wpkhOutput, Policy.standardFlags)
 
     val result =
-      TransactionSignatureChecker.checkSignature(txSignatureComponent,
-                                                 incorrectPubKey,
-                                                 p2wpkhSig)
+      TransactionSignatureChecker.checkSignature(txSignatureComponent, incorrectPubKey, p2wpkhSig)
 
     assert(!result.isValid, s"result: $result")
   }
@@ -518,9 +458,7 @@ class TransactionSignatureCheckerTest extends BitcoinSUnitTest {
                          Policy.standardFlags)
 
     val result =
-      TransactionSignatureChecker.checkSignature(txSignatureComponent,
-                                                 p2wpkhPubKey,
-                                                 p2wpkhSig)
+      TransactionSignatureChecker.checkSignature(txSignatureComponent, p2wpkhPubKey, p2wpkhSig)
 
     assert(!result.isValid, s"result: $result")
   }
@@ -533,9 +471,7 @@ class TransactionSignatureCheckerTest extends BitcoinSUnitTest {
                          Policy.standardFlags)
 
     val result =
-      TransactionSignatureChecker.checkSignature(txSignatureComponent,
-                                                 p2wpkhPubKey,
-                                                 p2wpkhSig)
+      TransactionSignatureChecker.checkSignature(txSignatureComponent, p2wpkhPubKey, p2wpkhSig)
 
     assert(!result.isValid, s"result: $result")
   }
@@ -548,19 +484,14 @@ class TransactionSignatureCheckerTest extends BitcoinSUnitTest {
                          Policy.standardFlags)
 
     val result =
-      TransactionSignatureChecker.checkSignature(txSignatureComponent,
-                                                 p2wpkhPubKey,
-                                                 p2wpkhSig)
+      TransactionSignatureChecker.checkSignature(txSignatureComponent, p2wpkhPubKey, p2wpkhSig)
 
     assert(!result.isValid, s"result: $result")
   }
 
   it must "fail a P2WSH(Multi) with the wrong pub key 1" in {
     val txSignatureComponent =
-      WitnessTxSigComponent(transaction = p2wshTx,
-                            inputIndex = UInt32.zero,
-                            output = p2wshOutput,
-                            Policy.standardFlags)
+      WitnessTxSigComponent(transaction = p2wshTx, inputIndex = UInt32.zero, output = p2wshOutput, Policy.standardFlags)
 
     val result1 =
       TransactionSignatureChecker.checkSignature(txSignatureComponent,
@@ -572,12 +503,11 @@ class TransactionSignatureCheckerTest extends BitcoinSUnitTest {
     assert(!result1.isValid, s"result: $result1")
 
     val result2 =
-      TransactionSignatureChecker.checkSignature(
-        txSignatureComponent,
-        p2shMultiRedeemScript.asm.toList,
-        p2wshPubKey2,
-        p2wshSig2,
-        Policy.standardFlags)
+      TransactionSignatureChecker.checkSignature(txSignatureComponent,
+                                                 p2shMultiRedeemScript.asm.toList,
+                                                 p2wshPubKey2,
+                                                 p2wshSig2,
+                                                 Policy.standardFlags)
 
     assert(result2.isValid, s"result: $result2")
 
@@ -596,10 +526,7 @@ class TransactionSignatureCheckerTest extends BitcoinSUnitTest {
 
   it must "fail a P2WSH(Multi) with the wrong pub key 2" in {
     val txSignatureComponent =
-      WitnessTxSigComponent(transaction = p2wshTx,
-                            inputIndex = UInt32.zero,
-                            output = p2wshOutput,
-                            Policy.standardFlags)
+      WitnessTxSigComponent(transaction = p2wshTx, inputIndex = UInt32.zero, output = p2wshOutput, Policy.standardFlags)
 
     val result1 =
       TransactionSignatureChecker.checkSignature(txSignatureComponent,
@@ -611,12 +538,11 @@ class TransactionSignatureCheckerTest extends BitcoinSUnitTest {
     assert(result1.isValid, s"result: $result1")
 
     val result2 =
-      TransactionSignatureChecker.checkSignature(
-        txSignatureComponent,
-        p2shMultiRedeemScript.asm.toList,
-        incorrectPubKey,
-        p2wshSig2,
-        Policy.standardFlags)
+      TransactionSignatureChecker.checkSignature(txSignatureComponent,
+                                                 p2shMultiRedeemScript.asm.toList,
+                                                 incorrectPubKey,
+                                                 p2wshSig2,
+                                                 Policy.standardFlags)
 
     assert(!result2.isValid, s"result: $result2")
 

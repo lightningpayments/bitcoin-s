@@ -82,12 +82,10 @@ class FeeUnitTest extends BitcoinSUnitTest {
   }
 
   it must "have matching scaleFactor between class and factory" in {
-    assert(
-      SatoshisPerKiloByte.zero.scaleFactor == SatoshisPerKiloByte.scaleFactor)
+    assert(SatoshisPerKiloByte.zero.scaleFactor == SatoshisPerKiloByte.scaleFactor)
     assert(SatoshisPerKW.zero.scaleFactor == SatoshisPerKW.scaleFactor)
     assert(SatoshisPerByte.zero.scaleFactor == SatoshisPerByte.scaleFactor)
-    assert(
-      SatoshisPerVirtualByte.zero.scaleFactor == SatoshisPerVirtualByte.scaleFactor)
+    assert(SatoshisPerVirtualByte.zero.scaleFactor == SatoshisPerVirtualByte.scaleFactor)
   }
 
   it must "have matching txSizeForCalc between class and factory" in {
@@ -95,12 +93,9 @@ class FeeUnitTest extends BitcoinSUnitTest {
       SatoshisPerKiloByte.zero.txSizeForCalc(wtx) == SatoshisPerKiloByte
         .txSizeForCalc(wtx))
 
-    assert(
-      SatoshisPerKW.zero.txSizeForCalc(wtx) == SatoshisPerKW.txSizeForCalc(wtx))
+    assert(SatoshisPerKW.zero.txSizeForCalc(wtx) == SatoshisPerKW.txSizeForCalc(wtx))
 
-    assert(
-      SatoshisPerByte.zero.txSizeForCalc(wtx) == SatoshisPerByte.txSizeForCalc(
-        wtx))
+    assert(SatoshisPerByte.zero.txSizeForCalc(wtx) == SatoshisPerByte.txSizeForCalc(wtx))
 
     assert(
       SatoshisPerVirtualByte.zero.txSizeForCalc(wtx) == SatoshisPerVirtualByte

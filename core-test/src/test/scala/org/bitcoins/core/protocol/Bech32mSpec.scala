@@ -19,13 +19,11 @@ class Bech32mSpec extends Properties("Bech32mSpec") {
   }
 
   property("serialization symmetry") = {
-    Prop.forAll(ScriptGenerators.witnessScriptPubKey.suchThat(
-                  _._1.witnessVersion != WitnessVersion0),
-                ChainParamsGenerator.networkParams) {
-      case ((witSPK, _), network) =>
-        val addr = Bech32mAddress(witSPK, network)
-        val spk = Bech32mAddress.fromStringToWitSPK(addr.value)
-        spk == Success(witSPK)
+    Prop.forAll(ScriptGenerators.witnessScriptPubKey.suchThat(_._1.witnessVersion != WitnessVersion0),
+                ChainParamsGenerator.networkParams) { case ((witSPK, _), network) =>
+      val addr = Bech32mAddress(witSPK, network)
+      val spk = Bech32mAddress.fromStringToWitSPK(addr.value)
+      spk == Success(witSPK)
     }
   }
 
@@ -43,13 +41,12 @@ class Bech32mSpec extends Properties("Bech32mSpec") {
   }
 
   property("must fail if we have a mixed case") = {
-    Prop.forAllNoShrink(AddressGenerator.bech32mAddress) {
-      addr: Bech32mAddress =>
-        val old = addr.value
-        val replaced = switchCaseRandChar(old)
-        //should fail because we we switched the case of a random char
-        val actual = Bech32mAddress.fromStringT(replaced)
-        actual.isFailure
+    Prop.forAllNoShrink(AddressGenerator.bech32mAddress) { addr: Bech32mAddress =>
+      val old = addr.value
+      val replaced = switchCaseRandChar(old)
+      //should fail because we we switched the case of a random char
+      val actual = Bech32mAddress.fromStringT(replaced)
+      actual.isFailure
     }
   }
 

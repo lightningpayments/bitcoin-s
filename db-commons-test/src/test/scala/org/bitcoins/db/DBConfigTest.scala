@@ -18,12 +18,8 @@ class DBConfigTest extends BitcoinSAsyncTest {
 
   it should "use sqlite as default database and set its connection pool size to 1" in {
     withTempDir { dataDir =>
-      val bytes = Files.readAllBytes(
-        new File("db-commons/src/main/resources/reference.conf").toPath)
-      Files.write(dataDir.resolve("bitcoin-s.conf"),
-                  bytes,
-                  StandardOpenOption.CREATE_NEW,
-                  StandardOpenOption.WRITE)
+      val bytes = Files.readAllBytes(new File("db-commons/src/main/resources/reference.conf").toPath)
+      Files.write(dataDir.resolve("bitcoin-s.conf"), bytes, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE)
 
       val chainConfig = ChainAppConfig(dataDir)
       val nodeConfig = NodeAppConfig(dataDir)
@@ -56,8 +52,7 @@ class DBConfigTest extends BitcoinSAsyncTest {
       assert(slickChainConfig.profileName == "slick.jdbc.SQLiteProfile")
       assert(slickChainConfig.config.hasPath("db.numThreads"))
       assert(slickChainConfig.config.getInt("db.numThreads") == 1)
-      assert(
-        slickChainConfig.config.getString("db.connectionPool") == "disabled")
+      assert(slickChainConfig.config.getString("db.connectionPool") == "disabled")
       assert(slickChainConfig.config.getInt("db.queueSize") == 5000)
 
       val nodeConfig = NodeAppConfig(dataDir)
@@ -65,8 +60,7 @@ class DBConfigTest extends BitcoinSAsyncTest {
       assert(slickNodeConfig.profileName == "slick.jdbc.SQLiteProfile")
       assert(slickNodeConfig.config.hasPath("db.numThreads"))
       assert(slickNodeConfig.config.getInt("db.numThreads") == 1)
-      assert(
-        slickNodeConfig.config.getString("db.connectionPool") == "disabled")
+      assert(slickNodeConfig.config.getString("db.connectionPool") == "disabled")
       assert(slickNodeConfig.config.getInt("db.queueSize") == 5000)
 
       val walletConfig = WalletAppConfig(dataDir)
@@ -74,16 +68,14 @@ class DBConfigTest extends BitcoinSAsyncTest {
       assert(slickWalletConfig.profileName == "slick.jdbc.SQLiteProfile")
       assert(slickWalletConfig.config.hasPath("db.numThreads"))
       assert(slickWalletConfig.config.getInt("db.numThreads") == 1)
-      assert(
-        slickWalletConfig.config.getString("db.connectionPool") == "disabled")
+      assert(slickWalletConfig.config.getString("db.connectionPool") == "disabled")
       assert(slickWalletConfig.config.getInt("db.queueSize") == 5000)
     }
   }
 
   it must "override a configuration with a hardcoded value" in {
     val memoryDb =
-      BitcoinSTestAppConfig.configWithEmbeddedDb(Some(ProjectType.Chain),
-                                                 () => None)
+      BitcoinSTestAppConfig.configWithEmbeddedDb(Some(ProjectType.Chain), () => None)
     val mainnetConf = ConfigFactory.parseString("bitcoin-s.network = mainnet")
     val chainConfig: ChainAppConfig = {
       BitcoinSTestAppConfig.getSpvTestConfig(mainnetConf).chainConf
@@ -104,17 +96,13 @@ class DBConfigTest extends BitcoinSAsyncTest {
       Files.walkFileTree(
         dir,
         new SimpleFileVisitor[Path] {
-          override def visitFile(
-              file: Path,
-              attrs: BasicFileAttributes): FileVisitResult = {
+          override def visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult = {
             val directory = new Directory(file.toFile)
             directory.deleteRecursively()
             FileVisitResult.CONTINUE
           }
 
-          override def postVisitDirectory(
-              dir: Path,
-              exc: IOException): FileVisitResult = {
+          override def postVisitDirectory(dir: Path, exc: IOException): FileVisitResult = {
             val directory = new Directory(dir.toFile)
             directory.deleteRecursively()
             FileVisitResult.CONTINUE

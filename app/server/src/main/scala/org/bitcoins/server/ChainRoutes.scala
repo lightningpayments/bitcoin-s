@@ -13,9 +13,7 @@ import ujson._
 
 import scala.concurrent.Future
 
-case class ChainRoutes(chain: ChainApi, network: BitcoinNetwork)(implicit
-    system: ActorSystem)
-    extends ServerRoute {
+case class ChainRoutes(chain: ChainApi, network: BitcoinNetwork)(implicit system: ActorSystem) extends ServerRoute {
   import system.dispatcher
 
   def handleCommand: PartialFunction[ServerCommand, Route] = {
@@ -45,46 +43,44 @@ case class ChainRoutes(chain: ChainApi, network: BitcoinNetwork)(implicit
       }
 
     case ServerCommand("getblockheader", arr) =>
-      withValidServerCommand(GetBlockHeader.fromJsArr(arr)) {
-        case GetBlockHeader(hash) =>
-          complete {
-            chain.getHeader(hash).flatMap {
-              case None => Future.successful(Server.httpSuccess(ujson.Null))
-              case Some(header) =>
-                chain.getNumberOfConfirmations(hash).map {
-                  case None =>
-                    throw new RuntimeException(
-                      s"Got unconfirmed header, ${header.hashBE.hex}")
-                  case Some(confs) =>
-                    val chainworkStr = {
-                      val bytes = ByteVector(header.chainWork.toByteArray)
-                      val padded = if (bytes.length <= 32) {
-                        bytes.padLeft(32)
-                      } else bytes
+      withValidServerCommand(GetBlockHeader.fromJsArr(arr)) { case GetBlockHeader(hash) =>
+        complete {
+          chain.getHeader(hash).flatMap {
+            case None => Future.successful(Server.httpSuccess(ujson.Null))
+            case Some(header) =>
+              chain.getNumberOfConfirmations(hash).map {
+                case None =>
+                  throw new RuntimeException(s"Got unconfirmed header, ${header.hashBE.hex}")
+                case Some(confs) =>
+                  val chainworkStr = {
+                    val bytes = ByteVector(header.chainWork.toByteArray)
+                    val padded = if (bytes.length <= 32) {
+                      bytes.padLeft(32)
+                    } else bytes
 
-                      padded.toHex
-                    }
+                    padded.toHex
+                  }
 
-                    val json = Obj(
-                      "raw" -> Str(header.blockHeader.hex),
-                      "hash" -> Str(header.hashBE.hex),
-                      "confirmations" -> Num(confs),
-                      "height" -> Num(header.height),
-                      "version" -> Num(header.version.toLong.toDouble),
-                      "versionHex" -> Str(header.version.hex),
-                      "merkleroot" -> Str(header.merkleRootHashBE.hex),
-                      "time" -> Num(header.time.toBigInt.toDouble),
-                      "nonce" -> Num(header.nonce.toBigInt.toDouble),
-                      "bits" -> Str(header.nBits.hex),
-                      "difficulty" -> Num(header.difficulty.toDouble),
-                      "chainwork" -> Str(chainworkStr),
-                      "previousblockhash" -> Str(header.previousBlockHashBE.hex)
-                    )
+                  val json = Obj(
+                    "raw" -> Str(header.blockHeader.hex),
+                    "hash" -> Str(header.hashBE.hex),
+                    "confirmations" -> Num(confs),
+                    "height" -> Num(header.height),
+                    "version" -> Num(header.version.toLong.toDouble),
+                    "versionHex" -> Str(header.version.hex),
+                    "merkleroot" -> Str(header.merkleRootHashBE.hex),
+                    "time" -> Num(header.time.toBigInt.toDouble),
+                    "nonce" -> Num(header.nonce.toBigInt.toDouble),
+                    "bits" -> Str(header.nBits.hex),
+                    "difficulty" -> Num(header.difficulty.toDouble),
+                    "chainwork" -> Str(chainworkStr),
+                    "previousblockhash" -> Str(header.previousBlockHashBE.hex)
+                  )
 
-                    Server.httpSuccess(json)
-                }
-            }
+                  Server.httpSuccess(json)
+              }
           }
+        }
       }
 
     case ServerCommand("getinfo", _) =>

@@ -23,8 +23,7 @@ abstract class ChainSync extends ChainVerificationLogger {
   def sync(
       chainHandler: ChainHandler,
       getBlockHeaderFunc: DoubleSha256DigestBE => Future[BlockHeader],
-      getBestBlockHashFunc: () => Future[DoubleSha256DigestBE])(implicit
-      ec: ExecutionContext): Future[ChainApi] = {
+      getBestBlockHashFunc: () => Future[DoubleSha256DigestBE])(implicit ec: ExecutionContext): Future[ChainApi] = {
     val currentTipsF: Future[Vector[BlockHeaderDb]] = {
       chainHandler.blockHeaderDAO.getBestChainTips
     }
@@ -71,9 +70,7 @@ abstract class ChainSync extends ChainVerificationLogger {
     //we need to walk backwards on the chain until we get to one of our tips
     val tipsBH = tips.map(_.blockHeader)
 
-    def loop(
-        lastHeaderF: Future[BlockHeader],
-        accum: Vector[BlockHeader]): Future[Vector[BlockHeader]] = {
+    def loop(lastHeaderF: Future[BlockHeader], accum: Vector[BlockHeader]): Future[Vector[BlockHeader]] = {
       lastHeaderF.flatMap { lastHeader =>
         if (tipsBH.contains(lastHeader)) {
           //means we have synced back to a block that we know
@@ -94,9 +91,8 @@ abstract class ChainSync extends ChainVerificationLogger {
     val bestHeaderF = getBlockHeaderFunc(bestBlockHash)
 
     bestHeaderF.map { bestHeader =>
-      logger.info(
-        s"Best tip from third party=${bestHeader.hashBE.hex} currentTips=${tips
-          .map(_.hashBE.hex)}")
+      logger.info(s"Best tip from third party=${bestHeader.hashBE.hex} currentTips=${tips
+        .map(_.hashBE.hex)}")
     }
 
     //one sanity check to make sure we aren't _ahead_ of our data source
@@ -115,8 +111,7 @@ abstract class ChainSync extends ChainVerificationLogger {
 
         //now we are going to add them to our chain and return the chain api
         headersToSyncF.flatMap { headers =>
-          logger.info(
-            s"Attempting to sync ${headers.length} blockheader to our chainstate")
+          logger.info(s"Attempting to sync ${headers.length} blockheader to our chainstate")
           chainApi.processHeaders(headers)
         }
       }

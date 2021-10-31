@@ -28,8 +28,7 @@ class FutureUtilTest extends BitcoinSJvmTest {
 
     future2.onComplete { _ =>
       if (!future1.isCompleted) {
-        assertionP.failure(
-          new Error(s"future1 was not complete by future2 completing"))
+        assertionP.failure(new Error(s"future1 was not complete by future2 completing"))
       } else {
         assertionP.success(succeed)
       }
@@ -72,8 +71,7 @@ class FutureUtilTest extends BitcoinSJvmTest {
       if (difference >= Runtime.getRuntime.availableProcessors() * 1000) {
         succeed
       } else {
-        fail(
-          s"Batch did not execute in parallel! difference=${difference} seconds")
+        fail(s"Batch did not execute in parallel! difference=${difference} seconds")
       }
     }
   }
@@ -102,9 +100,8 @@ class FutureUtilTest extends BitcoinSJvmTest {
       if (difference < 2000) {
         succeed
       } else {
-        fail(
-          s"Batch did not execute in parallel! difference=${difference} seconds processors=${Runtime.getRuntime
-            .availableProcessors()}")
+        fail(s"Batch did not execute in parallel! difference=${difference} seconds processors=${Runtime.getRuntime
+          .availableProcessors()}")
       }
     }
   }

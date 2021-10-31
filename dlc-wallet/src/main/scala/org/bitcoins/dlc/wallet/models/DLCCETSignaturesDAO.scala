@@ -9,9 +9,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 case class DLCCETSignaturesPrimaryKey(dlcId: Sha256Digest, contractIndex: Long)
 
-case class DLCCETSignaturesDAO()(implicit
-    val ec: ExecutionContext,
-    override val appConfig: DLCAppConfig)
+case class DLCCETSignaturesDAO()(implicit val ec: ExecutionContext, override val appConfig: DLCAppConfig)
     extends CRUD[DLCCETSignaturesDb, DLCCETSignaturesPrimaryKey]
     with SlickUtil[DLCCETSignaturesDb, DLCCETSignaturesPrimaryKey] {
   private val mappers = new org.bitcoins.db.DbCommonsColumnMappers(profile)
@@ -25,15 +23,11 @@ case class DLCCETSignaturesDAO()(implicit
     DLCDAO().table
   }
 
-  override def createAll(
-      ts: Vector[DLCCETSignaturesDb]): Future[Vector[DLCCETSignaturesDb]] =
+  override def createAll(ts: Vector[DLCCETSignaturesDb]): Future[Vector[DLCCETSignaturesDb]] =
     createAllNoAutoInc(ts, safeDatabase)
 
   override protected def findByPrimaryKeys(
-      ids: Vector[DLCCETSignaturesPrimaryKey]): Query[
-    DLCCETSignatureTable,
-    DLCCETSignaturesDb,
-    Seq] = {
+      ids: Vector[DLCCETSignaturesPrimaryKey]): Query[DLCCETSignatureTable, DLCCETSignaturesDb, Seq] = {
     // is there a better way to do this?
     val starting = table.filter(_.dlcId =!= Sha256Digest.empty)
 
@@ -42,32 +36,22 @@ case class DLCCETSignaturesDAO()(implicit
     group
       .foldLeft(starting) { case (accum, (dlcId, vec)) =>
         accum.flatMap { _ =>
-          table.filter(t =>
-            t.dlcId === dlcId && t.index.inSet(vec.map(_.contractIndex)))
+          table.filter(t => t.dlcId === dlcId && t.index.inSet(vec.map(_.contractIndex)))
         }
       }
   }
 
-  override def findByPrimaryKey(id: DLCCETSignaturesPrimaryKey): Query[
-    DLCCETSignatureTable,
-    DLCCETSignaturesDb,
-    Seq] = {
+  override def findByPrimaryKey(
+      id: DLCCETSignaturesPrimaryKey): Query[DLCCETSignatureTable, DLCCETSignaturesDb, Seq] = {
     table.filter(t => t.dlcId === id.dlcId && t.index === id.contractIndex)
   }
 
-  override def find(t: DLCCETSignaturesDb): Query[
-    DLCCETSignatureTable,
-    DLCCETSignaturesDb,
-    Seq] = {
+  override def find(t: DLCCETSignaturesDb): Query[DLCCETSignatureTable, DLCCETSignaturesDb, Seq] = {
     findByPrimaryKey(DLCCETSignaturesPrimaryKey(t.dlcId, t.index))
   }
 
-  override def findAll(dlcs: Vector[DLCCETSignaturesDb]): Query[
-    DLCCETSignatureTable,
-    DLCCETSignaturesDb,
-    Seq] =
-    findByPrimaryKeys(
-      dlcs.map(sig => DLCCETSignaturesPrimaryKey(sig.dlcId, sig.index)))
+  override def findAll(dlcs: Vector[DLCCETSignaturesDb]): Query[DLCCETSignatureTable, DLCCETSignaturesDb, Seq] =
+    findByPrimaryKeys(dlcs.map(sig => DLCCETSignaturesPrimaryKey(sig.dlcId, sig.index)))
 
   def findByDLCId(dlcId: Sha256Digest): Future[Vector[DLCCETSignaturesDb]] = {
     val q = table.filter(_.dlcId === dlcId)
@@ -79,8 +63,7 @@ case class DLCCETSignaturesDAO()(implicit
     safeDatabase.run(q.delete)
   }
 
-  class DLCCETSignatureTable(tag: Tag)
-      extends Table[DLCCETSignaturesDb](tag, schemaName, "cet_sigs") {
+  class DLCCETSignatureTable(tag: Tag) extends Table[DLCCETSignaturesDb](tag, schemaName, "cet_sigs") {
 
     def dlcId: Rep[Sha256Digest] = column("dlc_id")
 
@@ -93,16 +76,12 @@ case class DLCCETSignaturesDAO()(implicit
     def initiatorSig: Rep[Option[ECAdaptorSignature]] = column("initiator_sig")
 
     def * : ProvenShape[DLCCETSignaturesDb] =
-      (dlcId, index, sigPoint, accepterSig, initiatorSig).<>(
-        DLCCETSignaturesDb.tupled,
-        DLCCETSignaturesDb.unapply)
+      (dlcId, index, sigPoint, accepterSig, initiatorSig).<>(DLCCETSignaturesDb.tupled, DLCCETSignaturesDb.unapply)
 
     def pk: PrimaryKey =
       primaryKey(name = "pk_cet_sigs", sourceColumns = (dlcId, index))
 
     def fk =
-      foreignKey("fk_dlc_id",
-                 sourceColumns = dlcId,
-                 targetTableQuery = dlcTable)(_.dlcId)
+      foreignKey("fk_dlc_id", sourceColumns = dlcId, targetTableQuery = dlcTable)(_.dlcId)
   }
 }

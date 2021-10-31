@@ -112,9 +112,7 @@ object PeerMessageReceiverState {
       versionMsgP: Promise[VersionMessage],
       verackMsgP: Promise[VerAckMessage.type]
   ) extends PeerMessageReceiverState {
-    require(
-      isConnected,
-      "We cannot have a PeerMessageReceiverState.Initializng if we are not connected")
+    require(isConnected, "We cannot have a PeerMessageReceiverState.Initializng if we are not connected")
 
     /** Helper method to modifing the state of [[org.bitcoins.node.networking.peer.PeerMessageReceiverState.Initializing]]
       * when we receive a [[org.bitcoins.core.p2p.VersionMessage VersionMessage]]. This completes versoinMsgP
@@ -154,12 +152,8 @@ object PeerMessageReceiverState {
       versionMsgP: Promise[VersionMessage],
       verackMsgP: Promise[VerAckMessage.type]
   ) extends PeerMessageReceiverState {
-    require(
-      isConnected,
-      s"We cannot have a PeerMessageReceiverState.Normal if the Peer is not connected")
-    require(
-      isInitialized,
-      s"We cannot have a PeerMessageReceiverState.Normal if the Peer is not initialized")
+    require(isConnected, s"We cannot have a PeerMessageReceiverState.Normal if the Peer is not connected")
+    require(isInitialized, s"We cannot have a PeerMessageReceiverState.Normal if the Peer is not initialized")
 
     override def toString: String = "Normal"
   }
@@ -171,12 +165,10 @@ object PeerMessageReceiverState {
       versionMsgP: Promise[VersionMessage],
       verackMsgP: Promise[VerAckMessage.type])
       extends PeerMessageReceiverState {
-    require(
-      isConnected,
-      s"We cannot have a PeerMessageReceiverState.InitializedDisconnect if the Peer is not connected")
-    require(
-      isInitialized,
-      s"We cannot have a PeerMessageReceiverState.InitializedDisconnect if the Peer is not initialized")
+    require(isConnected,
+            s"We cannot have a PeerMessageReceiverState.InitializedDisconnect if the Peer is not connected")
+    require(isInitialized,
+            s"We cannot have a PeerMessageReceiverState.InitializedDisconnect if the Peer is not initialized")
 
     override def toString: String = "InitializedDisconnect"
   }
@@ -193,12 +185,10 @@ object PeerMessageReceiverState {
       versionMsgP: Promise[VersionMessage],
       verackMsgP: Promise[VerAckMessage.type])
       extends PeerMessageReceiverState {
-    require(
-      isDisconnected,
-      s"We cannot have a PeerMessageReceiverState.InitializedDisconnectDone if the Peer is not connected")
-    require(
-      isInitialized,
-      s"We cannot have a PeerMessageReceiverState.InitializedDisconnectDone if the Peer is not initialized")
+    require(isDisconnected,
+            s"We cannot have a PeerMessageReceiverState.InitializedDisconnectDone if the Peer is not connected")
+    require(isInitialized,
+            s"We cannot have a PeerMessageReceiverState.InitializedDisconnectDone if the Peer is not initialized")
 
     override def toString: String = "InitializedDisconnect"
   }
@@ -213,9 +203,7 @@ object PeerMessageReceiverState {
       versionMsgP: Promise[VersionMessage],
       verackMsgP: Promise[VerAckMessage.type])
       extends PeerMessageReceiverState {
-    require(
-      isDisconnected,
-      "We cannot be in the disconnected state if a peer is not disconnected")
+    require(isDisconnected, "We cannot be in the disconnected state if a peer is not disconnected")
 
     override def toString: String = "Disconnected"
 

@@ -16,14 +16,10 @@ class LnHumanReadablePartTest extends BitcoinSUnitTest {
     LnHumanReadablePart(RegTest) must be(LnHumanReadablePart(LnBitcoinRegTest))
     LnHumanReadablePart(SigNet) must be(LnHumanReadablePart(LnBitcoinSigNet))
 
-    LnHumanReadablePart(MainNet, mBtc) must be(
-      LnHumanReadablePart(LnBitcoinMainNet, mBtcOpt))
-    LnHumanReadablePart(TestNet3, mBtc) must be(
-      LnHumanReadablePart(LnBitcoinTestNet, mBtcOpt))
-    LnHumanReadablePart(RegTest, mBtc) must be(
-      LnHumanReadablePart(LnBitcoinRegTest, mBtcOpt))
-    LnHumanReadablePart(SigNet, mBtc) must be(
-      LnHumanReadablePart(LnBitcoinSigNet, mBtcOpt))
+    LnHumanReadablePart(MainNet, mBtc) must be(LnHumanReadablePart(LnBitcoinMainNet, mBtcOpt))
+    LnHumanReadablePart(TestNet3, mBtc) must be(LnHumanReadablePart(LnBitcoinTestNet, mBtcOpt))
+    LnHumanReadablePart(RegTest, mBtc) must be(LnHumanReadablePart(LnBitcoinRegTest, mBtcOpt))
+    LnHumanReadablePart(SigNet, mBtc) must be(LnHumanReadablePart(LnBitcoinSigNet, mBtcOpt))
   }
 
   it must "correctly serialize the hrp to string" in {
@@ -51,23 +47,15 @@ class LnHumanReadablePartTest extends BitcoinSUnitTest {
 
   it must "deserialize hrp from string" in {
 
-    LnHumanReadablePart.fromString("lnbc") must be(
-      LnHumanReadablePart(LnBitcoinMainNet))
-    LnHumanReadablePart.fromString("lntb") must be(
-      LnHumanReadablePart(LnBitcoinTestNet))
-    LnHumanReadablePart.fromString("lnbcrt") must be(
-      LnHumanReadablePart(LnBitcoinRegTest))
-    LnHumanReadablePart.fromString("lntbs") must be(
-      LnHumanReadablePart(LnBitcoinSigNet))
+    LnHumanReadablePart.fromString("lnbc") must be(LnHumanReadablePart(LnBitcoinMainNet))
+    LnHumanReadablePart.fromString("lntb") must be(LnHumanReadablePart(LnBitcoinTestNet))
+    LnHumanReadablePart.fromString("lnbcrt") must be(LnHumanReadablePart(LnBitcoinRegTest))
+    LnHumanReadablePart.fromString("lntbs") must be(LnHumanReadablePart(LnBitcoinSigNet))
 
-    LnHumanReadablePart.fromString("lnbc1m") must be(
-      LnHumanReadablePart(LnBitcoinMainNet, mBtcOpt))
-    LnHumanReadablePart.fromString("lntb1m") must be(
-      LnHumanReadablePart(LnBitcoinTestNet, mBtcOpt))
-    LnHumanReadablePart.fromString("lnbcrt1m") must be(
-      LnHumanReadablePart(LnBitcoinRegTest, mBtcOpt))
-    LnHumanReadablePart.fromString("lntbs1m") must be(
-      LnHumanReadablePart(LnBitcoinSigNet, mBtcOpt))
+    LnHumanReadablePart.fromString("lnbc1m") must be(LnHumanReadablePart(LnBitcoinMainNet, mBtcOpt))
+    LnHumanReadablePart.fromString("lntb1m") must be(LnHumanReadablePart(LnBitcoinTestNet, mBtcOpt))
+    LnHumanReadablePart.fromString("lnbcrt1m") must be(LnHumanReadablePart(LnBitcoinRegTest, mBtcOpt))
+    LnHumanReadablePart.fromString("lntbs1m") must be(LnHumanReadablePart(LnBitcoinSigNet, mBtcOpt))
   }
 
   it must "fail to deserialize hrp from invalid string" in {

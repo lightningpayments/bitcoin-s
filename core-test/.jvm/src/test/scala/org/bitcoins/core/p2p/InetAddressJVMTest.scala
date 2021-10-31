@@ -14,9 +14,7 @@ class InetAddressJVMTest extends BitcoinSUnitTest {
 
   it must "have serialization symmetry with java's InetAddress" in {
     forAll(P2PGenerator.inetAddress) { inet =>
-      assert(
-        NetworkIpAddress.writeAddress(
-          JvmAddress.getByAddress(inet.getAddress).getAddress) == inet.bytes)
+      assert(NetworkIpAddress.writeAddress(JvmAddress.getByAddress(inet.getAddress).getAddress) == inet.bytes)
     }
   }
 

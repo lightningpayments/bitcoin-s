@@ -8,8 +8,7 @@ import scodec.bits.ByteVector
 
 /** @see [[https://github.com/bitcoin/bips/blob/master/bip-0157.mediawiki#cfheaders BIP157]]
   */
-object RawCompactFilterHeadersMessageSerializer
-    extends RawBitcoinSerializer[CompactFilterHeadersMessage] {
+object RawCompactFilterHeadersMessageSerializer extends RawBitcoinSerializer[CompactFilterHeadersMessage] {
 
   def read(bytes: ByteVector): CompactFilterHeadersMessage = {
     val filterType = FilterType.fromBytes(bytes.take(1))
@@ -23,16 +22,12 @@ object RawCompactFilterHeadersMessageSerializer
       DoubleSha256Digest.fromBytes(previousFilterHeaderBytes)
 
     val (hashes, _) =
-      RawSerializerHelper.parseCmpctSizeUIntSeq(
-        afterPreviousFilterHeader,
-        { bytes =>
-          DoubleSha256Digest.fromBytes(bytes.take(32))
-        })
+      RawSerializerHelper.parseCmpctSizeUIntSeq(afterPreviousFilterHeader,
+                                                { bytes =>
+                                                  DoubleSha256Digest.fromBytes(bytes.take(32))
+                                                })
 
-    val message = CompactFilterHeadersMessage(filterType,
-                                              stopHash,
-                                              previousFilterHeaderHash,
-                                              hashes.toVector)
+    val message = CompactFilterHeadersMessage(filterType, stopHash, previousFilterHeaderHash, hashes.toVector)
 
     message
   }

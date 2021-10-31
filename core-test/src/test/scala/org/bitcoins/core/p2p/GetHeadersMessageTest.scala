@@ -16,8 +16,7 @@ class GetHeadersMessageTest extends BitcoinSUnitTest {
 
   it must "be constructable from just hashes" in {
     forAll(DataMessageGenerator.getHeaderDefaultProtocolMessage) { getHeader =>
-      assert(
-        GetHeadersMessage(getHeader.hashes, getHeader.hashStop) == getHeader)
+      assert(GetHeadersMessage(getHeader.hashes, getHeader.hashStop) == getHeader)
     }
   }
 

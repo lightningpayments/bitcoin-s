@@ -4,10 +4,7 @@ import org.bitcoins.chain.blockchain.ChainHandler
 import org.bitcoins.core.api.chain.ChainApi
 import org.bitcoins.crypto.DoubleSha256DigestBE
 import org.bitcoins.testkit.chain.SyncUtil
-import org.bitcoins.testkit.chain.fixture.{
-  BitcoindBaseVersionChainHandlerViaRpc,
-  ChainWithBitcoindNewestCachedUnitTest
-}
+import org.bitcoins.testkit.chain.fixture.{BitcoindBaseVersionChainHandlerViaRpc, ChainWithBitcoindNewestCachedUnitTest}
 
 import scala.concurrent.Future
 
@@ -64,10 +61,9 @@ class ChainSyncTest extends ChainWithBitcoindNewestCachedUnitTest {
       val newChainHandler2F = for {
         newChainHandler <- newChainHandlerF
         //sync it again to make sure we don't fail
-        newChainHandler2 <- ChainSync.sync(
-          chainHandler = newChainHandler.asInstanceOf[ChainHandler],
-          getBlockHeaderFunc = getBlockHeaderFunc,
-          getBestBlockHashFunc = getBestBlockHashFunc)
+        newChainHandler2 <- ChainSync.sync(chainHandler = newChainHandler.asInstanceOf[ChainHandler],
+                                           getBlockHeaderFunc = getBlockHeaderFunc,
+                                           getBestBlockHashFunc = getBestBlockHashFunc)
         bitcoinSCount <- newChainHandler2.getBlockCount()
         bitcoindCount <- bitcoind.getBlockCount
       } yield assert(bitcoinSCount == bitcoindCount)
@@ -75,57 +71,55 @@ class ChainSyncTest extends ChainWithBitcoindNewestCachedUnitTest {
       newChainHandler2F
   }
 
-  it must "be able to call sync() twice and not fail when nothing has happened" in {
-    bitcoindWithChainHandler =>
-      val bitcoind = bitcoindWithChainHandler.bitcoindRpc
-      val chainHandler = bitcoindWithChainHandler.chainHandler
-      //first we need to implement the 'getBestBlockHashFunc' and 'getBlockHeaderFunc' functions
-      val getBestBlockHashFunc = SyncUtil.getBestBlockHashFunc(bitcoind)
+  it must "be able to call sync() twice and not fail when nothing has happened" in { bitcoindWithChainHandler =>
+    val bitcoind = bitcoindWithChainHandler.bitcoindRpc
+    val chainHandler = bitcoindWithChainHandler.chainHandler
+    //first we need to implement the 'getBestBlockHashFunc' and 'getBlockHeaderFunc' functions
+    val getBestBlockHashFunc = SyncUtil.getBestBlockHashFunc(bitcoind)
 
-      val getBlockHeaderFunc = SyncUtil.getBlockHeaderFunc(bitcoind)
+    val getBlockHeaderFunc = SyncUtil.getBlockHeaderFunc(bitcoind)
 
-      val generate1F = for {
-        addr <- bitcoind.getNewAddress
-        hashes <- bitcoind.generateToAddress(1, addr)
-      } yield hashes
+    val generate1F = for {
+      addr <- bitcoind.getNewAddress
+      hashes <- bitcoind.generateToAddress(1, addr)
+    } yield hashes
 
-      val sync1F: Future[ChainApi] = generate1F.flatMap { _ =>
-        ChainSync.sync(chainHandler = chainHandler,
+    val sync1F: Future[ChainApi] = generate1F.flatMap { _ =>
+      ChainSync.sync(chainHandler = chainHandler,
+                     getBlockHeaderFunc = getBlockHeaderFunc,
+                     getBestBlockHashFunc = getBestBlockHashFunc)
+    }
+
+    val assertion1F = for {
+      _ <- generate1F
+      chainApiSync1 <- sync1F
+      count <- chainApiSync1.getBlockCount()
+      bestHash <- chainApiSync1.getBestBlockHash()
+      bitcoindBlockCount <- bitcoind.getBlockCount
+      bitcoindBestBlockHash <- bitcoind.getBestBlockHash
+    } yield {
+      assert(count == bitcoindBlockCount)
+      assert(bestHash == bitcoindBestBlockHash)
+    }
+
+    //let's call sync again and make sure nothing bad happens
+    val sync2F = for {
+      _ <- assertion1F
+      chainApiSync1 <- sync1F
+      chainApiSync2 <-
+        ChainSync.sync(chainHandler = chainApiSync1.asInstanceOf[ChainHandler],
                        getBlockHeaderFunc = getBlockHeaderFunc,
                        getBestBlockHashFunc = getBestBlockHashFunc)
-      }
+      count <- chainApiSync2.getBlockCount()
+      _ <- generate1F
+      bestHash <- chainApiSync2.getBestBlockHash()
+      bitcoindBlockCount <- bitcoind.getBlockCount
+      bitcoindBestBlockHash <- bitcoind.getBestBlockHash
+    } yield {
+      assert(count == bitcoindBlockCount)
+      assert(bestHash == bitcoindBestBlockHash)
+    }
 
-      val assertion1F = for {
-        _ <- generate1F
-        chainApiSync1 <- sync1F
-        count <- chainApiSync1.getBlockCount()
-        bestHash <- chainApiSync1.getBestBlockHash()
-        bitcoindBlockCount <- bitcoind.getBlockCount
-        bitcoindBestBlockHash <- bitcoind.getBestBlockHash
-      } yield {
-        assert(count == bitcoindBlockCount)
-        assert(bestHash == bitcoindBestBlockHash)
-      }
-
-      //let's call sync again and make sure nothing bad happens
-      val sync2F = for {
-        _ <- assertion1F
-        chainApiSync1 <- sync1F
-        chainApiSync2 <-
-          ChainSync.sync(chainHandler =
-                           chainApiSync1.asInstanceOf[ChainHandler],
-                         getBlockHeaderFunc = getBlockHeaderFunc,
-                         getBestBlockHashFunc = getBestBlockHashFunc)
-        count <- chainApiSync2.getBlockCount()
-        _ <- generate1F
-        bestHash <- chainApiSync2.getBestBlockHash()
-        bitcoindBlockCount <- bitcoind.getBlockCount
-        bitcoindBestBlockHash <- bitcoind.getBestBlockHash
-      } yield {
-        assert(count == bitcoindBlockCount)
-        assert(bestHash == bitcoindBestBlockHash)
-      }
-
-      sync2F
+    sync2F
   }
 }

@@ -11,9 +11,7 @@ import scala.util.Try
 
 object DLCUtil {
 
-  def computeContractId(
-      fundingTx: Transaction,
-      tempContractId: Sha256Digest): ByteVector = {
+  def computeContractId(fundingTx: Transaction, tempContractId: Sha256Digest): ByteVector = {
     fundingTx.txIdBE.bytes.xor(tempContractId.bytes)
   }
 
@@ -44,8 +42,7 @@ object DLCUtil {
 
   def computeOutcome(
       completedSig: ECDigitalSignature,
-      possibleAdaptorSigs: Vector[(ECPublicKey, ECAdaptorSignature)]): Option[
-    (FieldElement, ECPublicKey)] = {
+      possibleAdaptorSigs: Vector[(ECPublicKey, ECAdaptorSignature)]): Option[(FieldElement, ECPublicKey)] = {
     val sigOpt = possibleAdaptorSigs.find { case (adaptorPoint, adaptorSig) =>
       val possibleOracleSigT =
         sigFromOutcomeAndSigs(adaptorPoint, adaptorSig, completedSig)
@@ -54,8 +51,7 @@ object DLCUtil {
     }
 
     sigOpt.map { case (adaptorPoint, adaptorSig) =>
-      (sigFromOutcomeAndSigs(adaptorPoint, adaptorSig, completedSig).get,
-       adaptorPoint)
+      (sigFromOutcomeAndSigs(adaptorPoint, adaptorSig, completedSig).get, adaptorPoint)
     }
   }
 
@@ -65,16 +61,14 @@ object DLCUtil {
       acceptFundingKey: ECPublicKey,
       contractInfo: ContractInfo,
       localAdaptorSigs: Vector[(ECPublicKey, ECAdaptorSignature)],
-      cet: WitnessTransaction): Option[
-    (SchnorrDigitalSignature, OracleOutcome)] = {
+      cet: WitnessTransaction): Option[(SchnorrDigitalSignature, OracleOutcome)] = {
     val allAdaptorPoints = contractInfo.adaptorPoints
 
     val cetSigs = cet.witness.head
       .asInstanceOf[P2WSHWitnessV0]
       .signatures
 
-    require(cetSigs.size == 2,
-            s"There must be only 2 signatures, got ${cetSigs.size}")
+    require(cetSigs.size == 2, s"There must be only 2 signatures, got ${cetSigs.size}")
 
     val outcomeValues = cet.outputs.map(_.value).sorted
     val totalCollateral = contractInfo.totalCollateral

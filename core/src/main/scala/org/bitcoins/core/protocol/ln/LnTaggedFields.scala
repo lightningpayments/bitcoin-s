@@ -12,9 +12,7 @@ import scala.reflect.ClassTag
 
 /** An aggregation of all the individual tagged fields in a [[org.bitcoins.core.protocol.ln.LnInvoice]]
   */
-sealed abstract class LnTaggedFields
-    extends SeqWrapper[LnTag]
-    with NetworkElement {
+sealed abstract class LnTaggedFields extends SeqWrapper[LnTag] with NetworkElement {
 
   require(tag[LnTag.PaymentHashTag].nonEmpty, "You must supply a payment hash")
   require(
@@ -22,8 +20,7 @@ sealed abstract class LnTaggedFields
       descriptionHash.nonEmpty,
     "You must supply either a description hash, or a literal description that is 640 characters or less to create an invoice."
   )
-  require(!(description.nonEmpty && descriptionHash.nonEmpty),
-          "Cannot have both description and description hash")
+  require(!(description.nonEmpty && descriptionHash.nonEmpty), "Cannot have both description and description hash")
 
   def tags: Vector[LnTag]
 
@@ -98,9 +95,7 @@ object LnTaggedFields {
       routingInfo: Option[LnTag.RoutingInfo] = None,
       features: Option[LnTag.FeaturesTag] = None): LnTaggedFields = {
 
-    val (description, descriptionHash): (
-        Option[LnTag.DescriptionTag],
-        Option[LnTag.DescriptionHashTag]) = {
+    val (description, descriptionHash): (Option[LnTag.DescriptionTag], Option[LnTag.DescriptionHashTag]) = {
 
       descriptionOrHash match {
         case Left(description) =>
@@ -139,8 +134,7 @@ object LnTaggedFields {
         case h +: h1 +: h2 +: t =>
           val prefix = LnTagPrefix
             .fromUInt5(h)
-            .getOrElse(
-              throw new RuntimeException("Unknown LN invoice tag prefix"))
+            .getOrElse(throw new RuntimeException("Unknown LN invoice tag prefix"))
 
           //next two 5 bit increments are data_length
           val dataLengthU5s = List(h1, h2)

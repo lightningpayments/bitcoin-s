@@ -9,27 +9,22 @@ class SchnorrNonceTest extends BitcoinSCryptoTest {
 
   it must "fail for incorrect lengths" in {
     assertThrows[IllegalArgumentException](
-      SchnorrNonce(
-        "676f8c22de526e0c0904719847e63bda47b4eceb6986bdbaf8695db362811a"))
+      SchnorrNonce("676f8c22de526e0c0904719847e63bda47b4eceb6986bdbaf8695db362811a"))
 
     assertThrows[IllegalArgumentException](
-      SchnorrNonce(
-        "676f8c22de526e0c0904719847e63bda47b4eceb6986bdbaf8695db362811a010203"))
+      SchnorrNonce("676f8c22de526e0c0904719847e63bda47b4eceb6986bdbaf8695db362811a010203"))
   }
 
   it must "fail for invalid x coordinate" in {
     assertThrows[IllegalArgumentException](
-      SchnorrNonce(
-        "EEFDEA4CDB677750A420FEE807EACF21EB9898AE79B9768766E4FAA04A2D4A34"))
+      SchnorrNonce("EEFDEA4CDB677750A420FEE807EACF21EB9898AE79B9768766E4FAA04A2D4A34"))
 
     assertThrows[IllegalArgumentException](
-      SchnorrNonce(
-        "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC30"))
+      SchnorrNonce("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC30"))
   }
 
   it must "succeed for valid large x coordinates above the curve order" in {
-    val _ = SchnorrNonce(
-      "fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2c").xCoord
+    val _ = SchnorrNonce("fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2c").xCoord
     succeed
   }
 

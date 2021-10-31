@@ -6,12 +6,7 @@ import org.bitcoins.core.protocol.script._
 import org.bitcoins.core.protocol.transaction._
 import org.bitcoins.core.script.crypto.HashType
 import org.bitcoins.core.script.interpreter.ScriptInterpreter
-import org.bitcoins.core.wallet.utxo.{
-  ConditionalPath,
-  InputInfo,
-  P2SHNestedSegwitV0InputInfo,
-  ScriptSignatureParams
-}
+import org.bitcoins.core.wallet.utxo.{ConditionalPath, InputInfo, P2SHNestedSegwitV0InputInfo, ScriptSignatureParams}
 import org.bitcoins.crypto.Sign
 import org.scalacheck.Gen
 
@@ -96,14 +91,9 @@ sealed abstract class CreditingTxGen {
         p2wpkhOutput,
         p2wshOutput
       )
-      .suchThat(output =>
-        !ScriptGenerators.redeemScriptTooBig(output.output.scriptPubKey))
+      .suchThat(output => !ScriptGenerators.redeemScriptTooBig(output.output.scriptPubKey))
       .suchThat {
-        case ScriptSignatureParams(
-              P2SHNestedSegwitV0InputInfo(_, _, witness, _, _),
-              _,
-              _,
-              _) =>
+        case ScriptSignatureParams(P2SHNestedSegwitV0InputInfo(_, _, witness, _, _), _, _, _) =>
           witness.stack.exists(_.length > ScriptInterpreter.MAX_PUSH_SIZE)
         case _ => true
       }
@@ -140,9 +130,7 @@ sealed abstract class CreditingTxGen {
     val nonCltvSize = nonCltvOutputGens.length
 
     // For some reason this breaks in scala 2.13 without the explicit type param
-    Gen.frequency[Seq[ScriptSignatureParams[InputInfo]]](
-      (cltvSize, cltvGen),
-      (nonCltvSize, nonCltvGen))
+    Gen.frequency[Seq[ScriptSignatureParams[InputInfo]]]((cltvSize, cltvGen), (nonCltvSize, nonCltvGen))
   }
 
   /** Generates a crediting tx with a p2pk spk at the returned index */
@@ -189,14 +177,12 @@ sealed abstract class CreditingTxGen {
   }
 
   def multiSignatureWithTimeoutOutput: Gen[ScriptSignatureParams[InputInfo]] = {
-    ScriptGenerators.multiSignatureWithTimeoutScriptPubKey.flatMap {
-      case (conditional, keys) =>
-        build(conditional, keys, None, None)
+    ScriptGenerators.multiSignatureWithTimeoutScriptPubKey.flatMap { case (conditional, keys) =>
+      build(conditional, keys, None, None)
     }
   }
 
-  def multiSignatureWithTimeoutOutputs: Gen[
-    Seq[ScriptSignatureParams[InputInfo]]] = {
+  def multiSignatureWithTimeoutOutputs: Gen[Seq[ScriptSignatureParams[InputInfo]]] = {
     Gen
       .choose(min, max)
       .flatMap(n => Gen.listOfN(n, multiSignatureWithTimeoutOutput))
@@ -327,8 +313,7 @@ sealed abstract class CreditingTxGen {
 
   def p2wshOutput: Gen[ScriptSignatureParams[InputInfo]] =
     nonP2WSHOutput
-      .suchThat(output =>
-        !ScriptGenerators.redeemScriptTooBig(output.output.scriptPubKey))
+      .suchThat(output => !ScriptGenerators.redeemScriptTooBig(output.output.scriptPubKey))
       .flatMap { case ScriptSignatureParams(info, _, signers, _) =>
         val spk = info.scriptPubKey
         spk match {
@@ -337,8 +322,7 @@ sealed abstract class CreditingTxGen {
             val witSPK = P2WSHWitnessSPKV0(rspk)
             build(witSPK, signers, None, Some(scriptWit))
           case _ =>
-            throw new IllegalArgumentException(
-              "nonP2WSHOutput created a non RawScriptPubKey")
+            throw new IllegalArgumentException("nonP2WSHOutput created a non RawScriptPubKey")
         }
       }
 
@@ -365,11 +349,9 @@ sealed abstract class CreditingTxGen {
                 BaseTransaction(tc.validLockVersion, Nil, outputs, tc.lockTime)
               ScriptSignatureParams(
                 InputInfo(
-                  TransactionOutPoint(creditingTx.txId,
-                                      UInt32.apply(outputIndex)),
-                  TransactionOutput(
-                    creditingTx.outputs(outputIndex).value,
-                    creditingTx.outputs(outputIndex).scriptPubKey),
+                  TransactionOutPoint(creditingTx.txId, UInt32.apply(outputIndex)),
+                  TransactionOutput(creditingTx.outputs(outputIndex).value,
+                                    creditingTx.outputs(outputIndex).scriptPubKey),
                   Some(spk),
                   Some(wit),
                   ConditionalPath.NoCondition,
@@ -394,20 +376,16 @@ sealed abstract class CreditingTxGen {
       scriptWitness: Option[ScriptWitness]): ConditionalPath = {
     spk match {
       case conditional: ConditionalScriptPubKey =>
-        ConditionalPath.ConditionTrue(
-          computeAllTrueConditionalPath(conditional.trueSPK, None, None))
+        ConditionalPath.ConditionTrue(computeAllTrueConditionalPath(conditional.trueSPK, None, None))
       case _: P2PKWithTimeoutScriptPubKey => ConditionalPath.nonNestedTrue
       case lockTimeScriptPubKey: LockTimeScriptPubKey =>
-        computeAllTrueConditionalPath(lockTimeScriptPubKey.nestedScriptPubKey,
-                                      None,
-                                      None)
+        computeAllTrueConditionalPath(lockTimeScriptPubKey.nestedScriptPubKey, None, None)
       case _: RawScriptPubKey | _: P2WPKHWitnessSPKV0 =>
         ConditionalPath.NoCondition
       case _: P2SHScriptPubKey =>
         redeemScript match {
           case None =>
-            throw new IllegalArgumentException(
-              "Expected redeem script for P2SH")
+            throw new IllegalArgumentException("Expected redeem script for P2SH")
           case Some(script) =>
             computeAllTrueConditionalPath(script, None, scriptWitness)
         }
@@ -416,12 +394,10 @@ sealed abstract class CreditingTxGen {
           case Some(witness: P2WSHWitnessV0) =>
             computeAllTrueConditionalPath(witness.redeemScript, None, None)
           case _ =>
-            throw new IllegalArgumentException(
-              "Expected P2WSHWitness for P2WSH")
+            throw new IllegalArgumentException("Expected P2WSHWitness for P2WSH")
         }
       case _: UnassignedWitnessScriptPubKey =>
-        throw new IllegalArgumentException(
-          s"Unexpected unassigned witness SPK: $spk")
+        throw new IllegalArgumentException(s"Unexpected unassigned witness SPK: $spk")
     }
   }
 
@@ -429,8 +405,7 @@ sealed abstract class CreditingTxGen {
       spk: ScriptPubKey,
       signers: Seq[Sign],
       redeemScript: Option[ScriptPubKey],
-      scriptWitness: Option[ScriptWitness]): Gen[
-    ScriptSignatureParams[InputInfo]] =
+      scriptWitness: Option[ScriptWitness]): Gen[ScriptSignatureParams[InputInfo]] =
     nonEmptyOutputs.flatMap { outputs =>
       CryptoGenerators.hashType.flatMap { hashType =>
         Gen.choose(0, outputs.size - 1).map { idx =>
@@ -457,22 +432,17 @@ sealed abstract class CreditingTxGen {
 
   def inputsAndOutputs(
       outputsToUse: Gen[Seq[ScriptSignatureParams[InputInfo]]] = outputs,
-      destinationGenerator: CurrencyUnit => Gen[Seq[TransactionOutput]] =
-        TransactionGenerators.smallOutputs): Gen[
+      destinationGenerator: CurrencyUnit => Gen[Seq[TransactionOutput]] = TransactionGenerators.smallOutputs): Gen[
     (Seq[ScriptSignatureParams[InputInfo]], Seq[TransactionOutput])] = {
-    inputsAndP2SHOutputs(
-      outputsToUse,
-      destinationGenerator.andThen(_.map(_.map(x => (x, ScriptPubKey.empty)))))
+    inputsAndP2SHOutputs(outputsToUse, destinationGenerator.andThen(_.map(_.map(x => (x, ScriptPubKey.empty)))))
       .map(x => (x._1, x._2.map(_._1)))
   }
 
   def inputsAndP2SHOutputs(
       outputsToUse: Gen[Seq[ScriptSignatureParams[InputInfo]]] = outputs,
-      destinationGenerator: CurrencyUnit => Gen[
-        Seq[(TransactionOutput, ScriptPubKey)]] =
-        TransactionGenerators.smallP2SHOutputs): Gen[(
-      Seq[ScriptSignatureParams[InputInfo]],
-      Seq[(TransactionOutput, ScriptPubKey)])] = {
+      destinationGenerator: CurrencyUnit => Gen[Seq[(TransactionOutput, ScriptPubKey)]] =
+        TransactionGenerators.smallP2SHOutputs): Gen[
+    (Seq[ScriptSignatureParams[InputInfo]], Seq[(TransactionOutput, ScriptPubKey)])] = {
     outputsToUse
       .flatMap { creditingTxsInfo =>
         val creditingOutputs = creditingTxsInfo.map(c => c.output)

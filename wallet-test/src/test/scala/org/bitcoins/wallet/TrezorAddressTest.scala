@@ -12,10 +12,7 @@ import org.bitcoins.feeprovider.ConstantFeeRateProvider
 import org.bitcoins.testkit.BitcoinSTestAppConfig
 import org.bitcoins.testkit.fixtures.EmptyFixture
 import org.bitcoins.testkit.wallet.BitcoinSWalletTest
-import org.bitcoins.testkit.wallet.BitcoinSWalletTest.{
-  MockChainQueryApi,
-  MockNodeApi
-}
+import org.bitcoins.testkit.wallet.BitcoinSWalletTest.{MockChainQueryApi, MockNodeApi}
 import org.bitcoins.wallet.config.WalletAppConfig
 import org.scalatest.compatible.Assertion
 import play.api.libs.json._
@@ -95,11 +92,7 @@ class TrezorAddressTest extends BitcoinSWalletTest with EmptyFixture {
       }
   }
 
-  case class TestAddress(
-      path: HDPath,
-      chain: HDChainType,
-      addressIndex: Int,
-      address: BitcoinAddress)
+  case class TestAddress(path: HDPath, chain: HDChainType, addressIndex: Int, address: BitcoinAddress)
 
   object TestAddress {
     implicit val reads = Json.reads[TestAddress]
@@ -145,31 +138,22 @@ class TrezorAddressTest extends BitcoinSWalletTest with EmptyFixture {
     ConfigFactory.parseString(confStr)
   }
 
-  private def getWallet(config: WalletAppConfig)(implicit
-      ec: ExecutionContext): Future[Wallet] = {
+  private def getWallet(config: WalletAppConfig)(implicit ec: ExecutionContext): Future[Wallet] = {
     import system.dispatcher
     val bip39PasswordOpt = None
     val startedF = config.start()
     for {
       _ <- startedF
       wallet =
-        Wallet(MockNodeApi,
-               MockChainQueryApi,
-               ConstantFeeRateProvider(SatoshisPerVirtualByte.one))(config, ec)
-      init <- Wallet.initialize(wallet = wallet,
-                                bip39PasswordOpt = bip39PasswordOpt)
+        Wallet(MockNodeApi, MockChainQueryApi, ConstantFeeRateProvider(SatoshisPerVirtualByte.one))(config, ec)
+      init <- Wallet.initialize(wallet = wallet, bip39PasswordOpt = bip39PasswordOpt)
     } yield init
   }
 
-  case class AccountAndAddrsAndVector(
-      account: AccountDb,
-      addrs: Seq[AddressDb],
-      vector: TestVector)
+  case class AccountAndAddrsAndVector(account: AccountDb, addrs: Seq[AddressDb], vector: TestVector)
 
   /** Asserts that the given addresses are gthe same as in the given vector */
-  private def assertSameAddresses(
-      addrs: Seq[AddressDb],
-      vector: TestVector): Seq[Assertion] = {
+  private def assertSameAddresses(addrs: Seq[AddressDb], vector: TestVector): Seq[Assertion] = {
     assert(vector.addresses.length == addrs.length)
 
     val sortedAddresses = addrs.sortBy(_.path.toString)
@@ -201,8 +185,7 @@ class TrezorAddressTest extends BitcoinSWalletTest with EmptyFixture {
     */
   def getAccountsWithAddressesAndVectors(
       wallet: Wallet,
-      accountsWithVectors: Seq[(AccountDb, TestVector)]): Future[
-    Seq[AccountAndAddrsAndVector]] = {
+      accountsWithVectors: Seq[(AccountDb, TestVector)]): Future[Seq[AccountAndAddrsAndVector]] = {
     FutureUtil.sequentially(accountsWithVectors) { case (acc, vec) =>
       val addrFutures: Future[Seq[AddressDb]] =
         FutureUtil.sequentially(vec.addresses) { vector =>
@@ -236,10 +219,7 @@ class TrezorAddressTest extends BitcoinSWalletTest with EmptyFixture {
     val assertionsF: Future[Seq[Assertion]] = for {
       wallet <- getWallet(conf)
       existingAccounts <- wallet.listAccounts(purpose)
-      _ <- createNeededAccounts(wallet,
-                                existingAccounts,
-                                conf.kmParams,
-                                testVectors)
+      _ <- createNeededAccounts(wallet, existingAccounts, conf.kmParams, testVectors)
       accounts <- wallet.listAccounts(purpose)
       // we want to find all accounts for the given account type,
       // and match it with its corresponding test vector
@@ -249,8 +229,7 @@ class TrezorAddressTest extends BitcoinSWalletTest with EmptyFixture {
           assert(accounts.count(_.hdAccount.index == vec.account) == 1)
           accounts.find(_.hdAccount.index == vec.account) match {
             case None =>
-              fail(
-                s"Did not find account in wallet with index ${vec.account}. Accounts: ${accounts.mkString}")
+              fail(s"Did not find account in wallet with index ${vec.account}. Accounts: ${accounts.mkString}")
             case Some(account) =>
               assert(account.xpub == vec.xpub)
               account -> vec
@@ -269,16 +248,15 @@ class TrezorAddressTest extends BitcoinSWalletTest with EmptyFixture {
       // and verify that they are all the same
       val assertions: Seq[Assertion] = {
         val nestedAssertions: Seq[Seq[Assertion]] =
-          accountsWithAddrsWithVecs.map {
-            case AccountAndAddrsAndVector(account, addresses, _) =>
-              val acctIdx = account.hdAccount.index
-              val vec = vectors.find(_.xpub == account.xpub) match {
-                case None =>
-                  fail(s"Did not find test vector for account $acctIdx")
-                case Some(v) => v
-              }
+          accountsWithAddrsWithVecs.map { case AccountAndAddrsAndVector(account, addresses, _) =>
+            val acctIdx = account.hdAccount.index
+            val vec = vectors.find(_.xpub == account.xpub) match {
+              case None =>
+                fail(s"Did not find test vector for account $acctIdx")
+              case Some(v) => v
+            }
 
-              assertSameAddresses(addresses, vec)
+            assertSameAddresses(addresses, vec)
           }
         nestedAssertions.flatten
       }

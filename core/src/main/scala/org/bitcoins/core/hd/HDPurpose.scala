@@ -17,8 +17,7 @@ package org.bitcoins.core.hd
   */
 case class HDPurpose(constant: Int) extends BIP32Path {
 
-  override val path: Vector[BIP32Node] = Vector(
-    BIP32Node(constant, hardened = true))
+  override val path: Vector[BIP32Node] = Vector(BIP32Node(constant, hardened = true))
 }
 
 object HDPurposes {
@@ -36,8 +35,7 @@ object HDPurposes {
   def fromConstant(i: Int): Option[HDPurpose] = all.find(_.constant == i)
 
   def fromNode(node: BIP32Node): Option[HDPurpose] = {
-    require(node.hardened,
-            s"Cannot construct HDPurpose from un-hardened node: $node")
+    require(node.hardened, s"Cannot construct HDPurpose from un-hardened node: $node")
     fromConstant(node.index)
   }
 }

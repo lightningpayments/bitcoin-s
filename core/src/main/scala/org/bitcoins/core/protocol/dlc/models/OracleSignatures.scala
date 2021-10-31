@@ -36,9 +36,7 @@ sealed trait OracleSignatures extends SeqWrapper[SchnorrDigitalSignature] {
 
 object OracleSignatures {
 
-  def apply(
-      oracle: SingleOracleInfo,
-      sigs: Vector[SchnorrDigitalSignature]): OracleSignatures = {
+  def apply(oracle: SingleOracleInfo, sigs: Vector[SchnorrDigitalSignature]): OracleSignatures = {
     oracle match {
       case info: EnumSingleOracleInfo =>
         require(sigs.length == 1, s"Expected one signature, got $sigs")
@@ -53,9 +51,7 @@ object OracleSignatures {
     *
     * This is what is used to decrypt a CET adaptor signature.
     */
-  def computeAggregateSignature(
-      outcome: OracleOutcome,
-      sigs: Vector[OracleSignatures]): ECPrivateKey = {
+  def computeAggregateSignature(outcome: OracleOutcome, sigs: Vector[OracleSignatures]): ECPrivateKey = {
     outcome match {
       case EnumOracleOutcome(_, enumOutcome) =>
         sigs.map(_.aggregateSig(enumOutcome)).reduce(_.add(_))
@@ -72,10 +68,7 @@ object OracleSignatures {
 }
 
 /** Wraps a single oracle signature of an Enum event. */
-case class EnumOracleSignature(
-    oracle: EnumSingleOracleInfo,
-    sig: SchnorrDigitalSignature)
-    extends OracleSignatures {
+case class EnumOracleSignature(oracle: EnumSingleOracleInfo, sig: SchnorrDigitalSignature) extends OracleSignatures {
   override def sigs: Vector[SchnorrDigitalSignature] = Vector(sig)
 
   lazy val getOutcome: EnumOutcome = {
@@ -92,8 +85,7 @@ case class EnumOracleSignature(
                     .bytes,
                   sig)
       }
-      .getOrElse(throw new IllegalArgumentException(
-        s"Signature $sig does not match any outcome $potentialOutcomes"))
+      .getOrElse(throw new IllegalArgumentException(s"Signature $sig does not match any outcome $potentialOutcomes"))
 
     EnumOutcome(outcome)
   }
@@ -103,9 +95,7 @@ case class EnumOracleSignature(
 }
 
 /** Wraps a set of oracle signatures of numeric digits. */
-case class NumericOracleSignatures(
-    oracle: NumericSingleOracleInfo,
-    sigs: Vector[SchnorrDigitalSignature])
+case class NumericOracleSignatures(oracle: NumericSingleOracleInfo, sigs: Vector[SchnorrDigitalSignature])
     extends OracleSignatures {
 
   lazy val getOutcome: UnsignedNumericOutcome = {
@@ -124,15 +114,13 @@ case class NumericOracleSignatures(
                       .bytes,
                     sig)
         }
-        .getOrElse(throw new IllegalArgumentException(
-          s"Signature $sig does not match any digit 0-${base - 1}"))
+        .getOrElse(throw new IllegalArgumentException(s"Signature $sig does not match any digit 0-${base - 1}"))
     }
     UnsignedNumericOutcome(digits)
   }
 
   /** Computes the NumericOutcome to which these signatures correspond. */
-  def computeOutcome(possibleOutcomes: Vector[DLCOutcomeType]): Option[
-    UnsignedNumericOutcome] = {
+  def computeOutcome(possibleOutcomes: Vector[DLCOutcomeType]): Option[UnsignedNumericOutcome] = {
     val digitsSigned = getOutcome.digits
 
     CETCalculator.searchForNumericOutcome(digitsSigned, possibleOutcomes)

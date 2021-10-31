@@ -3,11 +3,7 @@ package org.bitcoins.core.protocol.dlc
 import org.bitcoins.core.currency.Satoshis
 import org.bitcoins.core.protocol.dlc.compute.CETCalculator
 import org.bitcoins.core.protocol.dlc.compute.CETCalculator._
-import org.bitcoins.core.protocol.dlc.models.{
-  DLCPayoutCurve,
-  OutcomePayoutPoint,
-  RoundingIntervals
-}
+import org.bitcoins.core.protocol.dlc.models.{DLCPayoutCurve, OutcomePayoutPoint, RoundingIntervals}
 import org.bitcoins.testkitcore.gen.NumberGenerator
 import org.bitcoins.testkitcore.util.BitcoinSUnitTest
 import org.scalacheck.Gen
@@ -49,11 +45,7 @@ class CETCalculatorTest extends BitcoinSUnitTest {
       VariablePayoutRange(109, 110)
     )
 
-    val ranges = CETCalculator.splitIntoRanges(0,
-                                               110,
-                                               Satoshis(10000),
-                                               func,
-                                               RoundingIntervals.noRounding)
+    val ranges = CETCalculator.splitIntoRanges(0, 110, Satoshis(10000), func, RoundingIntervals.noRounding)
     assert(ranges == expected)
   }
 
@@ -72,11 +64,7 @@ class CETCalculatorTest extends BitcoinSUnitTest {
 
     val expected = Vector(VariablePayoutRange(0, 7))
 
-    val ranges = CETCalculator.splitIntoRanges(0,
-                                               7,
-                                               Satoshis(10000),
-                                               func,
-                                               RoundingIntervals.noRounding)
+    val ranges = CETCalculator.splitIntoRanges(0, 7, Satoshis(10000), func, RoundingIntervals.noRounding)
 
     assert(ranges == expected)
   }
@@ -133,8 +121,7 @@ class CETCalculatorTest extends BitcoinSUnitTest {
 
     forAll(baseGen) { base =>
       val edgeCase =
-        CETCalculator.backGroupings(Vector(1, base - 1, base - 1, base - 1),
-                                    base)
+        CETCalculator.backGroupings(Vector(1, base - 1, base - 1, base - 1), base)
       assert(edgeCase == Vector(Vector(1)))
     }
   }
@@ -146,17 +133,13 @@ class CETCalculatorTest extends BitcoinSUnitTest {
       if (digit1 >= digit2 + 1) {
         assert(singleDigitGroupings == Vector.empty)
       } else {
-        assert(
-          singleDigitGroupings == (digit1 + 1).until(digit2).map(Vector(_)))
+        assert(singleDigitGroupings == (digit1 + 1).until(digit2).map(Vector(_)))
       }
     }
   }
 
   it should "correctly compute all groupings" in {
-    val edgeCase = CETCalculator.groupByIgnoringDigits(start = 123,
-                                                       end = 123,
-                                                       base = 10,
-                                                       numDigits = 3)
+    val edgeCase = CETCalculator.groupByIgnoringDigits(start = 123, end = 123, base = 10, numDigits = 3)
     assert(edgeCase == Vector(Vector(1, 2, 3)))
 
     val prefix = Vector(0, 1, 2, 0)
@@ -174,18 +157,12 @@ class CETCalculatorTest extends BitcoinSUnitTest {
       Vector(13, 2)
     )
 
-    val smallGroupings = CETCalculator.groupByIgnoringDigits(start = 171,
-                                                             end = 210,
-                                                             base = 16,
-                                                             numDigits = 2)
+    val smallGroupings = CETCalculator.groupByIgnoringDigits(start = 171, end = 210, base = 16, numDigits = 2)
     assert(smallGroupings == smallExpected)
 
     val smallExpectedWithPrefix = smallExpected.map(prefix ++ _)
     val smallGroupingsWithPrefix =
-      CETCalculator.groupByIgnoringDigits(start = 73899,
-                                          end = 73938,
-                                          base = 16,
-                                          numDigits = 6)
+      CETCalculator.groupByIgnoringDigits(start = 73899, end = 73938, base = 16, numDigits = 6)
     assert(smallGroupingsWithPrefix == smallExpectedWithPrefix)
 
     val expected = Vector(
@@ -219,18 +196,12 @@ class CETCalculatorTest extends BitcoinSUnitTest {
       Vector(4, 3, 2, 1)
     )
 
-    val groupings = CETCalculator.groupByIgnoringDigits(start = 1234,
-                                                        end = 4321,
-                                                        base = 10,
-                                                        numDigits = 4)
+    val groupings = CETCalculator.groupByIgnoringDigits(start = 1234, end = 4321, base = 10, numDigits = 4)
     assert(groupings == expected)
 
     val expectedWithPrefix = expected.map(prefix ++ _)
     val groupingsWithPrefix =
-      CETCalculator.groupByIgnoringDigits(start = 1201234,
-                                          end = 1204321,
-                                          base = 10,
-                                          numDigits = 8)
+      CETCalculator.groupByIgnoringDigits(start = 1201234, end = 1204321, base = 10, numDigits = 8)
     assert(groupingsWithPrefix == expectedWithPrefix)
   }
 
@@ -344,9 +315,7 @@ class CETCalculatorTest extends BitcoinSUnitTest {
       numDigits: Int,
       cetDigits: Vector[Int],
       maxErrorExp: Int,
-      minFailExp: Int): (
-      Vector[(Vector[Int], Vector[Int])],
-      Vector[(Vector[Int], Vector[Int])]) = {
+      minFailExp: Int): (Vector[(Vector[Int], Vector[Int])], Vector[(Vector[Int], Vector[Int])]) = {
     val coveringCETsMax =
       CETCalculator.computeCoveringCETsBinary(numDigits = numDigits,
                                               cetDigits = cetDigits,
@@ -365,8 +334,7 @@ class CETCalculatorTest extends BitcoinSUnitTest {
     assert(coveringCETsMax.forall(_.length == 2))
     assert(coveringCETsMin.forall(_.length == 2))
 
-    (coveringCETsMax.map(ds => (ds.head, ds.last)),
-     coveringCETsMin.map(ds => (ds.head, ds.last)))
+    (coveringCETsMax.map(ds => (ds.head, ds.last)), coveringCETsMin.map(ds => (ds.head, ds.last)))
   }
 
   it should "correctly cover small middle CETs" in {
@@ -374,10 +342,7 @@ class CETCalculatorTest extends BitcoinSUnitTest {
     val cet = Vector(0, 0, 1, 0, 1, 1, 0, 0, 1)
 
     val (coveringCETsMax, coveringCETsMin) =
-      computeCoveringCETsMinAndMax(numDigits = 14,
-                                   cetDigits = cet,
-                                   maxErrorExp = 11,
-                                   minFailExp = 7)
+      computeCoveringCETsMinAndMax(numDigits = 14, cetDigits = cet, maxErrorExp = 11, minFailExp = 7)
 
     assert(coveringCETsMax == Vector((cet, Vector(0, 0, 1))))
     assert(coveringCETsMin == Vector((cet, Vector(0, 0, 1, 0, 1))))
@@ -388,16 +353,10 @@ class CETCalculatorTest extends BitcoinSUnitTest {
     val cet = Vector(0, 1, 0, 0, 0, 0, 0, 1, 1)
 
     val (coveringCETsMax, coveringCETsMin) =
-      computeCoveringCETsMinAndMax(numDigits = 13,
-                                   cetDigits = cet,
-                                   maxErrorExp = 11,
-                                   minFailExp = 7)
+      computeCoveringCETsMinAndMax(numDigits = 13, cetDigits = cet, maxErrorExp = 11, minFailExp = 7)
 
-    assert(
-      coveringCETsMax == Vector((cet, Vector(0, 1)), (cet, Vector(0, 0, 1))))
-    assert(
-      coveringCETsMin == Vector((cet, Vector(0, 1, 0, 0, 0)),
-                                (cet, Vector(0, 0, 1, 1, 1, 1))))
+    assert(coveringCETsMax == Vector((cet, Vector(0, 1)), (cet, Vector(0, 0, 1))))
+    assert(coveringCETsMin == Vector((cet, Vector(0, 1, 0, 0, 0)), (cet, Vector(0, 0, 1, 1, 1, 1))))
   }
 
   it should "correctly cover small right CETs" in {
@@ -405,16 +364,10 @@ class CETCalculatorTest extends BitcoinSUnitTest {
     val cet = Vector(0, 1, 1, 1, 1, 1, 0, 1, 0)
 
     val (coveringCETsMax, coveringCETsMin) =
-      computeCoveringCETsMinAndMax(numDigits = 13,
-                                   cetDigits = cet,
-                                   maxErrorExp = 11,
-                                   minFailExp = 7)
+      computeCoveringCETsMinAndMax(numDigits = 13, cetDigits = cet, maxErrorExp = 11, minFailExp = 7)
 
-    assert(
-      coveringCETsMax == Vector((cet, Vector(0, 1)), (cet, Vector(1, 0, 0))))
-    assert(
-      coveringCETsMin == Vector((cet, Vector(0, 1, 1, 1, 1)),
-                                (cet, Vector(1, 0, 0, 0, 0, 0, 0))))
+    assert(coveringCETsMax == Vector((cet, Vector(0, 1)), (cet, Vector(1, 0, 0))))
+    assert(coveringCETsMin == Vector((cet, Vector(0, 1, 1, 1, 1)), (cet, Vector(1, 0, 0, 0, 0, 0, 0))))
   }
 
   it should "correctly cover max-error sized CETs" in {
@@ -422,20 +375,14 @@ class CETCalculatorTest extends BitcoinSUnitTest {
     val cet = Vector(0, 1)
 
     val (coveringCETsMax, coveringCETsMin) =
-      computeCoveringCETsMinAndMax(numDigits = 13,
-                                   cetDigits = cet,
-                                   maxErrorExp = 11,
-                                   minFailExp = 7)
+      computeCoveringCETsMinAndMax(numDigits = 13, cetDigits = cet, maxErrorExp = 11, minFailExp = 7)
 
     assert(
-      coveringCETsMax == Vector((Vector(0, 1, 0), Vector(0, 0, 1)),
-                                (cet, cet),
-                                (Vector(0, 1, 1), Vector(1, 0, 0))))
+      coveringCETsMax == Vector((Vector(0, 1, 0), Vector(0, 0, 1)), (cet, cet), (Vector(0, 1, 1), Vector(1, 0, 0))))
     assert(
-      coveringCETsMin == Vector(
-        (Vector(0, 1, 0, 0, 0, 0), Vector(0, 0, 1, 1, 1, 1)),
-        (cet, cet),
-        (Vector(0, 1, 1, 1, 1, 1), Vector(1, 0, 0, 0, 0, 0))))
+      coveringCETsMin == Vector((Vector(0, 1, 0, 0, 0, 0), Vector(0, 0, 1, 1, 1, 1)),
+                                (cet, cet),
+                                (Vector(0, 1, 1, 1, 1, 1), Vector(1, 0, 0, 0, 0, 0))))
   }
 
   it should "correctly cover large CETs" in {
@@ -443,20 +390,16 @@ class CETCalculatorTest extends BitcoinSUnitTest {
     val cet = Vector(0, 0, 1)
 
     val (coveringCETsMax, coveringCETsMin) =
-      computeCoveringCETsMinAndMax(numDigits = 15,
-                                   cetDigits = cet,
-                                   maxErrorExp = 11,
-                                   minFailExp = 7)
+      computeCoveringCETsMinAndMax(numDigits = 15, cetDigits = cet, maxErrorExp = 11, minFailExp = 7)
 
     assert(
       coveringCETsMax == Vector((Vector(0, 0, 1, 0, 0), Vector(0, 0, 0, 1, 1)),
                                 (cet, cet),
                                 (Vector(0, 0, 1, 1, 1), Vector(0, 1, 0, 0, 0))))
     assert(
-      coveringCETsMin == Vector(
-        (Vector(0, 0, 1, 0, 0, 0, 0, 0), Vector(0, 0, 0, 1, 1, 1, 1, 1)),
-        (cet, cet),
-        (Vector(0, 0, 1, 1, 1, 1, 1, 1), Vector(0, 1, 0, 0, 0, 0, 0, 0))))
+      coveringCETsMin == Vector((Vector(0, 0, 1, 0, 0, 0, 0, 0), Vector(0, 0, 0, 1, 1, 1, 1, 1)),
+                                (cet, cet),
+                                (Vector(0, 0, 1, 1, 1, 1, 1, 1), Vector(0, 1, 0, 0, 0, 0, 0, 0))))
   }
 
   it should "correctly cover small leftmost (0) CETs" in {
@@ -464,10 +407,7 @@ class CETCalculatorTest extends BitcoinSUnitTest {
     val cet = Vector(0, 0, 0, 0, 0, 0, 0)
 
     val (coveringCETsMax, coveringCETsMin) =
-      computeCoveringCETsMinAndMax(numDigits = 13,
-                                   cetDigits = cet,
-                                   maxErrorExp = 11,
-                                   minFailExp = 7)
+      computeCoveringCETsMinAndMax(numDigits = 13, cetDigits = cet, maxErrorExp = 11, minFailExp = 7)
 
     assert(coveringCETsMax == Vector((cet, Vector(0, 0))))
     assert(coveringCETsMin == Vector((cet, Vector(0, 0, 0, 0, 0))))
@@ -478,10 +418,7 @@ class CETCalculatorTest extends BitcoinSUnitTest {
     val cet = Vector(1, 1, 1, 1, 1, 1, 1, 1)
 
     val (coveringCETsMax, coveringCETsMin) =
-      computeCoveringCETsMinAndMax(numDigits = 13,
-                                   cetDigits = cet,
-                                   maxErrorExp = 11,
-                                   minFailExp = 7)
+      computeCoveringCETsMinAndMax(numDigits = 13, cetDigits = cet, maxErrorExp = 11, minFailExp = 7)
 
     assert(coveringCETsMax == Vector((cet, Vector(1, 1))))
     assert(coveringCETsMin == Vector((cet, Vector(1, 1, 1, 1, 1))))
@@ -491,35 +428,20 @@ class CETCalculatorTest extends BitcoinSUnitTest {
     val cet = Vector(0, 0)
 
     val (coveringCETsMax, coveringCETsMin) =
-      computeCoveringCETsMinAndMax(numDigits = 13,
-                                   cetDigits = cet,
-                                   maxErrorExp = 11,
-                                   minFailExp = 7)
+      computeCoveringCETsMinAndMax(numDigits = 13, cetDigits = cet, maxErrorExp = 11, minFailExp = 7)
 
-    assert(
-      coveringCETsMax == Vector((cet, cet), (Vector(0, 0, 1), Vector(0, 1, 0))))
-    assert(
-      coveringCETsMin == Vector(
-        (cet, cet),
-        (Vector(0, 0, 1, 1, 1, 1), Vector(0, 1, 0, 0, 0, 0))))
+    assert(coveringCETsMax == Vector((cet, cet), (Vector(0, 0, 1), Vector(0, 1, 0))))
+    assert(coveringCETsMin == Vector((cet, cet), (Vector(0, 0, 1, 1, 1, 1), Vector(0, 1, 0, 0, 0, 0))))
   }
 
   it should "correctly cover large rightmost (maxValue) CETs" in {
     val cet = Vector(1, 1)
 
     val (coveringCETsMax, coveringCETsMin) =
-      computeCoveringCETsMinAndMax(numDigits = 14,
-                                   cetDigits = cet,
-                                   maxErrorExp = 11,
-                                   minFailExp = 7)
+      computeCoveringCETsMinAndMax(numDigits = 14, cetDigits = cet, maxErrorExp = 11, minFailExp = 7)
 
-    assert(
-      coveringCETsMax == Vector((Vector(1, 1, 0, 0), Vector(1, 0, 1, 1)),
-                                (cet, cet)))
-    assert(
-      coveringCETsMin == Vector(
-        (Vector(1, 1, 0, 0, 0, 0, 0), Vector(1, 0, 1, 1, 1, 1, 1)),
-        (cet, cet)))
+    assert(coveringCETsMax == Vector((Vector(1, 1, 0, 0), Vector(1, 0, 1, 1)), (cet, cet)))
+    assert(coveringCETsMin == Vector((Vector(1, 1, 0, 0, 0, 0, 0), Vector(1, 0, 1, 1, 1, 1, 1)), (cet, cet)))
   }
 
   it should "correctly cover a CET with other CETs within bounds" in {
@@ -547,8 +469,8 @@ class CETCalculatorTest extends BitcoinSUnitTest {
         computeCoveringCETsMinAndMax(numDigits, cet, maxErrorExp, minFailExp)
 
       assert(coveringCETsMin.length == coveringCETsMax.length)
-      assert(coveringCETsMin.map(_._1).zip(coveringCETsMax.map(_._1)).forall {
-        case (minD, maxD) => minD.startsWith(maxD)
+      assert(coveringCETsMin.map(_._1).zip(coveringCETsMax.map(_._1)).forall { case (minD, maxD) =>
+        minD.startsWith(maxD)
       })
 
       val relevantPrimaryCETs = coveringCETsMax.map(_._1)
@@ -556,13 +478,12 @@ class CETCalculatorTest extends BitcoinSUnitTest {
       val (left, right) =
         CETCalculator.computeCETIntervalBinary(cet, numDigits)
 
-      val primaryAndCoveringIntervalsMax = coveringCETsMax.map {
-        case (d1, d2) =>
-          val interval1 =
-            CETCalculator.computeCETIntervalBinary(d1, numDigits)
-          val interval2 =
-            CETCalculator.computeCETIntervalBinary(d2, numDigits)
-          (interval1, interval2)
+      val primaryAndCoveringIntervalsMax = coveringCETsMax.map { case (d1, d2) =>
+        val interval1 =
+          CETCalculator.computeCETIntervalBinary(d1, numDigits)
+        val interval2 =
+          CETCalculator.computeCETIntervalBinary(d2, numDigits)
+        (interval1, interval2)
       }
 
       val coveringIntervalsMin = coveringCETsMax.map { case (_, d) =>
@@ -570,8 +491,7 @@ class CETCalculatorTest extends BitcoinSUnitTest {
       }
 
       primaryAndCoveringIntervalsMax.zip(coveringIntervalsMin).foreach {
-        case (((primaryLeft, primaryRight), (maxCoverLeft, maxCoverRight)),
-              (minCoverLeft, minCoverRight)) =>
+        case (((primaryLeft, primaryRight), (maxCoverLeft, maxCoverRight)), (minCoverLeft, minCoverRight)) =>
           assert(maxCoverLeft <= minCoverLeft)
           assert(maxCoverRight >= minCoverRight)
 
@@ -580,10 +500,7 @@ class CETCalculatorTest extends BitcoinSUnitTest {
             assert(minCoverRight == maxCoverRight)
           }
 
-          def assertValidCover(
-              coverLeft: Long,
-              coverRight: Long,
-              maxCoverage: Boolean): Assertion = {
+          def assertValidCover(coverLeft: Long, coverRight: Long, maxCoverage: Boolean): Assertion = {
             if (primaryLeft == coverLeft && primaryRight == coverRight) {
               succeed
             } else if (primaryLeft >= coverLeft && primaryRight <= coverRight) {
@@ -591,17 +508,14 @@ class CETCalculatorTest extends BitcoinSUnitTest {
                 assert(coverRight - coverLeft + 1 == maxError)
               } else {
                 val sideToBoundary =
-                  math.max(primaryRight % maxError,
-                           maxError - (primaryLeft % maxError))
+                  math.max(primaryRight % maxError, maxError - (primaryLeft % maxError))
                 assert(coverRight - coverLeft + 1 <= 2 * sideToBoundary)
                 assert(coverRight - coverLeft + 1 >= sideToBoundary)
               }
 
-              assert(
-                primaryLeft - coverLeft >= minFail || coverLeft == 0 || relevantPrimaryCETs.length == 2)
+              assert(primaryLeft - coverLeft >= minFail || coverLeft == 0 || relevantPrimaryCETs.length == 2)
               assert(primaryRight - coverLeft < maxError)
-              assert(
-                coverRight - primaryRight >= minFail || coverRight == maxVal || relevantPrimaryCETs.length == 2)
+              assert(coverRight - primaryRight >= minFail || coverRight == maxVal || relevantPrimaryCETs.length == 2)
               assert(coverRight - primaryLeft < maxError)
             } else {
               val (mostInner, leastInner, mostOuter) =
@@ -644,18 +558,14 @@ class CETCalculatorTest extends BitcoinSUnitTest {
       assert(maxCoverIntervalLeft <= minCoverIntervalLeft)
       assert(maxCoverIntervalRight >= minCoverIntervalRight)
 
-      assert(
-        left - maxCoverIntervalLeft >= minFail || maxCoverIntervalLeft == 0)
+      assert(left - maxCoverIntervalLeft >= minFail || maxCoverIntervalLeft == 0)
       assert(left - maxCoverIntervalLeft < maxError)
-      assert(
-        maxCoverIntervalRight - right >= minFail || maxCoverIntervalRight == maxVal)
+      assert(maxCoverIntervalRight - right >= minFail || maxCoverIntervalRight == maxVal)
       assert(maxCoverIntervalRight - right < maxError)
 
-      assert(
-        left - minCoverIntervalLeft >= minFail || minCoverIntervalLeft == 0)
+      assert(left - minCoverIntervalLeft >= minFail || minCoverIntervalLeft == 0)
       assert(left - minCoverIntervalLeft < maxError)
-      assert(
-        minCoverIntervalRight - right >= minFail || minCoverIntervalRight == maxVal)
+      assert(minCoverIntervalRight - right >= minFail || minCoverIntervalRight == maxVal)
       assert(minCoverIntervalRight - right < maxError)
     }
   }

@@ -16,10 +16,7 @@ import scala.util.Try
   * @param connection      underlying TcpConnection
   * @param credentialsOpt optional username/password for authentication
   */
-class Socks5Connection(
-    connection: ActorRef,
-    credentialsOpt: Option[Credentials],
-    command: Socks5Connect)
+class Socks5Connection(connection: ActorRef, credentialsOpt: Option[Credentials], command: Socks5Connect)
     extends Actor
     with ActorLogging {
 
@@ -40,11 +37,8 @@ class Socks5Connection(
   def greetings: Receive = { case Tcp.Received(data) =>
     if (parseGreetings(data, passwordAuth) == PasswordAuth) {
       context become authenticate
-      val credentials = credentialsOpt.getOrElse(
-        throw Socks5Error("Credentials are not defined"))
-      connection ! Tcp.Write(
-        socks5PasswordAuthenticationRequest(credentials.username,
-                                            credentials.password))
+      val credentials = credentialsOpt.getOrElse(throw Socks5Error("Credentials are not defined"))
+      connection ! Tcp.Write(socks5PasswordAuthenticationRequest(credentials.username, credentials.password))
       connection ! Tcp.ResumeReading
     } else {
       context become connectionRequest
@@ -95,10 +89,7 @@ class Socks5Connection(
 
 object Socks5Connection {
 
-  def props(
-      tcpConnection: ActorRef,
-      credentials_opt: Option[Credentials],
-      command: Socks5Connect): Props = Props(
+  def props(tcpConnection: ActorRef, credentials_opt: Option[Credentials], command: Socks5Connect): Props = Props(
     new Socks5Connection(tcpConnection, credentials_opt, command))
 
   case class Socks5Connect(address: InetSocketAddress) extends Tcp.Command
@@ -133,9 +124,7 @@ object Socks5Connection {
     if (passwordAuth) PasswordAuth else NoAuth
   ) // auth method
 
-  def socks5PasswordAuthenticationRequest(
-      username: String,
-      password: String): ByteString = {
+  def socks5PasswordAuthenticationRequest(username: String, password: String): ByteString = {
     val usernameBytes = ByteString(username)
     val passwordBytes = ByteString(password)
     ByteString(0x01, // version of username/password authentication
@@ -165,8 +154,7 @@ object Socks5Connection {
     case _ => throw Socks5Error("Unknown InetAddress")
   }
 
-  def addressToByteString(address: InetSocketAddress): ByteString = Option(
-    address.getAddress) match {
+  def addressToByteString(address: InetSocketAddress): ByteString = Option(address.getAddress) match {
     case None =>
       // unresolved address, use SOCKS5 resolver
       val host = address.getHostString
@@ -183,10 +171,7 @@ object Socks5Connection {
   def parseGreetings(data: ByteString, passwordAuth: Boolean): Byte = {
     if (data(0) != 0x05) {
       throw Socks5Error("Invalid SOCKS5 version")
-    } else if (
-      (!passwordAuth && data(1) != NoAuth) || (passwordAuth && data(
-        1) != PasswordAuth)
-    ) {
+    } else if ((!passwordAuth && data(1) != NoAuth) || (passwordAuth && data(1) != PasswordAuth)) {
       throw Socks5Error("Unsupported SOCKS5 auth method")
     } else {
       data(1)
@@ -209,8 +194,7 @@ object Socks5Connection {
     } else {
       val status = data(1)
       if (status != 0) {
-        throw Socks5Error(
-          connectErrors.getOrElse(status, s"Unknown SOCKS5 error $status"))
+        throw Socks5Error(connectErrors.getOrElse(status, s"Unknown SOCKS5 error $status"))
       }
       data(3) match {
         case 0x01 =>
@@ -239,8 +223,7 @@ object Socks5Connection {
 
   def tryParseAuth(data: ByteString): Try[Boolean] = Try(parseAuth(data))
 
-  def tryParseConnectedAddress(data: ByteString): Try[InetSocketAddress] = Try(
-    parseConnectedAddress(data))
+  def tryParseConnectedAddress(data: ByteString): Try[InetSocketAddress] = Try(parseConnectedAddress(data))
 
 }
 
@@ -253,13 +236,10 @@ object Socks5ProxyParams {
 
   val DefaultPort = 9050
 
-  def proxyCredentials(
-      proxyParams: Socks5ProxyParams): Option[Socks5Connection.Credentials] =
+  def proxyCredentials(proxyParams: Socks5ProxyParams): Option[Socks5Connection.Credentials] =
     if (proxyParams.randomizeCredentials) {
       // randomize credentials for every proxy connection to enable Tor stream isolation
-      Some(
-        Socks5Connection.Credentials(CryptoUtil.randomBytes(16).toHex,
-                                     CryptoUtil.randomBytes(16).toHex))
+      Some(Socks5Connection.Credentials(CryptoUtil.randomBytes(16).toHex, CryptoUtil.randomBytes(16).toHex))
     } else {
       proxyParams.credentialsOpt
     }

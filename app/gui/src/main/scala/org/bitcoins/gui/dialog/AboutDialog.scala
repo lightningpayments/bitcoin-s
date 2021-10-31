@@ -19,8 +19,7 @@ object AboutDialog {
     val version: String = getClass.getPackage.getImplementationVersion
 
     dialog.dialogPane().content = new TextArea {
-      text =
-        s"Bitcoin-S v$version\n\nRepo: https://github.com/bitcoin-s/bitcoin-s"
+      text = s"Bitcoin-S v$version\n\nRepo: https://github.com/bitcoin-s/bitcoin-s"
       editable = false
     }
 

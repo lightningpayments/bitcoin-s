@@ -17,31 +17,25 @@ import upickle.default._
   * from bitcoin core
   */
 case class CoreTransactionTestCase(
-    creditingTxsInfo: Seq[
-      (TransactionOutPoint, ScriptPubKey, Option[CurrencyUnit])],
+    creditingTxsInfo: Seq[(TransactionOutPoint, ScriptPubKey, Option[CurrencyUnit])],
     spendingTx: Transaction,
     flags: Seq[ScriptFlag],
     raw: String)
 
 object CoreTransactionTestCase {
 
-  implicit val coreTransactionTestCaseR: Reader[
-    Option[CoreTransactionTestCase]] =
+  implicit val coreTransactionTestCaseR: Reader[Option[CoreTransactionTestCase]] =
     reader[Value].map { value =>
       val arr: Arr = value match {
         case array: Arr => array
         case _: Value =>
-          throw new RuntimeException(
-            "Core test case must be in the format of js array")
+          throw new RuntimeException("Core test case must be in the format of js array")
       }
       val elements: Vector[Value] = arr.value.toVector
 
       if (elements.size < 3) None
       else {
-        val creditingTxsInfo: Seq[(
-            TransactionOutPoint,
-            ScriptPubKey,
-            Option[CurrencyUnit])] =
+        val creditingTxsInfo: Seq[(TransactionOutPoint, ScriptPubKey, Option[CurrencyUnit])] =
           elements.head match {
             case array: Arr => parseOutPointsScriptPubKeysAmount(array)
             case _: Value =>
@@ -51,16 +45,12 @@ object CoreTransactionTestCase {
         val flags: Seq[ScriptFlag] =
           ScriptFlagFactory.fromList(elements(2).str)
 
-        Some(
-          CoreTransactionTestCase(creditingTxsInfo.reverse,
-                                  spendingTx,
-                                  flags,
-                                  elements.toString))
+        Some(CoreTransactionTestCase(creditingTxsInfo.reverse, spendingTx, flags, elements.toString))
       }
     }
 
-  private def parseOutPointsScriptPubKeysAmount(array: Arr): Seq[
-    (TransactionOutPoint, ScriptPubKey, Option[CurrencyUnit])] = {
+  private def parseOutPointsScriptPubKeysAmount(
+      array: Arr): Seq[(TransactionOutPoint, ScriptPubKey, Option[CurrencyUnit])] = {
     val result = array.value.map {
       case array: Arr =>
         val prevoutHashHex =
@@ -69,8 +59,7 @@ object CoreTransactionTestCase {
 
         val prevoutIndex = array.value(1).num.toLong match {
           case -1 => UInt32("ffffffff")
-          case index
-              if index >= UInt32.min.toLong && index <= UInt32.max.toLong =>
+          case index if index >= UInt32.min.toLong && index <= UInt32.max.toLong =>
             UInt32(index)
         }
 
@@ -85,8 +74,7 @@ object CoreTransactionTestCase {
         val scriptPubKey = ScriptPubKey.fromAsm(scriptTokens)
         (outPoint, scriptPubKey, amount)
       case _: Value =>
-        throw new RuntimeException(
-          "All tx outpoint/scriptpubkey info must be array elements")
+        throw new RuntimeException("All tx outpoint/scriptpubkey info must be array elements")
     }
     result.toVector
   }

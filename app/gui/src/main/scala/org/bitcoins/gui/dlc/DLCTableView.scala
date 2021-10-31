@@ -46,16 +46,14 @@ class DLCTableView(model: DLCPaneModel) {
         new StringProperty(status, "Status", status.value.statusString)
       }
       sortType = SortType.Ascending
-      comparator = (x: String, y: String) =>
-        DLCState.fromString(x).order compare DLCState.fromString(y).order
+      comparator = (x: String, y: String) => DLCState.fromString(x).order compare DLCState.fromString(y).order
     }
 
     val collateralCol = new TableColumn[DLCStatus, String] {
       text = "Collateral"
       prefWidth = 110
       cellValueFactory = { status =>
-        val amt = GUIUtil.numberFormatter.format(
-          status.value.localCollateral.satoshis.toLong)
+        val amt = GUIUtil.numberFormatter.format(status.value.localCollateral.satoshis.toLong)
         new StringProperty(status, "Collateral", s"$amt sats")
       }
     }
@@ -64,8 +62,7 @@ class DLCTableView(model: DLCPaneModel) {
       text = "Counterparty Collateral"
       prefWidth = 150
       cellValueFactory = { status =>
-        val amt = GUIUtil.numberFormatter.format(
-          status.value.remoteCollateral.satoshis.toLong)
+        val amt = GUIUtil.numberFormatter.format(status.value.remoteCollateral.satoshis.toLong)
         new StringProperty(status, "Counterparty Collateral", s"$amt sats")
       }
     }
@@ -74,8 +71,7 @@ class DLCTableView(model: DLCPaneModel) {
       text = "Total Collateral"
       prefWidth = 125
       cellValueFactory = { status =>
-        val amt = GUIUtil.numberFormatter.format(
-          status.value.totalCollateral.satoshis.toLong)
+        val amt = GUIUtil.numberFormatter.format(status.value.totalCollateral.satoshis.toLong)
         new StringProperty(status, "Total Collateral", s"$amt sats")
       }
     }
@@ -122,10 +118,7 @@ class DLCTableView(model: DLCPaneModel) {
       cellValueFactory = { status =>
         status.value match {
           case closed: ClosedDLCStatus =>
-            new StringProperty(
-              status,
-              "Rate of Return",
-              s"${RateOfReturnUtil.prettyPrint(closed.rateOfReturn)}")
+            new StringProperty(status, "Rate of Return", s"${RateOfReturnUtil.prettyPrint(closed.rateOfReturn)}")
           case _: SignedDLCStatus | _: AcceptedDLCStatus | _: Offered =>
             new StringProperty(status, "Rate of Return", "In progress")
         }
@@ -158,8 +151,7 @@ class DLCTableView(model: DLCPaneModel) {
             }
           }
 
-          val viewOnExplorer: MenuItem = new MenuItem(
-            "View on Oracle Explorer") {
+          val viewOnExplorer: MenuItem = new MenuItem("View on Oracle Explorer") {
             onAction = _ => {
               val dlc = selectionModel.value.getSelectedItem
               val primaryOracle =
@@ -214,16 +206,14 @@ class DLCTableView(model: DLCPaneModel) {
               cancelDLCItem.disable = row.item.value.state match {
                 case DLCState.Offered | DLCState.Accepted | DLCState.Signed =>
                   false
-                case DLCState.Confirmed | DLCState.Broadcasted |
-                    DLCState.Claimed | DLCState.Refunded |
+                case DLCState.Confirmed | DLCState.Broadcasted | DLCState.Claimed | DLCState.Refunded |
                     DLCState.RemoteClaimed =>
                   true
               }
               val disableRefundExecute = row.item.value.state match {
                 case DLCState.Broadcasted | DLCState.Confirmed =>
                   false
-                case DLCState.Offered | DLCState.Accepted | DLCState.Signed |
-                    DLCState.Claimed | DLCState.Refunded |
+                case DLCState.Offered | DLCState.Accepted | DLCState.Signed | DLCState.Claimed | DLCState.Refunded |
                     DLCState.RemoteClaimed =>
                   true
               }
@@ -233,12 +223,7 @@ class DLCTableView(model: DLCPaneModel) {
           }
 
           row.contextMenu = new ContextMenu() {
-            items ++= Vector(infoItem,
-                             viewOnExplorer,
-                             copyIdItem,
-                             cancelDLCItem,
-                             refundDLCItem,
-                             executeDLCItem)
+            items ++= Vector(infoItem, viewOnExplorer, copyIdItem, cancelDLCItem, refundDLCItem, executeDLCItem)
           }
           row
         }

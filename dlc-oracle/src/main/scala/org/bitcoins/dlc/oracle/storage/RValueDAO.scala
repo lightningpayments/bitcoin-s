@@ -9,9 +9,7 @@ import slick.lifted.ProvenShape
 
 import scala.concurrent.{ExecutionContext, Future}
 
-case class RValueDAO()(implicit
-    val ec: ExecutionContext,
-    override val appConfig: DLCOracleAppConfig)
+case class RValueDAO()(implicit val ec: ExecutionContext, override val appConfig: DLCOracleAppConfig)
     extends CRUD[RValueDb, SchnorrNonce]
     with SlickUtil[RValueDb, SchnorrNonce] {
 
@@ -26,12 +24,10 @@ case class RValueDAO()(implicit
   override def createAll(ts: Vector[RValueDb]): Future[Vector[RValueDb]] =
     createAllNoAutoInc(ts, safeDatabase)
 
-  override protected def findByPrimaryKeys(
-      ids: Vector[SchnorrNonce]): Query[RValueTable, RValueDb, Seq] =
+  override protected def findByPrimaryKeys(ids: Vector[SchnorrNonce]): Query[RValueTable, RValueDb, Seq] =
     table.filter(_.nonce.inSet(ids))
 
-  override protected def findAll(
-      ts: Vector[RValueDb]): Query[RValueTable, RValueDb, Seq] =
+  override protected def findAll(ts: Vector[RValueDb]): Query[RValueTable, RValueDb, Seq] =
     findByPrimaryKeys(ts.map(_.nonce))
 
   def findByNonce(nonce: SchnorrNonce): Future[Option[RValueDb]] = {
@@ -50,8 +46,7 @@ case class RValueDAO()(implicit
     safeDatabase.run(query.result.transactionally)
   }
 
-  class RValueTable(tag: Tag)
-      extends Table[RValueDb](tag, schemaName, "r_values") {
+  class RValueTable(tag: Tag) extends Table[RValueDb](tag, schemaName, "r_values") {
 
     def nonce: Rep[SchnorrNonce] = column("nonce", O.PrimaryKey)
 

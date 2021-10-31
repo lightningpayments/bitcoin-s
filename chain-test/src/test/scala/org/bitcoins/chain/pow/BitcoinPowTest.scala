@@ -3,17 +3,10 @@ package org.bitcoins.chain.pow
 import org.bitcoins.chain.blockchain.Blockchain
 import org.bitcoins.chain.config.ChainAppConfig
 import org.bitcoins.chain.models.BlockHeaderDAO
-import org.bitcoins.core.protocol.blockchain.{
-  MainNetChainParams,
-  TestNetChainParams
-}
+import org.bitcoins.core.protocol.blockchain.{MainNetChainParams, TestNetChainParams}
 import org.bitcoins.core.util.FutureUtil
 import org.bitcoins.testkit.chain.fixture.{ChainFixture, ChainFixtureTag}
-import org.bitcoins.testkit.chain.{
-  ChainDbUnitTest,
-  ChainTestUtil,
-  ChainUnitTest
-}
+import org.bitcoins.testkit.chain.{ChainDbUnitTest, ChainTestUtil, ChainUnitTest}
 import org.scalatest.{Assertion, FutureOutcome}
 
 import scala.concurrent.Future
@@ -30,31 +23,25 @@ class BitcoinPowTest extends ChainDbUnitTest {
 
   behavior of "BitcoinPow"
 
-  it must "NOT calculate a POW change when one is not needed" inFixtured {
-    case ChainFixture.Empty =>
-      val blockchain = Blockchain.fromHeaders(
-        Vector(ChainTestUtil.ValidPOWChange.blockHeaderDb566494))
-      val header2 = ChainTestUtil.ValidPOWChange.blockHeaderDb566495
+  it must "NOT calculate a POW change when one is not needed" inFixtured { case ChainFixture.Empty =>
+    val blockchain = Blockchain.fromHeaders(Vector(ChainTestUtil.ValidPOWChange.blockHeaderDb566494))
+    val header2 = ChainTestUtil.ValidPOWChange.blockHeaderDb566495
 
-      val nextWork =
-        Pow.getNetworkWorkRequired(newPotentialTip = header2.blockHeader,
-                                   blockchain = blockchain)
+    val nextWork =
+      Pow.getNetworkWorkRequired(newPotentialTip = header2.blockHeader, blockchain = blockchain)
 
-      assert(nextWork == blockchain.tip.nBits)
+    assert(nextWork == blockchain.tip.nBits)
   }
 
-  it must "calculate a pow change as per the bitcoin network" inFixtured {
-    case ChainFixture.Empty =>
-      val firstBlockDb = ChainTestUtil.ValidPOWChange.blockHeaderDb564480
-      val currentTipDb = ChainTestUtil.ValidPOWChange.blockHeaderDb566495
-      val expectedNextWork =
-        ChainTestUtil.ValidPOWChange.blockHeader566496.nBits
-      val calculatedWork =
-        Pow.calculateNextWorkRequired(currentTipDb,
-                                      firstBlockDb,
-                                      MainNetChainParams)
+  it must "calculate a pow change as per the bitcoin network" inFixtured { case ChainFixture.Empty =>
+    val firstBlockDb = ChainTestUtil.ValidPOWChange.blockHeaderDb564480
+    val currentTipDb = ChainTestUtil.ValidPOWChange.blockHeaderDb566495
+    val expectedNextWork =
+      ChainTestUtil.ValidPOWChange.blockHeader566496.nBits
+    val calculatedWork =
+      Pow.calculateNextWorkRequired(currentTipDb, firstBlockDb, MainNetChainParams)
 
-      assert(calculatedWork == expectedNextWork)
+    assert(calculatedWork == expectedNextWork)
   }
 
   it must "GetNextWorkRequired correctly" taggedAs ChainFixtureTag.PopulatedBlockHeaderDAO inFixtured {
@@ -74,30 +61,26 @@ class BitcoinPowTest extends ChainDbUnitTest {
       assertionFs
   }
 
-  it must "getBlockProof correctly for the testnet genesis block" inFixtured {
-    case ChainFixture.Empty =>
-      Future {
-        val header = TestNetChainParams.genesisBlock.blockHeader
-        val proof = Pow.getBlockProof(header)
+  it must "getBlockProof correctly for the testnet genesis block" inFixtured { case ChainFixture.Empty =>
+    Future {
+      val header = TestNetChainParams.genesisBlock.blockHeader
+      val proof = Pow.getBlockProof(header)
 
-        assert(proof == BigInt(4295032833L))
-      }
+      assert(proof == BigInt(4295032833L))
+    }
   }
 
-  it must "getBlockProof correctly for the mainnet genesis block" inFixtured {
-    case ChainFixture.Empty =>
-      Future {
-        val header = MainNetChainParams.genesisBlock.blockHeader
-        val proof = Pow.getBlockProof(header)
+  it must "getBlockProof correctly for the mainnet genesis block" inFixtured { case ChainFixture.Empty =>
+    Future {
+      val header = MainNetChainParams.genesisBlock.blockHeader
+      val proof = Pow.getBlockProof(header)
 
-        assert(proof == BigInt(4295032833L))
-      }
+      assert(proof == BigInt(4295032833L))
+    }
   }
 
   /** Helper method to check headers proof of work in batches */
-  private def batchCheckHeaderPOW(
-      iterator: Vector[Int],
-      blockHeaderDAO: BlockHeaderDAO): Future[Assertion] = {
+  private def batchCheckHeaderPOW(iterator: Vector[Int], blockHeaderDAO: BlockHeaderDAO): Future[Assertion] = {
     val nestedAssertions: Vector[Future[Assertion]] = {
       iterator.map { height =>
         val blockF = blockHeaderDAO.getAtHeight(height + 1).map(_.head)

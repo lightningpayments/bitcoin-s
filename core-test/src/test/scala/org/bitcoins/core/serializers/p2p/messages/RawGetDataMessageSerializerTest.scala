@@ -22,15 +22,9 @@ class RawGetDataMessageSerializerTest extends BitcoinSUnitTest {
     val dataMsg = RawGetDataMessageSerializer.read(hex)
     dataMsg.inventoryCount must be(CompactSizeUInt(UInt64(2)))
     dataMsg.inventories.head must be(
-      Inventory(
-        MsgTx,
-        DoubleSha256Digest(
-          "de55ffd709ac1f5dc509a0925d0b1fc442ca034f224732e429081da1b621f55a")))
+      Inventory(MsgTx, DoubleSha256Digest("de55ffd709ac1f5dc509a0925d0b1fc442ca034f224732e429081da1b621f55a")))
     dataMsg.inventories(1) must be(
-      Inventory(
-        MsgTx,
-        DoubleSha256Digest(
-          "91d36d997037e08018262978766f24b8a055aaf1d872e94ae85e9817b2c68dc7")))
+      Inventory(MsgTx, DoubleSha256Digest("91d36d997037e08018262978766f24b8a055aaf1d872e94ae85e9817b2c68dc7")))
 
   }
 

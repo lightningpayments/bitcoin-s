@@ -1,10 +1,7 @@
 package org.bitcoins.rpc.client.v16
 
 import akka.actor.ActorSystem
-import org.bitcoins.commons.jsonmodels.bitcoind.{
-  RpcOpts,
-  SignRawTransactionResult
-}
+import org.bitcoins.commons.jsonmodels.bitcoind.{RpcOpts, SignRawTransactionResult}
 import org.bitcoins.commons.serializers.JsonSerializers._
 import org.bitcoins.commons.serializers.JsonWriters._
 import org.bitcoins.core.api.chain.ChainQueryApi
@@ -23,8 +20,7 @@ import scala.util.Try
   *
   * @see [[org.bitcoins.rpc.client.common.BitcoindRpcClient BitcoindRpcClient Scaladocs]]
   */
-class BitcoindV16RpcClient(override val instance: BitcoindInstance)(implicit
-    actorSystem: ActorSystem)
+class BitcoindV16RpcClient(override val instance: BitcoindInstance)(implicit actorSystem: ActorSystem)
     extends BitcoindRpcClient(instance)
     with V16AccountRpc
     with V16SendRpc {
@@ -41,25 +37,20 @@ class BitcoindV16RpcClient(override val instance: BitcoindInstance)(implicit
 
   override def getFilterHeaderCount(): Future[Int] = filtersUnsupported
 
-  override def getFilterHeadersAtHeight(
-      height: Int): Future[Vector[CompactFilterHeaderDb]] = filtersUnsupported
+  override def getFilterHeadersAtHeight(height: Int): Future[Vector[CompactFilterHeaderDb]] = filtersUnsupported
 
   override def getBestFilterHeader(): Future[Option[CompactFilterHeaderDb]] =
     filtersUnsupported
 
-  override def getFilterHeader(
-      blockHash: DoubleSha256DigestBE): Future[Option[CompactFilterHeaderDb]] =
+  override def getFilterHeader(blockHash: DoubleSha256DigestBE): Future[Option[CompactFilterHeaderDb]] =
     filtersUnsupported
 
-  override def getFilter(
-      hash: DoubleSha256DigestBE): Future[Option[CompactFilterDb]] =
+  override def getFilter(hash: DoubleSha256DigestBE): Future[Option[CompactFilterDb]] =
     filtersUnsupported
 
-  override def getFiltersAtHeight(
-      height: Int): Future[Vector[CompactFilterDb]] = filtersUnsupported
+  override def getFiltersAtHeight(height: Int): Future[Vector[CompactFilterDb]] = filtersUnsupported
 
-  def signRawTransaction(
-      transaction: Transaction): Future[SignRawTransactionResult] =
+  def signRawTransaction(transaction: Transaction): Future[SignRawTransactionResult] =
     signRawTransaction(transaction, None, None, None)
 
   private def signRawTransaction(
@@ -72,18 +63,14 @@ class BitcoindV16RpcClient(override val instance: BitcoindInstance)(implicit
     val jsonKeys: JsValue = keys.map(Json.toJson(_)).getOrElse(JsNull)
 
     val params =
-      List(JsString(transaction.hex),
-           utxos,
-           jsonKeys,
-           Json.toJson(sigHash.getOrElse(HashType.sigHashAll)))
+      List(JsString(transaction.hex), utxos, jsonKeys, Json.toJson(sigHash.getOrElse(HashType.sigHashAll)))
 
     bitcoindCall[SignRawTransactionResult]("signrawtransaction", params)
   }
 
   def signRawTransaction(
       transaction: Transaction,
-      utxoDeps: Vector[RpcOpts.SignRawTransactionOutputParameter]): Future[
-    SignRawTransactionResult] =
+      utxoDeps: Vector[RpcOpts.SignRawTransactionOutputParameter]): Future[SignRawTransactionResult] =
     signRawTransaction(transaction, Some(utxoDeps), None, None)
 
   def signRawTransaction(
@@ -119,12 +106,10 @@ object BitcoindV16RpcClient {
     * advanced users, where you need fine grained control
     * over the RPC client.
     */
-  def withActorSystem(instance: BitcoindInstance)(implicit
-      system: ActorSystem): BitcoindV16RpcClient =
+  def withActorSystem(instance: BitcoindInstance)(implicit system: ActorSystem): BitcoindV16RpcClient =
     new BitcoindV16RpcClient(instance)
 
-  def fromUnknownVersion(
-      rpcClient: BitcoindRpcClient): Try[BitcoindV16RpcClient] =
+  def fromUnknownVersion(rpcClient: BitcoindRpcClient): Try[BitcoindV16RpcClient] =
     Try {
       new BitcoindV16RpcClient(rpcClient.instance)(rpcClient.system)
     }

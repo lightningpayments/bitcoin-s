@@ -14,11 +14,7 @@ import org.bitcoins.commons.jsonmodels.eclair._
 import org.bitcoins.commons.serializers.JsonReaders._
 import org.bitcoins.commons.util.NativeProcessFactory
 import org.bitcoins.core.currency.{CurrencyUnit, Satoshis}
-import org.bitcoins.core.protocol.ln.channel.{
-  ChannelId,
-  FundedChannelId,
-  ShortChannelId
-}
+import org.bitcoins.core.protocol.ln.channel.{ChannelId, FundedChannelId, ShortChannelId}
 import org.bitcoins.core.protocol.ln.currency.MilliSatoshis
 import org.bitcoins.core.protocol.ln.node.{NodeId, NodeUri}
 import org.bitcoins.core.protocol.ln.routing.{ChannelRoute, NodeRoute, Route}
@@ -46,9 +42,7 @@ import scala.util.{Failure, Properties, Success}
 /** @param binary Path to Eclair Jar. If not present, reads
   *               environment variable `ECLAIR_PATH`
   */
-class EclairRpcClient(
-    val instance: EclairInstance,
-    binary: Option[File] = None)(implicit system: ActorSystem)
+class EclairRpcClient(val instance: EclairInstance, binary: Option[File] = None)(implicit system: ActorSystem)
     extends EclairApi
     with NativeProcessFactory
     with StartStopAsync[EclairRpcClient] {
@@ -78,13 +72,10 @@ class EclairRpcClient(
 
   /** @inheritdoc
     */
-  override def audit(
-      from: Option[Instant],
-      to: Option[Instant]): Future[AuditResult] =
-    eclairCall[AuditResult](
-      "audit",
-      Seq(from.map(x => "from" -> x.getEpochSecond.toString),
-          to.map(x => "to" -> x.getEpochSecond.toString)).flatten: _*)
+  override def audit(from: Option[Instant], to: Option[Instant]): Future[AuditResult] =
+    eclairCall[AuditResult]("audit",
+                            Seq(from.map(x => "from" -> x.getEpochSecond.toString),
+                                to.map(x => "to" -> x.getEpochSecond.toString)).flatten: _*)
 
   override def channel(channelId: ChannelId): Future[ChannelResult] = {
     eclairCall[ChannelResult]("channel", "channelId" -> channelId.hex)
@@ -116,19 +107,14 @@ class EclairRpcClient(
   def close(channelId: ChannelId): Future[ChannelCommandResult] =
     close(channelId, scriptPubKey = None, shortChannelId = None)
 
-  override def close(
-      channelId: ChannelId,
-      scriptPubKey: ScriptPubKey): Future[ChannelCommandResult] = {
+  override def close(channelId: ChannelId, scriptPubKey: ScriptPubKey): Future[ChannelCommandResult] = {
     close(channelId, scriptPubKey = Some(scriptPubKey), shortChannelId = None)
   }
 
   override def connect(nodeId: NodeId, addr: InetSocketAddress): Future[Unit] =
     connect(nodeId, addr.getHostString, addr.getPort)
 
-  override def connect(
-      nodeId: NodeId,
-      host: String,
-      port: Int): Future[Unit] = {
+  override def connect(nodeId: NodeId, host: String, port: Int): Future[Unit] = {
     val uri = NodeUri(nodeId, host, port)
     connect(uri)
   }
@@ -141,44 +127,32 @@ class EclairRpcClient(
     eclairCall[String]("connect", "nodeId" -> nodeId.toString).map(_ => ())
   }
 
-  override def findRoute(
-      nodeId: NodeId,
-      amountMsat: MilliSatoshis): Future[NodeRoute] = {
-    eclairCall[Vector[NodeId]](
-      "findroutetonode",
-      "nodeId" -> nodeId.toString,
-      "amountMsat" -> amountMsat.toBigDecimal.toString).map(NodeRoute.apply)
+  override def findRoute(nodeId: NodeId, amountMsat: MilliSatoshis): Future[NodeRoute] = {
+    eclairCall[Vector[NodeId]]("findroutetonode",
+                               "nodeId" -> nodeId.toString,
+                               "amountMsat" -> amountMsat.toBigDecimal.toString).map(NodeRoute.apply)
   }
 
   override def findRoute(invoice: LnInvoice): Future[NodeRoute] = {
     findRoute(invoice, None)
   }
 
-  override def findRoute(
-      invoice: LnInvoice,
-      amount: MilliSatoshis): Future[NodeRoute] = {
+  override def findRoute(invoice: LnInvoice, amount: MilliSatoshis): Future[NodeRoute] = {
     findRoute(invoice, Some(amount))
   }
 
-  def findRoute(
-      invoice: LnInvoice,
-      amountMsat: Option[MilliSatoshis]): Future[NodeRoute] = {
-    val params = Seq(
-      Some("invoice" -> invoice.toString),
-      amountMsat.map(x => "amountMsat" -> x.toBigDecimal.toString)).flatten
+  def findRoute(invoice: LnInvoice, amountMsat: Option[MilliSatoshis]): Future[NodeRoute] = {
+    val params =
+      Seq(Some("invoice" -> invoice.toString), amountMsat.map(x => "amountMsat" -> x.toBigDecimal.toString)).flatten
     eclairCall[Vector[NodeId]]("findroute", params: _*).map(NodeRoute.apply)
   }
 
-  override def forceClose(
-      channelId: ChannelId): Future[ChannelCommandResult] = {
+  override def forceClose(channelId: ChannelId): Future[ChannelCommandResult] = {
     eclairCall[ChannelCommandResult]("forceclose", "channelId" -> channelId.hex)
   }
 
-  override def forceClose(
-      shortChannelId: ShortChannelId): Future[ChannelCommandResult] = {
-    eclairCall[ChannelCommandResult](
-      "forceclose",
-      "shortChannelId" -> shortChannelId.toString)
+  override def forceClose(shortChannelId: ShortChannelId): Future[ChannelCommandResult] = {
+    eclairCall[ChannelCommandResult]("forceclose", "shortChannelId" -> shortChannelId.toString)
   }
 
   override def getInfo: Future[GetInfoResult] = {
@@ -200,8 +174,7 @@ class EclairRpcClient(
   }
 
   override def isConnected(nodeId: NodeId): Future[Boolean] = {
-    getPeers.map(
-      _.exists(p => p.nodeId == nodeId && p.state == PeerState.CONNECTED))
+    getPeers.map(_.exists(p => p.nodeId == nodeId && p.state == PeerState.CONNECTED))
   }
 
   override def network: LnParams = {
@@ -218,8 +191,7 @@ class EclairRpcClient(
     val fundingSatoshis = funding.satoshis.toBigDecimal.toString
 
     val params: Seq[(String, String)] =
-      Seq("nodeId" -> nodeId.toString,
-          "fundingSatoshis" -> fundingSatoshis) ++ Seq(
+      Seq("nodeId" -> nodeId.toString, "fundingSatoshis" -> fundingSatoshis) ++ Seq(
         pushMsat.map(x => "pushMsat" -> x.toBigDecimal.toString),
         feerateSatPerByte.map(x => "feerateSatPerByte" -> x.toLong.toString),
         channelFlags.map(x => "channelFlags" -> x.toString),
@@ -237,24 +209,11 @@ class EclairRpcClient(
   }
 
   def open(nodeId: NodeId, funding: CurrencyUnit): Future[FundedChannelId] = {
-    open(nodeId,
-         funding,
-         pushMsat = None,
-         feerateSatPerByte = None,
-         channelFlags = None,
-         openTimeout = None)
+    open(nodeId, funding, pushMsat = None, feerateSatPerByte = None, channelFlags = None, openTimeout = None)
   }
 
-  def open(
-      nodeId: NodeId,
-      funding: CurrencyUnit,
-      pushMsat: MilliSatoshis): Future[FundedChannelId] = {
-    open(nodeId,
-         funding,
-         Some(pushMsat),
-         feerateSatPerByte = None,
-         channelFlags = None,
-         openTimeout = None)
+  def open(nodeId: NodeId, funding: CurrencyUnit, pushMsat: MilliSatoshis): Future[FundedChannelId] = {
+    open(nodeId, funding, Some(pushMsat), feerateSatPerByte = None, channelFlags = None, openTimeout = None)
   }
 
   def open(
@@ -262,12 +221,7 @@ class EclairRpcClient(
       funding: CurrencyUnit,
       pushMsat: MilliSatoshis,
       feerateSatPerByte: SatoshisPerByte): Future[FundedChannelId] = {
-    open(nodeId,
-         funding,
-         Some(pushMsat),
-         Some(feerateSatPerByte),
-         channelFlags = None,
-         openTimeout = None)
+    open(nodeId, funding, Some(pushMsat), Some(feerateSatPerByte), channelFlags = None, openTimeout = None)
   }
 
   def open(
@@ -276,12 +230,7 @@ class EclairRpcClient(
       pushMsat: MilliSatoshis = MilliSatoshis.zero,
       feerateSatPerByte: SatoshisPerByte,
       channelFlags: Byte): Future[FundedChannelId] = {
-    open(nodeId,
-         fundingSatoshis,
-         Some(pushMsat),
-         Some(feerateSatPerByte),
-         Some(channelFlags),
-         None)
+    open(nodeId, fundingSatoshis, Some(pushMsat), Some(feerateSatPerByte), Some(channelFlags), None)
   }
 
   def open(
@@ -289,12 +238,7 @@ class EclairRpcClient(
       fundingSatoshis: CurrencyUnit,
       feerateSatPerByte: SatoshisPerByte,
       channelFlags: Byte): Future[FundedChannelId] = {
-    open(nodeId,
-         fundingSatoshis,
-         pushMsat = None,
-         Some(feerateSatPerByte),
-         Some(channelFlags),
-         None)
+    open(nodeId, fundingSatoshis, pushMsat = None, Some(feerateSatPerByte), Some(channelFlags), None)
   }
 
   override def getPeers: Future[Vector[PeerInfo]] = {
@@ -305,9 +249,7 @@ class EclairRpcClient(
     createInvoice(description, None, None, None, None)
   }
 
-  override def createInvoice(
-      description: String,
-      amountMsat: MilliSatoshis): Future[LnInvoice] = {
+  override def createInvoice(description: String, amountMsat: MilliSatoshis): Future[LnInvoice] = {
     createInvoice(description, Some(amountMsat), None, None, None)
   }
 
@@ -322,11 +264,7 @@ class EclairRpcClient(
       description: String,
       amountMsat: MilliSatoshis,
       paymentPreimage: PaymentPreimage): Future[LnInvoice] = {
-    createInvoice(description,
-                  Some(amountMsat),
-                  None,
-                  None,
-                  Some(paymentPreimage))
+    createInvoice(description, Some(amountMsat), None, None, Some(paymentPreimage))
   }
 
   override def createInvoice(
@@ -334,11 +272,7 @@ class EclairRpcClient(
       amountMsat: MilliSatoshis,
       expireIn: FiniteDuration,
       paymentPreimage: PaymentPreimage): Future[LnInvoice] = {
-    createInvoice(description,
-                  Some(amountMsat),
-                  Some(expireIn),
-                  None,
-                  Some(paymentPreimage))
+    createInvoice(description, Some(amountMsat), Some(expireIn), None, Some(paymentPreimage))
   }
 
   override def createInvoice(
@@ -377,15 +311,15 @@ class EclairRpcClient(
         //register callback that publishes a payment to our actor system's
         //event stream,
         receivedInfoF.foreach {
-          case None |
-              Some(IncomingPayment(_, _, _, IncomingPaymentStatus.Pending)) =>
+          case None | Some(IncomingPayment(_, _, _, IncomingPaymentStatus.Pending)) =>
             if (attempts.incrementAndGet() >= maxAttempts) {
               // too many tries to get info about a payment
               // either Eclair is down or the payment is still in PENDING state for some reason
               // complete the promise with an exception so the runnable will be canceled
-              p.failure(new RuntimeException(
-                s"EclairApi.monitorInvoice() [${instance.authCredentials.datadir}] too many attempts: ${attempts
-                  .get()} for invoice=${lnInvoice}"))
+              p.failure(
+                new RuntimeException(
+                  s"EclairApi.monitorInvoice() [${instance.authCredentials.datadir}] too many attempts: ${attempts
+                    .get()} for invoice=${lnInvoice}"))
             }
           case Some(result) =>
             //invoice has been paid, let's publish to event stream
@@ -416,20 +350,13 @@ class EclairRpcClient(
   override def payInvoice(invoice: LnInvoice): Future[PaymentId] =
     payInvoice(invoice, None, None, None, None, None)
 
-  override def payInvoice(
-      invoice: LnInvoice,
-      amount: MilliSatoshis): Future[PaymentId] =
+  override def payInvoice(invoice: LnInvoice, amount: MilliSatoshis): Future[PaymentId] =
     payInvoice(invoice, Some(amount), None, None, None, None)
 
-  override def payInvoice(
-      invoice: LnInvoice,
-      externalId: Option[String]): Future[PaymentId] =
+  override def payInvoice(invoice: LnInvoice, externalId: Option[String]): Future[PaymentId] =
     payInvoice(invoice, None, None, None, None, externalId)
 
-  override def payInvoice(
-      invoice: LnInvoice,
-      amount: MilliSatoshis,
-      externalId: Option[String]): Future[PaymentId] =
+  override def payInvoice(invoice: LnInvoice, amount: MilliSatoshis, externalId: Option[String]): Future[PaymentId] =
     payInvoice(invoice, Some(amount), None, None, None, externalId)
 
   override def payInvoice(
@@ -451,13 +378,11 @@ class EclairRpcClient(
     eclairCall[PaymentId]("payinvoice", params: _*)
   }
 
-  override def getReceivedInfo(
-      paymentHash: Sha256Digest): Future[Option[IncomingPayment]] = {
+  override def getReceivedInfo(paymentHash: Sha256Digest): Future[Option[IncomingPayment]] = {
     getReceivedInfo("paymentHash" -> paymentHash.hex)
   }
 
-  override def getReceivedInfo(
-      invoice: LnInvoice): Future[Option[IncomingPayment]] = {
+  override def getReceivedInfo(invoice: LnInvoice): Future[Option[IncomingPayment]] = {
     getReceivedInfo("invoice" -> invoice.toString)
   }
 
@@ -475,10 +400,8 @@ class EclairRpcClient(
     eclairCall[Option[IncomingPayment]]("getreceivedinfo", params: _*)(r)
   }
 
-  override def getSentInfo(
-      paymentHash: Sha256Digest): Future[Vector[OutgoingPayment]] = {
-    eclairCall[Vector[OutgoingPayment]]("getsentinfo",
-                                        "paymentHash" -> paymentHash.hex)
+  override def getSentInfo(paymentHash: Sha256Digest): Future[Vector[OutgoingPayment]] = {
+    eclairCall[Vector[OutgoingPayment]]("getsentinfo", "paymentHash" -> paymentHash.hex)
   }
 
   override def getSentInfo(id: PaymentId): Future[Vector[OutgoingPayment]] = {
@@ -492,8 +415,7 @@ class EclairRpcClient(
       feeThresholdSat: Option[Satoshis],
       maxFeePct: Option[Int],
       externalId: Option[String]): Future[PaymentId] = {
-    val params = Seq("nodeId" -> nodeId.toString,
-                     "amountMsat" -> amountMsat.toBigDecimal.toString) ++ Seq(
+    val params = Seq("nodeId" -> nodeId.toString, "amountMsat" -> amountMsat.toBigDecimal.toString) ++ Seq(
       maxAttempts.map(x => "maxAttempts" -> x.toString),
       feeThresholdSat.map(x => "feeThresholdSat" -> x.toBigDecimal.toString),
       maxFeePct.map(x => "maxFeePct" -> x.toString),
@@ -556,8 +478,7 @@ class EclairRpcClient(
       to: Option[FiniteDuration]): Future[Vector[NetworkFeesResult]] = {
     eclairCall[Vector[NetworkFeesResult]](
       "networkfees",
-      Seq(from.map(x => "from" -> x.toSeconds.toString),
-          to.map(x => "to" -> x.toSeconds.toString)).flatten: _*)
+      Seq(from.map(x => "from" -> x.toSeconds.toString), to.map(x => "to" -> x.toSeconds.toString)).flatten: _*)
   }
 
   override def getInvoice(paymentHash: Sha256Digest): Future[LnInvoice] = {
@@ -568,29 +489,19 @@ class EclairRpcClient(
     }
   }
 
-  override def listInvoices(
-      from: Option[Instant],
-      to: Option[Instant]): Future[Vector[LnInvoice]] = {
+  override def listInvoices(from: Option[Instant], to: Option[Instant]): Future[Vector[LnInvoice]] = {
     listInvoices("listinvoices", from, to)
   }
 
-  override def listPendingInvoices(
-      from: Option[Instant],
-      to: Option[Instant]): Future[Vector[LnInvoice]] = {
+  override def listPendingInvoices(from: Option[Instant], to: Option[Instant]): Future[Vector[LnInvoice]] = {
     listInvoices("listpendinginvoices", from, to)
   }
 
-  private def listInvoices(
-      command: String,
-      from: Option[Instant],
-      to: Option[Instant]): Future[Vector[LnInvoice]] = {
-    val resF = eclairCall[Vector[InvoiceResult]](
-      command,
-      Seq(from.map(x => "from" -> x.getEpochSecond.toString),
-          to.map(x => "to" -> x.getEpochSecond.toString)).flatten: _*)
-    resF.flatMap(xs =>
-      Future.sequence(
-        xs.map(x => Future.fromTry(LnInvoice.fromStringT(x.serialized)))))
+  private def listInvoices(command: String, from: Option[Instant], to: Option[Instant]): Future[Vector[LnInvoice]] = {
+    val resF = eclairCall[Vector[InvoiceResult]](command,
+                                                 Seq(from.map(x => "from" -> x.getEpochSecond.toString),
+                                                     to.map(x => "to" -> x.getEpochSecond.toString)).flatten: _*)
+    resF.flatMap(xs => Future.sequence(xs.map(x => Future.fromTry(LnInvoice.fromStringT(x.serialized)))))
   }
 
   override def usableBalances(): Future[Vector[UsableBalancesResult]] = {
@@ -617,15 +528,13 @@ class EclairRpcClient(
       address: BitcoinAddress,
       amount: Satoshis,
       confirmationTarget: Int): Future[DoubleSha256DigestBE] = {
-    eclairCall[DoubleSha256DigestBE](
-      "sendonchain",
-      "address" -> address.toString,
-      "amountSatoshis" -> amount.toLong.toString,
-      "confirmationTarget" -> confirmationTarget.toString)
+    eclairCall[DoubleSha256DigestBE]("sendonchain",
+                                     "address" -> address.toString,
+                                     "amountSatoshis" -> amount.toLong.toString,
+                                     "confirmationTarget" -> confirmationTarget.toString)
   }
 
-  private def eclairCall[T](command: String, parameters: (String, String)*)(
-      implicit reader: Reads[T]): Future[T] = {
+  private def eclairCall[T](command: String, parameters: (String, String)*)(implicit reader: Reads[T]): Future[T] = {
     val request = buildRequest(getDaemon, command, parameters: _*)
 
     logger.trace(s"eclair rpc call ${request}")
@@ -642,10 +551,7 @@ class EclairRpcClient(
   case class RpcError(error: String)
   implicit val rpcErrorReads: Reads[RpcError] = Json.reads[RpcError]
 
-  private def parseResult[T](
-      result: JsResult[T],
-      json: JsValue,
-      commandName: String): T = {
+  private def parseResult[T](result: JsResult[T], json: JsValue, commandName: String): T = {
     result match {
       case res: JsSuccess[T] =>
         res.value
@@ -660,12 +566,10 @@ class EclairRpcClient(
             logger.error(errMsg)
             throw new RuntimeException(err.value.error)
           case _: JsError =>
-            logger.error(
-              s"Could not parse JsResult for command=$commandName: ${JsError
-                .toJson(res)
-                .toString()} JSON ${json}")
-            throw new IllegalArgumentException(
-              s"Could not parse JsResult for command=$commandName")
+            logger.error(s"Could not parse JsResult for command=$commandName: ${JsError
+              .toJson(res)
+              .toString()} JSON ${json}")
+            throw new IllegalArgumentException(s"Could not parse JsResult for command=$commandName")
         }
     }
   }
@@ -682,27 +586,20 @@ class EclairRpcClient(
   private lazy val http = Http(system)
 
   private lazy val httpConnectionPoolSettings =
-    Socks5ClientTransport.createConnectionPoolSettings(instance.rpcUri,
-                                                       instance.proxyParams)
+    Socks5ClientTransport.createConnectionPoolSettings(instance.rpcUri, instance.proxyParams)
 
   private def sendRequest(req: HttpRequest): Future[HttpResponse] = {
     http.singleRequest(req, settings = httpConnectionPoolSettings)
   }
 
-  private def buildRequest(
-      instance: EclairInstance,
-      methodName: String,
-      params: (String, String)*): HttpRequest = {
+  private def buildRequest(instance: EclairInstance, methodName: String, params: (String, String)*): HttpRequest = {
 
     val uri = instance.rpcUri.resolve("/" + methodName).toString
     // Eclair doesn't use a username
     val username = ""
     val password = instance.authCredentials.password
-    HttpRequest(method = HttpMethods.POST,
-                uri,
-                entity = FormData(params: _*).toEntity)
-      .addCredentials(
-        HttpCredentials.createBasicHttpCredentials(username, password))
+    HttpRequest(method = HttpMethods.POST, uri, entity = FormData(params: _*).toEntity)
+      .addCredentials(HttpCredentials.createBasicHttpCredentials(username, password))
   }
 
   private def pathToEclairJar: String = {
@@ -713,8 +610,7 @@ class EclairRpcClient(
         if (binary.exists) {
           binary.toString
         } else {
-          throw new NoSuchFileException(
-            s"Given binary ($binary) does not exist!")
+          throw new NoSuchFileException(s"Given binary ($binary) does not exist!")
         }
       case (None, Some(path)) =>
         val eclairBinDir =
@@ -729,13 +625,11 @@ class EclairRpcClient(
         if (jar.exists) {
           jar.getPath
         } else {
-          throw new NoSuchFileException(
-            s"Could not Eclair Jar at location ${jar.getPath}")
+          throw new NoSuchFileException(s"Could not Eclair Jar at location ${jar.getPath}")
         }
       case (None, None) =>
-        val msg = List(
-          "Environment variable ECLAIR_PATH is not set, and no binary is given!",
-          "Either needs to be set in order to start Eclair.")
+        val msg = List("Environment variable ECLAIR_PATH is not set, and no binary is given!",
+                       "Either needs to be set in order to start Eclair.")
         throw new RuntimeException(msg.mkString(" "))
     }
   }
@@ -763,9 +657,7 @@ class EclairRpcClient(
     val started: Future[EclairRpcClient] = {
       for {
         _ <- startedBinaryF
-        _ <- AsyncUtil.retryUntilSatisfiedF(() => isStarted(),
-                                            interval = 1.seconds,
-                                            maxTries = 60)
+        _ <- AsyncUtil.retryUntilSatisfiedF(() => isStarted(), interval = 1.seconds, maxTries = 60)
       } yield this
     }
     started
@@ -837,16 +729,12 @@ class EclairRpcClient(
           // too many tries to get info about a payment
           // either Eclair is down or the payment is still in PENDING state for some reason
           // complete the promise with an exception so the runnable will be canceled
-          p.failure(
-            new RuntimeException(
-              s"EclairApi.monitorSentPayment() too many attempts: ${attempts
-                .get()} for paymentId=${paymentId} for interval=${interval}"))
+          p.failure(new RuntimeException(s"EclairApi.monitorSentPayment() too many attempts: ${attempts
+            .get()} for paymentId=${paymentId} for interval=${interval}"))
         } else {
           val resultsF = getSentInfo(paymentId)
           resultsF.failed.foreach { case e: Throwable =>
-            logger.error(
-              s"Cannot check payment status for paymentId=${paymentId}",
-              e)
+            logger.error(s"Cannot check payment status for paymentId=${paymentId}", e)
           }
           val _ = for {
             results <- resultsF
@@ -855,8 +743,7 @@ class EclairRpcClient(
               result.status match {
                 case OutgoingPaymentStatus.Pending =>
                 //do nothing, while we wait for eclair to attempt to process
-                case (_: OutgoingPaymentStatus.Succeeded |
-                    _: OutgoingPaymentStatus.Failed) =>
+                case (_: OutgoingPaymentStatus.Succeeded | _: OutgoingPaymentStatus.Failed) =>
                   // invoice has been succeeded or has failed, let's publish to event stream
                   // so subscribers to the event stream can see that a payment
                   // was received or failed
@@ -881,8 +768,7 @@ class EclairRpcClient(
   }
 
   /** @inheritdoc */
-  override def connectToWebSocket(
-      eventHandler: WebSocketEvent => Unit): Future[Unit] = {
+  override def connectToWebSocket(eventHandler: WebSocketEvent => Unit): Future[Unit] = {
     val incoming: Sink[Message, Future[Done]] =
       Sink.foreach[Message] {
         case message: TextMessage.Strict =>
@@ -905,24 +791,20 @@ class EclairRpcClient(
     val uri =
       instance.rpcUri.resolve("/ws").toString.replace("http://", "ws://")
     instance.authCredentials.bitcoinAuthOpt
-    val request = WebSocketRequest(
-      uri,
-      extraHeaders = Vector(
-        Authorization(
-          BasicHttpCredentials("", instance.authCredentials.password))))
+    val request = WebSocketRequest(uri,
+                                   extraHeaders =
+                                     Vector(Authorization(BasicHttpCredentials("", instance.authCredentials.password))))
     val (upgradeResponse, _) = Http().singleWebSocketRequest(request, flow)
 
     val connected = upgradeResponse.map { upgrade =>
       if (upgrade.response.status == StatusCodes.SwitchingProtocols) {
         Done
       } else {
-        throw new RuntimeException(
-          s"Connection failed: ${upgrade.response.status}")
+        throw new RuntimeException(s"Connection failed: ${upgrade.response.status}")
       }
     }
 
-    connected.failed.foreach(ex =>
-      logger.error(s"Cannot connect to web socket $uri ", ex))
+    connected.failed.foreach(ex => logger.error(s"Cannot connect to web socket $uri ", ex))
 
     connected.map(_ => ())
   }
@@ -940,9 +822,7 @@ object EclairRpcClient {
     * advanced users, wher you need fine grained control
     * over the RPC client.
     */
-  def apply(
-      instance: EclairInstance,
-      binary: Option[File] = None): EclairRpcClient = {
+  def apply(instance: EclairInstance, binary: Option[File] = None): EclairRpcClient = {
     implicit val system = ActorSystem.create(ActorSystemName)
     withActorSystem(instance, binary)
   }
@@ -950,8 +830,8 @@ object EclairRpcClient {
   /** Constructs a RPC client from the given datadir, or
     * the default datadir if no directory is provided
     */
-  def withActorSystem(instance: EclairInstance, binary: Option[File] = None)(
-      implicit system: ActorSystem) = new EclairRpcClient(instance, binary)
+  def withActorSystem(instance: EclairInstance, binary: Option[File] = None)(implicit system: ActorSystem) =
+    new EclairRpcClient(instance, binary)
 
   /** The current commit we support of Eclair */
   private[bitcoins] val commit = "6817d6f"

@@ -47,8 +47,7 @@ case class DLCExecutor(signer: DLCTxSigner) {
       fundingSigsOpt: Option[FundingSignatures],
       cetsOpt: Option[Vector[WitnessTransaction]]): Try[SetupDLC] = {
     if (!isInitiator) {
-      require(fundingSigsOpt.isDefined,
-              "Accepting party must provide remote funding signatures")
+      require(fundingSigsOpt.isDefined, "Accepting party must provide remote funding signatures")
     }
 
     val CETSignatures(outcomeSigs, refundSig) = cetSigs
@@ -86,9 +85,7 @@ case class DLCExecutor(signer: DLCTxSigner) {
     *
     * TODO: Test over-sharing of OracleSignatures
     */
-  def executeDLC(
-      dlcSetup: SetupDLC,
-      oracleSigs: Vector[OracleSignatures]): ExecutedDLCOutcome = {
+  def executeDLC(dlcSetup: SetupDLC, oracleSigs: Vector[OracleSignatures]): ExecutedDLCOutcome = {
     val remoteFundingPubKey = if (isInitiator) {
       builder.acceptFundingKey
     } else {
@@ -150,20 +147,15 @@ object DLCExecutor {
     val (msg, ucet, remoteAdaptorSig) = msgAndCETInfoOpt match {
       case Some((msg, CETInfo(ucet, remoteSig))) => (msg, ucet, remoteSig)
       case None =>
-        throw new IllegalArgumentException(
-          s"Signature does not correspond to any possible outcome! $oracleSigs")
+        throw new IllegalArgumentException(s"Signature does not correspond to any possible outcome! $oracleSigs")
     }
     val sigsUsed =
       sigsUsedOpt.get // Safe because msgOpt is defined if no throw
 
-    val (fundingMultiSig, _) = DLCTxBuilder.buildFundingSPKs(
-      Vector(fundingKey.publicKey, remoteFundingPubKey))
+    val (fundingMultiSig, _) = DLCTxBuilder.buildFundingSPKs(Vector(fundingKey.publicKey, remoteFundingPubKey))
 
     val signingInfo =
-      DLCTxSigner.buildCETSigningInfo(fundOutputIndex,
-                                      fundingTx,
-                                      fundingMultiSig,
-                                      fundingKey)
+      DLCTxSigner.buildCETSigningInfo(fundOutputIndex, fundingTx, fundingMultiSig, fundingKey)
 
     val cet = DLCTxSigner.completeCET(msg,
                                       signingInfo,

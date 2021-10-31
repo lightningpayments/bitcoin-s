@@ -9,11 +9,7 @@ import org.bitcoins.core.wallet.fee.{FeeUnit, SatoshisPerByte}
 import org.bitcoins.core.wallet.utxo.TxoState
 import org.bitcoins.testkit.wallet.{BitcoinSWalletTest, WalletTestUtil}
 import org.bitcoins.testkitcore.Implicits._
-import org.bitcoins.testkitcore.gen.{
-  CryptoGenerators,
-  TransactionGenerators,
-  WitnessGenerators
-}
+import org.bitcoins.testkitcore.gen.{CryptoGenerators, TransactionGenerators, WitnessGenerators}
 import org.scalatest.FutureOutcome
 
 class CoinSelectorTest extends BitcoinSWalletTest {
@@ -101,9 +97,8 @@ class CoinSelectorTest extends BitcoinSWalletTest {
                                              feeRate = fixture.feeRate)
 
     val selections = Vector.fill(20)(
-      CoinSelector.randomSelection(walletUtxos = fixture.utxoSet,
-                                   outputs = Vector(fixture.output),
-                                   feeRate = fixture.feeRate))
+      CoinSelector
+        .randomSelection(walletUtxos = fixture.utxoSet, outputs = Vector(fixture.output), feeRate = fixture.feeRate))
 
     // it should not get the same thing every time
     assert(selections.exists(_ != first))
@@ -114,8 +109,7 @@ class CoinSelectorTest extends BitcoinSWalletTest {
       CoinSelector.selectByLeastWaste(walletUtxos = fixture.utxoSet,
                                       outputs = Vector(fixture.output),
                                       feeRate = fixture.feeRate,
-                                      longTermFeeRate =
-                                        SatoshisPerByte.fromLong(10))
+                                      longTermFeeRate = SatoshisPerByte.fromLong(10))
 
     // Need to sort as ordering will be different sometimes
     val sortedSelection = selection.sortBy(_.outPoint.hex)

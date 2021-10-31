@@ -39,11 +39,9 @@ sealed trait BitcoindInstanceLocal extends BitcoindInstance {
   def datadir: File
 
   // would like to check .canExecute as well, but we've run into issues on some machines
-  require(binary.isFile,
-          s"bitcoind binary path (${binary.getAbsolutePath}) must be a file")
+  require(binary.isFile, s"bitcoind binary path (${binary.getAbsolutePath}) must be a file")
 
-  require(binary.exists,
-          s"bitcoind binary path (${binary.getAbsolutePath}) does not exist!")
+  require(binary.exists, s"bitcoind binary path (${binary.getAbsolutePath}) does not exist!")
 
   def getVersion: BitcoindVersion = {
 
@@ -55,8 +53,7 @@ sealed trait BitcoindInstanceLocal extends BitcoindInstance {
         .last
 
     foundVersion match {
-      case _: String
-          if foundVersion.equals(BitcoindVersion.Experimental.toString) =>
+      case _: String if foundVersion.equals(BitcoindVersion.Experimental.toString) =>
         BitcoindVersion.Experimental
       case _: String if foundVersion.startsWith(BitcoindVersion.V16.toString) =>
         BitcoindVersion.V16
@@ -80,8 +77,7 @@ sealed trait BitcoindInstanceRemote extends BitcoindInstance {
   def proxyParams: Option[Socks5ProxyParams]
 }
 
-object BitcoindInstanceLocal
-    extends InstanceFactoryLocal[BitcoindInstanceLocal, ActorSystem] {
+object BitcoindInstanceLocal extends InstanceFactoryLocal[BitcoindInstanceLocal, ActorSystem] {
 
   private case class BitcoindInstanceLocalImpl(
       network: NetworkParameters,
@@ -163,8 +159,7 @@ object BitcoindInstanceLocal
     }
   }
 
-  def fromDataDir(dir: File)(implicit
-      system: ActorSystem): BitcoindInstanceLocal = {
+  def fromDataDir(dir: File)(implicit system: ActorSystem): BitcoindInstanceLocal = {
     fromDatadir(
       dir,
       DEFAULT_BITCOIND_LOCATION match {
@@ -194,8 +189,7 @@ object BitcoindInstanceLocal
     fromConfig(conf, binary)
   }
 
-  def fromConfigFile(file: File)(implicit
-      system: ActorSystem): BitcoindInstanceLocal = {
+  def fromConfigFile(file: File)(implicit system: ActorSystem): BitcoindInstanceLocal = {
     fromConfFile(
       file,
       DEFAULT_BITCOIND_LOCATION match {
@@ -229,8 +223,7 @@ object BitcoindInstanceLocal
   override val DEFAULT_CONF_FILE: Path = BitcoindConfig.DEFAULT_CONF_FILE.toPath
 }
 
-object BitcoindInstanceRemote
-    extends InstanceFactory[BitcoindInstanceRemote, ActorSystem] {
+object BitcoindInstanceRemote extends InstanceFactory[BitcoindInstanceRemote, ActorSystem] {
 
   private case class BitcoindInstanceRemoteImpl(
       network: NetworkParameters,
@@ -250,12 +243,7 @@ object BitcoindInstanceRemote
       zmqConfig: ZmqConfig = ZmqConfig(),
       proxyParams: Option[Socks5ProxyParams] = None
   )(implicit system: ActorSystem): BitcoindInstanceRemote = {
-    BitcoindInstanceRemoteImpl(network,
-                               uri,
-                               rpcUri,
-                               authCredentials,
-                               zmqConfig = zmqConfig,
-                               proxyParams = proxyParams)
+    BitcoindInstanceRemoteImpl(network, uri, rpcUri, authCredentials, zmqConfig = zmqConfig, proxyParams = proxyParams)
   }
 
   def fromConfFile(
@@ -268,8 +256,7 @@ object BitcoindInstanceRemote
     fromConfig(conf)
   }
 
-  override def fromConfigFile(file: File)(implicit
-      system: ActorSystem): BitcoindInstanceRemote = {
+  override def fromConfigFile(file: File)(implicit system: ActorSystem): BitcoindInstanceRemote = {
     fromConfFile(
       file
     )
@@ -287,8 +274,7 @@ object BitcoindInstanceRemote
                                proxyParams = None)
   }
 
-  override def fromDataDir(dir: File)(implicit
-      system: ActorSystem): BitcoindInstanceRemote = {
+  override def fromDataDir(dir: File)(implicit system: ActorSystem): BitcoindInstanceRemote = {
     require(dir.exists, s"${dir.getPath} does not exist!")
     require(dir.isDirectory, s"${dir.getPath} is not a directory!")
     val conf = BitcoindRpcAppConfig(dir.toPath)

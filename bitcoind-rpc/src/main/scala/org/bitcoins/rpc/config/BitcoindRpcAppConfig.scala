@@ -17,9 +17,8 @@ import scala.concurrent.Future
   * @param directory The data directory of the Bitcoin-S instance
   * @param confs Optional sequence of configuration overrides
   */
-case class BitcoindRpcAppConfig(
-    private val directory: Path,
-    private val confs: Config*)(implicit val system: ActorSystem)
+case class BitcoindRpcAppConfig(private val directory: Path, private val confs: Config*)(implicit
+    val system: ActorSystem)
     extends AppConfig {
 
   import system.dispatcher
@@ -31,8 +30,7 @@ case class BitcoindRpcAppConfig(
 
   override protected[bitcoins] type ConfigType = BitcoindRpcAppConfig
 
-  override protected[bitcoins] def newConfigOfType(
-      configs: Seq[Config]): BitcoindRpcAppConfig =
+  override protected[bitcoins] def newConfigOfType(configs: Seq[Config]): BitcoindRpcAppConfig =
     BitcoindRpcAppConfig(directory, configs: _*)
 
   protected[bitcoins] def baseDatadir: Path = directory
@@ -48,8 +46,7 @@ case class BitcoindRpcAppConfig(
     config.getStringOrNone("bitcoin-s.bitcoind-rpc.binary").map(new File(_))
 
   lazy val bitcoindDataDir = new File(
-    config.getStringOrElse("bitcoin-s.bitcoind-rpc.datadir",
-                           BitcoindConfig.DEFAULT_DATADIR.toString))
+    config.getStringOrElse("bitcoin-s.bitcoind-rpc.datadir", BitcoindConfig.DEFAULT_DATADIR.toString))
 
   lazy val host = new URI({
     val baseUrl = {
@@ -202,8 +199,7 @@ case class BitcoindRpcAppConfig(
   }
 }
 
-object BitcoindRpcAppConfig
-    extends AppConfigFactoryActorSystem[BitcoindRpcAppConfig] {
+object BitcoindRpcAppConfig extends AppConfigFactoryActorSystem[BitcoindRpcAppConfig] {
 
   override val moduleName: String = "bitcoind"
 
@@ -211,8 +207,7 @@ object BitcoindRpcAppConfig
     * data directory and given list of configuration overrides.
     */
 
-  override def fromDatadir(datadir: Path, confs: Vector[Config])(implicit
-      system: ActorSystem): BitcoindRpcAppConfig =
+  override def fromDatadir(datadir: Path, confs: Vector[Config])(implicit system: ActorSystem): BitcoindRpcAppConfig =
     BitcoindRpcAppConfig(datadir, confs: _*)
 
 }

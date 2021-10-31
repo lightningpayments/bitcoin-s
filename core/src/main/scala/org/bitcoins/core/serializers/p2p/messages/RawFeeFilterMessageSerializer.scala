@@ -6,8 +6,7 @@ import org.bitcoins.core.serializers.RawBitcoinSerializer
 import org.bitcoins.core.wallet.fee.SatoshisPerKiloByte
 import scodec.bits.ByteVector
 
-sealed abstract class RawFeeFilterMessageSerializer
-    extends RawBitcoinSerializer[FeeFilterMessage] {
+sealed abstract class RawFeeFilterMessageSerializer extends RawBitcoinSerializer[FeeFilterMessage] {
 
   override def read(bytes: ByteVector): FeeFilterMessage = {
     val satBytes = bytes.take(8).reverse

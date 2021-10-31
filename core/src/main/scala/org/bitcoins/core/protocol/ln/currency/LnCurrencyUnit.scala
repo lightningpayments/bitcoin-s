@@ -101,9 +101,7 @@ sealed abstract class MilliBitcoins extends LnCurrencyUnit {
 
 }
 
-object MilliBitcoins
-    extends BaseNumbers[MilliBitcoins]
-    with Bounded[MilliBitcoins] {
+object MilliBitcoins extends BaseNumbers[MilliBitcoins] with Bounded[MilliBitcoins] {
   val min = MilliBitcoins(LnPolicy.minMilliBitcoins)
   val max = MilliBitcoins(LnPolicy.maxMilliBitcoins)
   val zero = MilliBitcoins(0)
@@ -114,12 +112,9 @@ object MilliBitcoins
 
   def apply(underlying: BigInt): MilliBitcoins = MilliBitcoinsImpl(underlying)
 
-  private case class MilliBitcoinsImpl(underlying: BigInt)
-      extends MilliBitcoins {
-    require(underlying >= LnPolicy.minMilliBitcoins,
-            "Number was too small for MilliBitcoins, got: " + underlying)
-    require(underlying <= LnPolicy.maxMilliBitcoins,
-            "Number was too big for MilliBitcoins, got: " + underlying)
+  private case class MilliBitcoinsImpl(underlying: BigInt) extends MilliBitcoins {
+    require(underlying >= LnPolicy.minMilliBitcoins, "Number was too small for MilliBitcoins, got: " + underlying)
+    require(underlying <= LnPolicy.maxMilliBitcoins, "Number was too big for MilliBitcoins, got: " + underlying)
 
   }
 }
@@ -133,9 +128,7 @@ sealed abstract class MicroBitcoins extends LnCurrencyUnit {
 
 }
 
-object MicroBitcoins
-    extends BaseNumbers[MicroBitcoins]
-    with Bounded[MicroBitcoins] {
+object MicroBitcoins extends BaseNumbers[MicroBitcoins] with Bounded[MicroBitcoins] {
   val min = MicroBitcoins(LnPolicy.minMicroBitcoins)
   val max = MicroBitcoins(LnPolicy.maxMicroBitcoins)
   val zero = MicroBitcoins(0)
@@ -146,12 +139,9 @@ object MicroBitcoins
 
   def apply(underlying: BigInt): MicroBitcoins = MicroBitcoinsImpl(underlying)
 
-  private case class MicroBitcoinsImpl(underlying: BigInt)
-      extends MicroBitcoins {
-    require(underlying >= LnPolicy.minMicroBitcoins,
-            "Number was too small for MicroBitcoins, got: " + underlying)
-    require(underlying <= LnPolicy.maxMicroBitcoins,
-            "Number was too big for MicroBitcoins, got: " + underlying)
+  private case class MicroBitcoinsImpl(underlying: BigInt) extends MicroBitcoins {
+    require(underlying >= LnPolicy.minMicroBitcoins, "Number was too small for MicroBitcoins, got: " + underlying)
+    require(underlying <= LnPolicy.maxMicroBitcoins, "Number was too big for MicroBitcoins, got: " + underlying)
 
   }
 }
@@ -165,9 +155,7 @@ sealed abstract class NanoBitcoins extends LnCurrencyUnit {
 
 }
 
-object NanoBitcoins
-    extends BaseNumbers[NanoBitcoins]
-    with Bounded[NanoBitcoins] {
+object NanoBitcoins extends BaseNumbers[NanoBitcoins] with Bounded[NanoBitcoins] {
   val min = NanoBitcoins(LnPolicy.minNanoBitcoins)
   val max = NanoBitcoins(LnPolicy.maxNanoBitcoins)
   val zero = NanoBitcoins(0)
@@ -179,10 +167,8 @@ object NanoBitcoins
   def apply(underlying: BigInt): NanoBitcoins = NanoBitcoinsImpl(underlying)
 
   private case class NanoBitcoinsImpl(underlying: BigInt) extends NanoBitcoins {
-    require(underlying >= LnPolicy.minNanoBitcoins,
-            "Number was too small for NanoBitcoins, got: " + underlying)
-    require(underlying <= LnPolicy.maxNanoBitcoins,
-            "Number was too big for NanoBitcoins, got: " + underlying)
+    require(underlying >= LnPolicy.minNanoBitcoins, "Number was too small for NanoBitcoins, got: " + underlying)
+    require(underlying <= LnPolicy.maxNanoBitcoins, "Number was too big for NanoBitcoins, got: " + underlying)
 
   }
 }
@@ -195,9 +181,7 @@ sealed abstract class PicoBitcoins extends LnCurrencyUnit {
   override def toBigInt: BigInt = underlying
 }
 
-object PicoBitcoins
-    extends BaseNumbers[PicoBitcoins]
-    with Bounded[PicoBitcoins] {
+object PicoBitcoins extends BaseNumbers[PicoBitcoins] with Bounded[PicoBitcoins] {
   val min = PicoBitcoins(LnPolicy.minPicoBitcoins)
   val max = PicoBitcoins(LnPolicy.maxPicoBitcoins)
   val zero = PicoBitcoins(0)
@@ -208,10 +192,8 @@ object PicoBitcoins
   def apply(underlying: BigInt): PicoBitcoins = PicoBitcoinsImpl(underlying)
 
   private case class PicoBitcoinsImpl(underlying: BigInt) extends PicoBitcoins {
-    require(underlying >= LnPolicy.minPicoBitcoins,
-            "Number was too small for PicoBitcoins, got: " + underlying)
-    require(underlying <= LnPolicy.maxPicoBitcoins,
-            "Number was too big for PicoBitcoins, got: " + underlying)
+    require(underlying >= LnPolicy.minPicoBitcoins, "Number was too small for PicoBitcoins, got: " + underlying)
+    require(underlying <= LnPolicy.maxPicoBitcoins, "Number was too big for PicoBitcoins, got: " + underlying)
 
   }
 }
@@ -251,9 +233,7 @@ object LnCurrencyUnits {
             s"LnCurrencyUnit not found. Expected MilliBitcoins (m), MicroBitcoins (u), NanoBitcoins (n), or PicoBitcoins (p), got: $unit"))
       }
     } else {
-      Failure(
-        new IllegalArgumentException(
-          s"Could not convert amount to valid number, got: $amount"))
+      Failure(new IllegalArgumentException(s"Could not convert amount to valid number, got: $amount"))
     }
   }
 }

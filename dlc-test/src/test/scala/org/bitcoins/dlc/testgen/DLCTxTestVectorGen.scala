@@ -6,11 +6,9 @@ import play.api.libs.json.{JsResult, JsValue}
 
 import scala.concurrent.Future
 
-object DLCTxTestVectorGen
-    extends TestVectorGen[DLCTxTestVector, ValidTestInputs] {
+object DLCTxTestVectorGen extends TestVectorGen[DLCTxTestVector, ValidTestInputs] {
 
-  override val defaultTestFile: File = new File(
-    "dlc-test/src/test/scala/org/bitcoins/dlc/testgen/dlc_tx_test.json")
+  override val defaultTestFile: File = new File("dlc-test/src/test/scala/org/bitcoins/dlc/testgen/dlc_tx_test.json")
 
   override val testVectorParser: DLCTxTestVector.type = DLCTxTestVector
 
@@ -19,9 +17,8 @@ object DLCTxTestVectorGen
 
   override val inputStr: String = "inputs"
 
-  override def generateFromInput: ValidTestInputs => Future[DLCTxTestVector] = {
-    inputs: ValidTestInputs =>
-      Future.successful(DLCTxTestVector.fromInputs(inputs))
+  override def generateFromInput: ValidTestInputs => Future[DLCTxTestVector] = { inputs: ValidTestInputs =>
+    Future.successful(DLCTxTestVector.fromInputs(inputs))
   }
 
   override def generateTestVectors(): Future[Vector[DLCTxTestVector]] = {
@@ -35,7 +32,6 @@ object DLCTxTestVectorGen
     val multiInputTests =
       DLCTxGen.multiInputTests(numInputs).map(DLCTxGen.dlcTxTestVector)
 
-    Future.successful(
-      numOutcomesTests ++ nonP2WPKHInputTests ++ multiInputTests)
+    Future.successful(numOutcomesTests ++ nonP2WPKHInputTests ++ multiInputTests)
   }
 }

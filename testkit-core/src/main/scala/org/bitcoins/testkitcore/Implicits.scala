@@ -21,8 +21,7 @@ object Implicits {
       @tailrec
       def loop(counter: Int): T =
         if (counter > max) {
-          sys.error(
-            s"Could not get a sample from generator after $max attempts")
+          sys.error(s"Could not get a sample from generator after $max attempts")
         } else {
           gen.sample match {
             case None         => loop(counter + 1)
@@ -41,9 +40,8 @@ object Implicits {
     def toAssertion: Assertion =
       assertions match {
         case Seq() =>
-          throw new TestFailedException(
-            message = "Cannot turn an empty list into an assertion!",
-            failedCodeStackDepth = 0)
+          throw new TestFailedException(message = "Cannot turn an empty list into an assertion!",
+                                        failedCodeStackDepth = 0)
         // this should force all collection kinds to
         // evaluate all their members, throwing when
         // evaluating a bad one

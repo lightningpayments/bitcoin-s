@@ -3,11 +3,7 @@ package org.bitcoins.core.protocol.dlc.build
 import org.bitcoins.core.currency.Satoshis
 import org.bitcoins.core.number.UInt64
 import org.bitcoins.core.protocol.dlc.build.DLCTxBuilder.sortAndFilterOutputs
-import org.bitcoins.core.protocol.dlc.models.{
-  ContractInfo,
-  DLCTimeouts,
-  OracleOutcome
-}
+import org.bitcoins.core.protocol.dlc.models.{ContractInfo, DLCTimeouts, OracleOutcome}
 import org.bitcoins.core.protocol.script.{
   EmptyScriptSignature,
   MultiSignatureScriptPubKey,
@@ -15,11 +11,7 @@ import org.bitcoins.core.protocol.script.{
   ScriptPubKey
 }
 import org.bitcoins.core.protocol.transaction._
-import org.bitcoins.core.wallet.utxo.{
-  ConditionalPath,
-  InputInfo,
-  P2WSHV0InputInfo
-}
+import org.bitcoins.core.wallet.utxo.{ConditionalPath, InputInfo, P2WSHV0InputInfo}
 import org.bitcoins.crypto.ECPublicKey
 
 /** Responsible for constructing unsigned
@@ -38,10 +30,8 @@ case class DLCCETBuilder(
 
   private val fundingOutPoint = fundingOutputRef.outPoint
 
-  private val fundingInput = TransactionInput(
-    fundingOutPoint,
-    EmptyScriptSignature,
-    TransactionConstants.disableRBFSequence)
+  private val fundingInput =
+    TransactionInput(fundingOutPoint, EmptyScriptSignature, TransactionConstants.disableRBFSequence)
 
   private val fundingKeys =
     Vector(offerFundingKey, acceptFundingKey).sortBy(_.hex)
@@ -71,8 +61,7 @@ case class DLCCETBuilder(
     val (offerPayout, acceptPayout) = contractInfo.getPayouts(outcome)
 
     val outputsWithSerialId =
-      Vector((cetOfferOutput(offerPayout), offerSerialId),
-             (cetAcceptOutput(acceptPayout), acceptSerialId))
+      Vector((cetOfferOutput(offerPayout), offerSerialId), (cetAcceptOutput(acceptPayout), acceptSerialId))
 
     val outputs = sortAndFilterOutputs(outputsWithSerialId)
 

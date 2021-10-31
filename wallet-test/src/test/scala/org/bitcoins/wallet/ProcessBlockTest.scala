@@ -10,10 +10,7 @@ import org.bitcoins.core.protocol.transaction._
 import org.bitcoins.core.psbt.PSBT
 import org.bitcoins.core.util.FutureUtil
 import org.bitcoins.core.wallet.utxo.TxoState
-import org.bitcoins.testkit.wallet.{
-  BitcoinSWalletTestCachedBitcoinV19,
-  WalletWithBitcoindV19
-}
+import org.bitcoins.testkit.wallet.{BitcoinSWalletTestCachedBitcoinV19, WalletWithBitcoindV19}
 import org.scalatest.{FutureOutcome, Outcome}
 
 import scala.concurrent.Future
@@ -25,10 +22,7 @@ class ProcessBlockTest extends BitcoinSWalletTestCachedBitcoinV19 {
   override def withFixture(test: OneArgAsyncTest): FutureOutcome = {
     val f: Future[Outcome] = for {
       bitcoind <- cachedBitcoindWithFundsF
-      futOutcome = withNewWalletAndBitcoindCachedV19(
-        test,
-        getBIP39PasswordOpt(),
-        bitcoind)(getFreshWalletAppConfig)
+      futOutcome = withNewWalletAndBitcoindCachedV19(test, getBIP39PasswordOpt(), bitcoind)(getFreshWalletAppConfig)
       fut <- futOutcome.toFuture
     } yield fut
     new FutureOutcome(f)
@@ -103,8 +97,7 @@ class ProcessBlockTest extends BitcoinSWalletTestCachedBitcoinV19 {
       _ = assert(startingBalance == Satoshis.zero)
       addr <- wallet.getNewAddress()
       hashes <- bitcoind.generateToAddress(102, addr)
-      filters <- FutureUtil.sequentially(hashes)(
-        bitcoind.getBlockFilter(_, FilterType.Basic))
+      filters <- FutureUtil.sequentially(hashes)(bitcoind.getBlockFilter(_, FilterType.Basic))
       filtersWithBlockHash = hashes.map(_.flip).zip(filters.map(_.filter))
       _ <- wallet.processCompactFilters(filtersWithBlockHash)
       utxos <- wallet.listUtxos(TxoState.ImmatureCoinbase)
@@ -145,19 +138,13 @@ class ProcessBlockTest extends BitcoinSWalletTestCachedBitcoinV19 {
         ._2
 
       input =
-        TransactionInput(TransactionOutPoint(recvTx.txId, UInt32(index)),
-                         EmptyScriptSignature,
-                         UInt32.max)
+        TransactionInput(TransactionOutPoint(recvTx.txId, UInt32(index)), EmptyScriptSignature, UInt32.max)
       output0 =
-        TransactionOutput(recvAmount - sendAmount - Satoshis(500),
-                          changeAddr.scriptPubKey)
+        TransactionOutput(recvAmount - sendAmount - Satoshis(500), changeAddr.scriptPubKey)
       output1 =
         TransactionOutput(sendAmount, bitcoindAddr.scriptPubKey)
 
-      unsignedTx = BaseTransaction(Int32.two,
-                                   Vector(input),
-                                   Vector(output0, output1),
-                                   UInt32.zero)
+      unsignedTx = BaseTransaction(Int32.two, Vector(input), Vector(output0, output1), UInt32.zero)
 
       addrDb <- wallet.addressDAO.read(recvAddr).map(_.get)
       coin = HDCoin(addrDb.purpose, addrDb.accountCoin)
@@ -165,10 +152,7 @@ class ProcessBlockTest extends BitcoinSWalletTestCachedBitcoinV19 {
         .read((coin, addrDb.accountIndex))
         .map(_.get)
 
-      bip32Path = LegacyHDPath(addrDb.accountCoin,
-                               addrDb.accountIndex,
-                               addrDb.accountChain,
-                               addrDb.addressIndex)
+      bip32Path = LegacyHDPath(addrDb.accountCoin, addrDb.accountIndex, addrDb.accountChain, addrDb.addressIndex)
 
       psbt = PSBT
         .fromUnsignedTx(unsignedTx)
@@ -176,8 +160,7 @@ class ProcessBlockTest extends BitcoinSWalletTestCachedBitcoinV19 {
         .addKeyPathToInput(accountDb.xpub, bip32Path, addrDb.pubKey, 0)
 
       signed <- wallet.signPSBT(psbt)
-      tx <- Future.fromTry(
-        signed.finalizePSBT.flatMap(_.extractTransactionAndValidate))
+      tx <- Future.fromTry(signed.finalizePSBT.flatMap(_.extractTransactionAndValidate))
 
       _ <- bitcoind.sendRawTransaction(tx)
       hash <- bitcoind.generateToAddress(1, bitcoindAddr).map(_.head)

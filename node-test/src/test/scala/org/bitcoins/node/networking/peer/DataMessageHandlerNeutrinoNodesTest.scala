@@ -6,16 +6,12 @@ import org.bitcoins.core.protocol.transaction.Transaction
 import org.bitcoins.node.{NodeCallbacks, OnTxReceived}
 import org.bitcoins.server.BitcoinSAppConfig
 import org.bitcoins.testkit.BitcoinSTestAppConfig
-import org.bitcoins.testkit.node.{
-  NeutrinoNodeFundedWalletBitcoind,
-  NodeTestWithCachedBitcoindNewest
-}
+import org.bitcoins.testkit.node.{NeutrinoNodeFundedWalletBitcoind, NodeTestWithCachedBitcoindNewest}
 import org.scalatest.{FutureOutcome, Outcome}
 
 import scala.concurrent.{Future, Promise}
 
-class DataMessageHandlerNeutrinoNodesTest
-    extends NodeTestWithCachedBitcoindNewest {
+class DataMessageHandlerNeutrinoNodesTest extends NodeTestWithCachedBitcoindNewest {
 
   /** Wallet config with data directory set to user temp directory */
   override protected def getFreshConfig: BitcoinSAppConfig =
@@ -37,36 +33,33 @@ class DataMessageHandlerNeutrinoNodesTest
     new FutureOutcome(outcomeF)
   }
 
-  it must "verify OnTxReceived callbacks are executed" in {
-    param: FixtureParam =>
-      val NeutrinoNodeFundedWalletBitcoind(node, _, bitcoind, _) = param
+  it must "verify OnTxReceived callbacks are executed" in { param: FixtureParam =>
+    val NeutrinoNodeFundedWalletBitcoind(node, _, bitcoind, _) = param
 
-      val resultP: Promise[Transaction] = Promise()
+    val resultP: Promise[Transaction] = Promise()
 
-      val callback: OnTxReceived = (tx: Transaction) => {
-        Future {
-          resultP.success(tx)
-          ()
-        }
+    val callback: OnTxReceived = (tx: Transaction) => {
+      Future {
+        resultP.success(tx)
+        ()
       }
-      val sender = node.peerMsgSenders(0)
+    }
+    val sender = node.peerMsgSenders(0)
 
-      for {
+    for {
 
-        txId <- bitcoind.sendToAddress(junkAddress, 1.bitcoin)
-        tx <- bitcoind.getRawTransactionRaw(txId)
+      txId <- bitcoind.sendToAddress(junkAddress, 1.bitcoin)
+      tx <- bitcoind.getRawTransactionRaw(txId)
 
-        payload = TransactionMessage(tx)
+      payload = TransactionMessage(tx)
 
-        nodeCallbacks = NodeCallbacks.onTxReceived(callback)
-        _ = node.nodeAppConfig.addCallbacks(nodeCallbacks)
+      nodeCallbacks = NodeCallbacks.onTxReceived(callback)
+      _ = node.nodeAppConfig.addCallbacks(nodeCallbacks)
 
-        dataMessageHandler =
-          DataMessageHandler(genesisChainApi)(node.executionContext,
-                                              node.nodeAppConfig,
-                                              node.chainConfig)
-        _ <- dataMessageHandler.handleDataPayload(payload, sender, node)
-        result <- resultP.future
-      } yield assert(result == tx)
+      dataMessageHandler =
+        DataMessageHandler(genesisChainApi)(node.executionContext, node.nodeAppConfig, node.chainConfig)
+      _ <- dataMessageHandler.handleDataPayload(payload, sender, node)
+      result <- resultP.future
+    } yield assert(result == tx)
   }
 }

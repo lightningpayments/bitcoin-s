@@ -14,58 +14,39 @@ import scala.concurrent.{ExecutionContext, Future}
   */
 trait WalletCallbacks {
 
-  def onTransactionProcessed: CallbackHandler[
-    Transaction,
-    OnTransactionProcessed]
+  def onTransactionProcessed: CallbackHandler[Transaction, OnTransactionProcessed]
 
-  def onTransactionBroadcast: CallbackHandler[
-    Transaction,
-    OnTransactionBroadcast]
+  def onTransactionBroadcast: CallbackHandler[Transaction, OnTransactionBroadcast]
   def onReservedUtxos: CallbackHandler[Vector[SpendingInfoDb], OnReservedUtxos]
 
-  def onNewAddressGenerated: CallbackHandler[
-    BitcoinAddress,
-    OnNewAddressGenerated]
+  def onNewAddressGenerated: CallbackHandler[BitcoinAddress, OnNewAddressGenerated]
 
   def +(other: WalletCallbacks): WalletCallbacks
 
-  def executeOnTransactionProcessed(logger: Logger, tx: Transaction)(implicit
-      ec: ExecutionContext): Future[Unit] = {
+  def executeOnTransactionProcessed(logger: Logger, tx: Transaction)(implicit ec: ExecutionContext): Future[Unit] = {
     onTransactionProcessed.execute(
       tx,
-      (err: Throwable) =>
-        logger.error(
-          s"${onTransactionProcessed.name} Callback failed with error: ",
-          err))
+      (err: Throwable) => logger.error(s"${onTransactionProcessed.name} Callback failed with error: ", err))
   }
 
-  def executeOnTransactionBroadcast(logger: Logger, tx: Transaction)(implicit
-      ec: ExecutionContext): Future[Unit] = {
+  def executeOnTransactionBroadcast(logger: Logger, tx: Transaction)(implicit ec: ExecutionContext): Future[Unit] = {
     onTransactionBroadcast.execute(
       tx,
-      (err: Throwable) =>
-        logger.error(
-          s"${onTransactionProcessed.name} Callback failed with error: ",
-          err))
+      (err: Throwable) => logger.error(s"${onTransactionProcessed.name} Callback failed with error: ", err))
   }
 
-  def executeOnReservedUtxos(logger: Logger, utxos: Vector[SpendingInfoDb])(
-      implicit ec: ExecutionContext): Future[Unit] = {
+  def executeOnReservedUtxos(logger: Logger, utxos: Vector[SpendingInfoDb])(implicit
+      ec: ExecutionContext): Future[Unit] = {
     onReservedUtxos.execute(
       utxos,
-      (err: Throwable) =>
-        logger.error(s"${onReservedUtxos.name} Callback failed with error: ",
-                     err))
+      (err: Throwable) => logger.error(s"${onReservedUtxos.name} Callback failed with error: ", err))
   }
 
-  def executeOnNewAddressGenerated(logger: Logger, address: BitcoinAddress)(
-      implicit ec: ExecutionContext): Future[Unit] = {
+  def executeOnNewAddressGenerated(logger: Logger, address: BitcoinAddress)(implicit
+      ec: ExecutionContext): Future[Unit] = {
     onNewAddressGenerated.execute(
       address,
-      (err: Throwable) =>
-        logger.error(
-          s"${onNewAddressGenerated.name} Callback failed with error: ",
-          err))
+      (err: Throwable) => logger.error(s"${onNewAddressGenerated.name} Callback failed with error: ", err))
   }
 
 }
@@ -82,27 +63,18 @@ trait OnNewAddressGenerated extends Callback[BitcoinAddress]
 object WalletCallbacks {
 
   private case class WalletCallbacksImpl(
-      onTransactionProcessed: CallbackHandler[
-        Transaction,
-        OnTransactionProcessed],
-      onTransactionBroadcast: CallbackHandler[
-        Transaction,
-        OnTransactionBroadcast],
+      onTransactionProcessed: CallbackHandler[Transaction, OnTransactionProcessed],
+      onTransactionBroadcast: CallbackHandler[Transaction, OnTransactionBroadcast],
       onReservedUtxos: CallbackHandler[Vector[SpendingInfoDb], OnReservedUtxos],
-      onNewAddressGenerated: CallbackHandler[
-        BitcoinAddress,
-        OnNewAddressGenerated]
+      onNewAddressGenerated: CallbackHandler[BitcoinAddress, OnNewAddressGenerated]
   ) extends WalletCallbacks {
 
     override def +(other: WalletCallbacks): WalletCallbacks =
       copy(
-        onTransactionProcessed =
-          onTransactionProcessed ++ other.onTransactionProcessed,
-        onTransactionBroadcast =
-          onTransactionBroadcast ++ other.onTransactionBroadcast,
+        onTransactionProcessed = onTransactionProcessed ++ other.onTransactionProcessed,
+        onTransactionBroadcast = onTransactionBroadcast ++ other.onTransactionBroadcast,
         onReservedUtxos = onReservedUtxos ++ other.onReservedUtxos,
-        onNewAddressGenerated =
-          onNewAddressGenerated ++ other.onNewAddressGenerated
+        onNewAddressGenerated = onNewAddressGenerated ++ other.onNewAddressGenerated
       )
   }
 
@@ -134,21 +106,12 @@ object WalletCallbacks {
   ): WalletCallbacks = {
     WalletCallbacksImpl(
       onTransactionProcessed =
-        CallbackHandler[Transaction, OnTransactionProcessed](
-          "onTransactionProcessed",
-          onTransactionProcessed),
+        CallbackHandler[Transaction, OnTransactionProcessed]("onTransactionProcessed", onTransactionProcessed),
       onTransactionBroadcast =
-        CallbackHandler[Transaction, OnTransactionBroadcast](
-          "onTransactionBroadcast",
-          onTransactionBroadcast),
-      onReservedUtxos =
-        CallbackHandler[Vector[SpendingInfoDb], OnReservedUtxos](
-          "onReservedUtxos",
-          onReservedUtxos),
+        CallbackHandler[Transaction, OnTransactionBroadcast]("onTransactionBroadcast", onTransactionBroadcast),
+      onReservedUtxos = CallbackHandler[Vector[SpendingInfoDb], OnReservedUtxos]("onReservedUtxos", onReservedUtxos),
       onNewAddressGenerated =
-        CallbackHandler[BitcoinAddress, OnNewAddressGenerated](
-          "onNewAddressGenerated",
-          onNewAddressGenerated)
+        CallbackHandler[BitcoinAddress, OnNewAddressGenerated]("onNewAddressGenerated", onNewAddressGenerated)
     )
   }
 }

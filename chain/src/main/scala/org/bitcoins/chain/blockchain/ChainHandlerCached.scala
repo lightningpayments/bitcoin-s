@@ -1,11 +1,7 @@
 package org.bitcoins.chain.blockchain
 
 import org.bitcoins.chain.config.ChainAppConfig
-import org.bitcoins.chain.models.{
-  BlockHeaderDAO,
-  CompactFilterDAO,
-  CompactFilterHeaderDAO
-}
+import org.bitcoins.chain.models.{BlockHeaderDAO, CompactFilterDAO, CompactFilterHeaderDAO}
 import org.bitcoins.core.api.chain.db.{BlockHeaderDb, CompactFilterHeaderDb}
 import org.bitcoins.core.api.chain.{ChainApi, FilterSyncMarker}
 import org.bitcoins.core.protocol.blockchain.BlockHeader
@@ -23,15 +19,10 @@ case class ChainHandlerCached(
     override val filterHeaderDAO: CompactFilterHeaderDAO,
     override val filterDAO: CompactFilterDAO,
     blockchains: Vector[Blockchain],
-    override val blockFilterCheckpoints: Map[
-      DoubleSha256DigestBE,
-      DoubleSha256DigestBE])(implicit
+    override val blockFilterCheckpoints: Map[DoubleSha256DigestBE, DoubleSha256DigestBE])(implicit
     override val chainConfig: ChainAppConfig,
     executionContext: ExecutionContext)
-    extends ChainHandler(blockHeaderDAO,
-                         filterHeaderDAO,
-                         filterDAO,
-                         blockFilterCheckpoints) {
+    extends ChainHandler(blockHeaderDAO, filterHeaderDAO, filterDAO, blockFilterCheckpoints) {
 
   /** Gets the best block header from the given [[blockchains]] parameter */
   override def getBestBlockHeader(): Future[BlockHeaderDb] = {
@@ -40,8 +31,7 @@ case class ChainHandlerCached(
     }
   }
 
-  override def processHeaders(
-      headers: Vector[BlockHeader]): Future[ChainApi] = {
+  override def processHeaders(headers: Vector[BlockHeader]): Future[ChainApi] = {
     processHeadersWithChains(headers = headers, blockchains = blockchains)
   }
 
@@ -52,9 +42,7 @@ case class ChainHandlerCached(
   override def nextBlockHeaderBatchRange(
       prevStopHash: DoubleSha256DigestBE,
       batchSize: Int): Future[Option[FilterSyncMarker]] = {
-    nextBlockHeaderBatchRangeWithChains(prevStopHash = prevStopHash,
-                                        batchSize = batchSize,
-                                        blockchains = blockchains)
+    nextBlockHeaderBatchRangeWithChains(prevStopHash = prevStopHash, batchSize = batchSize, blockchains = blockchains)
   }
 }
 

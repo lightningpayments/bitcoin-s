@@ -7,11 +7,7 @@ import org.bitcoins.core.currency._
 import org.bitcoins.core.hd.{BIP32Path, HDAccount, HDChainType}
 import org.bitcoins.core.number.{UInt32, UInt64}
 import org.bitcoins.core.policy.Policy
-import org.bitcoins.core.protocol.dlc.models.DLCMessage.{
-  DLCAccept,
-  DLCOffer,
-  DLCSign
-}
+import org.bitcoins.core.protocol.dlc.models.DLCMessage.{DLCAccept, DLCOffer, DLCSign}
 import org.bitcoins.core.protocol.dlc.models._
 import org.bitcoins.core.protocol.script.{P2WPKHWitnessSPKV0, P2WPKHWitnessV0}
 import org.bitcoins.core.protocol.tlv._
@@ -55,17 +51,14 @@ object DLCWalletUtil extends Logging {
   val total: Satoshis = (expectedDefaultAmt / Satoshis(2)).satoshis
   val half: Satoshis = (total / Satoshis(2)).satoshis
 
-  val sampleOutcomes: Vector[(EnumOutcome, Satoshis)] = Vector(
-    EnumOutcome(winStr) -> (expectedDefaultAmt / Satoshis(2)).satoshis,
-    EnumOutcome(loseStr) -> Satoshis.zero)
+  val sampleOutcomes: Vector[(EnumOutcome, Satoshis)] =
+    Vector(EnumOutcome(winStr) -> (expectedDefaultAmt / Satoshis(2)).satoshis, EnumOutcome(loseStr) -> Satoshis.zero)
 
   lazy val sampleContractDescriptor: EnumContractDescriptor =
     EnumContractDescriptor(sampleOutcomes)
 
   lazy val sampleOracleInfo: EnumSingleOracleInfo =
-    EnumSingleOracleInfo.dummyForKeys(oraclePrivKey,
-                                      rValue,
-                                      sampleOutcomes.map(_._1))
+    EnumSingleOracleInfo.dummyForKeys(oraclePrivKey, rValue, sampleOutcomes.map(_._1))
 
   lazy val sampleContractOraclePair: ContractOraclePair.EnumPair =
     ContractOraclePair.EnumPair(sampleContractDescriptor, sampleOracleInfo)
@@ -85,13 +78,10 @@ object DLCWalletUtil extends Logging {
     DLCTestUtil.genMultiDigitContractInfo(numDigits, total)._1
 
   lazy val multiNonceOracleInfo: NumericSingleOracleInfo =
-    NumericSingleOracleInfo(
-      OracleAnnouncementV0TLV.dummyForKeys(oraclePrivKey,
-                                           rValues.take(numDigits)))
+    NumericSingleOracleInfo(OracleAnnouncementV0TLV.dummyForKeys(oraclePrivKey, rValues.take(numDigits)))
 
   lazy val multiNonceContractOraclePair: ContractOraclePair.NumericPair = {
-    ContractOraclePair.NumericPair(multiNonceContractDescriptor,
-                                   multiNonceOracleInfo)
+    ContractOraclePair.NumericPair(multiNonceContractDescriptor, multiNonceOracleInfo)
   }
 
   lazy val multiNonceContractInfo: ContractInfo =
@@ -114,8 +104,7 @@ object DLCWalletUtil extends Logging {
     P2WPKHWitnessV0(dummyPartialSig.pubKey, dummyPartialSig.signature)
   }
 
-  lazy val dummyAddress: BitcoinAddress = BitcoinAddress(
-    "bc1quq29mutxkgxmjfdr7ayj3zd9ad0ld5mrhh89l2")
+  lazy val dummyAddress: BitcoinAddress = BitcoinAddress("bc1quq29mutxkgxmjfdr7ayj3zd9ad0ld5mrhh89l2")
 
   lazy val dummyDLCKeys: DLCPublicKeys =
     DLCPublicKeys(dummyKey, dummyAddress)
@@ -130,14 +119,8 @@ object DLCWalletUtil extends Logging {
     UInt32.zero)
 
   val dummyFundingInputs = Vector(
-    DLCFundingInputP2WPKHV0(UInt64.zero,
-                            dummyPrevTx,
-                            UInt32.zero,
-                            TransactionConstants.sequence),
-    DLCFundingInputP2WPKHV0(UInt64.one,
-                            dummyPrevTx,
-                            UInt32.one,
-                            TransactionConstants.sequence)
+    DLCFundingInputP2WPKHV0(UInt64.zero, dummyPrevTx, UInt32.zero, TransactionConstants.sequence),
+    DLCFundingInputP2WPKHV0(UInt64.one, dummyPrevTx, UInt32.one, TransactionConstants.sequence)
   )
 
   lazy val sampleOfferPayoutSerialId: UInt64 = DLCMessage.genSerialId()
@@ -164,12 +147,8 @@ object DLCWalletUtil extends Logging {
 
   lazy val dummyOutcomeSigs: Vector[(ECPublicKey, ECAdaptorSignature)] =
     Vector(
-      EnumOracleOutcome(
-        Vector(sampleOracleInfo),
-        EnumOutcome(winStr)).sigPoint -> ECAdaptorSignature.dummy,
-      EnumOracleOutcome(
-        Vector(sampleOracleInfo),
-        EnumOutcome(loseStr)).sigPoint -> ECAdaptorSignature.dummy
+      EnumOracleOutcome(Vector(sampleOracleInfo), EnumOutcome(winStr)).sigPoint -> ECAdaptorSignature.dummy,
+      EnumOracleOutcome(Vector(sampleOracleInfo), EnumOutcome(loseStr)).sigPoint -> ECAdaptorSignature.dummy
     )
 
   lazy val dummyCETSigs: CETSignatures =
@@ -178,8 +157,8 @@ object DLCWalletUtil extends Logging {
   lazy val sampleAcceptPayoutSerialId: UInt64 =
     DLCMessage.genSerialId(Vector(sampleOfferPayoutSerialId))
 
-  lazy val sampleAcceptChangeSerialId: UInt64 = DLCMessage.genSerialId(
-    Vector(sampleOfferChangeSerialId, sampleFundOutputSerialId))
+  lazy val sampleAcceptChangeSerialId: UInt64 =
+    DLCMessage.genSerialId(Vector(sampleOfferChangeSerialId, sampleFundOutputSerialId))
 
   lazy val sampleDLCAccept: DLCAccept = DLCAccept(
     totalCollateral = half,
@@ -194,15 +173,13 @@ object DLCWalletUtil extends Logging {
   )
 
   lazy val dummyFundingSignatures: FundingSignatures = FundingSignatures(
-    Vector(
-      (TransactionOutPoint(dummyBlockHash, UInt32.zero), dummyScriptWitness)))
+    Vector((TransactionOutPoint(dummyBlockHash, UInt32.zero), dummyScriptWitness)))
 
   lazy val sampleDLCSign: DLCSign =
     DLCSign(dummyCETSigs, dummyFundingSignatures, ByteVector.empty)
 
   lazy val sampleDLCDb: DLCDb = DLCDb(
-    dlcId = Sha256Digest(
-      "9da9922b9067007f8d9c56c37f202a568f0cdb104e5ef9752ad6cbc1834f0334"),
+    dlcId = Sha256Digest("9da9922b9067007f8d9c56c37f202a568f0cdb104e5ef9752ad6cbc1834f0334"),
     tempContractId = sampleDLCOffer.tempContractId,
     contractIdOpt = None,
     protocolVersion = 0,
@@ -231,11 +208,8 @@ object DLCWalletUtil extends Logging {
   )
 
   /** Creates a DLC between two wallets. */
-  def initDLC(
-      fundedWalletA: FundedDLCWallet,
-      fundedWalletB: FundedDLCWallet,
-      contractInfo: ContractInfo)(implicit ec: ExecutionContext): Future[
-    (InitializedDLCWallet, InitializedDLCWallet)] = {
+  def initDLC(fundedWalletA: FundedDLCWallet, fundedWalletB: FundedDLCWallet, contractInfo: ContractInfo)(implicit
+      ec: ExecutionContext): Future[(InitializedDLCWallet, InitializedDLCWallet)] = {
     val walletA = fundedWalletA.wallet
     val walletB = fundedWalletB.wallet
 
@@ -254,8 +228,7 @@ object DLCWalletUtil extends Logging {
       tx <- walletB.broadcastDLCFundingTx(sigs.contractId)
       _ <- walletA.processTransaction(tx, None)
     } yield {
-      (InitializedDLCWallet(FundedDLCWallet(walletA)),
-       InitializedDLCWallet(FundedDLCWallet(walletB)))
+      (InitializedDLCWallet(FundedDLCWallet(walletA)), InitializedDLCWallet(FundedDLCWallet(walletB)))
     }
   }
 
@@ -263,8 +236,7 @@ object DLCWalletUtil extends Logging {
     val wallet: DLCWallet = funded.wallet
   }
 
-  def getDLCStatus(wallet: DLCWallet)(implicit
-      ec: ExecutionContext): Future[DLCStatus] = {
+  def getDLCStatus(wallet: DLCWallet)(implicit ec: ExecutionContext): Future[DLCStatus] = {
     for {
       dbs <- wallet.dlcDAO.findAll()
       _ = require(dbs.size == 1, "There should only be one dlc initialized")
@@ -273,18 +245,14 @@ object DLCWalletUtil extends Logging {
     } yield status.get
   }
 
-  def getContractId(wallet: DLCWallet)(implicit
-      ec: ExecutionContext): Future[ByteVector] = {
+  def getContractId(wallet: DLCWallet)(implicit ec: ExecutionContext): Future[ByteVector] = {
     wallet.dlcDAO.findAll().map { all =>
       require(all.size == 1, "There should only be one dlc initialized")
       all.head.contractIdOpt.get
     }
   }
 
-  def verifyInput(
-      transaction: Transaction,
-      inputIndex: Long,
-      prevOut: TransactionOutput): Boolean = {
+  def verifyInput(transaction: Transaction, inputIndex: Long, prevOut: TransactionOutput): Boolean = {
     val sigComponent = WitnessTxSigComponent(
       transaction.asInstanceOf[WitnessTransaction],
       UInt32(inputIndex),
@@ -340,8 +308,7 @@ object DLCWalletUtil extends Logging {
     }
   }
 
-  def verifyProperlySetTxIds(wallet: DLCWallet)(implicit
-      ec: ExecutionContext): Future[Unit] = {
+  def verifyProperlySetTxIds(wallet: DLCWallet)(implicit ec: ExecutionContext): Future[Unit] = {
     for {
       contractId <- getContractId(wallet)
       dlcDbOpt <- wallet.dlcDAO.findByContractId(contractId)
@@ -355,9 +322,7 @@ object DLCWalletUtil extends Logging {
     }
   }
 
-  def getSigs(contractInfo: ContractInfo): (
-      OracleAttestmentTLV,
-      OracleAttestmentTLV) = {
+  def getSigs(contractInfo: ContractInfo): (OracleAttestmentTLV, OracleAttestmentTLV) = {
     val desc: EnumContractDescriptor = contractInfo.contractDescriptor match {
       case desc: EnumContractDescriptor => desc
       case _: NumericContractDescriptor =>
@@ -390,14 +355,8 @@ object DLCWalletUtil extends Logging {
       case v0: OracleEventV0TLV => v0.eventId
     }
 
-    (OracleAttestmentV0TLV(eventId,
-                           publicKey,
-                           Vector(initiatorWinSig),
-                           Vector(initiatorWinStr)),
-     OracleAttestmentV0TLV(eventId,
-                           publicKey,
-                           Vector(recipientWinSig),
-                           Vector(recipientWinStr)))
+    (OracleAttestmentV0TLV(eventId, publicKey, Vector(initiatorWinSig), Vector(initiatorWinStr)),
+     OracleAttestmentV0TLV(eventId, publicKey, Vector(recipientWinSig), Vector(recipientWinStr)))
   }
 
 }

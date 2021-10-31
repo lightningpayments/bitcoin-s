@@ -20,8 +20,7 @@ object TipUpdateResult {
   sealed abstract class Failure extends TipUpdateResult
 
   /** Means that [[org.bitcoins.core.protocol.blockchain.BlockHeader.previousBlockHashBE previousBlockHashBE]] was incorrect */
-  case class BadPreviousBlockHash(override val header: BlockHeader)
-      extends Failure {
+  case class BadPreviousBlockHash(override val header: BlockHeader) extends Failure {
 
     override def toString: String =
       s"BadPreviousBlockHash(hash=${header.hashBE}, previous=${header.previousBlockHashBE})"

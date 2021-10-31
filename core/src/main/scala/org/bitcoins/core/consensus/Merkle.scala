@@ -1,11 +1,7 @@
 package org.bitcoins.core.consensus
 
 import org.bitcoins.core.protocol.blockchain.Block
-import org.bitcoins.core.protocol.transaction.{
-  NonWitnessTransaction,
-  Transaction,
-  WitnessTransaction
-}
+import org.bitcoins.core.protocol.transaction.{NonWitnessTransaction, Transaction, WitnessTransaction}
 import org.bitcoins.core.util._
 import org.bitcoins.crypto.{CryptoUtil, DoubleSha256Digest}
 
@@ -50,9 +46,7 @@ trait Merkle {
     * @return the entire Merkle tree computed from the given merkle trees
     */
   @tailrec
-  final def build(
-      subTrees: Seq[MerkleTree],
-      accum: Seq[MerkleTree]): MerkleTree =
+  final def build(subTrees: Seq[MerkleTree], accum: Seq[MerkleTree]): MerkleTree =
     subTrees match {
       case Nil =>
         if (accum.size == 1) accum.head

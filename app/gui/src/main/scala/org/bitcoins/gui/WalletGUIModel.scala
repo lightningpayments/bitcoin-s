@@ -19,8 +19,7 @@ import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, Promise}
 import scala.util.{Failure, Success, Try}
 
-class WalletGUIModel(dlcModel: DLCPaneModel)(implicit system: ActorSystem)
-    extends Logging {
+class WalletGUIModel(dlcModel: DLCPaneModel)(implicit system: ActorSystem) extends Logging {
   val textArea: TextArea = dlcModel.resultArea
   var taskRunner: TaskRunner = _
   import system.dispatcher
@@ -47,8 +46,7 @@ class WalletGUIModel(dlcModel: DLCPaneModel)(implicit system: ActorSystem)
   }
 
   def startWalletInfoScheduler(): Cancellable = {
-    system.scheduler.scheduleAtFixedRate(0.seconds, 10.seconds)(
-      UpdateWalletInfoRunnable)
+    system.scheduler.scheduleAtFixedRate(0.seconds, 10.seconds)(UpdateWalletInfoRunnable)
   }
 
   def updateFeeRate(): Try[FeeUnit] = {
@@ -65,8 +63,7 @@ class WalletGUIModel(dlcModel: DLCPaneModel)(implicit system: ActorSystem)
     taskRunner.run(
       caption = "Get New Address",
       op = {
-        ConsoleCli.exec(GetNewAddress(None),
-                        GlobalData.consoleCliConfig) match {
+        ConsoleCli.exec(GetNewAddress(None), GlobalData.consoleCliConfig) match {
           case Success(commandReturn) => addressP.success(commandReturn)
           case Failure(err) =>
             addressP.failure(err)
@@ -93,8 +90,7 @@ class WalletGUIModel(dlcModel: DLCPaneModel)(implicit system: ActorSystem)
                   textArea.text = "Error, server did not return anything"
                 } else {
                   textArea.text = s"Transaction sent! $txid"
-                  Platform.runLater(
-                    TransactionSentDialog.show(parentWindow.value, txid))
+                  Platform.runLater(TransactionSentDialog.show(parentWindow.value, txid))
                 }
               case Failure(err) => throw err
             }
@@ -137,8 +133,7 @@ class WalletGUIModel(dlcModel: DLCPaneModel)(implicit system: ActorSystem)
     * @return if the update was successful
     */
   private[gui] def updateBalance(): Boolean = {
-    ConsoleCli.exec(GetBalances(isSats = true),
-                    GlobalData.consoleCliConfig) match {
+    ConsoleCli.exec(GetBalances(isSats = true), GlobalData.consoleCliConfig) match {
       case Success(commandReturn) =>
         val json = ujson.read(commandReturn).obj
         val confirmedBalance =

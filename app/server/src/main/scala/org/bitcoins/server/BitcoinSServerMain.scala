@@ -9,12 +9,7 @@ import org.bitcoins.chain.models._
 import org.bitcoins.commons.util.{DatadirParser, ServerArgParser}
 import org.bitcoins.core.api.chain.ChainApi
 import org.bitcoins.core.api.feeprovider.FeeRateApi
-import org.bitcoins.core.api.node.{
-  ExternalImplementationNodeType,
-  InternalImplementationNodeType,
-  NodeApi,
-  NodeType
-}
+import org.bitcoins.core.api.node.{ExternalImplementationNodeType, InternalImplementationNodeType, NodeApi, NodeType}
 import org.bitcoins.core.util.NetworkUtil
 import org.bitcoins.core.wallet.fee.SatoshisPerVirtualByte
 import org.bitcoins.dlc.node.DLCNode
@@ -56,8 +51,7 @@ class BitcoinSServerMain(override val serverArgParser: ServerArgParser)(implicit
     logger.info(s"Start on network ${walletConf.network}")
 
     startedConfigF.failed.foreach { err =>
-      logger.error(s"Failed to initialize configuration for BitcoinServerMain",
-                   err)
+      logger.error(s"Failed to initialize configuration for BitcoinServerMain", err)
     }
 
     for {
@@ -92,8 +86,7 @@ class BitcoinSServerMain(override val serverArgParser: ServerArgParser)(implicit
   def startBitcoinSBackend(): Future[Unit] = {
     val start = System.currentTimeMillis()
     if (nodeConf.peers.isEmpty) {
-      throw new IllegalArgumentException(
-        "No peers specified, unable to start node")
+      throw new IllegalArgumentException("No peers specified, unable to start node")
     }
 
     val peerSockets = {
@@ -105,16 +98,13 @@ class BitcoinSServerMain(override val serverArgParser: ServerArgParser)(implicit
     val peers = peerSockets.map(Peer.fromSocket(_, nodeConf.socks5ProxyParams))
 
     //run chain work migration
-    val chainApiF = runChainWorkCalc(
-      serverArgParser.forceChainWorkRecalc || chainConf.forceRecalcChainWork)
+    val chainApiF = runChainWorkCalc(serverArgParser.forceChainWorkRecalc || chainConf.forceRecalcChainWork)
 
     //get a node that isn't started
     val nodeF = nodeConf.createNode(peers)(chainConf, system)
 
     val feeProvider = getFeeProviderOrElse(
-      MempoolSpaceProvider(HourFeeTarget,
-                           walletConf.network,
-                           walletConf.torConf.socks5ProxyParams))
+      MempoolSpaceProvider(HourFeeTarget, walletConf.network, walletConf.torConf.socks5ProxyParams))
     //get our wallet
     val configuredWalletF = for {
       node <- nodeF
@@ -124,8 +114,7 @@ class BitcoinSServerMain(override val serverArgParser: ServerArgParser)(implicit
       callbacks <- createCallbacks(wallet)
       _ = nodeConf.addCallbacks(callbacks)
     } yield {
-      logger.info(
-        s"Done configuring wallet, it took=${System.currentTimeMillis() - start}ms")
+      logger.info(s"Done configuring wallet, it took=${System.currentTimeMillis() - start}ms")
       wallet
     }
 
@@ -135,8 +124,7 @@ class BitcoinSServerMain(override val serverArgParser: ServerArgParser)(implicit
       wallet <- configuredWalletF
       initNode <- setBloomFilter(node, wallet)
     } yield {
-      logger.info(
-        s"Done configuring node, it took=${System.currentTimeMillis() - start}ms")
+      logger.info(s"Done configuring node, it took=${System.currentTimeMillis() - start}ms")
       initNode
     }
 
@@ -153,8 +141,7 @@ class BitcoinSServerMain(override val serverArgParser: ServerArgParser)(implicit
       _ <- wallet.start().recoverWith {
         //https://github.com/bitcoin-s/bitcoin-s/issues/2917
         //https://github.com/bitcoin-s/bitcoin-s/pull/2918
-        case err: IllegalArgumentException
-            if err.getMessage.contains("If we have spent a spendinginfodb") =>
+        case err: IllegalArgumentException if err.getMessage.contains("If we have spent a spendinginfodb") =>
           handleMissingSpendingInfoDb(err, wallet)
       }
       cachedChainApi <- node.chainApiFromDb()
@@ -169,16 +156,14 @@ class BitcoinSServerMain(override val serverArgParser: ServerArgParser)(implicit
                                  dlcNode = dlcNode,
                                  serverCmdLineArgs = serverArgParser)
       _ = {
-        logger.info(
-          s"Starting ${nodeConf.nodeType.shortName} node sync, it took=${System
-            .currentTimeMillis() - start}ms")
+        logger.info(s"Starting ${nodeConf.nodeType.shortName} node sync, it took=${System
+          .currentTimeMillis() - start}ms")
       }
       _ = BitcoinSServer.startedFP.success(Future.successful(binding))
 
       _ <- node.sync()
     } yield {
-      logger.info(
-        s"Done starting Main! It took ${System.currentTimeMillis() - start}ms")
+      logger.info(s"Done starting Main! It took ${System.currentTimeMillis() - start}ms")
       ()
     }
   }
@@ -192,24 +177,18 @@ class BitcoinSServerMain(override val serverArgParser: ServerArgParser)(implicit
       _ = logger.info("Started bitcoind")
 
       bitcoindNetwork <- bitcoind.getBlockChainInfo.map(_.chain)
-      _ = require(
-        bitcoindNetwork == walletConf.network,
-        s"bitcoind ($bitcoindNetwork) on different network than wallet (${walletConf.network})")
+      _ = require(bitcoindNetwork == walletConf.network,
+                  s"bitcoind ($bitcoindNetwork) on different network than wallet (${walletConf.network})")
 
       _ = logger.info("Creating wallet")
       feeProvider = getFeeProviderOrElse(bitcoind)
-      tmpWallet <- dlcConf.createDLCWallet(nodeApi = bitcoind,
-                                           chainQueryApi = bitcoind,
-                                           feeRateApi = feeProvider)
-      wallet = BitcoindRpcBackendUtil.createDLCWalletWithBitcoindCallbacks(
-        bitcoind,
-        tmpWallet)
+      tmpWallet <- dlcConf.createDLCWallet(nodeApi = bitcoind, chainQueryApi = bitcoind, feeRateApi = feeProvider)
+      wallet = BitcoindRpcBackendUtil.createDLCWalletWithBitcoindCallbacks(bitcoind, tmpWallet)
       _ = logger.info("Starting wallet")
       _ <- wallet.start().recoverWith {
         //https://github.com/bitcoin-s/bitcoin-s/issues/2917
         //https://github.com/bitcoin-s/bitcoin-s/pull/2918
-        case err: IllegalArgumentException
-            if err.getMessage.contains("If we have spent a spendinginfodb") =>
+        case err: IllegalArgumentException if err.getMessage.contains("If we have spent a spendinginfodb") =>
           handleMissingSpendingInfoDb(err, wallet)
       }
 
@@ -232,9 +211,8 @@ class BitcoinSServerMain(override val serverArgParser: ServerArgParser)(implicit
     }
   }
 
-  private def createCallbacks(wallet: Wallet)(implicit
-      nodeConf: NodeAppConfig,
-      ec: ExecutionContext): Future[NodeCallbacks] = {
+  private def createCallbacks(
+      wallet: Wallet)(implicit nodeConf: NodeAppConfig, ec: ExecutionContext): Future[NodeCallbacks] = {
     lazy val onTx: OnTxReceived = { tx =>
       logger.debug(s"Receiving transaction txid=${tx.txIdBE.hex} as a callback")
       wallet.processTransaction(tx, blockHashOpt = None).map(_ => ())
@@ -256,9 +234,7 @@ class BitcoinSServerMain(override val serverArgParser: ServerArgParser)(implicit
     }
     nodeConf.nodeType match {
       case NodeType.SpvNode =>
-        Future.successful(
-          NodeCallbacks(onTxReceived = Vector(onTx),
-                        onBlockHeadersReceived = Vector(onHeaders)))
+        Future.successful(NodeCallbacks(onTxReceived = Vector(onTx), onBlockHeadersReceived = Vector(onHeaders)))
       case NodeType.NeutrinoNode =>
         Future.successful(
           NodeCallbacks(onTxReceived = Vector(onTx),
@@ -268,21 +244,17 @@ class BitcoinSServerMain(override val serverArgParser: ServerArgParser)(implicit
       case NodeType.FullNode =>
         Future.failed(new RuntimeException("Not yet implemented"))
       case _: ExternalImplementationNodeType =>
-        Future.failed(
-          new RuntimeException(
-            "Cannot create callbacks for an external implementation"))
+        Future.failed(new RuntimeException("Cannot create callbacks for an external implementation"))
     }
   }
 
-  private def setBloomFilter(node: Node, wallet: Wallet)(implicit
-      ec: ExecutionContext): Future[Node] = {
+  private def setBloomFilter(node: Node, wallet: Wallet)(implicit ec: ExecutionContext): Future[Node] = {
     for {
       nodeWithBloomFilter <- node match {
         case spvNode: SpvNode =>
           for {
             bloom <- wallet.getBloomFilter()
-            _ = logger.info(
-              s"Got bloom filter with ${bloom.filterSize.toInt} elements")
+            _ = logger.info(s"Got bloom filter with ${bloom.filterSize.toInt} elements")
           } yield spvNode.setBloomFilter(bloom)
         case _: Node => Future.successful(node)
       }
@@ -292,14 +264,12 @@ class BitcoinSServerMain(override val serverArgParser: ServerArgParser)(implicit
   }
 
   /** This is needed for migrations V2/V3 on the chain project to re-calculate the total work for the chain */
-  private def runChainWorkCalc(force: Boolean)(implicit
-      system: ActorSystem): Future[ChainApi] = {
+  private def runChainWorkCalc(force: Boolean)(implicit system: ActorSystem): Future[ChainApi] = {
     val blockEC =
       system.dispatchers.lookup(Dispatchers.DefaultBlockingDispatcherId)
-    val chainApi = ChainHandler.fromDatabase(
-      blockHeaderDAO = BlockHeaderDAO()(blockEC, chainConf),
-      CompactFilterHeaderDAO()(blockEC, chainConf),
-      CompactFilterDAO()(blockEC, chainConf))
+    val chainApi = ChainHandler.fromDatabase(blockHeaderDAO = BlockHeaderDAO()(blockEC, chainConf),
+                                             CompactFilterHeaderDAO()(blockEC, chainConf),
+                                             CompactFilterDAO()(blockEC, chainConf))
     for {
       isMissingChainWork <- chainApi.isMissingChainWork
       chainApiWithWork <-
@@ -331,12 +301,7 @@ class BitcoinSServerMain(override val serverArgParser: ServerArgParser)(implicit
     val commonRoutes = CommonRoutes()
 
     val handlers =
-      Seq(walletRoutes,
-          nodeRoutes,
-          chainRoutes,
-          coreRoutes,
-          dlcRoutes,
-          commonRoutes)
+      Seq(walletRoutes, nodeRoutes, chainRoutes, coreRoutes, dlcRoutes, commonRoutes)
 
     val bindConfOpt = serverCmdLineArgs.rpcBindOpt match {
       case Some(rpcbind) => Some(rpcbind)
@@ -346,15 +311,9 @@ class BitcoinSServerMain(override val serverArgParser: ServerArgParser)(implicit
     val server = {
       serverCmdLineArgs.rpcPortOpt match {
         case Some(rpcport) =>
-          Server(conf = nodeConf,
-                 handlers = handlers,
-                 rpcbindOpt = bindConfOpt,
-                 rpcport = rpcport)
+          Server(conf = nodeConf, handlers = handlers, rpcbindOpt = bindConfOpt, rpcport = rpcport)
         case None =>
-          Server(conf = nodeConf,
-                 handlers = handlers,
-                 rpcbindOpt = bindConfOpt,
-                 rpcport = conf.rpcPort)
+          Server(conf = nodeConf, handlers = handlers, rpcbindOpt = bindConfOpt, rpcport = conf.rpcPort)
       }
     }
     server.start()
@@ -363,9 +322,8 @@ class BitcoinSServerMain(override val serverArgParser: ServerArgParser)(implicit
   /** Gets a Fee Provider from the given wallet app config
     * Returns default if there is no config set
     */
-  def getFeeProviderOrElse(default: => FeeRateApi)(implicit
-      system: ActorSystem,
-      walletConf: WalletAppConfig): FeeRateApi = {
+  def getFeeProviderOrElse(
+      default: => FeeRateApi)(implicit system: ActorSystem, walletConf: WalletAppConfig): FeeRateApi = {
     val proxyParams = walletConf.torConf.socks5ProxyParams
     val feeProviderNameOpt =
       walletConf.feeProviderNameOpt.flatMap(FeeProviderName.fromStringOpt)
@@ -382,14 +340,11 @@ class BitcoinSServerMain(override val serverArgParser: ServerArgParser)(implicit
         case (Some(MempoolSpace), None) =>
           MempoolSpaceProvider(HourFeeTarget, walletConf.network, proxyParams)
         case (Some(MempoolSpace), Some(target)) =>
-          MempoolSpaceProvider.fromBlockTarget(target,
-                                               walletConf.network,
-                                               proxyParams)
+          MempoolSpaceProvider.fromBlockTarget(target, walletConf.network, proxyParams)
         case (Some(Constant), Some(num)) =>
           ConstantFeeRateProvider(SatoshisPerVirtualByte.fromLong(num))
         case (Some(Constant), None) =>
-          throw new IllegalArgumentException(
-            "Missing a target for a ConstantFeeRateProvider")
+          throw new IllegalArgumentException("Missing a target for a ConstantFeeRateProvider")
       }
 
     logger.info(s"Using fee provider: $feeProvider")
@@ -402,11 +357,10 @@ class BitcoinSServerMain(override val serverArgParser: ServerArgParser)(implicit
     * @see https://github.com/bitcoin-s/bitcoin-s/issues/2917
     * @see https://github.com/bitcoin-s/bitcoin-s/pull/2918
     */
-  private def handleMissingSpendingInfoDb(err: Throwable, wallet: Wallet)(
-      implicit walletConf: WalletAppConfig): Future[Unit] = {
-    logger.warn(
-      s"Found corrupted wallet, rescanning to find spendinginfodbs.spendingTxId as detailed in issue 2917",
-      err)
+  private def handleMissingSpendingInfoDb(err: Throwable, wallet: Wallet)(implicit
+      walletConf: WalletAppConfig): Future[Unit] = {
+    logger.warn(s"Found corrupted wallet, rescanning to find spendinginfodbs.spendingTxId as detailed in issue 2917",
+                err)
 
     //clear the entire wallet, then rescan to make sure we get out of a corrupted state
     val clearedF = wallet.clearAllUtxosAndAddresses()
@@ -414,8 +368,7 @@ class BitcoinSServerMain(override val serverArgParser: ServerArgParser)(implicit
       clearedWallet <- clearedF
       _ <- clearedWallet.rescanNeutrinoWallet(startOpt = None,
                                               endOpt = None,
-                                              addressBatchSize =
-                                                walletConf.discoveryBatchSize,
+                                              addressBatchSize = walletConf.discoveryBatchSize,
                                               useCreationTime = true)
     } yield clearedWallet
     walletF.map(_ => ())
@@ -430,9 +383,7 @@ class BitcoinSServerMain(override val serverArgParser: ServerArgParser)(implicit
     * do a ton of syncing. However, we don't want to swallow
     * exceptions thrown by this method.
     */
-  private def syncWalletWithBitcoindAndStartPolling(
-      bitcoind: BitcoindRpcClient,
-      wallet: Wallet): Future[Unit] = {
+  private def syncWalletWithBitcoindAndStartPolling(bitcoind: BitcoindRpcClient, wallet: Wallet): Future[Unit] = {
     val f = BitcoindRpcBackendUtil
       .syncWalletToBitcoind(bitcoind, wallet)
       .flatMap(_ => wallet.updateUtxoPendingStates())
@@ -443,15 +394,12 @@ class BitcoinSServerMain(override val serverArgParser: ServerArgParser)(implicit
             .map(_ => ())
         } else {
           Future {
-            BitcoindRpcBackendUtil.startZMQWalletCallbacks(
-              wallet,
-              bitcoindRpcConf.zmqConfig)
+            BitcoindRpcBackendUtil.startZMQWalletCallbacks(wallet, bitcoindRpcConf.zmqConfig)
           }
         }
       }
 
-    f.failed.foreach(err =>
-      logger.error(s"Error syncing bitcoin-s wallet with bitcoind", err))
+    f.failed.foreach(err => logger.error(s"Error syncing bitcoin-s wallet with bitcoind", err))
     f
   }
 }
@@ -472,9 +420,7 @@ object BitcoinSServerMain extends BitcoinSAppScalaDaemon {
   System.setProperty("bitcoins.log.location", datadirParser.networkDir.toString)
 
   implicit lazy val conf: BitcoinSAppConfig =
-    BitcoinSAppConfig(datadirParser.datadir,
-                      datadirParser.baseConfig,
-                      serverCmdLineArgs.toConfig)(system)
+    BitcoinSAppConfig(datadirParser.datadir, datadirParser.baseConfig, serverCmdLineArgs.toConfig)(system)
 
   new BitcoinSServerMain(serverCmdLineArgs).run()
 }

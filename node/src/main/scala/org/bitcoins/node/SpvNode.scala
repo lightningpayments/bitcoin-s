@@ -11,10 +11,7 @@ import org.bitcoins.core.protocol.{BitcoinAddress, BlockStamp}
 import org.bitcoins.core.util.Mutable
 import org.bitcoins.node.config.NodeAppConfig
 import org.bitcoins.node.models.Peer
-import org.bitcoins.node.networking.peer.{
-  ControlMessageHandler,
-  DataMessageHandler
-}
+import org.bitcoins.node.networking.peer.{ControlMessageHandler, DataMessageHandler}
 
 import scala.concurrent.Future
 
@@ -25,8 +22,7 @@ case class SpvNode(
     chainConfig: ChainAppConfig,
     actorSystem: ActorSystem)
     extends Node {
-  require(nodeConfig.nodeType == NodeType.SpvNode,
-          s"We need our SPV mode enabled to be able to construct a SPV node!")
+  require(nodeConfig.nodeType == NodeType.SpvNode, s"We need our SPV mode enabled to be able to construct a SPV node!")
 
   implicit override def system: ActorSystem = actorSystem
 
@@ -49,8 +45,7 @@ case class SpvNode(
     this
   }
 
-  override def updateDataMessageHandler(
-      dataMessageHandler: DataMessageHandler): SpvNode = {
+  override def updateDataMessageHandler(dataMessageHandler: DataMessageHandler): SpvNode = {
     copy(dataMessageHandler = dataMessageHandler)
   }
 
@@ -107,8 +102,6 @@ case class SpvNode(
   override def getFilterCount(): Future[Int] =
     Future.failed(new RuntimeException(cfErrMsg))
 
-  override def getFiltersBetweenHeights(
-      startHeight: Int,
-      endHeight: Int): Future[Vector[FilterResponse]] =
+  override def getFiltersBetweenHeights(startHeight: Int, endHeight: Int): Future[Vector[FilterResponse]] =
     Future.failed(new RuntimeException(cfErrMsg))
 }

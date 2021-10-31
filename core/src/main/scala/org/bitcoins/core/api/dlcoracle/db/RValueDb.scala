@@ -12,18 +12,13 @@ case class RValueDb(
     chainType: Int,
     keyIndex: Int) {
 
-  val path: BIP32Path = BIP32Path.fromString(
-    s"m/${purpose.constant}'/${accountCoin.toInt}'/$accountIndex'/$chainType'/$keyIndex'")
+  val path: BIP32Path =
+    BIP32Path.fromString(s"m/${purpose.constant}'/${accountCoin.toInt}'/$accountIndex'/$chainType'/$keyIndex'")
 }
 
 object RValueDbHelper {
 
-  def apply(
-      nonce: SchnorrNonce,
-      eventName: String,
-      account: HDAccount,
-      chainType: Int,
-      keyIndex: Int): RValueDb = {
+  def apply(nonce: SchnorrNonce, eventName: String, account: HDAccount, chainType: Int, keyIndex: Int): RValueDb = {
     RValueDb(
       nonce = nonce,
       eventName = eventName,

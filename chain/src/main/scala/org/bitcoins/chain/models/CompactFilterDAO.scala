@@ -10,17 +10,11 @@ import scodec.bits.ByteVector
 
 import scala.concurrent.{ExecutionContext, Future}
 
-case class CompactFilterDAO()(implicit
-    ec: ExecutionContext,
-    override val appConfig: ChainAppConfig)
+case class CompactFilterDAO()(implicit ec: ExecutionContext, override val appConfig: ChainAppConfig)
     extends CRUD[CompactFilterDb, DoubleSha256DigestBE]
     with SlickUtil[CompactFilterDb, DoubleSha256DigestBE] {
   val mappers = new org.bitcoins.db.DbCommonsColumnMappers(profile)
-  import mappers.{
-    byteVectorMapper,
-    doubleSha256DigestBEMapper,
-    filterTypeMapper
-  }
+  import mappers.{byteVectorMapper, doubleSha256DigestBEMapper, filterTypeMapper}
   import profile.api._
 
   implicit private val bigIntMapper: BaseColumnType[BigInt] =
@@ -29,8 +23,7 @@ case class CompactFilterDAO()(implicit
       case PostgreSQL => mappers.bigIntPostgresMapper
     }
 
-  class CompactFilterTable(tag: Tag)
-      extends Table[CompactFilterDb](tag, schemaName, "cfilters") {
+  class CompactFilterTable(tag: Tag) extends Table[CompactFilterDb](tag, schemaName, "cfilters") {
 
     def hash = column[DoubleSha256DigestBE]("hash")
 
@@ -47,8 +40,7 @@ case class CompactFilterDAO()(implicit
     def hashIndex = index("cfilters_hash_index", hash)
 
     override def * = {
-      (hash, filterType, bytes, height, blockHash).<>(CompactFilterDb.tupled,
-                                                      CompactFilterDb.unapply)
+      (hash, filterType, bytes, height, blockHash).<>(CompactFilterDb.tupled, CompactFilterDb.unapply)
     }
   }
 
@@ -56,32 +48,25 @@ case class CompactFilterDAO()(implicit
     TableQuery[CompactFilterTable]
   }
 
-  private lazy val blockHeaderTable: profile.api.TableQuery[
-    BlockHeaderDAO#BlockHeaderTable] = {
+  private lazy val blockHeaderTable: profile.api.TableQuery[BlockHeaderDAO#BlockHeaderTable] = {
     BlockHeaderDAO().table
   }
 
-  override def createAll(
-      filters: Vector[CompactFilterDb]): Future[Vector[CompactFilterDb]] = {
+  override def createAll(filters: Vector[CompactFilterDb]): Future[Vector[CompactFilterDb]] = {
     createAllNoAutoInc(ts = filters, database = safeDatabase)
   }
 
   /** Finds the rows that correlate to the given primary keys */
   override protected def findByPrimaryKeys(
-      ids: Vector[DoubleSha256DigestBE]): Query[
-    Table[CompactFilterDb],
-    CompactFilterDb,
-    Seq] = {
+      ids: Vector[DoubleSha256DigestBE]): Query[Table[CompactFilterDb], CompactFilterDb, Seq] = {
     table.filter(_.blockHash.inSet(ids))
   }
 
-  override protected def findAll(
-      ts: Vector[CompactFilterDb]): Query[Table[_], CompactFilterDb, Seq] = {
+  override protected def findAll(ts: Vector[CompactFilterDb]): Query[Table[_], CompactFilterDb, Seq] = {
     findByPrimaryKeys(ts.map(_.blockHashBE))
   }
 
-  def findByBlockHash(
-      hash: DoubleSha256DigestBE): Future[Option[CompactFilterDb]] = {
+  def findByBlockHash(hash: DoubleSha256DigestBE): Future[Option[CompactFilterDb]] = {
     read(hash)
   }
 
@@ -91,10 +76,8 @@ case class CompactFilterDAO()(implicit
     safeDatabase.runVec(query)
   }
 
-  private def getAtHeightQuery(height: Int): profile.StreamingProfileAction[
-    Seq[CompactFilterDb],
-    CompactFilterDb,
-    Effect.Read] = {
+  private def getAtHeightQuery(
+      height: Int): profile.StreamingProfileAction[Seq[CompactFilterDb], CompactFilterDb, Effect.Read] = {
     table.filter(_.height === height).result
   }
 
@@ -105,10 +88,7 @@ case class CompactFilterDAO()(implicit
     result
   }
 
-  private val maxHeightQuery: profile.ProfileAction[
-    Int,
-    NoStream,
-    Effect.Read] = {
+  private val maxHeightQuery: profile.ProfileAction[Int, NoStream, Effect.Read] = {
     val query = table.map(_.height).max.getOrElse(0).result
     query
   }
@@ -121,10 +101,7 @@ case class CompactFilterDAO()(implicit
 
   private def getBetweenHeightsQuery(
       from: Int,
-      to: Int): profile.StreamingProfileAction[
-    Seq[CompactFilterDb],
-    CompactFilterDb,
-    Effect.Read] = {
+      to: Int): profile.StreamingProfileAction[Seq[CompactFilterDb], CompactFilterDb, Effect.Read] = {
     table.filter(header => header.height >= from && header.height <= to).result
   }
 

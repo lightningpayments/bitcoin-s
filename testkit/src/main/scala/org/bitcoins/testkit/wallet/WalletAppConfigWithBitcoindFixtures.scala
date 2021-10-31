@@ -2,29 +2,21 @@ package org.bitcoins.testkit.wallet
 
 import org.bitcoins.rpc.client.common.BitcoindRpcClient
 import org.bitcoins.testkit.EmbeddedPg
-import org.bitcoins.testkit.rpc.{
-  BitcoindFixturesCached,
-  CachedBitcoind,
-  CachedBitcoindNewest
-}
+import org.bitcoins.testkit.rpc.{BitcoindFixturesCached, CachedBitcoind, CachedBitcoindNewest}
 import org.bitcoins.testkit.util.BitcoinSAsyncFixtureTest
 import org.scalatest.{FutureOutcome, Outcome}
 
 import scala.concurrent.Future
 
-trait WalletAppConfigWithBitcoindFixtures
-    extends BitcoinSAsyncFixtureTest
-    with BitcoindFixturesCached
-    with EmbeddedPg { _: CachedBitcoind[_] =>
+trait WalletAppConfigWithBitcoindFixtures extends BitcoinSAsyncFixtureTest with BitcoindFixturesCached with EmbeddedPg {
+  _: CachedBitcoind[_] =>
 
   override def afterAll(): Unit = {
     super[BitcoinSAsyncFixtureTest].afterAll()
   }
 }
 
-trait WalletAppConfigWithBitcoindNewestFixtures
-    extends WalletAppConfigWithBitcoindFixtures
-    with CachedBitcoindNewest {
+trait WalletAppConfigWithBitcoindNewestFixtures extends WalletAppConfigWithBitcoindFixtures with CachedBitcoindNewest {
 
   override def afterAll(): Unit = {
     super[CachedBitcoindNewest].afterAll()
@@ -42,9 +34,7 @@ trait WalletAppConfigWithBitcoindNewestFixtures
     new FutureOutcome(f)
   }
 
-  def withWalletAppConfigBitcoindCached(
-      test: OneArgAsyncTest,
-      bitcoind: BitcoindRpcClient): FutureOutcome = {
+  def withWalletAppConfigBitcoindCached(test: OneArgAsyncTest, bitcoind: BitcoindRpcClient): FutureOutcome = {
     makeDependentFixture[WalletAppConfigWithBitcoindRpc](
       () => {
         val walletConfig =
@@ -53,8 +43,7 @@ trait WalletAppConfigWithBitcoindNewestFixtures
         Future.successful(model)
       },
       { case walletAppConfigWithBitcoindRpc =>
-        BitcoinSWalletTest.destroyWalletAppConfig(
-          walletAppConfigWithBitcoindRpc.walletAppConfig)
+        BitcoinSWalletTest.destroyWalletAppConfig(walletAppConfigWithBitcoindRpc.walletAppConfig)
       }
     )(test)
   }

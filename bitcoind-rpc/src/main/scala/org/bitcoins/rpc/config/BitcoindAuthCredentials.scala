@@ -47,9 +47,7 @@ object BitcoindAuthCredentials extends Logging {
     * where the `bitcoind` instance is on a
     * remote server.
     */
-  case class CookieBased(
-      network: NetworkParameters,
-      datadir: File = BitcoindConfig.DEFAULT_DATADIR)
+  case class CookieBased(network: NetworkParameters, datadir: File = BitcoindConfig.DEFAULT_DATADIR)
       extends BitcoindAuthCredentials {
 
     private[bitcoins] lazy val cookiePath = {

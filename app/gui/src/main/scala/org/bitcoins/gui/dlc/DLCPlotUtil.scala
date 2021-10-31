@@ -16,12 +16,7 @@ object DLCPlotUtil {
       function: DLCPayoutCurve,
       totalCollateral: Satoshis,
       rounding: RoundingIntervals): Figure = {
-    plotCETsWithOriginalCurve(base,
-                              numDigits,
-                              function,
-                              totalCollateral,
-                              rounding,
-                              executedCETOpt = None)
+    plotCETsWithOriginalCurve(base, numDigits, function, totalCollateral, rounding, executedCETOpt = None)
   }
 
   def plotCETsWithOriginalCurve(
@@ -31,12 +26,7 @@ object DLCPlotUtil {
       totalCollateral: Satoshis,
       rounding: RoundingIntervals,
       executedCET: Vector[Int]): Figure = {
-    plotCETsWithOriginalCurve(base,
-                              numDigits,
-                              function,
-                              totalCollateral,
-                              rounding,
-                              executedCETOpt = Some(executedCET))
+    plotCETsWithOriginalCurve(base, numDigits, function, totalCollateral, rounding, executedCETOpt = Some(executedCET))
   }
 
   private def plotCETsWithOriginalCurve(
@@ -49,12 +39,7 @@ object DLCPlotUtil {
     val xs = 0.until(Math.pow(base, numDigits).toInt - 1).toVector
     val ys = xs.map(function.apply(_).toLong.toInt)
 
-    val figure = plotCETs(base,
-                          numDigits,
-                          function,
-                          totalCollateral,
-                          rounding,
-                          executedCETOpt)
+    val figure = plotCETs(base, numDigits, function, totalCollateral, rounding, executedCETOpt)
     figure.subplot(0) += plot(xs, ys, name = "Original Curve")
     figure
   }
@@ -65,12 +50,7 @@ object DLCPlotUtil {
       function: DLCPayoutCurve,
       totalCollateral: Satoshis,
       rounding: RoundingIntervals): Figure = {
-    plotCETs(base,
-             numDigits,
-             function,
-             totalCollateral,
-             rounding,
-             executedCETOpt = None)
+    plotCETs(base, numDigits, function, totalCollateral, rounding, executedCETOpt = None)
   }
 
   def plotCETs(
@@ -80,12 +60,7 @@ object DLCPlotUtil {
       totalCollateral: Satoshis,
       rounding: RoundingIntervals,
       executedDLC: Vector[Int]): Figure = {
-    plotCETs(base,
-             numDigits,
-             function,
-             totalCollateral,
-             rounding,
-             executedCETOpt = Some(executedDLC))
+    plotCETs(base, numDigits, function, totalCollateral, rounding, executedCETOpt = Some(executedDLC))
   }
 
   def plotCETs(
@@ -95,11 +70,7 @@ object DLCPlotUtil {
       totalCollateral: Satoshis,
       rounding: RoundingIntervals,
       executedCETOpt: Option[Vector[Int]]): Figure = {
-    val cets: Vector[CETOutcome] = CETCalculator.computeCETs(base,
-                                                             numDigits,
-                                                             function,
-                                                             totalCollateral,
-                                                             rounding)
+    val cets: Vector[CETOutcome] = CETCalculator.computeCETs(base, numDigits, function, totalCollateral, rounding)
 
     plotCETs(cets, base, numDigits, executedCETOpt)
   }
@@ -108,11 +79,7 @@ object DLCPlotUtil {
     plotCETs(cets, base, numDigits, executedCETOpt = None)
   }
 
-  def plotCETs(
-      cets: Vector[CETOutcome],
-      base: Int,
-      numDigits: Int,
-      executedCET: Vector[Int]): Figure = {
+  def plotCETs(cets: Vector[CETOutcome], base: Int, numDigits: Int, executedCET: Vector[Int]): Figure = {
     plotCETs(cets, base, numDigits, executedCETOpt = Some(executedCET))
   }
 
@@ -143,11 +110,7 @@ object DLCPlotUtil {
       else ""
     }
 
-    cetPlot += plot(xs,
-                    ys,
-                    '+',
-                    name = s"CETs (${cets.length})",
-                    labels = labels)
+    cetPlot += plot(xs, ys, '+', name = s"CETs (${cets.length})", labels = labels)
     cetPlot.xlabel = "Outcome"
     cetPlot.ylabel = "Payout (sats)"
     cetPlot.legend = true

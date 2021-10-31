@@ -7,11 +7,7 @@ import org.bitcoins.core.protocol.transaction._
 import org.bitcoins.core.psbt.GlobalPSBTRecord.Version
 import org.bitcoins.core.psbt.PSBTInputKeyId.PartialSignatureKeyId
 import org.bitcoins.core.psbt._
-import org.bitcoins.core.wallet.builder.{
-  FinalizedTxWithSigningInfo,
-  RawTxBuilder,
-  StandardNonInteractiveFinalizer
-}
+import org.bitcoins.core.wallet.builder.{FinalizedTxWithSigningInfo, RawTxBuilder, StandardNonInteractiveFinalizer}
 import org.bitcoins.core.wallet.fee.FeeUnit
 import org.bitcoins.core.wallet.utxo._
 import org.scalacheck.Gen
@@ -64,8 +60,7 @@ object PSBTGenerators {
     Gen.choose(0, 4).flatMap(num => unknownGlobals(num))
   }
 
-  private def unknownGlobals(
-      num: Int): Gen[Vector[GlobalPSBTRecord.Unknown]] = {
+  private def unknownGlobals(num: Int): Gen[Vector[GlobalPSBTRecord.Unknown]] = {
     Gen
       .listOfN(num, unknownGlobal)
       .map(_.groupBy(_.key).map(_._2.head).toVector)
@@ -99,8 +94,7 @@ object PSBTGenerators {
     }
   }
 
-  private def unknownOutputs(
-      num: Int): Gen[Vector[OutputPSBTRecord.Unknown]] = {
+  private def unknownOutputs(num: Int): Gen[Vector[OutputPSBTRecord.Unknown]] = {
     Gen
       .listOfN(num, unknownOutput)
       .map(_.groupBy(_.key).map(_._2.head).toVector)
@@ -126,41 +120,34 @@ object PSBTGenerators {
   def psbtWithUnknownVersion: Gen[PSBT] = {
     for {
       psbt <- psbtWithUnknowns
-      versionNumber <- Gen.choose(min = PSBT.knownVersions.last.toLong,
-                                  max = UInt32.max.toLong)
+      versionNumber <- Gen.choose(min = PSBT.knownVersions.last.toLong, max = UInt32.max.toLong)
     } yield {
-      val newGlobal = GlobalPSBTMap(
-        psbt.globalMap.elements :+ Version(UInt32(versionNumber)))
+      val newGlobal = GlobalPSBTMap(psbt.globalMap.elements :+ Version(UInt32(versionNumber)))
 
       PSBT(newGlobal, psbt.inputMaps, psbt.outputMaps)
     }
   }
 
-  def psbtToBeSigned: Gen[
-    (PSBT, Seq[ScriptSignatureParams[InputInfo]], FeeUnit)] = {
-    psbtWithBuilder(finalized = false).map {
-      case (psbt, FinalizedTxWithSigningInfo(_, infos), fee) =>
-        val newInputsMaps = psbt.inputMaps.map { map =>
-          InputPSBTMap(map.elements.filterNot(element =>
-            PSBTInputKeyId.fromBytes(element.key) == PartialSignatureKeyId))
-        }
+  def psbtToBeSigned: Gen[(PSBT, Seq[ScriptSignatureParams[InputInfo]], FeeUnit)] = {
+    psbtWithBuilder(finalized = false).map { case (psbt, FinalizedTxWithSigningInfo(_, infos), fee) =>
+      val newInputsMaps = psbt.inputMaps.map { map =>
+        InputPSBTMap(map.elements.filterNot(element => PSBTInputKeyId.fromBytes(element.key) == PartialSignatureKeyId))
+      }
 
-        (PSBT(psbt.globalMap, newInputsMaps, psbt.outputMaps), infos, fee)
+      (PSBT(psbt.globalMap, newInputsMaps, psbt.outputMaps), infos, fee)
     }
   }
 
   def orderSpendingInfos(
       unsignedTx: Transaction,
-      creditingTxsInfo: Vector[ScriptSignatureParams[InputInfo]]): Vector[
-    ScriptSignatureParams[InputInfo]] = {
+      creditingTxsInfo: Vector[ScriptSignatureParams[InputInfo]]): Vector[ScriptSignatureParams[InputInfo]] = {
     unsignedTx.inputs.toVector.map { input =>
       val infoOpt =
         creditingTxsInfo.find(_.outPoint == input.previousOutput)
       infoOpt match {
         case Some(info) => info
         case None =>
-          throw new RuntimeException(
-            "CreditingTxGen.inputsAndOutputs is being inconsistent")
+          throw new RuntimeException("CreditingTxGen.inputsAndOutputs is being inconsistent")
       }
     }
   }
@@ -177,10 +164,7 @@ object PSBTGenerators {
 
     val builder =
       RawTxBuilder().setLockTime(lockTime) ++= destinations ++= inputs
-    val finalizer = StandardNonInteractiveFinalizer(
-      creditingTxsInfo.toVector.map(_.inputInfo),
-      fee,
-      changeSPK)
+    val finalizer = StandardNonInteractiveFinalizer(creditingTxsInfo.toVector.map(_.inputInfo), fee, changeSPK)
     builder.setFinalizer(finalizer)
 
     val unsignedTx = builder.setFinalizer(finalizer).buildTx()
@@ -195,13 +179,10 @@ object PSBTGenerators {
         PSBT.fromUnsignedTxAndInputs(unsignedTx, orderedTxInfos)
       }
 
-    (psbt,
-     FinalizedTxWithSigningInfo(unsignedTx, creditingTxsInfo.toVector),
-     fee)
+    (psbt, FinalizedTxWithSigningInfo(unsignedTx, creditingTxsInfo.toVector), fee)
   }
 
-  def psbtWithBuilder(
-      finalized: Boolean): Gen[(PSBT, FinalizedTxWithSigningInfo, FeeUnit)] = {
+  def psbtWithBuilder(finalized: Boolean): Gen[(PSBT, FinalizedTxWithSigningInfo, FeeUnit)] = {
     for {
       (creditingTxsInfo, destinations) <- CreditingTxGen.inputsAndOutputs()
       (changeSPK, _) <- ScriptGenerators.scriptPubKey
@@ -224,8 +205,7 @@ object PSBTGenerators {
   def psbtWithBuilderAndP2SHOutputs(
       finalized: Boolean,
       outputGen: CurrencyUnit => Gen[Seq[(TransactionOutput, ScriptPubKey)]] =
-        TransactionGenerators.smallP2SHOutputs): Gen[
-    (PSBT, FinalizedTxWithSigningInfo, Seq[ScriptPubKey])] = {
+        TransactionGenerators.smallP2SHOutputs): Gen[(PSBT, FinalizedTxWithSigningInfo, Seq[ScriptPubKey])] = {
     for {
       (creditingTxsInfo, outputs) <-
         CreditingTxGen.inputsAndP2SHOutputs(destinationGenerator = outputGen)
@@ -249,13 +229,10 @@ object PSBTGenerators {
     }
   }
 
-  def psbtWithBuilderAndP2WSHOutputs(finalized: Boolean): Gen[
-    (PSBT, FinalizedTxWithSigningInfo, Seq[ScriptPubKey])] =
-    psbtWithBuilderAndP2SHOutputs(finalized,
-                                  TransactionGenerators.smallP2WSHOutputs)
+  def psbtWithBuilderAndP2WSHOutputs(finalized: Boolean): Gen[(PSBT, FinalizedTxWithSigningInfo, Seq[ScriptPubKey])] =
+    psbtWithBuilderAndP2SHOutputs(finalized, TransactionGenerators.smallP2WSHOutputs)
 
-  def finalizedPSBTWithBuilder: Gen[
-    (PSBT, FinalizedTxWithSigningInfo, FeeUnit)] = {
+  def finalizedPSBTWithBuilder: Gen[(PSBT, FinalizedTxWithSigningInfo, FeeUnit)] = {
     psbtWithBuilder(finalized = true)
   }
 

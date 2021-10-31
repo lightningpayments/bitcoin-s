@@ -52,12 +52,10 @@ object DebugDialog extends Logging {
               logger.error("Desktop.Action.OPEN on log file not supported")
             }
           } else {
-            logger.error(
-              "This platform is non-Linux or does not support Desktop")
+            logger.error("This platform is non-Linux or does not support Desktop")
           }
         } else {
-          logger.error(
-            s"Expected log file location does not exist ${path.toString}")
+          logger.error(s"Expected log file location does not exist ${path.toString}")
         }
       }
     }
@@ -85,8 +83,7 @@ object DebugDialog extends Logging {
     unreserveAllUTXOsButton.onAction = _ => {
       taskRunner.run(
         "Unreserve All UTXOs", {
-          ConsoleCli.exec(LockUnspent(true, Vector.empty),
-                          GlobalData.consoleCliConfig) match {
+          ConsoleCli.exec(LockUnspent(true, Vector.empty), GlobalData.consoleCliConfig) match {
             case Success(_) => ()
             case Failure(err) =>
               throw err

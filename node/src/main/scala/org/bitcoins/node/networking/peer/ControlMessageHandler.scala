@@ -7,8 +7,7 @@ import org.bitcoins.node.{Node, P2PLogger}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-case class ControlMessageHandler(node: Node)(implicit ec: ExecutionContext)
-    extends P2PLogger {
+case class ControlMessageHandler(node: Node)(implicit ec: ExecutionContext) extends P2PLogger {
 
   def handleControlPayload(
       payload: ControlPayload,
@@ -22,11 +21,9 @@ case class ControlMessageHandler(node: Node)(implicit ec: ExecutionContext)
         logger.trace(s"Received versionMsg=$versionMsg from peer=$peer")
 
         state match {
-          case bad @ (_: Disconnected | _: Normal | Preconnection |
-              _: InitializedDisconnect | _: InitializedDisconnectDone) =>
-            Future.failed(
-              new RuntimeException(
-                s"Cannot handle version message while in state=${bad}"))
+          case bad @ (_: Disconnected | _: Normal | Preconnection | _: InitializedDisconnect |
+              _: InitializedDisconnectDone) =>
+            Future.failed(new RuntimeException(s"Cannot handle version message while in state=${bad}"))
 
           case good: Initializing =>
             val newState = good.withVersionMsg(versionMsg)
@@ -42,11 +39,9 @@ case class ControlMessageHandler(node: Node)(implicit ec: ExecutionContext)
 
       case VerAckMessage =>
         state match {
-          case bad @ (_: Disconnected | _: InitializedDisconnect | _: Normal |
-              _: InitializedDisconnectDone | Preconnection) =>
-            Future.failed(
-              new RuntimeException(
-                s"Cannot handle version message while in state=${bad}"))
+          case bad @ (_: Disconnected | _: InitializedDisconnect | _: Normal | _: InitializedDisconnectDone |
+              Preconnection) =>
+            Future.failed(new RuntimeException(s"Cannot handle version message while in state=${bad}"))
 
           case good: Initializing =>
             val newState = good.toNormal(VerAckMessage)
@@ -64,8 +59,7 @@ case class ControlMessageHandler(node: Node)(implicit ec: ExecutionContext)
         Future.successful(peerMessageReceiver)
       case SendAddrV2Message =>
         sender.sendSendAddrV2Message().map(_ => peerMessageReceiver)
-      case _ @(_: FilterAddMessage | _: FilterLoadMessage |
-          FilterClearMessage) =>
+      case _ @(_: FilterAddMessage | _: FilterLoadMessage | FilterClearMessage) =>
         Future.successful(peerMessageReceiver)
       case _ @(GetAddrMessage | _: PongMessage) =>
         Future.successful(peerMessageReceiver)

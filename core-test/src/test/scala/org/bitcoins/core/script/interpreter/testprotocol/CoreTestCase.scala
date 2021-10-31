@@ -26,102 +26,86 @@ case class CoreTestCase(
 
 object CoreTestCase {
 
-  implicit val coreTestCaseR: Reader[Option[CoreTestCase]] = reader[Value].map {
-    value =>
-      val arr: Arr = value match {
-        case array: Arr => array
-        case _ =>
-          throw new RuntimeException(
-            "Core test case must be in the format of js array")
-      }
-      val elements: Vector[Value] = arr.value.toVector
-      if (elements.size < 3) {
-        //means that the line is probably a separator between different types of test cases i.e.
-        //["Equivalency of different numeric encodings"]
-        None
-      } else if (elements.size == 4) {
-        //means we are missing a comment
-        val scriptPubKeyBytes: ByteVector = parseScriptPubKey(elements(1))
-        val scriptPubKey = ScriptPubKey(scriptPubKeyBytes)
-        val scriptSignatureBytes: ByteVector =
-          parseScriptSignature(elements.head)
-        val scriptSignature: ScriptSignature =
-          ScriptSignature(scriptSignatureBytes)
-        val flags = elements(2).str
-        val expectedResult = ScriptResult(elements(3).str)
-        Some(
-          CoreTestCase(scriptSignature,
-                       scriptPubKey,
-                       flags,
-                       expectedResult,
-                       "",
-                       elements.toString,
-                       None))
-      } else if (elements.size == 5 && elements.head.isInstanceOf[Arr]) {
-        //means we have a witness as the first item in our array
-        val witnessArray = elements.head.asInstanceOf[Arr]
-        val amount = Satoshis((witnessArray.value.last.num * 100000000L).toLong)
-        val stack = witnessArray.value.toVector
-          .slice(0, witnessArray.value.size - 1)
-          .map(c => BytesUtil.decodeHex(c.str))
-        val witness = ScriptWitness(stack.reverse)
-        val scriptPubKeyBytes: ByteVector = parseScriptPubKey(elements(2))
-        val scriptPubKey = ScriptPubKey(scriptPubKeyBytes)
-        val scriptSignatureBytes: ByteVector = parseScriptSignature(elements(1))
-        val scriptSignature: ScriptSignature =
-          ScriptSignature(scriptSignatureBytes)
-        val flags = elements(3).str
-        val expectedResult = ScriptResult(elements(4).str)
-        Some(
-          CoreTestCase(scriptSignature,
-                       scriptPubKey,
-                       flags,
-                       expectedResult,
-                       "",
-                       elements.toString,
-                       Some((witness, amount))))
-      } else if (elements.size == 5) {
-        val scriptPubKeyBytes: ByteVector = parseScriptPubKey(elements(1))
-        val scriptPubKey = ScriptPubKey(scriptPubKeyBytes)
-        val scriptSignatureBytes: ByteVector =
-          parseScriptSignature(elements.head)
-        val scriptSignature: ScriptSignature =
-          ScriptSignature(scriptSignatureBytes)
-        val flags = elements(2).str
-        val expectedResult = ScriptResult(elements(3).str)
-        val comments = elements(4).str
-        Some(
-          CoreTestCase(scriptSignature,
-                       scriptPubKey,
-                       flags,
-                       expectedResult,
-                       comments,
-                       elements.toString,
-                       None))
-      } else if (elements.size == 6 && elements.head.arrOpt.isDefined) {
-        val witnessArray = elements.head.arr
-        val amount = Satoshis((witnessArray.value.last.num * 100000000L).toLong)
-        val stack = witnessArray.value.toVector
-          .slice(0, witnessArray.value.size - 1)
-          .map(c => BytesUtil.decodeHex(c.str))
-        val witness = ScriptWitness(stack.reverse)
-        val scriptPubKeyBytes: ByteVector = parseScriptPubKey(elements(2))
-        val scriptPubKey = ScriptPubKey(scriptPubKeyBytes)
-        val scriptSignatureBytes: ByteVector = parseScriptSignature(elements(1))
-        val scriptSignature: ScriptSignature =
-          ScriptSignature(scriptSignatureBytes)
-        val flags = elements(3).str
-        val expectedResult = ScriptResult(elements(4).str)
-        val comments = elements(5).str
-        Some(
-          CoreTestCase(scriptSignature,
-                       scriptPubKey,
-                       flags,
-                       expectedResult,
-                       comments,
-                       elements.toString,
-                       Some((witness, amount))))
-      } else None
+  implicit val coreTestCaseR: Reader[Option[CoreTestCase]] = reader[Value].map { value =>
+    val arr: Arr = value match {
+      case array: Arr => array
+      case _ =>
+        throw new RuntimeException("Core test case must be in the format of js array")
+    }
+    val elements: Vector[Value] = arr.value.toVector
+    if (elements.size < 3) {
+      //means that the line is probably a separator between different types of test cases i.e.
+      //["Equivalency of different numeric encodings"]
+      None
+    } else if (elements.size == 4) {
+      //means we are missing a comment
+      val scriptPubKeyBytes: ByteVector = parseScriptPubKey(elements(1))
+      val scriptPubKey = ScriptPubKey(scriptPubKeyBytes)
+      val scriptSignatureBytes: ByteVector =
+        parseScriptSignature(elements.head)
+      val scriptSignature: ScriptSignature =
+        ScriptSignature(scriptSignatureBytes)
+      val flags = elements(2).str
+      val expectedResult = ScriptResult(elements(3).str)
+      Some(CoreTestCase(scriptSignature, scriptPubKey, flags, expectedResult, "", elements.toString, None))
+    } else if (elements.size == 5 && elements.head.isInstanceOf[Arr]) {
+      //means we have a witness as the first item in our array
+      val witnessArray = elements.head.asInstanceOf[Arr]
+      val amount = Satoshis((witnessArray.value.last.num * 100000000L).toLong)
+      val stack = witnessArray.value.toVector
+        .slice(0, witnessArray.value.size - 1)
+        .map(c => BytesUtil.decodeHex(c.str))
+      val witness = ScriptWitness(stack.reverse)
+      val scriptPubKeyBytes: ByteVector = parseScriptPubKey(elements(2))
+      val scriptPubKey = ScriptPubKey(scriptPubKeyBytes)
+      val scriptSignatureBytes: ByteVector = parseScriptSignature(elements(1))
+      val scriptSignature: ScriptSignature =
+        ScriptSignature(scriptSignatureBytes)
+      val flags = elements(3).str
+      val expectedResult = ScriptResult(elements(4).str)
+      Some(
+        CoreTestCase(scriptSignature,
+                     scriptPubKey,
+                     flags,
+                     expectedResult,
+                     "",
+                     elements.toString,
+                     Some((witness, amount))))
+    } else if (elements.size == 5) {
+      val scriptPubKeyBytes: ByteVector = parseScriptPubKey(elements(1))
+      val scriptPubKey = ScriptPubKey(scriptPubKeyBytes)
+      val scriptSignatureBytes: ByteVector =
+        parseScriptSignature(elements.head)
+      val scriptSignature: ScriptSignature =
+        ScriptSignature(scriptSignatureBytes)
+      val flags = elements(2).str
+      val expectedResult = ScriptResult(elements(3).str)
+      val comments = elements(4).str
+      Some(CoreTestCase(scriptSignature, scriptPubKey, flags, expectedResult, comments, elements.toString, None))
+    } else if (elements.size == 6 && elements.head.arrOpt.isDefined) {
+      val witnessArray = elements.head.arr
+      val amount = Satoshis((witnessArray.value.last.num * 100000000L).toLong)
+      val stack = witnessArray.value.toVector
+        .slice(0, witnessArray.value.size - 1)
+        .map(c => BytesUtil.decodeHex(c.str))
+      val witness = ScriptWitness(stack.reverse)
+      val scriptPubKeyBytes: ByteVector = parseScriptPubKey(elements(2))
+      val scriptPubKey = ScriptPubKey(scriptPubKeyBytes)
+      val scriptSignatureBytes: ByteVector = parseScriptSignature(elements(1))
+      val scriptSignature: ScriptSignature =
+        ScriptSignature(scriptSignatureBytes)
+      val flags = elements(3).str
+      val expectedResult = ScriptResult(elements(4).str)
+      val comments = elements(5).str
+      Some(
+        CoreTestCase(scriptSignature,
+                     scriptPubKey,
+                     flags,
+                     expectedResult,
+                     comments,
+                     elements.toString,
+                     Some((witness, amount))))
+    } else None
   }
 
   /** Parses the script signature asm, it can come in multiple formats

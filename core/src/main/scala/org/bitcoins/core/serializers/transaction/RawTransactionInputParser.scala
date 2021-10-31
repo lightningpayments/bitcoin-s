@@ -2,10 +2,7 @@ package org.bitcoins.core.serializers.transaction
 
 import org.bitcoins.core.number.UInt32
 import org.bitcoins.core.protocol.script.ScriptSignature
-import org.bitcoins.core.protocol.transaction.{
-  TransactionInput,
-  TransactionOutPoint
-}
+import org.bitcoins.core.protocol.transaction.{TransactionInput, TransactionOutPoint}
 import org.bitcoins.core.serializers.RawBitcoinSerializer
 import org.bitcoins.core.serializers.script.RawScriptSignatureParser
 import scodec.bits.ByteVector
@@ -13,8 +10,7 @@ import scodec.bits.ByteVector
 /** Created by chris on 1/13/16.
   * https://bitcoin.org/en/developer-reference#txin
   */
-sealed abstract class RawTransactionInputParser
-    extends RawBitcoinSerializer[TransactionInput] {
+sealed abstract class RawTransactionInputParser extends RawBitcoinSerializer[TransactionInput] {
 
   override def read(bytes: ByteVector): TransactionInput = {
     val outPoint = TransactionOutPoint(bytes.take(36))

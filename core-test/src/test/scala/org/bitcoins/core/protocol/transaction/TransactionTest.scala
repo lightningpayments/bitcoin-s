@@ -1,10 +1,6 @@
 package org.bitcoins.core.protocol.transaction
 
-import org.bitcoins.core.crypto.{
-  BaseTxSigComponent,
-  WitnessTxSigComponentP2SH,
-  WitnessTxSigComponentRaw
-}
+import org.bitcoins.core.crypto.{BaseTxSigComponent, WitnessTxSigComponentP2SH, WitnessTxSigComponentRaw}
 import org.bitcoins.core.currency.CurrencyUnits
 import org.bitcoins.core.number.UInt32
 import org.bitcoins.core.protocol.script._
@@ -36,10 +32,9 @@ class TransactionTest extends BitcoinSUnitTest {
   it must
     "wtxid must be the same as the SHA256(SHA256(hex)) of a wtx and " +
     "wtxid and txid are not the same for witness transactions" in {
-      forAll(TransactionGenerators.witnessTransaction) {
-        wtx: WitnessTransaction =>
-          assert(wtx.wTxId == CryptoUtil.doubleSHA256(wtx.bytes))
-          assert(wtx.wTxId != wtx.txId)
+      forAll(TransactionGenerators.witnessTransaction) { wtx: WitnessTransaction =>
+        assert(wtx.wTxId == CryptoUtil.doubleSHA256(wtx.bytes))
+        assert(wtx.wTxId != wtx.txId)
       }
     }
 
@@ -49,16 +44,14 @@ class TransactionTest extends BitcoinSUnitTest {
     val tx = BaseTransaction(
       "01000000020df1e23002ddf909aec026b1cf0c3b6b7943c042f22e25dbd0441855e6b39ee900000000fdfd00004730440220028c02f14654a0cc12c7e3229adb09d5d35bebb6ba1057e39adb1b2706607b0d0220564fab12c6da3d5acef332406027a7ff1cbba980175ffd880e1ba1bf40598f6b014830450221009362f8d67b60773745e983d07ba10efbe566127e244b724385b2ca2e47292dda022033def393954c320653843555ddbe7679b35cc1cacfe1dad923977de8cd6cc6d7014c695221025e9adcc3d65c11346c8a6069d6ebf5b51b348d1d6dc4b95e67480c34dc0bc75c21030585b3c80f4964bf0820086feda57c8e49fa1eab925db7c04c985467973df96521037753a5e3e9c4717d3f81706b38a6fb82b5fb89d29e580d7b98a37fea8cdefcad53aeffffffffd11533b0f283fca193e361a91ca7ddfc66592e20fd6eaf5dc0f1ef5fed05818000000000fdfe0000483045022100b4062edd75b5b3117f28ba937ed737b10378f762d7d374afabf667180dedcc62022005d44c793a9d787197e12d5049da5e77a09046014219b31e9c6b89948f648f1701483045022100b3b0c0273fc2c531083701f723e03ea3d9111e4bbca33bdf5b175cec82dcab0802206650462db37f9b4fe78da250a3b339ab11e11d84ace8f1b7394a1f6db0960ba4014c695221025e9adcc3d65c11346c8a6069d6ebf5b51b348d1d6dc4b95e67480c34dc0bc75c21030585b3c80f4964bf0820086feda57c8e49fa1eab925db7c04c985467973df96521037753a5e3e9c4717d3f81706b38a6fb82b5fb89d29e580d7b98a37fea8cdefcad53aeffffffff02500f1e00000000001976a9147ecaa33ef3cd6169517e43188ad3c034db091f5e88ac204e0000000000001976a914321908115d8a138942f98b0b53f86c9a1848501a88ac00000000")
 
-    tx.txId.flip.bytes must be(
-      hex"cddda897b0e9322937ee1f4fd5d6147d60f04a0f4d3b461e4f87066ac3918f2a")
+    tx.txId.flip.bytes must be(hex"cddda897b0e9322937ee1f4fd5d6147d60f04a0f4d3b461e4f87066ac3918f2a")
   }
 
   it must "have an empty transaction with the correct fields" in {
     EmptyTransaction.inputs.isEmpty must be(true)
     EmptyTransaction.outputs.isEmpty must be(true)
     EmptyTransaction.lockTime must be(TransactionConstants.lockTime)
-    EmptyTransaction.txId.hex must be(
-      "0000000000000000000000000000000000000000000000000000000000000000")
+    EmptyTransaction.txId.hex must be("0000000000000000000000000000000000000000000000000000000000000000")
   }
 
   it must "calculate the size of a transaction correctly" in {
@@ -180,8 +173,7 @@ class TransactionTest extends BitcoinSUnitTest {
                 case wtx: WitnessTransaction =>
                   WitnessTxSigComponentP2SH(transaction = wtx,
                                             inputIndex = UInt32(inputIndex),
-                                            output =
-                                              TransactionOutput(amount, p2sh),
+                                            output = TransactionOutput(amount, p2sh),
                                             flags = testCase.flags)
               }
             case wit: WitnessScriptPubKey =>
@@ -194,25 +186,21 @@ class TransactionTest extends BitcoinSUnitTest {
                 case wtx: WitnessTransaction =>
                   WitnessTxSigComponentRaw(transaction = wtx,
                                            inputIndex = UInt32(inputIndex),
-                                           output =
-                                             TransactionOutput(amount, wit),
+                                           output = TransactionOutput(amount, wit),
                                            flags = testCase.flags)
               }
-            case x @ (_: P2PKScriptPubKey | _: P2PKHScriptPubKey |
-                _: P2PKWithTimeoutScriptPubKey | _: MultiSignatureScriptPubKey |
-                _: CLTVScriptPubKey | _: CSVScriptPubKey | _: CLTVScriptPubKey |
-                _: ConditionalScriptPubKey | _: NonStandardScriptPubKey |
-                _: WitnessCommitment | EmptyScriptPubKey) =>
+            case x @ (_: P2PKScriptPubKey | _: P2PKHScriptPubKey | _: P2PKWithTimeoutScriptPubKey |
+                _: MultiSignatureScriptPubKey | _: CLTVScriptPubKey | _: CSVScriptPubKey | _: CLTVScriptPubKey |
+                _: ConditionalScriptPubKey | _: NonStandardScriptPubKey | _: WitnessCommitment | EmptyScriptPubKey) =>
               val output = TransactionOutput(amount, x)
 
               BaseTxSigComponent(tx, UInt32(inputIndex), output, testCase.flags)
           }
         case None =>
-          BaseTxSigComponent(
-            transaction = tx,
-            inputIndex = UInt32(inputIndex),
-            output = TransactionOutput(CurrencyUnits.zero, scriptPubKey),
-            flags = testCase.flags)
+          BaseTxSigComponent(transaction = tx,
+                             inputIndex = UInt32(inputIndex),
+                             output = TransactionOutput(CurrencyUnits.zero, scriptPubKey),
+                             flags = testCase.flags)
       }
       val program = PreExecutionScriptProgram(txSigComponent)
       withClue(s"${testCase.raw} input index: $inputIndex") {
@@ -243,50 +231,43 @@ class TransactionTest extends BitcoinSUnitTest {
                 case _: P2SHScriptPubKey =>
                   tx match {
                     case btx: NonWitnessTransaction =>
-                      BaseTxSigComponent(
-                        transaction = btx,
-                        inputIndex = UInt32(inputIndex),
-                        output = TransactionOutput(amount, scriptPubKey),
-                        flags = testCase.flags)
+                      BaseTxSigComponent(transaction = btx,
+                                         inputIndex = UInt32(inputIndex),
+                                         output = TransactionOutput(amount, scriptPubKey),
+                                         flags = testCase.flags)
                     case wtx: WitnessTransaction =>
-                      WitnessTxSigComponentP2SH(
-                        transaction = wtx,
-                        inputIndex = UInt32(inputIndex),
-                        output = TransactionOutput(amount, scriptPubKey),
-                        flags = testCase.flags)
+                      WitnessTxSigComponentP2SH(transaction = wtx,
+                                                inputIndex = UInt32(inputIndex),
+                                                output = TransactionOutput(amount, scriptPubKey),
+                                                flags = testCase.flags)
                   }
                 case wit: WitnessScriptPubKey =>
                   tx match {
                     case btx: NonWitnessTransaction =>
                       BaseTxSigComponent(transaction = btx,
                                          inputIndex = UInt32(inputIndex),
-                                         output =
-                                           TransactionOutput(amount, wit),
+                                         output = TransactionOutput(amount, wit),
                                          flags = testCase.flags)
                     case wtx: WitnessTransaction =>
                       WitnessTxSigComponentRaw(transaction = wtx,
                                                inputIndex = UInt32(inputIndex),
-                                               output =
-                                                 TransactionOutput(amount, wit),
+                                               output = TransactionOutput(amount, wit),
                                                flags = testCase.flags)
                   }
-                case x @ (_: P2PKScriptPubKey | _: P2PKHScriptPubKey |
-                    _: P2PKWithTimeoutScriptPubKey |
-                    _: MultiSignatureScriptPubKey | _: CLTVScriptPubKey |
-                    _: CSVScriptPubKey | _: CLTVScriptPubKey |
-                    _: ConditionalScriptPubKey | _: NonStandardScriptPubKey |
-                    _: WitnessCommitment | EmptyScriptPubKey) =>
+                case x @ (_: P2PKScriptPubKey | _: P2PKHScriptPubKey | _: P2PKWithTimeoutScriptPubKey |
+                    _: MultiSignatureScriptPubKey | _: CLTVScriptPubKey | _: CSVScriptPubKey | _: CLTVScriptPubKey |
+                    _: ConditionalScriptPubKey | _: NonStandardScriptPubKey | _: WitnessCommitment |
+                    EmptyScriptPubKey) =>
                   BaseTxSigComponent(transaction = tx,
                                      inputIndex = UInt32(inputIndex),
                                      output = TransactionOutput(amount, x),
                                      flags = testCase.flags)
               }
             case None =>
-              BaseTxSigComponent(
-                transaction = tx,
-                inputIndex = UInt32(inputIndex),
-                output = TransactionOutput(CurrencyUnits.zero, scriptPubKey),
-                flags = testCase.flags)
+              BaseTxSigComponent(transaction = tx,
+                                 inputIndex = UInt32(inputIndex),
+                                 output = TransactionOutput(CurrencyUnits.zero, scriptPubKey),
+                                 flags = testCase.flags)
           }
           val program = PreExecutionScriptProgram(txSigComponent)
           ScriptInterpreter.run(program) == ScriptOk
@@ -308,9 +289,7 @@ class TransactionTest extends BitcoinSUnitTest {
     ScriptInterpreter.checkTransaction(btx) must be(true)
   }
 
-  private def findInput(
-      tx: Transaction,
-      outPoint: TransactionOutPoint): Option[(TransactionInput, Int)] = {
+  private def findInput(tx: Transaction, outPoint: TransactionOutPoint): Option[(TransactionInput, Int)] = {
     tx.inputs.zipWithIndex.find { case (input, _) =>
       input.previousOutput == outPoint
     }

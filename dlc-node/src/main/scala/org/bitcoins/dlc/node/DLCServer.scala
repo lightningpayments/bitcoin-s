@@ -41,12 +41,7 @@ class DLCServer(
     case Tcp.Connected(remoteAddress, _) =>
       val connection = sender()
       log.info(s"Received a connection from $remoteAddress")
-      val _ = context.actorOf(
-        Props(
-          new DLCConnectionHandler(dlcWalletApi,
-                                   connection,
-                                   None,
-                                   dataHandlerFactory)))
+      val _ = context.actorOf(Props(new DLCConnectionHandler(dlcWalletApi, connection, None, dataHandlerFactory)))
   }
 
   override def postStop(): Unit = {
@@ -78,8 +73,7 @@ object DLCServer {
       dlcWalletApi: DLCWalletApi,
       bindAddress: InetSocketAddress,
       torParams: Option[TorParams],
-      dataHandlerFactory: DLCDataHandler.Factory =
-        DLCDataHandler.defaultFactory)(implicit
+      dataHandlerFactory: DLCDataHandler.Factory = DLCDataHandler.defaultFactory)(implicit
       system: ActorSystem): Future[(InetSocketAddress, ActorRef)] = {
     import system.dispatcher
 
@@ -98,8 +92,7 @@ object DLCServer {
             .map(Some(_))
         case None => Future.successful(None)
       }
-      actorRef = system.actorOf(
-        props(dlcWalletApi, bindAddress, Some(promise), dataHandlerFactory))
+      actorRef = system.actorOf(props(dlcWalletApi, bindAddress, Some(promise), dataHandlerFactory))
       boundAddress <- promise.future
     } yield {
       val addr = onionAddress.getOrElse(boundAddress)

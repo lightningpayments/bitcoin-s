@@ -3,32 +3,16 @@ package org.bitcoins.dlc.testgen
 import org.bitcoins.core.currency.{CurrencyUnit, Satoshis}
 import org.bitcoins.core.number._
 import org.bitcoins.core.protocol.dlc.build.DLCTxBuilder
-import org.bitcoins.core.protocol.dlc.models.DLCMessage.{
-  DLCAccept,
-  DLCAcceptWithoutSigs,
-  DLCOffer
-}
+import org.bitcoins.core.protocol.dlc.models.DLCMessage.{DLCAccept, DLCAcceptWithoutSigs, DLCOffer}
 import org.bitcoins.core.protocol.dlc.models._
-import org.bitcoins.core.protocol.script.{
-  ScriptWitness,
-  ScriptWitnessV0,
-  WitnessScriptPubKey
-}
+import org.bitcoins.core.protocol.script.{ScriptWitness, ScriptWitnessV0, WitnessScriptPubKey}
 import org.bitcoins.core.protocol.tlv._
-import org.bitcoins.core.protocol.transaction.{
-  OutputReference,
-  Transaction,
-  TransactionOutPoint
-}
+import org.bitcoins.core.protocol.transaction.{OutputReference, Transaction, TransactionOutPoint}
 import org.bitcoins.core.protocol.{BitcoinAddress, BlockTimeStamp}
 import org.bitcoins.core.script.crypto.HashType
 import org.bitcoins.core.util.Indexed
 import org.bitcoins.core.wallet.fee.SatoshisPerVirtualByte
-import org.bitcoins.core.wallet.utxo.{
-  ConditionalPath,
-  InputInfo,
-  ScriptSignatureParams
-}
+import org.bitcoins.core.wallet.utxo.{ConditionalPath, InputInfo, ScriptSignatureParams}
 import org.bitcoins.crypto._
 import play.api.libs.json._
 import scodec.bits.ByteVector
@@ -67,9 +51,7 @@ case class FundingInputTx(
   }
 
   def toFundingInput: DLCFundingInput = {
-    DLCFundingInput.fromInputSigningInfo(scriptSignatureParams,
-                                         serialId,
-                                         tx.inputs(idx).sequence)
+    DLCFundingInput.fromInputSigningInfo(scriptSignatureParams, serialId, tx.inputs(idx).sequence)
   }
 
   def toSerializedFundingInputTx: SerializedFundingInputTx = {
@@ -117,9 +99,7 @@ case class DLCPartyParams(
 
   def toOffer(params: DLCParams): DLCOffer = {
     DLCOffer(
-      ContractInfo(
-        EnumContractDescriptor(params.contractInfo.map(_.toMapEntry)),
-        params.oracleInfo),
+      ContractInfo(EnumContractDescriptor(params.contractInfo.map(_.toMapEntry)), params.oracleInfo),
       DLCPublicKeys(fundingPrivKey.publicKey, payoutAddress),
       collateral.satoshis,
       fundingInputs,
@@ -133,10 +113,7 @@ case class DLCPartyParams(
   }
 }
 
-case class SerializedContractInfoEntry(
-    preImage: String,
-    outcome: Sha256Digest,
-    localPayout: CurrencyUnit) {
+case class SerializedContractInfoEntry(preImage: String, outcome: Sha256Digest, localPayout: CurrencyUnit) {
 
   def toMapEntry: (EnumOutcome, Satoshis) = {
     EnumOutcome(preImage) -> localPayout.satoshis
@@ -145,12 +122,9 @@ case class SerializedContractInfoEntry(
 
 object SerializedContractInfoEntry {
 
-  def fromContractDescriptor(contractInfo: EnumContractDescriptor): Vector[
-    SerializedContractInfoEntry] = {
+  def fromContractDescriptor(contractInfo: EnumContractDescriptor): Vector[SerializedContractInfoEntry] = {
     contractInfo.map { case (EnumOutcome(str), amt) =>
-      SerializedContractInfoEntry(str,
-                                  CryptoUtil.sha256DLCAttestation(str),
-                                  amt)
+      SerializedContractInfoEntry(str, CryptoUtil.sha256DLCAttestation(str), amt)
     }.toVector
   }
 }
@@ -164,18 +138,14 @@ case class DLCParams(
     realOutcome: Sha256Digest,
     oracleSignature: SchnorrDigitalSignature)
 
-case class ValidTestInputs(
-    params: DLCParams,
-    offerParams: DLCPartyParams,
-    acceptParams: DLCPartyParams) {
+case class ValidTestInputs(params: DLCParams, offerParams: DLCPartyParams, acceptParams: DLCPartyParams) {
 
   def offer: DLCOffer = offerParams.toOffer(params)
 
   def accept: DLCAcceptWithoutSigs =
     DLCAcceptWithoutSigs(
       acceptParams.collateral.satoshis,
-      DLCPublicKeys(acceptParams.fundingPrivKey.publicKey,
-                    acceptParams.payoutAddress),
+      DLCPublicKeys(acceptParams.fundingPrivKey.publicKey, acceptParams.payoutAddress),
       acceptParams.fundingInputs,
       acceptParams.changeAddress,
       acceptParams.payoutSerialId,
@@ -209,10 +179,7 @@ object ValidTestInputs {
   }
 }
 
-case class DLCTransactions(
-    fundingTx: Transaction,
-    cets: Vector[Transaction],
-    refundTx: Transaction)
+case class DLCTransactions(fundingTx: Transaction, cets: Vector[Transaction], refundTx: Transaction)
 
 case class SuccessTestVector(
     testInputs: ValidTestInputs,
@@ -238,8 +205,7 @@ object SuccessTestVector extends TestVectorParser[SuccessTestVector] {
 
   implicit val u64Format: Format[UInt64] = hexFormat(UInt64)
 
-  implicit val oracleInfoFormat: Format[EnumSingleOracleInfo] = hexFormat(
-    EnumSingleOracleInfo)
+  implicit val oracleInfoFormat: Format[EnumSingleOracleInfo] = hexFormat(EnumSingleOracleInfo)
 
   implicit val blockTimeStampFormat: Format[BlockTimeStamp] =
     Format[BlockTimeStamp](
@@ -255,8 +221,7 @@ object SuccessTestVector extends TestVectorParser[SuccessTestVector] {
       { satsPerVB => JsNumber(satsPerVB.toLong) }
     )
 
-  implicit val sha256DigestFormat: Format[Sha256Digest] = hexFormat(
-    Sha256Digest)
+  implicit val sha256DigestFormat: Format[Sha256Digest] = hexFormat(Sha256Digest)
 
   implicit val schnorrDigitalSignatureFormat: Format[SchnorrDigitalSignature] =
     hexFormat(SchnorrDigitalSignature)
@@ -311,14 +276,11 @@ object SuccessTestVector extends TestVectorParser[SuccessTestVector] {
   implicit val DLCPartyParamsFormat: Format[DLCPartyParams] =
     Json.format[DLCPartyParams]
 
-  implicit val offerMsgFormat: Format[LnMessage[DLCOfferTLV]] = hexFormat(
-    LnMessageFactory(DLCOfferTLV))
+  implicit val offerMsgFormat: Format[LnMessage[DLCOfferTLV]] = hexFormat(LnMessageFactory(DLCOfferTLV))
 
-  implicit val acceptMsgFormat: Format[LnMessage[DLCAcceptTLV]] = hexFormat(
-    LnMessageFactory(DLCAcceptTLV))
+  implicit val acceptMsgFormat: Format[LnMessage[DLCAcceptTLV]] = hexFormat(LnMessageFactory(DLCAcceptTLV))
 
-  implicit val signMsgFormat: Format[LnMessage[DLCSignTLV]] = hexFormat(
-    LnMessageFactory(DLCSignTLV))
+  implicit val signMsgFormat: Format[LnMessage[DLCSignTLV]] = hexFormat(LnMessageFactory(DLCSignTLV))
 
   implicit val validTestInputsFormat: Format[ValidTestInputs] =
     Json.format[ValidTestInputs]

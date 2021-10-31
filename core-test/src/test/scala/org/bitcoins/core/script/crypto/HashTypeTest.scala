@@ -71,14 +71,10 @@ class HashTypeTest extends BitcoinSUnitTest {
     HashType(HashType.sigHashAll.num.bytes) must be(HashType.sigHashAll)
     HashType(HashType.sigHashNone.num.bytes) must be(HashType.sigHashNone)
     HashType(HashType.sigHashSingle.num.bytes) must be(HashType.sigHashSingle)
-    HashType(HashType.sigHashAnyoneCanPay.num.bytes) must be(
-      HashType.sigHashAnyoneCanPay)
-    HashType(HashType.sigHashAllAnyoneCanPay.num.bytes) must be(
-      HashType.sigHashAllAnyoneCanPay)
-    HashType(HashType.sigHashNoneAnyoneCanPay.num.bytes) must be(
-      HashType.sigHashNoneAnyoneCanPay)
-    HashType(HashType.sigHashSingleAnyoneCanPay.num.bytes) must be(
-      HashType.sigHashSingleAnyoneCanPay)
+    HashType(HashType.sigHashAnyoneCanPay.num.bytes) must be(HashType.sigHashAnyoneCanPay)
+    HashType(HashType.sigHashAllAnyoneCanPay.num.bytes) must be(HashType.sigHashAllAnyoneCanPay)
+    HashType(HashType.sigHashNoneAnyoneCanPay.num.bytes) must be(HashType.sigHashNoneAnyoneCanPay)
+    HashType(HashType.sigHashSingleAnyoneCanPay.num.bytes) must be(HashType.sigHashSingleAnyoneCanPay)
   }
 
   it must "find a hashtype with only an integer" in {

@@ -31,9 +31,7 @@ class PeerMessageReceiverTest extends NodeTestWithCachedBitcoindPair {
     val outcomeF: Future[Outcome] = for {
       _ <- torClientF
       bitcoinds <- clientsF
-      outcome = withNeutrinoNodeConnectedToBitcoinds(test, bitcoinds.toVector)(
-        system,
-        getFreshConfig)
+      outcome = withNeutrinoNodeConnectedToBitcoinds(test, bitcoinds.toVector)(system, getFreshConfig)
       f <- outcome.toFuture
     } yield f
     new FutureOutcome(outcomeF)
@@ -63,14 +61,12 @@ class PeerMessageReceiverTest extends NodeTestWithCachedBitcoindPair {
       verackMsgP.success(VerAckMessage)
 
       val normal = PeerMessageReceiverState.Normal(clientConnectP = clientP,
-                                                   clientDisconnectP =
-                                                     Promise[Unit](),
+                                                   clientDisconnectP = Promise[Unit](),
                                                    versionMsgP = versionMsgP,
                                                    verackMsgP = verackMsgP)
 
       val peerMsgReceiver =
-        PeerMessageReceiver(normal, node, node.peers.head)(system,
-                                                           node.nodeAppConfig)
+        PeerMessageReceiver(normal, node, node.peers.head)(system, node.nodeAppConfig)
 
       val newMsgReceiver = peerMsgReceiver.disconnect()
 
@@ -102,14 +98,12 @@ class PeerMessageReceiverTest extends NodeTestWithCachedBitcoindPair {
       verackMsgP.success(VerAckMessage)
 
       val normal = PeerMessageReceiverState.Normal(clientConnectP = clientP,
-                                                   clientDisconnectP =
-                                                     Promise[Unit](),
+                                                   clientDisconnectP = Promise[Unit](),
                                                    versionMsgP = versionMsgP,
                                                    verackMsgP = verackMsgP)
 
       val peerMsgReceiver =
-        PeerMessageReceiver(normal, node, node.peers.head)(system,
-                                                           node.nodeAppConfig)
+        PeerMessageReceiver(normal, node, node.peers.head)(system, node.nodeAppConfig)
 
       val newMsgReceiver = peerMsgReceiver.initializeDisconnect()
 

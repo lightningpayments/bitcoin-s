@@ -3,11 +3,7 @@ package org.bitcoins.testkit.chain.fixture
 import org.bitcoins.rpc.client.common.BitcoindRpcClient
 import org.bitcoins.rpc.client.v19.BitcoindV19RpcClient
 import org.bitcoins.testkit.chain.{ChainDbUnitTest, ChainUnitTest}
-import org.bitcoins.testkit.rpc.{
-  CachedBitcoind,
-  CachedBitcoindNewest,
-  CachedBitcoindV19
-}
+import org.bitcoins.testkit.rpc.{CachedBitcoind, CachedBitcoindNewest, CachedBitcoindV19}
 import org.scalatest.{FutureOutcome, Outcome}
 
 import scala.concurrent.Future
@@ -18,9 +14,7 @@ trait ChainWithBitcoindUnitTest extends ChainDbUnitTest {
 
 }
 
-trait ChainWithBitcoindNewestCachedUnitTest
-    extends ChainWithBitcoindUnitTest
-    with CachedBitcoindNewest {
+trait ChainWithBitcoindNewestCachedUnitTest extends ChainWithBitcoindUnitTest with CachedBitcoindNewest {
 
   override type FixtureParam = BitcoindBaseVersionChainHandlerViaRpc
 
@@ -53,9 +47,7 @@ trait ChainWithBitcoindNewestCachedUnitTest
 }
 
 /** Chain Unit test suite that has a cached bitcoind v19 instance */
-trait ChainWithBitcoindV19CachedUnitTest
-    extends ChainWithBitcoindUnitTest
-    with CachedBitcoindV19 {
+trait ChainWithBitcoindV19CachedUnitTest extends ChainWithBitcoindUnitTest with CachedBitcoindV19 {
 
   override type FixtureParam = BitcoindV19ChainHandler
 
@@ -75,9 +67,8 @@ trait ChainWithBitcoindV19CachedUnitTest
       ChainUnitTest.createBitcoindV19ChainHandler(bitcoindV19RpcClient)
     }
 
-    val destroy: BitcoindV19ChainHandler => Future[Unit] = {
-      case _: BitcoindV19ChainHandler =>
-        ChainUnitTest.destroyChainApi()
+    val destroy: BitcoindV19ChainHandler => Future[Unit] = { case _: BitcoindV19ChainHandler =>
+      ChainUnitTest.destroyChainApi()
     }
     makeDependentFixture(builder, destroy)(test)
   }

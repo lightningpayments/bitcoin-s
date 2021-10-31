@@ -1,10 +1,7 @@
 package org.bitcoins.wallet.sync
 
 import org.bitcoins.testkit.chain.SyncUtil
-import org.bitcoins.testkit.wallet.{
-  BitcoinSWalletTestCachedBitcoinV19,
-  WalletWithBitcoindV19
-}
+import org.bitcoins.testkit.wallet.{BitcoinSWalletTestCachedBitcoinV19, WalletWithBitcoindV19}
 
 class WalletSyncTest extends BitcoinSWalletTestCachedBitcoinV19 {
 
@@ -21,10 +18,7 @@ class WalletSyncTest extends BitcoinSWalletTestCachedBitcoinV19 {
     val getBlockHeaderFunc = SyncUtil.getBlockHeaderFunc(bitcoind)
 
     val getBlockFunc = SyncUtil.getBlockFunc(bitcoind)
-    val syncedWalletF = WalletSync.syncFullBlocks(wallet,
-                                                  getBlockHeaderFunc,
-                                                  getBestBlockHashFunc,
-                                                  getBlockFunc)
+    val syncedWalletF = WalletSync.syncFullBlocks(wallet, getBlockHeaderFunc, getBestBlockHashFunc, getBlockFunc)
 
     val bitcoindBestHeaderF = bitcoind.getBestBlockHeader()
     for {

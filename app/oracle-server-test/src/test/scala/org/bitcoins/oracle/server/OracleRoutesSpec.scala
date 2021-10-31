@@ -7,11 +7,7 @@ import org.bitcoins.core.api.dlcoracle.db.EventDb
 import org.bitcoins.core.config._
 import org.bitcoins.core.number.{Int32, UInt16}
 import org.bitcoins.core.protocol.Bech32Address
-import org.bitcoins.core.protocol.tlv.{
-  NormalizedString,
-  OracleAnnouncementV0TLV,
-  OracleAttestmentV0TLV
-}
+import org.bitcoins.core.protocol.tlv.{NormalizedString, OracleAnnouncementV0TLV, OracleAttestmentV0TLV}
 import org.bitcoins.crypto._
 import org.bitcoins.dlc.oracle.config.DLCOracleAppConfig
 import org.bitcoins.server.routes.ServerCommand
@@ -25,10 +21,7 @@ import java.nio.file.{FileSystems, Path}
 import java.time.Instant
 import scala.concurrent.Future
 
-class OracleRoutesSpec
-    extends AnyWordSpec
-    with ScalatestRouteTest
-    with MockFactory {
+class OracleRoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
 
   implicit val conf: DLCOracleAppConfig =
     BitcoinSTestAppConfig.getDLCOracleAppConfig()
@@ -74,8 +67,7 @@ class OracleRoutesSpec
 
       Get() ~> route ~> check {
         assert(contentType == `application/json`)
-        assert(
-          responseAs[String] == s"""{"result":"${key.hex}","error":null}""")
+        assert(responseAs[String] == s"""{"result":"${key.hex}","error":null}""")
       }
     }
 
@@ -90,8 +82,7 @@ class OracleRoutesSpec
 
       Get() ~> route ~> check {
         assert(contentType == `application/json`)
-        assert(
-          responseAs[String] == s"""{"result":"$testAddress","error":null}""")
+        assert(responseAs[String] == s"""{"result":"$testAddress","error":null}""")
       }
     }
 
@@ -105,8 +96,7 @@ class OracleRoutesSpec
 
       Get() ~> route ~> check {
         assert(contentType == `application/json`)
-        assert(
-          responseAs[String] == s"""{"result":["${dummyOracleEvent.eventName}"],"error":null}""")
+        assert(responseAs[String] == s"""{"result":["${dummyOracleEvent.eventName}"],"error":null}""")
       }
     }
 
@@ -117,8 +107,7 @@ class OracleRoutesSpec
         .expects(eventName)
         .returning(Future.successful(Some(dummyOracleEvent)))
 
-      val route = oracleRoutes.handleCommand(
-        ServerCommand("getannouncement", Arr(eventName)))
+      val route = oracleRoutes.handleCommand(ServerCommand("getannouncement", Arr(eventName)))
 
       val expected =
         s"""
@@ -161,15 +150,11 @@ class OracleRoutesSpec
 
       val route =
         oracleRoutes.handleCommand(
-          ServerCommand("createenumannouncement",
-                        Arr(Str("id"),
-                            Str("2021-02-04T00:00:00Z"),
-                            Arr(Str("1"), Str("2")))))
+          ServerCommand("createenumannouncement", Arr(Str("id"), Str("2021-02-04T00:00:00Z"), Arr(Str("1"), Str("2")))))
 
       Post() ~> route ~> check {
         assert(contentType == `application/json`)
-        assert(responseAs[
-          String] == s"""{"result":"${OracleAnnouncementV0TLV.dummy.hex}","error":null}""")
+        assert(responseAs[String] == s"""{"result":"${OracleAnnouncementV0TLV.dummy.hex}","error":null}""")
       }
     }
 
@@ -181,120 +166,62 @@ class OracleRoutesSpec
 
       val route =
         oracleRoutes.handleCommand(
-          ServerCommand(
-            "createenumannouncement",
-            Arr(Str("id"), Str("2021-02-04"), Arr(Str("1"), Str("2")))))
+          ServerCommand("createenumannouncement", Arr(Str("id"), Str("2021-02-04"), Arr(Str("1"), Str("2")))))
 
       Post() ~> route ~> check {
         assert(contentType == `application/json`)
-        assert(responseAs[
-          String] == s"""{"result":"${OracleAnnouncementV0TLV.dummy.hex}","error":null}""")
+        assert(responseAs[String] == s"""{"result":"${OracleAnnouncementV0TLV.dummy.hex}","error":null}""")
       }
     }
 
     "create numeric announcement" in {
       (mockOracleApi
-        .createNewDigitDecompAnnouncement(_: String,
-                                          _: Instant,
-                                          _: UInt16,
-                                          _: Boolean,
-                                          _: Int,
-                                          _: String,
-                                          _: Int32))
-        .expects("id",
-                 Instant.ofEpochSecond(1612396800),
-                 UInt16(2),
-                 false,
-                 17,
-                 "units",
-                 Int32.zero)
+        .createNewDigitDecompAnnouncement(_: String, _: Instant, _: UInt16, _: Boolean, _: Int, _: String, _: Int32))
+        .expects("id", Instant.ofEpochSecond(1612396800), UInt16(2), false, 17, "units", Int32.zero)
         .returning(Future.successful(OracleAnnouncementV0TLV.dummy))
 
       val route =
         oracleRoutes.handleCommand(
           ServerCommand("createnumericannouncement",
-                        Arr(Str("id"),
-                            Str("2021-02-04T00:00:00Z"),
-                            Num(0),
-                            Num(131000),
-                            Str("units"),
-                            Num(0))))
+                        Arr(Str("id"), Str("2021-02-04T00:00:00Z"), Num(0), Num(131000), Str("units"), Num(0))))
 
       Post() ~> route ~> check {
         assert(contentType == `application/json`)
-        assert(responseAs[
-          String] == s"""{"result":"${OracleAnnouncementV0TLV.dummy.hex}","error":null}""")
+        assert(responseAs[String] == s"""{"result":"${OracleAnnouncementV0TLV.dummy.hex}","error":null}""")
       }
     }
 
     "create numeric announcement with just date" in {
       (mockOracleApi
-        .createNewDigitDecompAnnouncement(_: String,
-                                          _: Instant,
-                                          _: UInt16,
-                                          _: Boolean,
-                                          _: Int,
-                                          _: String,
-                                          _: Int32))
-        .expects("id",
-                 Instant.ofEpochSecond(1612396800),
-                 UInt16(2),
-                 true,
-                 17,
-                 "units",
-                 Int32.zero)
+        .createNewDigitDecompAnnouncement(_: String, _: Instant, _: UInt16, _: Boolean, _: Int, _: String, _: Int32))
+        .expects("id", Instant.ofEpochSecond(1612396800), UInt16(2), true, 17, "units", Int32.zero)
         .returning(Future.successful(OracleAnnouncementV0TLV.dummy))
 
       val route =
         oracleRoutes.handleCommand(
           ServerCommand("createnumericannouncement",
-                        Arr(Str("id"),
-                            Str("2021-02-04"),
-                            Num(-1),
-                            Num(131000),
-                            Str("units"),
-                            Num(0))))
+                        Arr(Str("id"), Str("2021-02-04"), Num(-1), Num(131000), Str("units"), Num(0))))
 
       Post() ~> route ~> check {
         assert(contentType == `application/json`)
-        assert(responseAs[
-          String] == s"""{"result":"${OracleAnnouncementV0TLV.dummy.hex}","error":null}""")
+        assert(responseAs[String] == s"""{"result":"${OracleAnnouncementV0TLV.dummy.hex}","error":null}""")
       }
     }
 
     "create digit decomp announcement" in {
       (mockOracleApi
-        .createNewDigitDecompAnnouncement(_: String,
-                                          _: Instant,
-                                          _: UInt16,
-                                          _: Boolean,
-                                          _: Int,
-                                          _: String,
-                                          _: Int32))
-        .expects("id",
-                 Instant.ofEpochSecond(1612396800),
-                 UInt16(2),
-                 true,
-                 17,
-                 "units",
-                 Int32.zero)
+        .createNewDigitDecompAnnouncement(_: String, _: Instant, _: UInt16, _: Boolean, _: Int, _: String, _: Int32))
+        .expects("id", Instant.ofEpochSecond(1612396800), UInt16(2), true, 17, "units", Int32.zero)
         .returning(Future.successful(OracleAnnouncementV0TLV.dummy))
 
       val route =
         oracleRoutes.handleCommand(
           ServerCommand("createdigitdecompannouncement",
-                        Arr(Str("id"),
-                            Num(1612396800),
-                            Num(2),
-                            Bool(true),
-                            Num(17),
-                            Str("units"),
-                            Num(0))))
+                        Arr(Str("id"), Num(1612396800), Num(2), Bool(true), Num(17), Str("units"), Num(0))))
 
       Post() ~> route ~> check {
         assert(contentType == `application/json`)
-        assert(responseAs[
-          String] == s"""{"result":"${OracleAnnouncementV0TLV.dummy.hex}","error":null}""")
+        assert(responseAs[String] == s"""{"result":"${OracleAnnouncementV0TLV.dummy.hex}","error":null}""")
       }
     }
 
@@ -305,13 +232,11 @@ class OracleRoutesSpec
         .returning(Future.successful(dummyEventDb))
 
       val route =
-        oracleRoutes.handleCommand(
-          ServerCommand("signenum", Arr(Str("id"), Str("outcome"))))
+        oracleRoutes.handleCommand(ServerCommand("signenum", Arr(Str("id"), Str("outcome"))))
 
       Post() ~> route ~> check {
         assert(contentType == `application/json`)
-        assert(responseAs[
-          String] == s"""{"result":"${dummyAttestmentTLV.hex}","error":null}""")
+        assert(responseAs[String] == s"""{"result":"${dummyAttestmentTLV.hex}","error":null}""")
       }
     }
 
@@ -322,13 +247,11 @@ class OracleRoutesSpec
         .returning(Future.successful(dummyOracleEvent))
 
       val route =
-        oracleRoutes.handleCommand(
-          ServerCommand("signdigits", Arr(Str("id"), Num(123))))
+        oracleRoutes.handleCommand(ServerCommand("signdigits", Arr(Str("id"), Num(123))))
 
       Post() ~> route ~> check {
         assert(contentType == `application/json`)
-        assert(responseAs[
-          String] == s"""{"result":"${dummyAttestmentTLV.hex}","error":null}""")
+        assert(responseAs[String] == s"""{"result":"${dummyAttestmentTLV.hex}","error":null}""")
       }
     }
 
@@ -339,13 +262,11 @@ class OracleRoutesSpec
         .returning(Future.successful(Some(dummyOracleEvent)))
 
       val route =
-        oracleRoutes.handleCommand(
-          ServerCommand("getsignatures", Arr(Str("id"))))
+        oracleRoutes.handleCommand(ServerCommand("getsignatures", Arr(Str("id"))))
 
       Post() ~> route ~> check {
         assert(contentType == `application/json`)
-        assert(responseAs[
-          String] == s"""{"result":"${dummyAttestmentTLV.hex}","error":null}""")
+        assert(responseAs[String] == s"""{"result":"${dummyAttestmentTLV.hex}","error":null}""")
       }
     }
 
@@ -356,13 +277,11 @@ class OracleRoutesSpec
         .returning(sig)
 
       val route =
-        oracleRoutes.handleCommand(
-          ServerCommand("signmessage", Arr(Str("message"))))
+        oracleRoutes.handleCommand(ServerCommand("signmessage", Arr(Str("message"))))
 
       Post() ~> route ~> check {
         assert(contentType == `application/json`)
-        assert(
-          responseAs[String] == s"""{"result":"${sig.hex}","error":null}""")
+        assert(responseAs[String] == s"""{"result":"${sig.hex}","error":null}""")
       }
     }
 
@@ -377,8 +296,7 @@ class OracleRoutesSpec
       val route = oracleRoutes.handleCommand(cmd)
       Post() ~> route ~> check {
         assert(contentType == `application/json`)
-        assert(responseAs[
-          String] == s"""{"result":"${dummyOracleEvent.announcementTLV.hex}","error":null}""")
+        assert(responseAs[String] == s"""{"result":"${dummyOracleEvent.announcementTLV.hex}","error":null}""")
       }
     }
 
@@ -394,8 +312,7 @@ class OracleRoutesSpec
 
       Post() ~> route ~> check {
         assert(contentType == `application/json`)
-        assert(responseAs[
-          String] == s"""{"result":"${dummyOracleEvent.announcementTLV.hex}","error":null}""")
+        assert(responseAs[String] == s"""{"result":"${dummyOracleEvent.announcementTLV.hex}","error":null}""")
       }
     }
 
@@ -407,8 +324,7 @@ class OracleRoutesSpec
         .returning(Future.unit)
 
       val route =
-        oracleRoutes.handleCommand(
-          ServerCommand("backuporacle", Arr(Str("/tmp/location"))))
+        oracleRoutes.handleCommand(ServerCommand("backuporacle", Arr(Str("/tmp/location"))))
 
       Post() ~> route ~> check {
         assert(contentType == `application/json`)
@@ -426,8 +342,7 @@ class OracleRoutesSpec
 
       Post() ~> route ~> check {
         assert(contentType == `application/json`)
-        assert(
-          responseAs[String] == s"""{"result":"oracle name","error":null}""")
+        assert(responseAs[String] == s"""{"result":"oracle name","error":null}""")
       }
     }
 
@@ -438,13 +353,11 @@ class OracleRoutesSpec
         .returning(Future.unit)
 
       val route =
-        oracleRoutes.handleCommand(
-          ServerCommand("setoraclename", Arr(Str("oracle name"))))
+        oracleRoutes.handleCommand(ServerCommand("setoraclename", Arr(Str("oracle name"))))
 
       Post() ~> route ~> check {
         assert(contentType == `application/json`)
-        assert(
-          responseAs[String] == s"""{"result":"oracle name","error":null}""")
+        assert(responseAs[String] == s"""{"result":"oracle name","error":null}""")
       }
     }
   }

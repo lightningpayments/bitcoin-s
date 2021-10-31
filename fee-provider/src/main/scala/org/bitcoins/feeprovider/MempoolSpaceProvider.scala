@@ -18,8 +18,7 @@ import scala.util.{Failure, Success, Try}
 case class MempoolSpaceProvider(
     target: MempoolSpaceTarget,
     network: BitcoinNetwork,
-    proxyParams: Option[Socks5ProxyParams])(implicit
-    override val system: ActorSystem)
+    proxyParams: Option[Socks5ProxyParams])(implicit override val system: ActorSystem)
     extends CachedHttpFeeRateProvider[SatoshisPerVirtualByte] {
 
   override val uri: Uri = network match {
@@ -47,27 +46,20 @@ case class MempoolSpaceProvider(
             Success(response.hourFee)
         }
       case JsError(error) =>
-        Failure(
-          new RuntimeException(
-            s"Unexpected error when parsing response: $error"))
+        Failure(new RuntimeException(s"Unexpected error when parsing response: $error"))
     }
   }
 }
 
 object MempoolSpaceProvider extends FeeProviderFactory[MempoolSpaceProvider] {
 
-  override def fromBlockTarget(
-      blocks: Int,
-      proxyParams: Option[Socks5ProxyParams])(implicit
+  override def fromBlockTarget(blocks: Int, proxyParams: Option[Socks5ProxyParams])(implicit
       system: ActorSystem): MempoolSpaceProvider = {
     val target = MempoolSpaceTarget.fromBlockTarget(blocks)
     MempoolSpaceProvider(target, MainNet, proxyParams)
   }
 
-  def fromBlockTarget(
-      blocks: Int,
-      network: BitcoinNetwork,
-      proxyParams: Option[Socks5ProxyParams])(implicit
+  def fromBlockTarget(blocks: Int, network: BitcoinNetwork, proxyParams: Option[Socks5ProxyParams])(implicit
       system: ActorSystem): MempoolSpaceProvider = {
     val target = MempoolSpaceTarget.fromBlockTarget(blocks)
     MempoolSpaceProvider(target, network, proxyParams)
@@ -86,8 +78,7 @@ object MempoolSpaceTarget {
 
   def fromBlockTarget(blocks: Int): MempoolSpaceTarget = {
     if (blocks <= 0) {
-      throw new IllegalArgumentException(
-        s"Cannot have a negative or zero block target, got $blocks")
+      throw new IllegalArgumentException(s"Cannot have a negative or zero block target, got $blocks")
     } else if (blocks < 3) {
       FastestFeeTarget
     } else if (blocks < 6) {

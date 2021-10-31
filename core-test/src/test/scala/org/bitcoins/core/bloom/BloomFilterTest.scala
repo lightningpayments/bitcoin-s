@@ -51,9 +51,7 @@ class BloomFilterTest extends BitcoinSUnitTest {
     val filter1 = filter.insert(hash1)
     filter1.contains(hash1) must be(true)
     //one bit different
-    filter1.contains(
-      Sha256Hash160Digest("19108ad8ed9bb6274d3980bab5a85c048f0950c8")) must be(
-      false)
+    filter1.contains(Sha256Hash160Digest("19108ad8ed9bb6274d3980bab5a85c048f0950c8")) must be(false)
 
     val hash2 = Sha256Hash160Digest("b5a2c786d9ef4658287ced5914b37a1b4aa32eee")
     val filter2 = filter1.insert(hash2)
@@ -68,10 +66,8 @@ class BloomFilterTest extends BitcoinSUnitTest {
 
   it must "insert a key & it's address into our bloom filter and the check to make sure it contains them" in {
     val filter = BloomFilter(2, 0.001, UInt32.zero, BloomUpdateAll)
-    val privKey = ECPrivateKeyUtil.fromWIFToPrivateKey(
-      "5Kg1gnAjaLfKiwhhPpGS3QfRg2m6awQvaj98JCZBZQ5SuS2F15C")
-    assert(
-      privKey.hex == "f49addfd726a59abde172c86452f5f73038a02f4415878dc14934175e8418aff")
+    val privKey = ECPrivateKeyUtil.fromWIFToPrivateKey("5Kg1gnAjaLfKiwhhPpGS3QfRg2m6awQvaj98JCZBZQ5SuS2F15C")
+    assert(privKey.hex == "f49addfd726a59abde172c86452f5f73038a02f4415878dc14934175e8418aff")
     val pubKey = privKey.publicKeyBytes
     val filter1 = filter.insert(pubKey.bytes)
     //hex is from bitcoin core
@@ -87,10 +83,8 @@ class BloomFilterTest extends BitcoinSUnitTest {
     // the hashed pubkey, therefore we need 4 elements
     // for 2 keys
     val numElements = 4
-    val bloom = BloomFilter(numElements = numElements,
-                            falsePositiveRate = 0.000001,
-                            tweak = UInt32(100),
-                            BloomUpdateNone)
+    val bloom =
+      BloomFilter(numElements = numElements, falsePositiveRate = 0.000001, tweak = UInt32(100), BloomUpdateNone)
 
     val firstKey = ECPrivateKey().publicKey
     val secondKey = ECPrivateKey().publicKey
@@ -120,9 +114,7 @@ class BloomFilterTest extends BitcoinSUnitTest {
     val filter2 = BloomFilter(10, 0.000001, UInt32.zero, BloomUpdateAll)
 
     //byte reversed tx hash
-    val filter3 = filter2.insert(
-      DoubleSha256Digest(
-        "6bff7fcd4f8565ef406dd5d63d4ff94f318fe82027fd4dc451b04474019f74b4"))
+    val filter3 = filter2.insert(DoubleSha256Digest("6bff7fcd4f8565ef406dd5d63d4ff94f318fe82027fd4dc451b04474019f74b4"))
     filter3.isRelevant(creditingTx) must be(true)
 
     val filter4 = BloomFilter(10, 0.000001, UInt32.zero, BloomUpdateAll)
@@ -139,8 +131,7 @@ class BloomFilterTest extends BitcoinSUnitTest {
     filter7.isRelevant(creditingTx) must be(true)
 
     val filter8 = BloomFilter(10, 0.000001, UInt32.zero, BloomUpdateAll)
-    val filter9 = filter8.insert(
-      Sha256Hash160Digest("04943fdd508053c75000106d3bc6e2754dbcff19"))
+    val filter9 = filter8.insert(Sha256Hash160Digest("04943fdd508053c75000106d3bc6e2754dbcff19"))
     filter9.isRelevant(creditingTx) must be(true)
     //update the bloom filter to add the outputs inside of the crediting tx
     //this is what the core test case really does, but since we separated the isRelevant and update parts, we need
@@ -149,8 +140,7 @@ class BloomFilterTest extends BitcoinSUnitTest {
     filter10.isRelevant(spendingTx) must be(true)
 
     val filter11 = BloomFilter(10, 0.000001, UInt32.zero, BloomUpdateAll)
-    val filter12 = filter11.insert(
-      Sha256Hash160Digest("a266436d2965547608b9e15d9032a7b9d64fa431"))
+    val filter12 = filter11.insert(Sha256Hash160Digest("a266436d2965547608b9e15d9032a7b9d64fa431"))
     filter12.isRelevant(creditingTx) must be(true)
 
     val filter13 = BloomFilter(10, 0.000001, UInt32.zero, BloomUpdateAll)
@@ -166,23 +156,20 @@ class BloomFilterTest extends BitcoinSUnitTest {
     }
 
     val filter16 = filter15.insert(outPoint)
-    filter16.hex must be(
-      "230008000000000100000000200040304001000020000000100800050801000400800024130000000000000001")
+    filter16.hex must be("230008000000000100000000200040304001000020000000100800050801000400800024130000000000000001")
     filter16.isRelevant(creditingTx) must be(true)
 
     val filter17 = BloomFilter(10, 0.000001, UInt32.zero, BloomUpdateAll)
     //random tx hash
-    val filter18 = filter17.insert(
-      DoubleSha256Digest(
-        "00000009e784f32f62ef849763d4f45b98e07ba658647343b915ff832b110436"))
+    val filter18 =
+      filter17.insert(DoubleSha256Digest("00000009e784f32f62ef849763d4f45b98e07ba658647343b915ff832b110436"))
     filter18.isRelevant(creditingTx) must be(false)
 
     val filter19 = BloomFilter(10, 0.000001, UInt32.zero, BloomUpdateAll)
     //makes sure filter does not match a random outpoint
-    val randomOutPoint = TransactionOutPoint(
-      DoubleSha256Digest(
-        "90c122d70786e899529d71dbeba91ba216982fb6ba58f3bdaab65e73b7e9260b"),
-      UInt32.one)
+    val randomOutPoint =
+      TransactionOutPoint(DoubleSha256Digest("90c122d70786e899529d71dbeba91ba216982fb6ba58f3bdaab65e73b7e9260b"),
+                          UInt32.one)
     val filter20 = filter19.insert(randomOutPoint)
     filter20.isRelevant(creditingTx) must be(false)
 
@@ -193,8 +180,7 @@ class BloomFilterTest extends BitcoinSUnitTest {
       TransactionOutPoint(DoubleSha256Digest(bytes.reverse), UInt32.zero)
     }
     val filter22 = filter21.insert(secondRandomOutPoint)
-    filter22.hex must be(
-      "230090f00000004000000005040000000004000400000000100101000000008002040000130000000000000001")
+    filter22.hex must be("230090f00000004000000005040000000004000400000000100101000000008002040000130000000000000001")
     filter22.isRelevant(creditingTx) must be(false)
   }
 
@@ -254,8 +240,7 @@ class BloomFilterTest extends BitcoinSUnitTest {
     BloomFlag(0.toByte) must be(BloomUpdateNone)
     BloomFlag(1.toByte) must be(BloomUpdateAll)
     BloomFlag(2.toByte) must be(BloomUpdateP2PKOnly)
-    BloomFlag.fromBytes(ByteVector(BloomUpdateNone.byte)) must be(
-      BloomUpdateNone)
+    BloomFlag.fromBytes(ByteVector(BloomUpdateNone.byte)) must be(BloomUpdateNone)
 
     Try(BloomFlag(Int.MaxValue.toByte)).isFailure must be(true)
   }
@@ -268,10 +253,9 @@ class BloomFilterTest extends BitcoinSUnitTest {
   }
 
   it must "have serialization symmetry" in {
-    forAll(BloomFilterGenerator.loadedBloomFilter) {
-      case (loadedBloomFilter: BloomFilter, _) =>
-        val fromHex = BloomFilter(loadedBloomFilter.hex)
-        assert(fromHex == loadedBloomFilter)
+    forAll(BloomFilterGenerator.loadedBloomFilter) { case (loadedBloomFilter: BloomFilter, _) =>
+      val fromHex = BloomFilter(loadedBloomFilter.hex)
+      assert(fromHex == loadedBloomFilter)
 
     }
   }

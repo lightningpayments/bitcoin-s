@@ -25,11 +25,7 @@ case class DLCOfferDb(
       fundingInputs: Vector[DLCFundingInput],
       dlcDb: DLCDb,
       contractDataDb: DLCContractDataDb): DLCOffer = {
-    toDLCOffer(contractInfo,
-               fundingInputs,
-               dlcDb.fundOutputSerialId,
-               dlcDb.feeRate,
-               contractDataDb.dlcTimeouts)
+    toDLCOffer(contractInfo, fundingInputs, dlcDb.fundOutputSerialId, dlcDb.feeRate, contractDataDb.dlcTimeouts)
   }
 
   def toDLCOffer(

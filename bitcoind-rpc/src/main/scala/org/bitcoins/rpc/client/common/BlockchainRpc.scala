@@ -19,8 +19,7 @@ trait BlockchainRpc { self: Client =>
 
   def getBlock(headerHash: DoubleSha256DigestBE): Future[GetBlockResult] = {
     val isJsonObject = JsNumber(1)
-    bitcoindCall[GetBlockResult]("getblock",
-                                 List(JsString(headerHash.hex), isJsonObject))
+    bitcoindCall[GetBlockResult]("getblock", List(JsString(headerHash.hex), isJsonObject))
   }
 
   def getBlock(headerHash: DoubleSha256Digest): Future[GetBlockResult] = {
@@ -44,22 +43,16 @@ trait BlockchainRpc { self: Client =>
     bitcoindCall[DoubleSha256DigestBE]("getblockhash", List(JsNumber(height)))
   }
 
-  def getBlockHeader(
-      headerHash: DoubleSha256DigestBE): Future[GetBlockHeaderResult] = {
-    bitcoindCall[GetBlockHeaderResult](
-      "getblockheader",
-      List(JsString(headerHash.hex), JsBoolean(true)))
+  def getBlockHeader(headerHash: DoubleSha256DigestBE): Future[GetBlockHeaderResult] = {
+    bitcoindCall[GetBlockHeaderResult]("getblockheader", List(JsString(headerHash.hex), JsBoolean(true)))
   }
 
-  def getBlockHeader(
-      headerHash: DoubleSha256Digest): Future[GetBlockHeaderResult] = {
+  def getBlockHeader(headerHash: DoubleSha256Digest): Future[GetBlockHeaderResult] = {
     getBlockHeader(headerHash.flip)
   }
 
-  def getBlockHeaderRaw(
-      headerHash: DoubleSha256DigestBE): Future[BlockHeader] = {
-    bitcoindCall[BlockHeader]("getblockheader",
-                              List(JsString(headerHash.hex), JsBoolean(false)))
+  def getBlockHeaderRaw(headerHash: DoubleSha256DigestBE): Future[BlockHeader] = {
+    bitcoindCall[BlockHeader]("getblockheader", List(JsString(headerHash.hex), JsBoolean(false)))
   }
 
   def getBlockHeaderRaw(headerHash: DoubleSha256Digest): Future[BlockHeader] = {
@@ -74,16 +67,12 @@ trait BlockchainRpc { self: Client =>
     getBlockRaw(headerHash.flip)
   }
 
-  def getBlockWithTransactions(headerHash: DoubleSha256DigestBE): Future[
-    GetBlockWithTransactionsResult] = {
+  def getBlockWithTransactions(headerHash: DoubleSha256DigestBE): Future[GetBlockWithTransactionsResult] = {
     val isVerboseJsonObject = JsNumber(2)
-    bitcoindCall[GetBlockWithTransactionsResult](
-      "getblock",
-      List(JsString(headerHash.hex), isVerboseJsonObject))
+    bitcoindCall[GetBlockWithTransactionsResult]("getblock", List(JsString(headerHash.hex), isVerboseJsonObject))
   }
 
-  def getBlockWithTransactions(headerHash: DoubleSha256Digest): Future[
-    GetBlockWithTransactionsResult] = {
+  def getBlockWithTransactions(headerHash: DoubleSha256Digest): Future[GetBlockWithTransactionsResult] = {
     getBlockWithTransactions(headerHash.flip)
   }
 
@@ -96,8 +85,7 @@ trait BlockchainRpc { self: Client =>
 
   private def getChainTxStats(
       blocks: Option[Int],
-      blockHash: Option[DoubleSha256DigestBE]): Future[
-    GetChainTxStatsResult] = {
+      blockHash: Option[DoubleSha256DigestBE]): Future[GetChainTxStatsResult] = {
     val params =
       if (blocks.isEmpty) {
         List.empty
@@ -112,14 +100,10 @@ trait BlockchainRpc { self: Client =>
   def getChainTxStats(blocks: Int): Future[GetChainTxStatsResult] =
     getChainTxStats(Some(blocks), None)
 
-  def getChainTxStats(
-      blocks: Int,
-      blockHash: DoubleSha256DigestBE): Future[GetChainTxStatsResult] =
+  def getChainTxStats(blocks: Int, blockHash: DoubleSha256DigestBE): Future[GetChainTxStatsResult] =
     getChainTxStats(Some(blocks), Some(blockHash))
 
-  def getChainTxStats(
-      blocks: Int,
-      blockHash: DoubleSha256Digest): Future[GetChainTxStatsResult] =
+  def getChainTxStats(blocks: Int, blockHash: DoubleSha256Digest): Future[GetChainTxStatsResult] =
     getChainTxStats(Some(blocks), Some(blockHash.flip))
 
   def getDifficulty: Future[BigDecimal] = {
@@ -144,25 +128,18 @@ trait BlockchainRpc { self: Client =>
       if (headerHash.isEmpty) {
         List.empty
       } else {
-        List(JsString(headerHash.get.hex),
-             JsNumber(confirmations),
-             JsBoolean(includeWatchOnly))
+        List(JsString(headerHash.get.hex), JsNumber(confirmations), JsBoolean(includeWatchOnly))
       }
     bitcoindCall[ListSinceBlockResult]("listsinceblock", params)
   }
 
-  def listSinceBlock(
-      headerHash: DoubleSha256DigestBE): Future[ListSinceBlockResult] =
+  def listSinceBlock(headerHash: DoubleSha256DigestBE): Future[ListSinceBlockResult] =
     listSinceBlock(Some(headerHash))
 
-  def listSinceBlock(
-      headerHash: DoubleSha256DigestBE,
-      confirmations: Int): Future[ListSinceBlockResult] =
+  def listSinceBlock(headerHash: DoubleSha256DigestBE, confirmations: Int): Future[ListSinceBlockResult] =
     listSinceBlock(Some(headerHash), confirmations)
 
-  def listSinceBlock(
-      headerHash: DoubleSha256DigestBE,
-      includeWatchOnly: Boolean): Future[ListSinceBlockResult] =
+  def listSinceBlock(headerHash: DoubleSha256DigestBE, includeWatchOnly: Boolean): Future[ListSinceBlockResult] =
     listSinceBlock(Some(headerHash), includeWatchOnly = includeWatchOnly)
 
   def listSinceBlock(
@@ -171,18 +148,13 @@ trait BlockchainRpc { self: Client =>
       includeWatchOnly: Boolean): Future[ListSinceBlockResult] =
     listSinceBlock(Some(headerHash), confirmations, includeWatchOnly)
 
-  def listSinceBlock(
-      headerHash: DoubleSha256Digest): Future[ListSinceBlockResult] =
+  def listSinceBlock(headerHash: DoubleSha256Digest): Future[ListSinceBlockResult] =
     listSinceBlock(Some(headerHash.flip))
 
-  def listSinceBlock(
-      headerHash: DoubleSha256Digest,
-      confirmations: Int): Future[ListSinceBlockResult] =
+  def listSinceBlock(headerHash: DoubleSha256Digest, confirmations: Int): Future[ListSinceBlockResult] =
     listSinceBlock(Some(headerHash.flip), confirmations)
 
-  def listSinceBlock(
-      headerHash: DoubleSha256Digest,
-      includeWatchOnly: Boolean): Future[ListSinceBlockResult] =
+  def listSinceBlock(headerHash: DoubleSha256Digest, includeWatchOnly: Boolean): Future[ListSinceBlockResult] =
     listSinceBlock(Some(headerHash.flip), includeWatchOnly = includeWatchOnly)
 
   def listSinceBlock(
@@ -195,14 +167,10 @@ trait BlockchainRpc { self: Client =>
       account: String = "*",
       count: Int = 10,
       skip: Int = 0,
-      includeWatchOnly: Boolean = false): Future[
-    Vector[ListTransactionsResult]] = {
+      includeWatchOnly: Boolean = false): Future[Vector[ListTransactionsResult]] = {
     bitcoindCall[Vector[ListTransactionsResult]](
       "listtransactions",
-      List(JsString(account),
-           JsNumber(count),
-           JsNumber(skip),
-           JsBoolean(includeWatchOnly)))
+      List(JsString(account), JsNumber(count), JsNumber(skip), JsBoolean(includeWatchOnly)))
   }
 
   def pruneBlockChain(height: Int): Future[Int] = {
@@ -212,9 +180,7 @@ trait BlockchainRpc { self: Client =>
   def rescanBlockChain(): Future[RescanBlockChainResult] =
     rescanBlockChain(None, None)
 
-  private def rescanBlockChain(
-      start: Option[Int],
-      stop: Option[Int]): Future[RescanBlockChainResult] = {
+  private def rescanBlockChain(start: Option[Int], stop: Option[Int]): Future[RescanBlockChainResult] = {
     val params =
       if (start.isEmpty) {
         List.empty
@@ -241,7 +207,6 @@ trait BlockchainRpc { self: Client =>
   }
 
   def verifyChain(level: Int = 3, blocks: Int = 6): Future[Boolean] = {
-    bitcoindCall[Boolean]("verifychain",
-                          List(JsNumber(level), JsNumber(blocks)))
+    bitcoindCall[Boolean]("verifychain", List(JsNumber(level), JsNumber(blocks)))
   }
 }

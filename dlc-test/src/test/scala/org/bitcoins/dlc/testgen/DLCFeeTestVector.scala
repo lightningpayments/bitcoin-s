@@ -2,10 +2,7 @@ package org.bitcoins.dlc.testgen
 
 import org.bitcoins.core.currency.{CurrencyUnit, Satoshis}
 import org.bitcoins.core.protocol.script._
-import org.bitcoins.core.wallet.builder.{
-  DualFundingInput,
-  DualFundingTxFinalizer
-}
+import org.bitcoins.core.wallet.builder.{DualFundingInput, DualFundingTxFinalizer}
 import org.bitcoins.core.wallet.fee.SatoshisPerVirtualByte
 import org.bitcoins.crypto.ECPublicKey
 import play.api.libs.json._

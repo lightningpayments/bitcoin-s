@@ -19,8 +19,7 @@ object DLCTestUtil {
 
   def genValues(size: Int, totalAmount: CurrencyUnit): Vector[Satoshis] = {
     val vals = if (size < 2) {
-      throw new IllegalArgumentException(
-        s"Size must be at least two, got $size")
+      throw new IllegalArgumentException(s"Size must be at least two, got $size")
     } else if (size == 2) {
       Vector(totalAmount.satoshis, Satoshis.zero)
     } else {
@@ -35,9 +34,7 @@ object DLCTestUtil {
 
   def genContractDescriptors(
       outcomes: Vector[String],
-      totalInput: CurrencyUnit): (
-      EnumContractDescriptor,
-      EnumContractDescriptor) = {
+      totalInput: CurrencyUnit): (EnumContractDescriptor, EnumContractDescriptor) = {
     val outcomeMap =
       outcomes
         .map(EnumOutcome.apply)
@@ -60,9 +57,7 @@ object DLCTestUtil {
       numDigits: Int,
       totalCollateral: CurrencyUnit,
       roundingIntervals: RoundingIntervals = RoundingIntervals.noRounding,
-      numRounds: Int = 0): (
-      NumericContractDescriptor,
-      NumericContractDescriptor) = {
+      numRounds: Int = 0): (NumericContractDescriptor, NumericContractDescriptor) = {
     val overMaxValue = Math.pow(2, numDigits).toLong
     // Left collar goes from [0, botCollar]
     val botCollar = NumberUtil.randomLong(overMaxValue / 2)
@@ -89,8 +84,7 @@ object DLCTestUtil {
           val intervalStart =
             ((numRounds - num) * botCollar + num * topCollar) / numRounds
           val roundingMod = 1L << num
-          RoundingIntervals.IntervalStart(BigDecimal(intervalStart),
-                                          roundingMod)
+          RoundingIntervals.IntervalStart(BigDecimal(intervalStart), roundingMod)
         }
         RoundingIntervals(intervalStarts)
       } else roundingIntervals

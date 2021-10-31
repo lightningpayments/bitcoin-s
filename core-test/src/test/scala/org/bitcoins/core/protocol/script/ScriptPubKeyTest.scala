@@ -40,8 +40,7 @@ class ScriptPubKeyTest extends BitcoinSUnitTest {
   }
 
   it must "determine the correct descriptors" in {
-    val key = ECPublicKey(
-      "02c48670493ca813cd2d1bf8177df3d3d7c8e97fc7eb74cd21f71ea2ba416aee54")
+    val key = ECPublicKey("02c48670493ca813cd2d1bf8177df3d3d7c8e97fc7eb74cd21f71ea2ba416aee54")
     // p2pk
     val p2pk = P2PKScriptPubKey(key)
     assert(p2pk.toString == s"pk(${key.hex})")
@@ -65,7 +64,6 @@ class ScriptPubKeyTest extends BitcoinSUnitTest {
 
     // p2wsh
     val wsh = P2WSHWitnessSPKV0(p2pkh)
-    assert(
-      wsh.toString == "wsh(c0ad050ea2824ca0b938dd1c998f7160793034f321a307aae990786c0c029317)")
+    assert(wsh.toString == "wsh(c0ad050ea2824ca0b938dd1c998f7160793034f321a307aae990786c0c029317)")
   }
 }

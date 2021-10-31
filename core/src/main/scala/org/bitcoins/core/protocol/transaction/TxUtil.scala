@@ -6,12 +6,7 @@ import org.bitcoins.core.policy.Policy
 import org.bitcoins.core.protocol.script._
 import org.bitcoins.core.script.control.OP_RETURN
 import org.bitcoins.core.script.crypto.HashType
-import org.bitcoins.core.wallet.builder.{
-  AddWitnessDataFinalizer,
-  RawTxBuilder,
-  RawTxSigner,
-  TxBuilderError
-}
+import org.bitcoins.core.wallet.builder.{AddWitnessDataFinalizer, RawTxBuilder, RawTxSigner, TxBuilderError}
 import org.bitcoins.core.wallet.fee.FeeUnit
 import org.bitcoins.core.wallet.signer.BitcoinSigner
 import org.bitcoins.core.wallet.utxo._
@@ -23,13 +18,10 @@ import scala.util.{Failure, Success, Try}
 object TxUtil {
 
   def isRBFEnabled(transaction: Transaction): Boolean = {
-    transaction.inputs.exists(
-      _.sequence < TransactionConstants.disableRBFSequence)
+    transaction.inputs.exists(_.sequence < TransactionConstants.disableRBFSequence)
   }
 
-  private def computeNextLockTime(
-      currentLockTimeOpt: Option[UInt32],
-      locktime: Long): Try[UInt32] = {
+  private def computeNextLockTime(currentLockTimeOpt: Option[UInt32], locktime: Long): Try[UInt32] = {
     val lockTimeT =
       if (locktime > UInt32.max.toLong || locktime < 0) {
         TxBuilderError.IncompatibleLockTimes
@@ -39,16 +31,12 @@ object TxUtil {
         case Some(currentLockTime) =>
           val lockTimeThreshold = TransactionConstants.locktimeThreshold
           if (currentLockTime < lockTime) {
-            if (
-              currentLockTime < lockTimeThreshold && lockTime >= lockTimeThreshold
-            ) {
+            if (currentLockTime < lockTimeThreshold && lockTime >= lockTimeThreshold) {
               //means that we spend two different locktime types, one of the outputs spends a
               //OP_CLTV script by block height, the other spends one by time stamp
               TxBuilderError.IncompatibleLockTimes
             } else Success(lockTime)
-          } else if (
-            currentLockTime >= lockTimeThreshold && lockTime < lockTimeThreshold
-          ) {
+          } else if (currentLockTime >= lockTimeThreshold && lockTime < lockTimeThreshold) {
             //means that we spend two different locktime types, one of the outputs spends a
             //OP_CLTV script by block height, the other spends one by time stamp
             TxBuilderError.IncompatibleLockTimes
@@ -67,9 +55,7 @@ object TxUtil {
     */
   def calcLockTimeForInfos(utxos: Seq[InputInfo]): Try[UInt32] = {
     @tailrec
-    def loop(
-        remaining: Seq[InputInfo],
-        currentLockTimeOpt: Option[UInt32]): Try[UInt32] =
+    def loop(remaining: Seq[InputInfo], currentLockTimeOpt: Option[UInt32]): Try[UInt32] =
       remaining match {
         case Nil =>
           Success(currentLockTimeOpt.getOrElse(TransactionConstants.lockTime))
@@ -80,8 +66,7 @@ object TxUtil {
                 case _: CSVScriptPubKey =>
                   loop(newRemaining, currentLockTimeOpt)
                 case cltv: CLTVScriptPubKey =>
-                  val result = computeNextLockTime(currentLockTimeOpt,
-                                                   cltv.locktime.toLong)
+                  val result = computeNextLockTime(currentLockTimeOpt, cltv.locktime.toLong)
 
                   result match {
                     case Success(newLockTime) =>
@@ -93,9 +78,7 @@ object TxUtil {
               if (p2pkWithTimeout.isBeforeTimeout) {
                 loop(newRemaining, currentLockTimeOpt)
               } else {
-                val result = computeNextLockTime(
-                  currentLockTimeOpt,
-                  p2pkWithTimeout.scriptPubKey.lockTime.toLong)
+                val result = computeNextLockTime(currentLockTimeOpt, p2pkWithTimeout.scriptPubKey.lockTime.toLong)
 
                 result match {
                   case Success(newLockTime) =>
@@ -108,10 +91,8 @@ object TxUtil {
             case p2wsh: P2WSHV0InputInfo =>
               loop(p2wsh.nestedInputInfo +: newRemaining, currentLockTimeOpt)
             case conditional: ConditionalInputInfo =>
-              loop(conditional.nestedInputInfo +: newRemaining,
-                   currentLockTimeOpt)
-            case _: P2WPKHV0InputInfo | _: UnassignedSegwitNativeInputInfo |
-                _: P2PKInputInfo | _: P2PKHInputInfo |
+              loop(conditional.nestedInputInfo +: newRemaining, currentLockTimeOpt)
+            case _: P2WPKHV0InputInfo | _: UnassignedSegwitNativeInputInfo | _: P2PKInputInfo | _: P2PKHInputInfo |
                 _: MultiSignatureInputInfo | _: EmptyInputInfo =>
               // none of these scripts affect the locktime of a tx
               loop(newRemaining, currentLockTimeOpt)
@@ -130,22 +111,16 @@ object TxUtil {
     calcLockTimeForInfos(utxos.map(_.inputInfo))
   }
 
-  def buildDummyTx(
-      utxos: Vector[InputInfo],
-      outputs: Vector[TransactionOutput]): Transaction = {
+  def buildDummyTx(utxos: Vector[InputInfo], outputs: Vector[TransactionOutput]): Transaction = {
     val dummySpendingInfos = utxos.map { inputInfo =>
       val mockSigners =
         inputInfo.pubKeys.take(inputInfo.requiredSigs).map(Sign.dummySign)
 
-      inputInfo.toSpendingInfo(EmptyTransaction,
-                               mockSigners,
-                               HashType.sigHashAll)
+      inputInfo.toSpendingInfo(EmptyTransaction, mockSigners, HashType.sigHashAll)
     }
 
     val dummyInputs = utxos.map { inputInfo =>
-      TransactionInput(inputInfo.outPoint,
-                       EmptyScriptSignature,
-                       Policy.sequence)
+      TransactionInput(inputInfo.outPoint, EmptyScriptSignature, Policy.sequence)
     }
 
     val txBuilder = RawTxBuilder() ++= dummyInputs ++= outputs
@@ -153,10 +128,7 @@ object TxUtil {
 
     val utx = withFinalizer.buildTx()
 
-    RawTxSigner.sign(utx,
-                     dummySpendingInfos,
-                     RawTxSigner.emptyInvariant,
-                     dummySign = true)
+    RawTxSigner.sign(utx, dummySpendingInfos, RawTxSigner.emptyInvariant, dummySign = true)
   }
 
   /** Inserts script signatures and (potentially) witness data to a given
@@ -167,38 +139,31 @@ object TxUtil {
     * Note that the resulting dummy-signed Transaction will have populated
     * (dummy) witness data when applicable.
     */
-  def addDummySigs(
-      utx: Transaction,
-      inputInfos: Vector[InputInfo]): Transaction = {
-    val dummyInputAndWitnesses = inputInfos.zipWithIndex.map {
-      case (inputInfo, index) =>
-        val mockSigners =
-          inputInfo.pubKeys.take(inputInfo.requiredSigs).map { pubKey =>
-            Sign(_ => DummyECDigitalSignature,
-                 (_, _) => DummyECDigitalSignature,
-                 pubKey)
-          }
-
-        val mockSpendingInfo =
-          inputInfo.toSpendingInfo(EmptyTransaction,
-                                   mockSigners,
-                                   HashType.sigHashAll)
-
-        val tx =
-          BitcoinSigner
-            .sign(mockSpendingInfo, utx, isDummySignature = true)
-            .transaction
-
-        val witnessOpt = tx match {
-          case _: NonWitnessTransaction => None
-          case wtx: WitnessTransaction =>
-            wtx.witness.witnesses(index) match {
-              case EmptyScriptWitness   => None
-              case wit: ScriptWitnessV0 => Some(wit)
-            }
+  def addDummySigs(utx: Transaction, inputInfos: Vector[InputInfo]): Transaction = {
+    val dummyInputAndWitnesses = inputInfos.zipWithIndex.map { case (inputInfo, index) =>
+      val mockSigners =
+        inputInfo.pubKeys.take(inputInfo.requiredSigs).map { pubKey =>
+          Sign(_ => DummyECDigitalSignature, (_, _) => DummyECDigitalSignature, pubKey)
         }
 
-        (tx.inputs(index), witnessOpt)
+      val mockSpendingInfo =
+        inputInfo.toSpendingInfo(EmptyTransaction, mockSigners, HashType.sigHashAll)
+
+      val tx =
+        BitcoinSigner
+          .sign(mockSpendingInfo, utx, isDummySignature = true)
+          .transaction
+
+      val witnessOpt = tx match {
+        case _: NonWitnessTransaction => None
+        case wtx: WitnessTransaction =>
+          wtx.witness.witnesses(index) match {
+            case EmptyScriptWitness   => None
+            case wit: ScriptWitnessV0 => Some(wit)
+          }
+      }
+
+      (tx.inputs(index), witnessOpt)
     }
 
     val inputs = dummyInputAndWitnesses.map(_._1)
@@ -218,17 +183,12 @@ object TxUtil {
     */
   def emptyAllScriptSigs(tx: Transaction): Transaction = {
     val newInputs = tx.inputs.map { input =>
-      TransactionInput(input.previousOutput,
-                       EmptyScriptSignature,
-                       input.sequence)
+      TransactionInput(input.previousOutput, EmptyScriptSignature, input.sequence)
     }
 
     tx match {
       case btx: NonWitnessTransaction =>
-        BaseTransaction(version = btx.version,
-                        inputs = newInputs,
-                        outputs = btx.outputs,
-                        lockTime = btx.lockTime)
+        BaseTransaction(version = btx.version, inputs = newInputs, outputs = btx.outputs, lockTime = btx.lockTime)
       case wtx: WitnessTransaction =>
         WitnessTransaction(version = wtx.version,
                            inputs = newInputs,
@@ -301,10 +261,7 @@ object TxUtil {
     * @param feeRate      the fee rate in satoshis/vbyte we paid per byte on this tx
     * @return
     */
-  def isValidFeeRange(
-      estimatedFee: CurrencyUnit,
-      actualFee: CurrencyUnit,
-      feeRate: FeeUnit): Try[Unit] = {
+  def isValidFeeRange(estimatedFee: CurrencyUnit, actualFee: CurrencyUnit, feeRate: FeeUnit): Try[Unit] = {
     if (estimatedFee == actualFee) {
       Success(())
     } else {
@@ -337,9 +294,7 @@ object TxUtil {
   }
 
   /** Adds the signingInfo's scriptWitness from the transaction, if it has one */
-  def addWitnessData(
-      tx: Transaction,
-      signingInfo: InputSigningInfo[InputInfo]): WitnessTransaction = {
+  def addWitnessData(tx: Transaction, signingInfo: InputSigningInfo[InputInfo]): WitnessTransaction = {
     val noWitnessWtx = WitnessTransaction.toWitnessTx(tx)
 
     val indexOpt = tx.inputs.zipWithIndex
@@ -350,8 +305,7 @@ object TxUtil {
 
     (scriptWitnessOpt, indexOpt) match {
       case (_, None) =>
-        throw new IllegalArgumentException(
-          s"Input is not contained in tx, got $signingInfo")
+        throw new IllegalArgumentException(s"Input is not contained in tx, got $signingInfo")
       case (None, Some(_)) =>
         noWitnessWtx
       case (Some(scriptWitness), Some(index)) =>

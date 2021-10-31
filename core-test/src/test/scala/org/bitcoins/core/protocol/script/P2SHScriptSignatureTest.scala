@@ -1,10 +1,6 @@
 package org.bitcoins.core.protocol.script
 
-import org.bitcoins.core.script.constant.{
-  BytesToPushOntoStack,
-  OP_0,
-  ScriptConstant
-}
+import org.bitcoins.core.script.constant.{BytesToPushOntoStack, OP_0, ScriptConstant}
 import org.bitcoins.crypto.ECPublicKeyBytes
 import org.bitcoins.testkitcore.util.{BitcoinSJvmTest, TestUtil}
 
@@ -21,10 +17,8 @@ class P2SHScriptSignatureTest extends BitcoinSJvmTest {
       }
     p2shScriptSig.publicKeys must be(
       Seq(
-        ECPublicKeyBytes(
-          "0369d26ebd086523384a0f89f293d4c327a65fa73332d8efd1097cb35231295b83"),
-        ECPublicKeyBytes(
-          "02480863e5c4a4e9763f5380c44fcfe6a3b7787397076cf9ea1049303a9d34f721")
+        ECPublicKeyBytes("0369d26ebd086523384a0f89f293d4c327a65fa73332d8efd1097cb35231295b83"),
+        ECPublicKeyBytes("02480863e5c4a4e9763f5380c44fcfe6a3b7787397076cf9ea1049303a9d34f721")
       ))
 
   }

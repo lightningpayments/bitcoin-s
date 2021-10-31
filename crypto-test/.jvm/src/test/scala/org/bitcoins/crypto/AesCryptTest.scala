@@ -283,13 +283,12 @@ class AesCryptTest extends BitcoinSCryptoTest {
   }
 
   it must "have encryption and decryption symmetry" in {
-    forAll(NumberGenerator.bytevector, CryptoGenerators.aesKey) {
-      (bytes, key) =>
-        val encrypted = AesCrypt.encrypt(bytes, key)
-        AesCrypt.decrypt(encrypted, key) match {
-          case Right(decrypted) => assert(decrypted == bytes)
-          case Left(exc)        => fail(exc)
-        }
+    forAll(NumberGenerator.bytevector, CryptoGenerators.aesKey) { (bytes, key) =>
+      val encrypted = AesCrypt.encrypt(bytes, key)
+      AesCrypt.decrypt(encrypted, key) match {
+        case Right(decrypted) => assert(decrypted == bytes)
+        case Left(exc)        => fail(exc)
+      }
     }
   }
 

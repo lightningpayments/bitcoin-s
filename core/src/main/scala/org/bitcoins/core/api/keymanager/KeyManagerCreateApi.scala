@@ -1,10 +1,7 @@
 package org.bitcoins.core.api.keymanager
 
 import org.bitcoins.core.crypto.MnemonicCode
-import org.bitcoins.core.wallet.keymanagement.{
-  KeyManagerInitializeError,
-  KeyManagerParams
-}
+import org.bitcoins.core.wallet.keymanagement.{KeyManagerInitializeError, KeyManagerParams}
 import org.bitcoins.crypto.AesPassword
 import scodec.bits.BitVector
 
@@ -22,8 +19,7 @@ trait KeyManagerCreateApi
   *                           can write it down. They should also be prompted
   *                           to confirm at least parts of the code.
   */
-trait BIP39KeyManagerCreateApi[T <: BIP39KeyManagerApi]
-    extends KeyManagerCreateApi {
+trait BIP39KeyManagerCreateApi[T <: BIP39KeyManagerApi] extends KeyManagerCreateApi {
 
   /** $initialize
     */

@@ -21,8 +21,7 @@ class RawRejectMessageSerializerTest extends BitcoinSUnitTest {
     rejectMsg.code must be(0x12.toChar)
     rejectMsg.reasonSize must be(CompactSizeUInt(UInt64(21)))
     rejectMsg.reason must be("bad-txns-inputs-spent")
-    BytesUtil.encodeHex(rejectMsg.extra) must be(
-      "394715fcab51093be7bfca5a31005972947baf86a31017939575fb2354222821")
+    BytesUtil.encodeHex(rejectMsg.extra) must be("394715fcab51093be7bfca5a31005972947baf86a31017939575fb2354222821")
   }
 
   it must "read then write a reject message" in {

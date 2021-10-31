@@ -2,17 +2,10 @@ package org.bitcoins.core.script.locktime
 
 import org.bitcoins.core.number.{Int64, UInt32}
 import org.bitcoins.core.protocol.transaction.TransactionConstants
-import org.bitcoins.core.script.constant.{
-  ScriptConstant,
-  ScriptNumber,
-  ScriptToken
-}
+import org.bitcoins.core.script.constant.{ScriptConstant, ScriptNumber, ScriptToken}
 import org.bitcoins.core.script.flag.ScriptFlagUtil
 import org.bitcoins.core.script.result._
-import org.bitcoins.core.script.{
-  ExecutionInProgressScriptProgram,
-  StartedScriptProgram
-}
+import org.bitcoins.core.script.{ExecutionInProgressScriptProgram, StartedScriptProgram}
 
 import scala.annotation.tailrec
 
@@ -30,10 +23,8 @@ sealed abstract class LockTimeInterpreter {
     * The precise semantics are described in BIP 0065
     */
   @tailrec
-  final def opCheckLockTimeVerify(
-      program: ExecutionInProgressScriptProgram): StartedScriptProgram = {
-    require(program.script.headOption.contains(OP_CHECKLOCKTIMEVERIFY),
-            "Script top must be OP_CHECKLOCKTIMEVERIFY")
+  final def opCheckLockTimeVerify(program: ExecutionInProgressScriptProgram): StartedScriptProgram = {
+    require(program.script.headOption.contains(OP_CHECKLOCKTIMEVERIFY), "Script top must be OP_CHECKLOCKTIMEVERIFY")
     val input = program.txSignatureComponent.transaction
       .inputs(program.txSignatureComponent.inputIndex.toInt)
     val transaction = program.txSignatureComponent.transaction
@@ -45,13 +36,9 @@ sealed abstract class LockTimeInterpreter {
       program.stack.head match {
         case s: ScriptNumber if s < ScriptNumber.zero =>
           program.failExecution(ScriptErrorNegativeLockTime)
-        case s: ScriptNumber
-            if s >= ScriptNumber(500000000) && transaction.lockTime < UInt32(
-              500000000) =>
+        case s: ScriptNumber if s >= ScriptNumber(500000000) && transaction.lockTime < UInt32(500000000) =>
           program.failExecution(ScriptErrorUnsatisfiedLocktime)
-        case s: ScriptNumber
-            if s < ScriptNumber(500000000) && transaction.lockTime >= UInt32(
-              500000000) =>
+        case s: ScriptNumber if s < ScriptNumber(500000000) && transaction.lockTime >= UInt32(500000000) =>
           program.failExecution(ScriptErrorUnsatisfiedLocktime)
         case s: ScriptNumber =>
           if (s.bytes.size > 5) {
@@ -63,8 +50,7 @@ sealed abstract class LockTimeInterpreter {
             program.failExecution(ScriptErrorUnsatisfiedLocktime)
           }
         case s: ScriptConstant =>
-          opCheckLockTimeVerify(
-            program.updateStack(ScriptNumber(s.hex) :: program.stack.tail))
+          opCheckLockTimeVerify(program.updateStack(ScriptNumber(s.hex) :: program.stack.tail))
         case _: ScriptToken => program.failExecution(ScriptErrorUnknownError)
       }
     }
@@ -82,17 +68,14 @@ sealed abstract class LockTimeInterpreter {
     * See [[https://github.com/bitcoin/bips/blob/master/bip-0112.mediawiki BIP112]] for more information
     */
   @tailrec
-  final def opCheckSequenceVerify(
-      program: ExecutionInProgressScriptProgram): StartedScriptProgram = {
+  final def opCheckSequenceVerify(program: ExecutionInProgressScriptProgram): StartedScriptProgram = {
     if (program.stack.isEmpty) {
       program.failExecution(ScriptErrorInvalidStackOperation)
     } else {
       program.stack.head match {
         case ScriptNumber.negativeOne =>
           program.failExecution(ScriptErrorNegativeLockTime)
-        case s: ScriptNumber
-            if ScriptFlagUtil.requireMinimalData(
-              program.flags) && !s.isShortestEncoding =>
+        case s: ScriptNumber if ScriptFlagUtil.requireMinimalData(program.flags) && !s.isShortestEncoding =>
           program.failExecution(ScriptErrorUnknownError)
         case s: ScriptNumber if !isLockTimeBitOff(s) =>
           //see BIP68 for semantic of locktimeDisableFlag
@@ -111,11 +94,9 @@ sealed abstract class LockTimeInterpreter {
             program.failExecution(ScriptErrorUnsatisfiedLocktime)
           }
         case s: ScriptConstant =>
-          opCheckSequenceVerify(
-            program.updateStack(ScriptNumber(s.hex) :: program.stack.tail))
+          opCheckSequenceVerify(program.updateStack(ScriptNumber(s.hex) :: program.stack.tail))
         case token: ScriptToken =>
-          throw new RuntimeException(
-            "Stack top must be either a ScriptConstant or a ScriptNumber, we got: " + token)
+          throw new RuntimeException("Stack top must be either a ScriptConstant or a ScriptNumber, we got: " + token)
 
       }
     }
@@ -131,9 +112,7 @@ sealed abstract class LockTimeInterpreter {
     * @param nSequence the script number on the stack top to compare to the input's sequence number
     * @return if the given script number is valid or not
     */
-  def checkSequence(
-      program: ExecutionInProgressScriptProgram,
-      nSequence: ScriptNumber): Boolean = {
+  def checkSequence(program: ExecutionInProgressScriptProgram, nSequence: ScriptNumber): Boolean = {
     val inputIndex = program.txSignatureComponent.inputIndex.toInt
     val transaction = program.txSignatureComponent.transaction
 
@@ -143,9 +122,7 @@ sealed abstract class LockTimeInterpreter {
 
     // Fail if the transaction's version number is not set high
     // enough to trigger BIP 68 rules.
-    if (
-      program.txSignatureComponent.transaction.version < TransactionConstants.validLockVersion
-    ) {
+    if (program.txSignatureComponent.transaction.version < TransactionConstants.validLockVersion) {
       return false
     }
 
@@ -165,11 +142,7 @@ sealed abstract class LockTimeInterpreter {
     // We want to compare apples to apples, so fail the script
     // unless the type of nSequenceMasked being tested is the same as
     // the nSequenceMasked in the transaction.
-    if (
-      !(isCSVLockByBlockHeight(
-        nSequence,
-        txToSequence) || isCSVLockByRelativeLockTime(nSequence, txToSequence))
-    ) {
+    if (!(isCSVLockByBlockHeight(nSequence, txToSequence) || isCSVLockByRelativeLockTime(nSequence, txToSequence))) {
       return false
     }
 
@@ -187,9 +160,7 @@ sealed abstract class LockTimeInterpreter {
     * [[org.bitcoins.core.number.UInt32 UInt32]] are valid values for spending
     * a OP_CSV value by block height
     */
-  def isCSVLockByBlockHeight(
-      scriptNumber: ScriptNumber,
-      sequence: UInt32): Boolean = {
+  def isCSVLockByBlockHeight(scriptNumber: ScriptNumber, sequence: UInt32): Boolean = {
     isCSVLockByBlockHeight(scriptNumber) && isCSVLockByBlockHeight(sequence)
   }
 
@@ -203,9 +174,7 @@ sealed abstract class LockTimeInterpreter {
     * [[org.bitcoins.core.number.UInt32 UInt32]] are valid values
     * for spending an OP_CSV value by time based relative lock time
     */
-  def isCSVLockByRelativeLockTime(
-      number: ScriptNumber,
-      sequence: UInt32): Boolean = {
+  def isCSVLockByRelativeLockTime(number: ScriptNumber, sequence: UInt32): Boolean = {
     isCSVLockByRelativeLockTime(number) && isCSVLockByRelativeLockTime(sequence)
   }
 
@@ -228,8 +197,7 @@ sealed abstract class LockTimeInterpreter {
   }
 
   def maskSequenceNumber(sequence: UInt32): Int64 = {
-    val txToSequenceMasked: Int64 = Int64(
-      (sequence & TransactionConstants.fullSequenceLockTimeMask).toLong)
+    val txToSequenceMasked: Int64 = Int64((sequence & TransactionConstants.fullSequenceLockTimeMask).toLong)
     txToSequenceMasked
   }
 
@@ -238,9 +206,7 @@ sealed abstract class LockTimeInterpreter {
     *      [[https://github.com/bitcoin/bitcoin/blob/master/src/script/interpreter.cpp#L1160 this function]]
     *     inside of Bitcoin Core
     */
-  private def checkLockTime(
-      program: ExecutionInProgressScriptProgram,
-      locktime: ScriptNumber): Boolean = {
+  private def checkLockTime(program: ExecutionInProgressScriptProgram, locktime: ScriptNumber): Boolean = {
     // There are two kinds of nLockTime: lock-by-blockheight
     // and lock-by-blocktime, distinguished by whether
     // nLockTime < LOCKTIME_THRESHOLD.

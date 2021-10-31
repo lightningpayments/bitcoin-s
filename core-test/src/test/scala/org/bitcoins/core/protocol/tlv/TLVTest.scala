@@ -113,18 +113,14 @@ class TLVTest extends BitcoinSUnitTest {
 
   "ContractDescriptorV0TLV" must "have serialization symmetry" in {
     forAll(TLVGen.contractDescriptorV0TLV) { contractDescriptorV0TLV =>
-      assert(
-        ContractDescriptorV0TLV(
-          contractDescriptorV0TLV.bytes) == contractDescriptorV0TLV)
+      assert(ContractDescriptorV0TLV(contractDescriptorV0TLV.bytes) == contractDescriptorV0TLV)
       assert(TLV(contractDescriptorV0TLV.bytes) == contractDescriptorV0TLV)
     }
   }
 
   "ContractDescriptorV1TLV" must "have serialization symmetry" in {
     forAll(TLVGen.contractDescriptorV1TLV) { contractDescriptorV1TLV =>
-      assert(
-        ContractDescriptorV1TLV(
-          contractDescriptorV1TLV.bytes) == contractDescriptorV1TLV)
+      assert(ContractDescriptorV1TLV(contractDescriptorV1TLV.bytes) == contractDescriptorV1TLV)
       assert(TLV(contractDescriptorV1TLV.bytes) == contractDescriptorV1TLV)
     }
   }

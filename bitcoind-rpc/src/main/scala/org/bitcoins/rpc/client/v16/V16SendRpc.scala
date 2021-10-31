@@ -15,11 +15,7 @@ import scala.concurrent.Future
   */
 trait V16SendRpc { self: Client =>
 
-  def move(
-      fromAccount: String,
-      toAccount: String,
-      amount: CurrencyUnit,
-      comment: String = ""): Future[Boolean] = {
+  def move(fromAccount: String, toAccount: String, amount: CurrencyUnit, comment: String = ""): Future[Boolean] = {
     bitcoindCall[Boolean]("move",
                           List(JsString(fromAccount),
                                JsString(toAccount),

@@ -8,8 +8,7 @@ import scodec.bits.ByteVector
 /** Responsible for serializing and deserializing network ip address objects on the p2p network
   * @see https://bitcoin.org/en/developer-reference#addr
   */
-trait RawNetworkIpAddressSerializer
-    extends RawBitcoinSerializer[NetworkIpAddress] {
+trait RawNetworkIpAddressSerializer extends RawBitcoinSerializer[NetworkIpAddress] {
 
   def read(bytes: ByteVector): NetworkIpAddress = {
     val time = UInt32(bytes.take(4).reverse)

@@ -24,29 +24,23 @@ class ConditionalScriptSignatureTest extends BitcoinSUnitTest {
   }
 
   it should "have serialization symmetry" in {
-    forAll(ScriptGenerators.conditionalScriptSignature) {
-      conditionalScriptSignature =>
-        assert(
-          ConditionalScriptSignature(
-            conditionalScriptSignature.bytes) == conditionalScriptSignature)
+    forAll(ScriptGenerators.conditionalScriptSignature) { conditionalScriptSignature =>
+      assert(ConditionalScriptSignature(conditionalScriptSignature.bytes) == conditionalScriptSignature)
     }
   }
 
   it should "have agreement with nesting ScriptSignatures" in {
-    forAll(ScriptGenerators.scriptSignature, NumberGenerator.bool) {
-      case (scriptSig, condition) =>
-        val conditionalScriptSig =
-          ConditionalScriptSignature(scriptSig, condition)
+    forAll(ScriptGenerators.scriptSignature, NumberGenerator.bool) { case (scriptSig, condition) =>
+      val conditionalScriptSig =
+        ConditionalScriptSignature(scriptSig, condition)
 
-        assert(conditionalScriptSig.nestedScriptSig == scriptSig)
+      assert(conditionalScriptSig.nestedScriptSig == scriptSig)
     }
   }
 
   it should "have agreement with nested signatures" in {
-    forAll(ScriptGenerators.conditionalScriptSignature) {
-      conditionalScriptSignature =>
-        assert(
-          conditionalScriptSignature.signatures == conditionalScriptSignature.nestedScriptSig.signatures)
+    forAll(ScriptGenerators.conditionalScriptSignature) { conditionalScriptSignature =>
+      assert(conditionalScriptSignature.signatures == conditionalScriptSignature.nestedScriptSig.signatures)
     }
   }
 }

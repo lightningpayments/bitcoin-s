@@ -1,11 +1,7 @@
 package org.bitcoins.core.serializers.blockchain
 
 import org.bitcoins.core.number.{Int32, UInt32}
-import org.bitcoins.core.protocol.blockchain.{
-  BlockHeader,
-  MerkleBlock,
-  PartialMerkleTree
-}
+import org.bitcoins.core.protocol.blockchain.{BlockHeader, MerkleBlock, PartialMerkleTree}
 import org.bitcoins.core.util.{BytesUtil, Leaf, Node}
 import org.bitcoins.crypto.DoubleSha256Digest
 import org.bitcoins.testkitcore.util.BitcoinSUnitTest
@@ -20,24 +16,22 @@ class RawMerkleBlockSerializerTest extends BitcoinSUnitTest {
     val (merkleBlock, _) = (MerkleBlock(
                               BlockHeader(
                                 Int32(49150652),
-                                DoubleSha256Digest(
-                                  "6cf34aac6e3de2bf4b429d114ed4572a7ce4b1c44f2091ae6825ee9774dbae2f"),
-                                DoubleSha256Digest(
-                                  "4487def8ba376b38c1e4e5910d3c9efd27e740cb9be8d452598cbf2e243fad8a"),
+                                DoubleSha256Digest("6cf34aac6e3de2bf4b429d114ed4572a7ce4b1c44f2091ae6825ee9774dbae2f"),
+                                DoubleSha256Digest("4487def8ba376b38c1e4e5910d3c9efd27e740cb9be8d452598cbf2e243fad8a"),
                                 UInt32(2941790316L),
                                 UInt32(1626267458),
                                 UInt32(1688549344)
                               ),
                               UInt32(1),
                               PartialMerkleTree(
-                                Leaf(DoubleSha256Digest(
-                                  "442abdc8e74ad35ebd9571f88fda91ff511dcda8d241a5aed52cea1e00d69e03")),
+                                Leaf(
+                                  DoubleSha256Digest(
+                                    "442abdc8e74ad35ebd9571f88fda91ff511dcda8d241a5aed52cea1e00d69e03")),
                                 UInt32(1),
-                                BitVector.bits(
-                                  Vector(false, false, false, false, false,
-                                    false, false, false)),
-                                List(DoubleSha256Digest(
-                                  "442abdc8e74ad35ebd9571f88fda91ff511dcda8d241a5aed52cea1e00d69e03"))
+                                BitVector.bits(Vector(false, false, false, false, false, false, false, false)),
+                                List(
+                                  DoubleSha256Digest(
+                                    "442abdc8e74ad35ebd9571f88fda91ff511dcda8d241a5aed52cea1e00d69e03"))
                               )
                             ),
                             List())
@@ -52,10 +46,8 @@ class RawMerkleBlockSerializerTest extends BitcoinSUnitTest {
     val (merkleBlock, _) = (MerkleBlock(
                               BlockHeader(
                                 Int32(1626792925),
-                                DoubleSha256Digest(
-                                  "de2fc5fac498126f27c8adaa17aa86a1ef15d2b0adf5f2d2c056495bec17153f"),
-                                DoubleSha256Digest(
-                                  "f27404d701b9047cfcaa8d8454d2ecc12f4aa3e900ba8e5945bbb9289d67dd63"),
+                                DoubleSha256Digest("de2fc5fac498126f27c8adaa17aa86a1ef15d2b0adf5f2d2c056495bec17153f"),
+                                DoubleSha256Digest("f27404d701b9047cfcaa8d8454d2ecc12f4aa3e900ba8e5945bbb9289d67dd63"),
                                 UInt32(3098237133L),
                                 UInt32(359220269),
                                 UInt32(590323230)
@@ -85,13 +77,13 @@ class RawMerkleBlockSerializerTest extends BitcoinSUnitTest {
                                         "7ae10c30932c07e4ed25abab233565f9ab279eabbcd60e1bc028c6cdc400361b"))
                                     )
                                   ),
-                                  Leaf(DoubleSha256Digest(
-                                    "8ca2e6b66c55fbb63cb7c9b5ccd19be508034eedcd8511d216b9fe93aafc2ceb"))
+                                  Leaf(
+                                    DoubleSha256Digest(
+                                      "8ca2e6b66c55fbb63cb7c9b5ccd19be508034eedcd8511d216b9fe93aafc2ceb"))
                                 ),
                                 UInt32(6),
                                 BitVector.bits(
-                                  List(true, true, true, false, true, true,
-                                    false, true, false, false, false, false,
+                                  List(true, true, true, false, true, true, false, true, false, false, false, false,
                                     false, false, false, false)),
                                 List(
                                   DoubleSha256Digest(
@@ -102,22 +94,18 @@ class RawMerkleBlockSerializerTest extends BitcoinSUnitTest {
                                     "77352045b2995c9e0dfff9089e5563cd13914eb4b0723cdd54675c5c3f1c4f6a"),
                                   DoubleSha256Digest(
                                     "7ae10c30932c07e4ed25abab233565f9ab279eabbcd60e1bc028c6cdc400361b"),
-                                  DoubleSha256Digest(
-                                    "8ca2e6b66c55fbb63cb7c9b5ccd19be508034eedcd8511d216b9fe93aafc2ceb")
+                                  DoubleSha256Digest("8ca2e6b66c55fbb63cb7c9b5ccd19be508034eedcd8511d216b9fe93aafc2ceb")
                                 )
                               )
                             ),
                             List(
-                              DoubleSha256Digest(
-                                "010506d2103d0feb477224926eedaf3d7478fe3d93b54bd24e5eb2c0adc309b3"),
-                              DoubleSha256Digest(
-                                "7ae10c30932c07e4ed25abab233565f9ab279eabbcd60e1bc028c6cdc400361b")
+                              DoubleSha256Digest("010506d2103d0feb477224926eedaf3d7478fe3d93b54bd24e5eb2c0adc309b3"),
+                              DoubleSha256Digest("7ae10c30932c07e4ed25abab233565f9ab279eabbcd60e1bc028c6cdc400361b")
                             ))
 
     val hex = merkleBlock.hex
     val actualMerkleBlock = MerkleBlock(hex)
-    actualMerkleBlock.partialMerkleTree.bits must be(
-      merkleBlock.partialMerkleTree.bits)
+    actualMerkleBlock.partialMerkleTree.bits must be(merkleBlock.partialMerkleTree.bits)
     actualMerkleBlock must be(merkleBlock)
   }
 
@@ -131,14 +119,12 @@ class RawMerkleBlockSerializerTest extends BitcoinSUnitTest {
 
     merkleBlock.hex must be(hex)
     merkleBlock.blockHeader.hash.hex must be(
-      BytesUtil.flipEndianness(
-        "000000000000dab0130bbcc991d3d7ae6b81aa6f50a798888dfe62337458dc45"))
+      BytesUtil.flipEndianness("000000000000dab0130bbcc991d3d7ae6b81aa6f50a798888dfe62337458dc45"))
 
     val matches = merkleBlock.partialMerkleTree.extractMatches
 
-    matches must be(
-      Seq(DoubleSha256Digest(BytesUtil.flipEndianness(
-        "63194f18be0af63f2c6bc9dc0f777cbefed3d9415c4af83f3ee3a3d669c00cb5"))))
+    matches must be(Seq(
+      DoubleSha256Digest(BytesUtil.flipEndianness("63194f18be0af63f2c6bc9dc0f777cbefed3d9415c4af83f3ee3a3d669c00cb5"))))
   }
 
   it must "serialize and deserialize a merkle block with two bytes worth of bit flags" in {

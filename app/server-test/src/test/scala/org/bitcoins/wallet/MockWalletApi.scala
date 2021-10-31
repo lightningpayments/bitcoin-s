@@ -17,8 +17,7 @@ abstract class MockWalletApi extends AnyDLCHDWalletApi {
 
   override def getDefaultAccount(): Future[AccountDb] = stub
 
-  override def getDefaultAccountForType(
-      addressType: AddressType): Future[AccountDb] = stub
+  override def getDefaultAccountForType(addressType: AddressType): Future[AccountDb] = stub
 
   private def stub[T] =
     Future.failed[T](new RuntimeException("Not implemented"))

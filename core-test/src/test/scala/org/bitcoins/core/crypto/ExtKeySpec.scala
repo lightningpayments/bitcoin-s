@@ -23,10 +23,7 @@ class ExtKeySpec extends BitcoinSUnitTest {
   }
 
   it must "have derivation identity 1" in {
-    Prop.forAllNoShrink(CryptoGenerators.extPrivateKey,
-                        nonHardened,
-                        nonHardened,
-                        nonHardened) { (m, a, b, c) =>
+    Prop.forAllNoShrink(CryptoGenerators.extPrivateKey, nonHardened, nonHardened, nonHardened) { (m, a, b, c) =>
       //https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#the-key-tree
       //N(m/a/b/c) = N(m/a/b)/c = N(m/a)/b/c = N(m)/a/b/c = M/a/b/c
       val path1 = m
@@ -59,10 +56,7 @@ class ExtKeySpec extends BitcoinSUnitTest {
   }
 
   it must "derivation identity 2" in {
-    Prop.forAllNoShrink(CryptoGenerators.extPrivateKey,
-                        hardened,
-                        nonHardened,
-                        nonHardened) { (m, aH, b, c) =>
+    Prop.forAllNoShrink(CryptoGenerators.extPrivateKey, hardened, nonHardened, nonHardened) { (m, aH, b, c) =>
       //https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#the-key-tree
       //N(m/aH/b/c) = N(m/aH/b)/c = N(m/aH)/b/c
       val path1 = m

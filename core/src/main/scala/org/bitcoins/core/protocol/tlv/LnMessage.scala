@@ -41,8 +41,8 @@ object LnMessage extends Factory[LnMessage[TLV]] {
     msg.tlv match {
       case unknown: UnknownTLV =>
         throw new IllegalArgumentException(s"Parsed unknown TLV $unknown")
-      case _: DLCSetupTLV | _: DLCSetupPieceTLV | _: InitTLV | _: DLCOracleTLV |
-          _: ErrorTLV | _: PingTLV | _: PongTLV =>
+      case _: DLCSetupTLV | _: DLCSetupPieceTLV | _: InitTLV | _: DLCOracleTLV | _: ErrorTLV | _: PingTLV |
+          _: PongTLV =>
         ()
     }
 
@@ -50,8 +50,7 @@ object LnMessage extends Factory[LnMessage[TLV]] {
   }
 }
 
-case class LnMessageFactory[+T <: TLV](tlvFactory: TLVFactory[T])
-    extends Factory[LnMessage[T]] {
+case class LnMessageFactory[+T <: TLV](tlvFactory: TLVFactory[T]) extends Factory[LnMessage[T]] {
 
   override def fromBytes(bytes: ByteVector): LnMessage[T] = {
     val tpe = BigSizeUInt(UInt16(bytes.take(2)).toInt)

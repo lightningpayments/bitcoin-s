@@ -40,7 +40,6 @@ object HDChainType {
       case External.index => HDChainType.External
       case Change.index   => HDChainType.Change
       case _: Int =>
-        throw new IllegalArgumentException(
-          s"$int is not a valid BIP44 change type!")
+        throw new IllegalArgumentException(s"$int is not a valid BIP44 change type!")
     }
 }

@@ -27,8 +27,7 @@ case object SecpPointInfinity extends SecpPoint {
 
 /** A non-identity point, (x, y), on the secp256k1 elliptic curve.
   */
-case class SecpPointFinite(x: CurveCoordinate, y: CurveCoordinate)
-    extends SecpPoint {
+case class SecpPointFinite(x: CurveCoordinate, y: CurveCoordinate) extends SecpPoint {
 
   override def bytes: ByteVector = {
     ByteVector(0x04) ++ x.bytes ++ y.bytes
@@ -50,8 +49,7 @@ object SecpPoint {
     SecpPointFinite(CurveCoordinate.fromBytes(x), CurveCoordinate.fromBytes(y))
 
   def apply(x: Array[Byte], y: Array[Byte]): SecpPointFinite =
-    SecpPointFinite(CurveCoordinate.fromByteArray(x),
-                    CurveCoordinate.fromByteArray(y))
+    SecpPointFinite(CurveCoordinate.fromByteArray(x), CurveCoordinate.fromByteArray(y))
 
   def apply(x: BigInteger, y: BigInteger): SecpPointFinite =
     SecpPointFinite(CurveCoordinate(x), CurveCoordinate(y))

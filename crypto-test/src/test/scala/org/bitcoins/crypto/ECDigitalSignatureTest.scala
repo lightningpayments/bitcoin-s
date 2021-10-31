@@ -58,20 +58,18 @@ class ECDigitalSignatureTest extends BitcoinSCryptoTest {
   }
 
   it must "must create and verify a digital signature" in {
-    forAll(CryptoGenerators.doubleSha256Digest, CryptoGenerators.privateKey) {
-      case (hash, key) =>
-        val sig = key.sign(hash)
-        assert(key.publicKey.verify(hash, sig))
+    forAll(CryptoGenerators.doubleSha256Digest, CryptoGenerators.privateKey) { case (hash, key) =>
+      val sig = key.sign(hash)
+      assert(key.publicKey.verify(hash, sig))
     }
   }
 
   it must "must not reuse r values" in {
-    forAll(CryptoGenerators.privateKey,
-           CryptoGenerators.doubleSha256Digest,
-           CryptoGenerators.doubleSha256Digest) { case (key, hash1, hash2) =>
-      val sig1 = key.sign(hash1)
-      val sig2 = key.sign(hash2)
-      assert(sig1.r != sig2.r)
+    forAll(CryptoGenerators.privateKey, CryptoGenerators.doubleSha256Digest, CryptoGenerators.doubleSha256Digest) {
+      case (key, hash1, hash2) =>
+        val sig1 = key.sign(hash1)
+        val sig2 = key.sign(hash2)
+        assert(sig1.r != sig2.r)
     }
   }
 

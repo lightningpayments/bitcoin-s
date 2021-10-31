@@ -1,10 +1,6 @@
 package org.bitcoins.core.wallet.signer
 
-import org.bitcoins.core.protocol.transaction.{
-  BaseTransaction,
-  Transaction,
-  WitnessTransaction
-}
+import org.bitcoins.core.protocol.transaction.{BaseTransaction, Transaction, WitnessTransaction}
 import org.bitcoins.core.wallet.utxo.{InputInfo, InputSigningInfo}
 
 /** This meant to represent the class used to 'fund' an
@@ -29,20 +25,14 @@ sealed abstract class BitcoinFundingInfo extends FundingInfo {
 
 object BitcoinFundingInfo {
 
-  private case class BitcoinFundingInfoImpl(
-      transaction: Transaction,
-      utxos: Seq[InputSigningInfo[InputInfo]])
+  private case class BitcoinFundingInfoImpl(transaction: Transaction, utxos: Seq[InputSigningInfo[InputInfo]])
       extends BitcoinFundingInfo
 
-  def apply(
-      tx: BaseTransaction,
-      utxos: Seq[InputSigningInfo[InputInfo]]): BitcoinFundingInfo = {
+  def apply(tx: BaseTransaction, utxos: Seq[InputSigningInfo[InputInfo]]): BitcoinFundingInfo = {
     BitcoinFundingInfoImpl(tx, utxos)
   }
 
-  def apply(
-      wtx: WitnessTransaction,
-      utxos: Seq[InputSigningInfo[InputInfo]]): BitcoinFundingInfo = {
+  def apply(wtx: WitnessTransaction, utxos: Seq[InputSigningInfo[InputInfo]]): BitcoinFundingInfo = {
     BitcoinFundingInfoImpl(wtx, utxos)
   }
 }

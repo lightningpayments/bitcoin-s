@@ -8,8 +8,7 @@ import scodec.bits.ByteVector
 
 /** @see [[https://github.com/bitcoin/bips/blob/master/bip-0157.mediawiki#getcfcheckpt BIP157]]
   */
-object RawGetCompactFilterCheckpointMessageSerializer
-    extends RawBitcoinSerializer[GetCompactFilterCheckPointMessage] {
+object RawGetCompactFilterCheckpointMessageSerializer extends RawBitcoinSerializer[GetCompactFilterCheckPointMessage] {
 
   def read(bytes: ByteVector): GetCompactFilterCheckPointMessage = {
     val filterType = FilterType.fromBytes(bytes.take(1))

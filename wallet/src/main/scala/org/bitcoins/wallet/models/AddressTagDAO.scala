@@ -6,21 +6,14 @@ import org.bitcoins.core.config.NetworkParameters
 import org.bitcoins.core.protocol.BitcoinAddress
 import org.bitcoins.core.protocol.transaction.Transaction
 import org.bitcoins.core.util.FutureUtil
-import org.bitcoins.core.wallet.utxo.{
-  AddressTag,
-  AddressTagName,
-  AddressTagType,
-  InternalAddressTagType
-}
+import org.bitcoins.core.wallet.utxo.{AddressTag, AddressTagName, AddressTagType, InternalAddressTagType}
 import org.bitcoins.db.{CRUD, SlickUtil}
 import org.bitcoins.wallet.config.WalletAppConfig
 import slick.lifted.{PrimaryKey, ProvenShape}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-case class AddressTagDAO()(implicit
-    val ec: ExecutionContext,
-    override val appConfig: WalletAppConfig)
+case class AddressTagDAO()(implicit val ec: ExecutionContext, override val appConfig: WalletAppConfig)
     extends CRUD[AddressTagDb, (BitcoinAddress, AddressTagType)]
     with SlickUtil[AddressTagDb, (BitcoinAddress, AddressTagType)] {
   import profile.api._
@@ -30,48 +23,37 @@ case class AddressTagDAO()(implicit
   override val table: profile.api.TableQuery[AddressTagTable] =
     TableQuery[AddressTagTable]
 
-  private lazy val spendingInfoTable: slick.lifted.TableQuery[
-    SpendingInfoDAO#SpendingInfoTable] = {
+  private lazy val spendingInfoTable: slick.lifted.TableQuery[SpendingInfoDAO#SpendingInfoTable] = {
     SpendingInfoDAO().table
   }
 
-  private lazy val addressTable: slick.lifted.TableQuery[
-    AddressDAO#AddressTable] = {
+  private lazy val addressTable: slick.lifted.TableQuery[AddressDAO#AddressTable] = {
     AddressDAO().table
   }
 
-  private lazy val spkTable: profile.api.TableQuery[
-    ScriptPubKeyDAO#ScriptPubKeyTable] = {
+  private lazy val spkTable: profile.api.TableQuery[ScriptPubKeyDAO#ScriptPubKeyTable] = {
     ScriptPubKeyDAO().table
   }
 
-  override def createAll(
-      ts: Vector[AddressTagDb]): Future[Vector[AddressTagDb]] =
+  override def createAll(ts: Vector[AddressTagDb]): Future[Vector[AddressTagDb]] =
     createAllNoAutoInc(ts, safeDatabase)
 
   /** Finds the rows that correlate to the given primary keys */
   override def findByPrimaryKeys(
-      ids: Vector[(BitcoinAddress, AddressTagType)]): Query[
-    AddressTagTable,
-    AddressTagDb,
-    Seq] = {
+      ids: Vector[(BitcoinAddress, AddressTagType)]): Query[AddressTagTable, AddressTagDb, Seq] = {
     val addresses = ids.map(_._1)
     val tagTypes = ids.map(_._2)
     table.filter(t => t.address.inSet(addresses) && t.tagType.inSet(tagTypes))
   }
 
-  override def findByPrimaryKey(id: (BitcoinAddress, AddressTagType)): Query[
-    Table[_],
-    AddressTagDb,
-    Seq] = {
+  override def findByPrimaryKey(id: (BitcoinAddress, AddressTagType)): Query[Table[_], AddressTagDb, Seq] = {
     val (address, tagType) = id
     table
       .filter(_.address === address)
       .filter(_.tagType === tagType)
   }
 
-  override def findAll(
-      ts: Vector[AddressTagDb]): Query[Table[_], AddressTagDb, Seq] =
+  override def findAll(ts: Vector[AddressTagDb]): Query[Table[_], AddressTagDb, Seq] =
     findByPrimaryKeys(ts.map(t => (t.address, t.tagType)))
 
   def findByAddress(address: BitcoinAddress): Future[Vector[AddressTagDb]] = {
@@ -80,9 +62,7 @@ case class AddressTagDAO()(implicit
     safeDatabase.run(query.result).map(_.toVector)
   }
 
-  def findByAddressAndTag(
-      address: BitcoinAddress,
-      tagType: AddressTagType): Future[Vector[AddressTagDb]] = {
+  def findByAddressAndTag(address: BitcoinAddress, tagType: AddressTagType): Future[Vector[AddressTagDb]] = {
     val query = table
       .filter(_.address === address)
       .filter(_.tagType === tagType)
@@ -115,9 +95,7 @@ case class AddressTagDAO()(implicit
     safeDatabase.run(query.delete)
   }
 
-  def dropByAddressAndTag(
-      address: BitcoinAddress,
-      tagType: AddressTagType): Future[Int] = {
+  def dropByAddressAndTag(address: BitcoinAddress, tagType: AddressTagType): Future[Int] = {
     val query = table
       .filter(_.address === address)
       .filter(_.tagType === tagType)
@@ -125,9 +103,7 @@ case class AddressTagDAO()(implicit
     safeDatabase.run(query.delete)
   }
 
-  def findTx(
-      tx: Transaction,
-      network: NetworkParameters): Future[Vector[AddressTagDb]] = {
+  def findTx(tx: Transaction, network: NetworkParameters): Future[Vector[AddressTagDb]] = {
     val txIds = tx.inputs.map(_.previousOutput.txIdBE)
 
     def findUtxos = {
@@ -165,8 +141,7 @@ case class AddressTagDAO()(implicit
     }
   }
 
-  class AddressTagTable(t: Tag)
-      extends Table[AddressTagDb](t, schemaName, "wallet_address_tags") {
+  class AddressTagTable(t: Tag) extends Table[AddressTagDb](t, schemaName, "wallet_address_tags") {
 
     def address: Rep[BitcoinAddress] = column[BitcoinAddress]("address")
 
@@ -177,9 +152,8 @@ case class AddressTagDAO()(implicit
     private type AddressTagTuple =
       (BitcoinAddress, AddressTagName, AddressTagType)
 
-    private val fromTuple: AddressTagTuple => AddressTagDb = {
-      case (address, tagName, tagType) =>
-        db.AddressTagDb(address, tagName, tagType)
+    private val fromTuple: AddressTagTuple => AddressTagDb = { case (address, tagName, tagType) =>
+      db.AddressTagDb(address, tagName, tagType)
     }
 
     private val toTuple: AddressTagDb => Option[AddressTagTuple] =
@@ -193,9 +167,7 @@ case class AddressTagDAO()(implicit
 
     /** All tags must have an associated address */
     def fk_address = {
-      foreignKey("fk_address",
-                 sourceColumns = address,
-                 targetTableQuery = addressTable)(_.address)
+      foreignKey("fk_address", sourceColumns = address, targetTableQuery = addressTable)(_.address)
     }
 
   }

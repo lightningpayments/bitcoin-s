@@ -4,15 +4,8 @@ import org.bitcoins.core.script.arithmetic.OP_ADD
 import org.bitcoins.core.script.bitwise.OP_EQUAL
 import org.bitcoins.core.script.constant._
 import org.bitcoins.core.script.reserved.{OP_RESERVED, OP_VER}
-import org.bitcoins.core.script.result.{
-  ScriptErrorInvalidStackOperation,
-  ScriptErrorOpReturn
-}
-import org.bitcoins.core.script.{
-  ExecutedScriptProgram,
-  ExecutionInProgressScriptProgram,
-  StartedScriptProgram
-}
+import org.bitcoins.core.script.result.{ScriptErrorInvalidStackOperation, ScriptErrorOpReturn}
+import org.bitcoins.core.script.{ExecutedScriptProgram, ExecutionInProgressScriptProgram, StartedScriptProgram}
 import org.bitcoins.core.serializers.script.ScriptParser
 import org.bitcoins.core.util._
 import org.bitcoins.testkitcore.util.{BitcoinSJvmTest, TestUtil}
@@ -28,8 +21,7 @@ class ControlOperationsInterpreterTest extends BitcoinSJvmTest {
     val stack = List(OP_TRUE)
     val script = List(OP_VERIFY)
     val program =
-      TestUtil.testProgramExecutionInProgress.updateStackAndScript(stack,
-                                                                   script)
+      TestUtil.testProgramExecutionInProgress.updateStackAndScript(stack, script)
     val result = COI.opVerify(program)
     result.stack.isEmpty must be(true)
     result.script.isEmpty must be(true)
@@ -41,8 +33,7 @@ class ControlOperationsInterpreterTest extends BitcoinSJvmTest {
     val stack = ScriptParser.fromString("0x09 0x00000000 0x00000000 0x10")
     val script = List(OP_VERIFY)
     val program =
-      TestUtil.testProgramExecutionInProgress.updateStackAndScript(stack,
-                                                                   script)
+      TestUtil.testProgramExecutionInProgress.updateStackAndScript(stack, script)
     val result = COI.opVerify(program)
     result.stackTopIsTrue must be(true)
   }
@@ -51,8 +42,7 @@ class ControlOperationsInterpreterTest extends BitcoinSJvmTest {
     val stack = List(OP_FALSE)
     val script = List(OP_VERIFY)
     val program =
-      TestUtil.testProgramExecutionInProgress.updateStackAndScript(stack,
-                                                                   script)
+      TestUtil.testProgramExecutionInProgress.updateStackAndScript(stack, script)
     val result = COI.opVerify(program)
     result.stackTopIsFalse must be(true)
   }
@@ -62,8 +52,7 @@ class ControlOperationsInterpreterTest extends BitcoinSJvmTest {
     val stack = List()
     val script = List(OP_VERIFY)
     val program =
-      TestUtil.testProgramExecutionInProgress.updateStackAndScript(stack,
-                                                                   script)
+      TestUtil.testProgramExecutionInProgress.updateStackAndScript(stack, script)
     val result =
       ScriptProgramTestUtil.toExecutedScriptProgram(COI.opVerify(program))
     result.error must be(Some(ScriptErrorInvalidStackOperation))
@@ -76,8 +65,7 @@ class ControlOperationsInterpreterTest extends BitcoinSJvmTest {
         val stack = List(ScriptConstant("1"))
         val script = List()
         val program =
-          TestUtil.testProgramExecutionInProgress.updateStackAndScript(stack,
-                                                                       script)
+          TestUtil.testProgramExecutionInProgress.updateStackAndScript(stack, script)
         COI.opVerify(program)
       }
     }
@@ -94,8 +82,7 @@ class ControlOperationsInterpreterTest extends BitcoinSJvmTest {
 
     program match {
       case programInProgress: ExecutionInProgressScriptProgram =>
-        programInProgress.shouldExecuteNextOperation must be(
-          shouldExecuteNextOperation)
+        programInProgress.shouldExecuteNextOperation must be(shouldExecuteNextOperation)
         programInProgress.isInExecutionBranch must be(isInExecutionBranch)
       case executed: ExecutedScriptProgram =>
         fail(s"Unexpected error: ${executed.error}")
@@ -106,8 +93,7 @@ class ControlOperationsInterpreterTest extends BitcoinSJvmTest {
     val stack = List(OP_0)
     val script = List(OP_IF, OP_RESERVED, OP_ENDIF, OP_1)
     val program =
-      TestUtil.testProgramExecutionInProgress.updateStackAndScript(stack,
-                                                                   script)
+      TestUtil.testProgramExecutionInProgress.updateStackAndScript(stack, script)
     val newProgram = COI.opIf(program)
     programMustBe(program = newProgram,
                   stack = Nil,
@@ -137,8 +123,7 @@ class ControlOperationsInterpreterTest extends BitcoinSJvmTest {
     val stack = List(OP_0)
     val script = List(OP_IF, OP_VER, OP_ELSE, OP_1, OP_ENDIF)
     val program =
-      TestUtil.testProgramExecutionInProgress.updateStackAndScript(stack,
-                                                                   script)
+      TestUtil.testProgramExecutionInProgress.updateStackAndScript(stack, script)
     val newProgram = COI.opIf(program)
     programMustBe(program = newProgram,
                   stack = Nil,
@@ -167,8 +152,7 @@ class ControlOperationsInterpreterTest extends BitcoinSJvmTest {
     val stack = List(ScriptNumber.one)
     val script = List(OP_IF, OP_1, OP_ELSE, OP_0, OP_ENDIF)
     val program =
-      TestUtil.testProgramExecutionInProgress.updateStackAndScript(stack,
-                                                                   script)
+      TestUtil.testProgramExecutionInProgress.updateStackAndScript(stack, script)
     val newProgram = COI.opIf(program)
     programMustBe(program = newProgram,
                   stack = Nil,
@@ -179,8 +163,7 @@ class ControlOperationsInterpreterTest extends BitcoinSJvmTest {
       newProgram.asInstanceOf[ExecutionInProgressScriptProgram]
 
     val elseProgram =
-      newProgramInProgress.updateStackAndScript(List(ScriptNumber.one),
-                                                newProgram.script.tail)
+      newProgramInProgress.updateStackAndScript(List(ScriptNumber.one), newProgram.script.tail)
     programMustBe(program = elseProgram,
                   stack = List(ScriptNumber.one),
                   script = List(OP_ELSE, OP_0, OP_ENDIF),
@@ -199,8 +182,7 @@ class ControlOperationsInterpreterTest extends BitcoinSJvmTest {
     val stack = List(ScriptNumber.one)
     val script = List(OP_IF, OP_ELSE, OP_0, OP_ELSE, OP_1, OP_ENDIF)
     val program =
-      TestUtil.testProgramExecutionInProgress.updateStackAndScript(stack,
-                                                                   script)
+      TestUtil.testProgramExecutionInProgress.updateStackAndScript(stack, script)
     val newProgram = COI.opIf(program)
     programMustBe(program = newProgram,
                   stack = Nil,
@@ -237,22 +219,10 @@ class ControlOperationsInterpreterTest extends BitcoinSJvmTest {
 
   it must "evaluate nested OP_IFS correctly" in {
     val stack = List(OP_0, OP_1)
-    val script = List(OP_IF,
-                      OP_IF,
-                      OP_0,
-                      OP_ELSE,
-                      OP_1,
-                      OP_ENDIF,
-                      OP_ELSE,
-                      OP_IF,
-                      OP_2,
-                      OP_ELSE,
-                      OP_3,
-                      OP_ENDIF,
-                      OP_ENDIF)
+    val script =
+      List(OP_IF, OP_IF, OP_0, OP_ELSE, OP_1, OP_ENDIF, OP_ELSE, OP_IF, OP_2, OP_ELSE, OP_3, OP_ENDIF, OP_ENDIF)
     val program =
-      TestUtil.testProgramExecutionInProgress.updateStackAndScript(stack,
-                                                                   script)
+      TestUtil.testProgramExecutionInProgress.updateStackAndScript(stack, script)
     val secondIfProgram = COI.opIf(program)
     programMustBe(program = secondIfProgram,
                   stack = List(ScriptNumber.one),
@@ -340,8 +310,7 @@ class ControlOperationsInterpreterTest extends BitcoinSJvmTest {
     val stack = Seq()
     val script = Seq(OP_RETURN)
     val program =
-      TestUtil.testProgramExecutionInProgress.updateStackAndScript(stack,
-                                                                   script)
+      TestUtil.testProgramExecutionInProgress.updateStackAndScript(stack, script)
     val newProgram =
       ScriptProgramTestUtil.toExecutedScriptProgram(COI.opReturn(program))
 

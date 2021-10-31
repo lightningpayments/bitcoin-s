@@ -47,10 +47,7 @@ sealed abstract class Block extends NetworkElement {
   */
 object Block extends Factory[Block] {
 
-  private case class BlockImpl(
-      blockHeader: BlockHeader,
-      txCount: CompactSizeUInt,
-      transactions: Seq[Transaction])
+  private case class BlockImpl(blockHeader: BlockHeader, txCount: CompactSizeUInt, transactions: Seq[Transaction])
       extends Block {
 
     override def toString: String = {
@@ -58,10 +55,7 @@ object Block extends Factory[Block] {
     }
   }
 
-  def apply(
-      blockHeader: BlockHeader,
-      txCount: CompactSizeUInt,
-      transactions: Seq[Transaction]): Block = {
+  def apply(blockHeader: BlockHeader, txCount: CompactSizeUInt, transactions: Seq[Transaction]): Block = {
     BlockImpl(blockHeader, txCount, transactions)
   }
 

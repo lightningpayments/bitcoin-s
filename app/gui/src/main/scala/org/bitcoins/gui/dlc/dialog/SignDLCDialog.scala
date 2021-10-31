@@ -19,9 +19,7 @@ import java.nio.file.Files
 import scala.collection._
 import scala.util.{Failure, Success, Try}
 
-object SignDLCDialog
-    extends Logging
-    with CliCommandProducer[SignDLCCliCommand] {
+object SignDLCDialog extends Logging with CliCommandProducer[SignDLCCliCommand] {
 
   override def getCliCommand(): SignDLCCliCommand = {
     DLCDialog.acceptDLCFile match {
@@ -37,9 +35,7 @@ object SignDLCDialog
 
   private var dialogOpt: Option[Dialog[Option[SignDLCCliCommand]]] = None
 
-  def showAndWait(
-      parentWindow: Window,
-      hex: String = ""): Option[SignDLCCliCommand] = {
+  def showAndWait(parentWindow: Window, hex: String = ""): Option[SignDLCCliCommand] = {
     val dialog = new Dialog[Option[SignDLCCliCommand]]() {
       initOwner(parentWindow)
       title = "Sign DLC"
@@ -126,13 +122,12 @@ object SignDLCDialog
       vgap = 5
     }
 
-    val destinationChooser = GUIUtil.getFileSaveButton(
-      "signed.txt",
-      None,
-      Some(file => {
-        DLCDialog.signDestDLCFile = Some(file)
-        DLCDialog.signDestFileChosenLabel.text = file.toString
-      }))
+    val destinationChooser = GUIUtil.getFileSaveButton("signed.txt",
+                                                       None,
+                                                       Some(file => {
+                                                         DLCDialog.signDestDLCFile = Some(file)
+                                                         DLCDialog.signDestFileChosenLabel.text = file.toString
+                                                       }))
 
     val destChooserHBox = new HBox() {
       spacing = 5
@@ -257,13 +252,12 @@ object SignDLCDialog
       nextRow += 1
 
       gridPane.add(new Label("Refund Date"), 0, nextRow)
-      gridPane.add(
-        new TextField() {
-          text = GUIUtil.epochToDateString(status.timeouts.contractTimeout)
-          editable = false
-        },
-        1,
-        nextRow)
+      gridPane.add(new TextField() {
+                     text = GUIUtil.epochToDateString(status.timeouts.contractTimeout)
+                     editable = false
+                   },
+                   1,
+                   nextRow)
       nextRow += 1
 
       if (isFromFile) {
@@ -277,9 +271,7 @@ object SignDLCDialog
 
     def onAcceptKeyTyped() = {
       if (!dlcDetailsShown) {
-        Try(
-          LnMessageFactory(DLCAcceptTLV).fromHex(
-            acceptTLVTF.text.value.trim)) match {
+        Try(LnMessageFactory(DLCAcceptTLV).fromHex(acceptTLVTF.text.value.trim)) match {
           case Failure(_) => ()
           case Success(lnMessage) =>
             showDetails(lnMessage, isFromFile = false)
@@ -287,9 +279,7 @@ object SignDLCDialog
       }
     }
 
-    def showDetails(
-        lnMessage: LnMessage[DLCAcceptTLV],
-        isFromFile: Boolean): Unit = {
+    def showDetails(lnMessage: LnMessage[DLCAcceptTLV], isFromFile: Boolean): Unit = {
       val tempId = lnMessage.tlv.tempContractId
       dlcs.find(_.tempContractId == tempId) match {
         case Some(dlc) =>

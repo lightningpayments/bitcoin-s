@@ -4,22 +4,14 @@ import akka.actor.ActorSystem
 import org.bitcoins.asyncutil.AsyncUtil
 import org.bitcoins.chain.blockchain.ChainHandlerCached
 import org.bitcoins.chain.config.ChainAppConfig
-import org.bitcoins.chain.models.{
-  BlockHeaderDAO,
-  CompactFilterDAO,
-  CompactFilterHeaderDAO
-}
+import org.bitcoins.chain.models.{BlockHeaderDAO, CompactFilterDAO, CompactFilterHeaderDAO}
 import org.bitcoins.core.api.chain._
 import org.bitcoins.core.api.node.{NodeApi, NodeType}
 import org.bitcoins.core.p2p.{NetworkPayload, ServiceIdentifier, TypeIdentifier}
 import org.bitcoins.core.protocol.transaction.Transaction
 import org.bitcoins.crypto.{DoubleSha256Digest, DoubleSha256DigestBE}
 import org.bitcoins.node.config.NodeAppConfig
-import org.bitcoins.node.models.{
-  BroadcastAbleTransaction,
-  BroadcastAbleTransactionDAO,
-  Peer
-}
+import org.bitcoins.node.models.{BroadcastAbleTransaction, BroadcastAbleTransactionDAO, Peer}
 import org.bitcoins.node.networking.P2PClient
 import org.bitcoins.node.networking.peer.{
   ControlMessageHandler,
@@ -52,15 +44,12 @@ trait Node extends NodeApi with ChainQueryApi with P2PLogger {
 
   def peerServices: Map[Peer, ServiceIdentifier] = _peerServices.toMap
 
-  def setPeerServices(
-      peer: Peer,
-      serviceIdentifier: ServiceIdentifier): Unit = {
+  def setPeerServices(peer: Peer, serviceIdentifier: ServiceIdentifier): Unit = {
     _peerServices.put(peer, serviceIdentifier)
     ()
   }
 
-  def randomPeerMsgSenderWithService(
-      f: ServiceIdentifier => Boolean): PeerMessageSender = {
+  def randomPeerMsgSenderWithService(f: ServiceIdentifier => Boolean): PeerMessageSender = {
     val filteredPeers =
       peerServices.filter(p => f(p._2)).keys.toVector
     if (filteredPeers.isEmpty)
@@ -99,11 +88,8 @@ trait Node extends NodeApi with ChainQueryApi with P2PLogger {
     * This involves database calls which can be slow and expensive to construct
     * our [[org.bitcoins.chain.blockchain.Blockchain Blockchain]]
     */
-  def chainApiFromDb()(implicit
-      executionContext: ExecutionContext): Future[ChainHandlerCached] = {
-    ChainHandlerCached.fromDatabase(BlockHeaderDAO(),
-                                    CompactFilterHeaderDAO(),
-                                    CompactFilterDAO())
+  def chainApiFromDb()(implicit executionContext: ExecutionContext): Future[ChainHandlerCached] = {
+    ChainHandlerCached.fromDatabase(BlockHeaderDAO(), CompactFilterHeaderDAO(), CompactFilterDAO())
   }
 
   /** Unlike our chain api, this is cached inside our node
@@ -115,10 +101,7 @@ trait Node extends NodeApi with ChainQueryApi with P2PLogger {
       peers.map(x => PeerMessageReceiver.newReceiver(node = this, peer = x))
     val zipped = peers.zip(peerMsgRecvs)
     val p2p = zipped.map { case (peer, peerMsgRecv) =>
-      P2PClient(context = system,
-                peer = peer,
-                peerMessageReceiver = peerMsgRecv,
-                onReconnect = sync)
+      P2PClient(context = system, peer = peer, peerMessageReceiver = peerMsgRecv, onReconnect = sync)
     }
     p2p
   }
@@ -166,13 +149,10 @@ trait Node extends NodeApi with ChainQueryApi with P2PLogger {
       val isInitializedFs = peerMsgSenders.indices.map { idx =>
         peerMsgSenders(idx).connect()
         val isInitializedF = for {
-          _ <- AsyncUtil.retryUntilSatisfiedF(() => isInitialized(idx),
-                                              maxTries = 1024,
-                                              interval = 250.millis)
+          _ <- AsyncUtil.retryUntilSatisfiedF(() => isInitialized(idx), maxTries = 1024, interval = 250.millis)
         } yield ()
         isInitializedF.failed.foreach { err =>
-          logger.error(
-            s"Failed to connect with peer=${peers(idx)} with err=$err")
+          logger.error(s"Failed to connect with peer=${peers(idx)} with err=$err")
         }
         isInitializedF.map { _ =>
           nodeAppConfig.nodeType match {
@@ -180,8 +160,7 @@ trait Node extends NodeApi with ChainQueryApi with P2PLogger {
               if (peerServices(peers(idx)).nodeCompactFilters) {
                 logger.info(s"Our peer=${peers(idx)} has been initialized")
               } else {
-                logger.info(
-                  s"Our peer=${peers(idx)} does not support compact filters. Disconnecting.")
+                logger.info(s"Our peer=${peers(idx)} does not support compact filters. Disconnecting.")
                 peerMsgSenders(idx).disconnect()
               }
             }
@@ -249,8 +228,7 @@ trait Node extends NodeApi with ChainQueryApi with P2PLogger {
     }
 
     isStoppedF.map { _ =>
-      logger.info(
-        s"Node stopped! It took=${System.currentTimeMillis() - start}ms")
+      logger.info(s"Node stopped! It took=${System.currentTimeMillis() - start}ms")
       this
     }
   }
@@ -274,14 +252,12 @@ trait Node extends NodeApi with ChainQueryApi with P2PLogger {
       cachedHeaders = blockchains.flatMap(_.headers).map(_.hashBE.flip)
       _ <- randomPeerMsgSender.sendGetHeadersMessage(cachedHeaders)
     } yield {
-      logger.info(
-        s"Starting sync node, height=${header.height} hash=${header.hashBE}")
+      logger.info(s"Starting sync node, height=${header.height} hash=${header.hashBE}")
     }
   }
 
   /** Broadcasts the given transaction over the P2P network */
-  override def broadcastTransactions(
-      transactions: Vector[Transaction]): Future[Unit] = {
+  override def broadcastTransactions(transactions: Vector[Transaction]): Future[Unit] = {
     val broadcastTxDbs = transactions.map(tx => BroadcastAbleTransaction(tx))
 
     val addToDbF = txDAO.upsertAll(broadcastTxDbs)
@@ -292,8 +268,7 @@ trait Node extends NodeApi with ChainQueryApi with P2PLogger {
       case Failure(exception) =>
         logger.error(s"Error when writing broadcastable TXs to DB", exception)
       case Success(written) =>
-        logger.debug(
-          s"Wrote tx=${written.map(_.transaction.txIdBE.hex)} to broadcastable table")
+        logger.debug(s"Wrote tx=${written.map(_.transaction.txIdBE.hex)} to broadcastable table")
     }
 
     for {
@@ -306,8 +281,8 @@ trait Node extends NodeApi with ChainQueryApi with P2PLogger {
           logger.info(s"Sending out tx message for tx=$txIds")
           peerMsgSenders(0).sendInventoryMessage(transactions: _*)
         } else {
-          Future.failed(new RuntimeException(
-            s"Error broadcasting transaction $txIds, peer is disconnected ${peers(0)}"))
+          Future.failed(
+            new RuntimeException(s"Error broadcasting transaction $txIds, peer is disconnected ${peers(0)}"))
         }
       }
     } yield res
@@ -315,19 +290,16 @@ trait Node extends NodeApi with ChainQueryApi with P2PLogger {
 
   /** Fetches the given blocks from the peers and calls the appropriate [[callbacks]] when done.
     */
-  override def downloadBlocks(
-      blockHashes: Vector[DoubleSha256Digest]): Future[Unit] = {
+  override def downloadBlocks(blockHashes: Vector[DoubleSha256Digest]): Future[Unit] = {
     if (blockHashes.isEmpty) {
       Future.unit
     } else {
-      peerMsgSenders(0).sendGetDataMessage(TypeIdentifier.MsgWitnessBlock,
-                                           blockHashes: _*)
+      peerMsgSenders(0).sendGetDataMessage(TypeIdentifier.MsgWitnessBlock, blockHashes: _*)
     }
   }
 
   /** Gets the height of the given block */
-  override def getBlockHeight(
-      blockHash: DoubleSha256DigestBE): Future[Option[Int]] =
+  override def getBlockHeight(blockHash: DoubleSha256DigestBE): Future[Option[Int]] =
     chainApiFromDb().flatMap(_.getBlockHeight(blockHash))
 
   /** Gets the hash of the block that is what we consider "best" */
@@ -335,8 +307,7 @@ trait Node extends NodeApi with ChainQueryApi with P2PLogger {
     chainApiFromDb().flatMap(_.getBestBlockHash())
 
   /** Gets number of confirmations for the given block hash */
-  def getNumberOfConfirmations(
-      blockHashOpt: DoubleSha256DigestBE): Future[Option[Int]] =
+  def getNumberOfConfirmations(blockHashOpt: DoubleSha256DigestBE): Future[Option[Int]] =
     chainApiFromDb().flatMap(_.getNumberOfConfirmations(blockHashOpt))
 
   override def epochSecondToBlockHeight(time: Long): Future[Int] =

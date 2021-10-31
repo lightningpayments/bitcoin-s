@@ -2,10 +2,7 @@ package org.bitcoins.core.protocol.script
 
 import org.bitcoins.core.protocol.CompactSizeUInt
 import org.bitcoins.core.script.constant.{OP_0, ScriptNumberOperation}
-import org.bitcoins.core.serializers.script.{
-  RawScriptWitnessParser,
-  ScriptParser
-}
+import org.bitcoins.core.serializers.script.{RawScriptWitnessParser, ScriptParser}
 import org.bitcoins.core.util.{BitcoinScriptUtil, BytesUtil}
 import org.bitcoins.crypto.{
   ECDigitalSignature,
@@ -58,14 +55,12 @@ sealed abstract class P2WPKHWitnessV0 extends ScriptWitnessV0 {
 
 object P2WPKHWitnessV0 {
 
-  private case class P2WPKHWitnessV0Impl(stack: Seq[ByteVector])
-      extends P2WPKHWitnessV0
+  private case class P2WPKHWitnessV0Impl(stack: Seq[ByteVector]) extends P2WPKHWitnessV0
 
   private def apply(stack: Seq[ByteVector]): P2WPKHWitnessV0 =
     P2WPKHWitnessV0Impl(stack)
 
-  private[bitcoins] def apply(
-      pubKeyBytes: ECPublicKeyBytes): P2WPKHWitnessV0 = {
+  private[bitcoins] def apply(pubKeyBytes: ECPublicKeyBytes): P2WPKHWitnessV0 = {
     P2WPKHWitnessV0(pubKeyBytes, EmptyDigitalSignature)
   }
 
@@ -73,15 +68,11 @@ object P2WPKHWitnessV0 {
     P2WPKHWitnessV0(pubKey, EmptyDigitalSignature)
   }
 
-  private[bitcoins] def apply(
-      publicKeyBytes: ECPublicKeyBytes,
-      signature: ECDigitalSignature): P2WPKHWitnessV0 = {
+  private[bitcoins] def apply(publicKeyBytes: ECPublicKeyBytes, signature: ECDigitalSignature): P2WPKHWitnessV0 = {
     P2WPKHWitnessV0(Seq(publicKeyBytes.bytes, signature.bytes))
   }
 
-  def apply(
-      publicKey: ECPublicKey,
-      signature: ECDigitalSignature): P2WPKHWitnessV0 = {
+  def apply(publicKey: ECPublicKey, signature: ECDigitalSignature): P2WPKHWitnessV0 = {
     P2WPKHWitnessV0(publicKey.toPublicKeyBytes(), signature)
   }
 
@@ -89,12 +80,10 @@ object P2WPKHWitnessV0 {
     scriptSig match {
       case p2pkh: P2PKHScriptSignature =>
         P2WPKHWitnessV0(p2pkh.publicKey, p2pkh.signature)
-      case x @ (_: LockTimeScriptSignature | _: MultiSignatureScriptSignature |
-          _: ConditionalScriptSignature | _: NonStandardScriptSignature |
-          _: P2PKScriptSignature | _: P2SHScriptSignature |
-          TrivialTrueScriptSignature | EmptyScriptSignature) =>
-        throw new IllegalArgumentException(
-          s"Expected P2PKHScriptSignature, got $x")
+      case x @ (_: LockTimeScriptSignature | _: MultiSignatureScriptSignature | _: ConditionalScriptSignature |
+          _: NonStandardScriptSignature | _: P2PKScriptSignature | _: P2SHScriptSignature | TrivialTrueScriptSignature |
+          EmptyScriptSignature) =>
+        throw new IllegalArgumentException(s"Expected P2PKHScriptSignature, got $x")
     }
 }
 
@@ -114,8 +103,7 @@ sealed abstract class P2WSHWitnessV0 extends ScriptWitnessV0 {
     // ECDigital signatures are between 71 and 73 bytes long
     // with a exponential decay on the probability of smaller sigs
     // [[https://en.bitcoin.it/wiki/Elliptic_Curve_Digital_Signature_Algorithm]]
-    val relevantStack = stack.toVector.tail.filter(bytes =>
-      bytes.length >= 67 && bytes.length <= 73)
+    val relevantStack = stack.toVector.tail.filter(bytes => bytes.length >= 67 && bytes.length <= 73)
 
     relevantStack.map(ECDigitalSignature.fromBytes)
   }
@@ -141,16 +129,13 @@ sealed abstract class P2WSHWitnessV0 extends ScriptWitnessV0 {
 
 object P2WSHWitnessV0 {
 
-  private case class P2WSHWitnessV0Impl(stack: Seq[ByteVector])
-      extends P2WSHWitnessV0
+  private case class P2WSHWitnessV0Impl(stack: Seq[ByteVector]) extends P2WSHWitnessV0
 
   def apply(spk: RawScriptPubKey): P2WSHWitnessV0 = {
     P2WSHWitnessV0(spk, EmptyScriptSignature)
   }
 
-  def apply(
-      spk: RawScriptPubKey,
-      scriptSig: ScriptSignature): P2WSHWitnessV0 = {
+  def apply(spk: RawScriptPubKey, scriptSig: ScriptSignature): P2WSHWitnessV0 = {
     //need to remove the OP_0 or OP_1 and replace it with ScriptNumber.zero / ScriptNumber.one since witnesses are *not* run through the interpreter
     //remove pushops from scriptSig
     val minimalIf = BitcoinScriptUtil.minimalIfOp(scriptSig.asm)

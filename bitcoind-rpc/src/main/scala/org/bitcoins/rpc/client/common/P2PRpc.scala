@@ -1,9 +1,6 @@
 package org.bitcoins.rpc.client.common
 
-import org.bitcoins.commons.jsonmodels.bitcoind.RpcOpts.{
-  AddNodeArgument,
-  SetBanCommand
-}
+import org.bitcoins.commons.jsonmodels.bitcoind.RpcOpts.{AddNodeArgument, SetBanCommand}
 import org.bitcoins.commons.jsonmodels.bitcoind._
 import org.bitcoins.commons.serializers.JsonSerializers._
 import org.bitcoins.core.protocol.blockchain.Block
@@ -19,9 +16,7 @@ import scala.concurrent.Future
 trait P2PRpc { self: Client =>
 
   def addNode(address: URI, command: AddNodeArgument): Future[Unit] = {
-    bitcoindCall[Unit](
-      "addnode",
-      List(JsString(address.getAuthority), JsString(command.toString)))
+    bitcoindCall[Unit]("addnode", List(JsString(address.getAuthority), JsString(command.toString)))
   }
 
   def clearBanned(): Future[Unit] = {
@@ -82,16 +77,10 @@ trait P2PRpc { self: Client =>
     }
   }
 
-  def setBan(
-      address: URI,
-      command: SetBanCommand,
-      banTime: Int = 86400,
-      absolute: Boolean = false): Future[Unit] = {
-    bitcoindCall[Unit]("setban",
-                       List(JsString(address.getAuthority),
-                            JsString(command.toString),
-                            JsNumber(banTime),
-                            JsBoolean(absolute)))
+  def setBan(address: URI, command: SetBanCommand, banTime: Int = 86400, absolute: Boolean = false): Future[Unit] = {
+    bitcoindCall[Unit](
+      "setban",
+      List(JsString(address.getAuthority), JsString(command.toString), JsNumber(banTime), JsBoolean(absolute)))
   }
 
   def setNetworkActive(activate: Boolean): Future[Unit] = {

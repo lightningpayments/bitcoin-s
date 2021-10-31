@@ -22,10 +22,9 @@ class HDPathTest extends BitcoinSUnitTest {
   }
 
   it must "be convertable to a HDChain" in {
-    forAll(HDGenerators.hdAccount, HDGenerators.hdChainType) {
-      (account, chainType) =>
-        val chain = account.toChain(chainType)
-        assert(chain.account == account)
+    forAll(HDGenerators.hdAccount, HDGenerators.hdChainType) { (account, chainType) =>
+      val chain = account.toChain(chainType)
+      assert(chain.account == account)
     }
   }
 
@@ -42,8 +41,7 @@ class HDPathTest extends BitcoinSUnitTest {
 
   it must "fail to make addresses with neagtives indices" in {
     forAll(HDGenerators.hdChain, NumberGenerator.negativeInts) { (chain, i) =>
-      assertThrows[IllegalArgumentException](
-        HDAddress(chain = chain, index = i))
+      assertThrows[IllegalArgumentException](HDAddress(chain = chain, index = i))
     }
   }
 
@@ -71,8 +69,7 @@ class HDPathTest extends BitcoinSUnitTest {
   it must "correctly represent Bitcoin and Testnet coins" in {
     HDCoinType.fromInt(0) must be(HDCoinType.Bitcoin)
     HDCoinType.fromInt(1) must be(HDCoinType.Testnet)
-    forAll(NumberGenerator.ints.suchThat(i =>
-      !HDCoinType.all.map(_.toInt).contains(i))) { i =>
+    forAll(NumberGenerator.ints.suchThat(i => !HDCoinType.all.map(_.toInt).contains(i))) { i =>
       HDCoinType.fromInt(i) must be(HDCoinType.UnknownCoinType(i))
       HDCoinType.fromKnown(i) must be(None)
     }
@@ -108,8 +105,7 @@ class HDPathTest extends BitcoinSUnitTest {
         case value: NestedSegWitHDPath =>
           assert(value == path.asInstanceOf[NestedSegWitHDPath])
       }
-      resultOpt.getOrElse(
-        fail(s"$path did not have toString/fromString symmetry"))
+      resultOpt.getOrElse(fail(s"$path did not have toString/fromString symmetry"))
     }
   }
 
@@ -143,10 +139,9 @@ class HDPathTest extends BitcoinSUnitTest {
 
   it must "fail to generate HD paths with the wrong hardened index types" in {
     forAll(HDGenerators.hdPathWithConstructor) { case (hd, hdApply) =>
-      val nonHardenedCoinChildren = hd.path.zipWithIndex.map {
-        case (child, index) =>
-          if (index == LegacyHDPath.COIN_INDEX) child.copy(hardened = false)
-          else child
+      val nonHardenedCoinChildren = hd.path.zipWithIndex.map { case (child, index) =>
+        if (index == LegacyHDPath.COIN_INDEX) child.copy(hardened = false)
+        else child
       }
 
       val badCoinAttempt = hdApply(nonHardenedCoinChildren)
@@ -157,11 +152,10 @@ class HDPathTest extends BitcoinSUnitTest {
           assert(exc.getMessage.contains("coin type child must be hardened"))
       }
 
-      val nonHardenedAccountChildren = hd.path.zipWithIndex.map {
-        case (child, index) =>
-          if (index == LegacyHDPath.ACCOUNT_INDEX)
-            child.copy(hardened = false)
-          else child
+      val nonHardenedAccountChildren = hd.path.zipWithIndex.map { case (child, index) =>
+        if (index == LegacyHDPath.ACCOUNT_INDEX)
+          child.copy(hardened = false)
+        else child
       }
       val badAccountAttempt = hdApply(nonHardenedAccountChildren)
 
@@ -171,10 +165,9 @@ class HDPathTest extends BitcoinSUnitTest {
           assert(exc.getMessage.contains("account child must be hardened"))
       }
 
-      val hardenedChainChildren = hd.path.zipWithIndex.map {
-        case (child, index) =>
-          if (index == LegacyHDPath.CHAIN_INDEX) child.copy(hardened = true)
-          else child
+      val hardenedChainChildren = hd.path.zipWithIndex.map { case (child, index) =>
+        if (index == LegacyHDPath.CHAIN_INDEX) child.copy(hardened = true)
+        else child
       }
       val badChainAttempt =
         hdApply(hardenedChainChildren)
@@ -185,10 +178,9 @@ class HDPathTest extends BitcoinSUnitTest {
           assert(exc.getMessage.contains("chain child must not be hardened"))
       }
 
-      val hardenedAddressChildren = hd.path.zipWithIndex.map {
-        case (child, index) =>
-          if (index == LegacyHDPath.ADDRESS_INDEX) child.copy(hardened = true)
-          else child
+      val hardenedAddressChildren = hd.path.zipWithIndex.map { case (child, index) =>
+        if (index == LegacyHDPath.ADDRESS_INDEX) child.copy(hardened = true)
+        else child
       }
       val badAddrAttempt =
         hdApply(hardenedAddressChildren)
@@ -196,8 +188,7 @@ class HDPathTest extends BitcoinSUnitTest {
       badAddrAttempt match {
         case Success(_) => fail()
         case Failure(exc) =>
-          assert(
-            exc.getMessage.contains("address index child must not be hardened"))
+          assert(exc.getMessage.contains("address index child must not be hardened"))
       }
     }
   }
@@ -388,11 +379,9 @@ class HDPathTest extends BitcoinSUnitTest {
       val address = Bech32Address(spk, MainNet)
 
       val expectedPriv = ECPrivateKeyUtil
-        .fromWIFToPrivateKey(
-          "KyZpNDKnfs94vbrwhJneDi77V6jF64PWPF8x5cdJb8ifgg2DUc9d")
+        .fromWIFToPrivateKey("KyZpNDKnfs94vbrwhJneDi77V6jF64PWPF8x5cdJb8ifgg2DUc9d")
         .toPrivateKey
-      val expectedPub = ECPublicKey(
-        hex"0330d54fd0dd420a6e5f8d3624f5f3482cae350f79d5f0753bf5beef9c2d91af3c")
+      val expectedPub = ECPublicKey(hex"0330d54fd0dd420a6e5f8d3624f5f3482cae350f79d5f0753bf5beef9c2d91af3c")
       val expectedAddress =
         Bech32Address.fromString("bc1qcr8te4kr609gcawutmrza0j4xv80jy8z306fyu")
 
@@ -410,11 +399,9 @@ class HDPathTest extends BitcoinSUnitTest {
       val address = Bech32Address(spk, MainNet)
 
       val expectedPriv = ECPrivateKeyUtil
-        .fromWIFToPrivateKey(
-          "Kxpf5b8p3qX56DKEe5NqWbNUP9MnqoRFzZwHRtsFqhzuvUJsYZCy")
+        .fromWIFToPrivateKey("Kxpf5b8p3qX56DKEe5NqWbNUP9MnqoRFzZwHRtsFqhzuvUJsYZCy")
         .toPrivateKey
-      val expectedPub = ECPublicKey(
-        hex"03e775fd51f0dfb8cd865d9ff1cca2a158cf651fe997fdc9fee9c1d3b5e995ea77")
+      val expectedPub = ECPublicKey(hex"03e775fd51f0dfb8cd865d9ff1cca2a158cf651fe997fdc9fee9c1d3b5e995ea77")
       val expectedAddress =
         Bech32Address.fromString("bc1qnjg0jd8228aq7egyzacy8cys3knf9xvrerkf9g")
 
@@ -432,11 +419,9 @@ class HDPathTest extends BitcoinSUnitTest {
       val address = Bech32Address(spk, MainNet)
 
       val expectedPriv = ECPrivateKeyUtil
-        .fromWIFToPrivateKey(
-          "KxuoxufJL5csa1Wieb2kp29VNdn92Us8CoaUG3aGtPtcF3AzeXvF")
+        .fromWIFToPrivateKey("KxuoxufJL5csa1Wieb2kp29VNdn92Us8CoaUG3aGtPtcF3AzeXvF")
         .toPrivateKey
-      val expectedPub = ECPublicKey(
-        hex"03025324888e429ab8e3dbaf1f7802648b9cd01e9b418485c5fa4c1b9b5700e1a6")
+      val expectedPub = ECPublicKey(hex"03025324888e429ab8e3dbaf1f7802648b9cd01e9b418485c5fa4c1b9b5700e1a6")
       val expectedAddress =
         Bech32Address.fromString("bc1q8c6fshw2dlwun7ekn9qwf37cu2rn755upcp6el")
 
@@ -523,8 +508,7 @@ class HDPathTest extends BitcoinSUnitTest {
     // nested segwit testnet
     {
       val rootXpriv =
-        ExtPrivateKey.fromBIP39Seed(ExtKeyVersion.NestedSegWitTestNet3Priv,
-                                    seed)
+        ExtPrivateKey.fromBIP39Seed(ExtKeyVersion.NestedSegWitTestNet3Priv, seed)
       val path = NestedSegWitHDPath.fromString("m/49'/0'/0'/0/0")
       val Success(xpub) = rootXpriv.deriveChildPubKey(path)
       val Success(expectedXpub) = ExtPublicKey.fromStringT(
@@ -617,10 +601,8 @@ class HDPathTest extends BitcoinSUnitTest {
     assert(expectedAccountXpriv == accountXpriv)
 
     val privkeyAtPath = rootXpriv.deriveChildPrivKey(path).key
-    val expectedPrivkeyAtPath = ECPrivateKey(
-      hex"0xc9bdb49cfbaedca21c4b1f3a7803c34636b1d7dc55a717132443fc3f4c5867e8")
-    val expectedPubkeyAtPath = ECPublicKey(
-      hex"0x03a1af804ac108a8a51782198c2d034b28bf90c8803f5a53f76276fa69a4eae77f")
+    val expectedPrivkeyAtPath = ECPrivateKey(hex"0xc9bdb49cfbaedca21c4b1f3a7803c34636b1d7dc55a717132443fc3f4c5867e8")
+    val expectedPubkeyAtPath = ECPublicKey(hex"0x03a1af804ac108a8a51782198c2d034b28bf90c8803f5a53f76276fa69a4eae77f")
     assert(expectedPrivkeyAtPath.publicKey == expectedPubkeyAtPath)
     assert(privkeyAtPath == expectedPrivkeyAtPath)
     assert(privkeyAtPath.publicKey == expectedPubkeyAtPath)

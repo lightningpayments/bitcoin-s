@@ -12,9 +12,7 @@ import slick.lifted.{ForeignKeyQuery, ProvenShape}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-case class DLCAcceptDAO()(implicit
-    val ec: ExecutionContext,
-    override val appConfig: DLCAppConfig)
+case class DLCAcceptDAO()(implicit val ec: ExecutionContext, override val appConfig: DLCAppConfig)
     extends CRUD[DLCAcceptDb, Sha256Digest]
     with SlickUtil[DLCAcceptDb, Sha256Digest] {
   private val mappers = new org.bitcoins.db.DbCommonsColumnMappers(profile)
@@ -30,18 +28,15 @@ case class DLCAcceptDAO()(implicit
   override def createAll(ts: Vector[DLCAcceptDb]): Future[Vector[DLCAcceptDb]] =
     createAllNoAutoInc(ts, safeDatabase)
 
-  override protected def findByPrimaryKeys(
-      ids: Vector[Sha256Digest]): Query[DLCAcceptTable, DLCAcceptDb, Seq] =
+  override protected def findByPrimaryKeys(ids: Vector[Sha256Digest]): Query[DLCAcceptTable, DLCAcceptDb, Seq] =
     table.filter(_.dlcId.inSet(ids))
 
-  override def findByPrimaryKey(
-      id: Sha256Digest): Query[DLCAcceptTable, DLCAcceptDb, Seq] = {
+  override def findByPrimaryKey(id: Sha256Digest): Query[DLCAcceptTable, DLCAcceptDb, Seq] = {
     table
       .filter(_.dlcId === id)
   }
 
-  override def findAll(
-      dlcs: Vector[DLCAcceptDb]): Query[DLCAcceptTable, DLCAcceptDb, Seq] =
+  override def findAll(dlcs: Vector[DLCAcceptDb]): Query[DLCAcceptTable, DLCAcceptDb, Seq] =
     findByPrimaryKeys(dlcs.map(_.dlcId))
 
   def deleteByDLCId(dlcId: Sha256Digest): Future[Int] = {
@@ -58,13 +53,11 @@ case class DLCAcceptDAO()(implicit
       case Vector() =>
         None
       case dlcs: Vector[DLCAcceptDb] =>
-        throw new RuntimeException(
-          s"More than one DLCAccept per dlcId ($dlcId), got: $dlcs")
+        throw new RuntimeException(s"More than one DLCAccept per dlcId ($dlcId), got: $dlcs")
     }
   }
 
-  class DLCAcceptTable(tag: Tag)
-      extends Table[DLCAcceptDb](tag, schemaName, "accept_dlc_data") {
+  class DLCAcceptTable(tag: Tag) extends Table[DLCAcceptDb](tag, schemaName, "accept_dlc_data") {
 
     def dlcId: Rep[Sha256Digest] = column("dlc_id", O.PrimaryKey)
 
@@ -80,8 +73,7 @@ case class DLCAcceptDAO()(implicit
 
     def changeSerialId: Rep[UInt64] = column("change_serial_id")
 
-    def negotiationFields: Rep[NegotiationFieldsTLV] = column(
-      "negotiation_fields")
+    def negotiationFields: Rep[NegotiationFieldsTLV] = column("negotiation_fields")
 
     def * : ProvenShape[DLCAcceptDb] =
       (dlcId,
@@ -94,8 +86,6 @@ case class DLCAcceptDAO()(implicit
        negotiationFields).<>(DLCAcceptDb.tupled, DLCAcceptDb.unapply)
 
     def fk: ForeignKeyQuery[_, DLCDb] =
-      foreignKey("fk_dlc_id",
-                 sourceColumns = dlcId,
-                 targetTableQuery = dlcTable)(_.dlcId)
+      foreignKey("fk_dlc_id", sourceColumns = dlcId, targetTableQuery = dlcTable)(_.dlcId)
   }
 }

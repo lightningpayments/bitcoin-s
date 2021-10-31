@@ -7,8 +7,6 @@ import scodec.bits.ByteVector
   */
 sealed trait ScriptPubKeyUpdateIndicator
 
-case class UpdateScriptPubKeyAsm(asm: Seq[ScriptToken])
-    extends ScriptPubKeyUpdateIndicator
+case class UpdateScriptPubKeyAsm(asm: Seq[ScriptToken]) extends ScriptPubKeyUpdateIndicator
 
-case class UpdateScriptPubKeyBytes(bytes: ByteVector)
-    extends ScriptPubKeyUpdateIndicator
+case class UpdateScriptPubKeyBytes(bytes: ByteVector) extends ScriptPubKeyUpdateIndicator

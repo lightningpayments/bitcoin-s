@@ -26,8 +26,7 @@ class Bech32mTest extends BitcoinSUnitTest {
   }
 
   it must "serialization symmetry" in {
-    forAll(ScriptGenerators.witnessScriptPubKey.suchThat(
-             _._1.witnessVersion != WitnessVersion0),
+    forAll(ScriptGenerators.witnessScriptPubKey.suchThat(_._1.witnessVersion != WitnessVersion0),
            ChainParamsGenerator.networkParams) { case ((witSPK, _), network) =>
       val addr = Bech32mAddress(witSPK, network)
       val spk = Bech32mAddress.fromStringToWitSPK(addr.value)
@@ -63,15 +62,13 @@ class Bech32mTest extends BitcoinSUnitTest {
     assert(Bech32.splitToHrpAndData("a1lqfn3a", Bech32m).isSuccess)
     assert(
       Bech32
-        .splitToHrpAndData(
-          "an83characterlonghumanreadablepartthatcontainsthetheexcludedcharactersbioandnumber11sg7hg6",
-          Bech32m)
+        .splitToHrpAndData("an83characterlonghumanreadablepartthatcontainsthetheexcludedcharactersbioandnumber11sg7hg6",
+                           Bech32m)
         .isSuccess)
     assert(
       Bech32
-        .splitToHrpAndData(
-          "11llllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllludsr8",
-          Bech32m)
+        .splitToHrpAndData("11llllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllludsr8",
+                           Bech32m)
         .isSuccess)
     assert(Bech32.splitToHrpAndData("?1v759aa", Bech32m).isSuccess)
   }
@@ -98,18 +95,15 @@ class Bech32mTest extends BitcoinSUnitTest {
     assert(
       Bech32mAddress
         .fromString("BC1PW508D6QEJXTDG4Y5R3ZARVARY0C5XW7KJ9WKRU")
-        .scriptPubKey == WitnessScriptPubKey.fromAsmHex(
-        "5114751e76e8199196d454941c45d1b3a323f1433bd6"))
+        .scriptPubKey == WitnessScriptPubKey.fromAsmHex("5114751e76e8199196d454941c45d1b3a323f1433bd6"))
     assert(
       Bech32mAddress
-        .fromString(
-          "tb1prp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3q98lawz")
+        .fromString("tb1prp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3q98lawz")
         .scriptPubKey == WitnessScriptPubKey.fromAsmHex(
         "51201863143c14c5166804bd19203356da136c985678cd4d27a1b8c6329604903262"))
     assert(
       Bech32mAddress
-        .fromString(
-          "bc1pw508d6qejxtdg4y5r3zarvary0c5xw7kw508d6qejxtdg4y5r3zarvary0c5xw7kt5nd6y")
+        .fromString("bc1pw508d6qejxtdg4y5r3zarvary0c5xw7kw508d6qejxtdg4y5r3zarvary0c5xw7kt5nd6y")
         .scriptPubKey == WitnessScriptPubKey.fromAsmHex(
         "5128751e76e8199196d454941c45d1b3a323f1433bd6751e76e8199196d454941c45d1b3a323f1433bd6"))
     assert(
@@ -119,24 +113,20 @@ class Bech32mTest extends BitcoinSUnitTest {
     assert(
       Bech32mAddress
         .fromString("bc1zw508d6qejxtdg4y5r3zarvaryvaxxpcs")
-        .scriptPubKey == WitnessScriptPubKey.fromAsmHex(
-        "5210751e76e8199196d454941c45d1b3a323"))
+        .scriptPubKey == WitnessScriptPubKey.fromAsmHex("5210751e76e8199196d454941c45d1b3a323"))
     assert(
       Bech32mAddress
-        .fromString(
-          "tb1gqqqqp399et2xygdj5xreqhjjvcmzhxw4aywxecjdzew6hylgvsescs2hvq")
+        .fromString("tb1gqqqqp399et2xygdj5xreqhjjvcmzhxw4aywxecjdzew6hylgvsescs2hvq")
         .scriptPubKey == WitnessScriptPubKey.fromAsmHex(
         "5820000000c4a5cad46221b2a187905e5266362b99d5e91c6ce24d165dab93e86433"))
     assert(
       Bech32mAddress
-        .fromString(
-          "tb1pqqqqp399et2xygdj5xreqhjjvcmzhxw4aywxecjdzew6hylgvsesf3hn0c")
+        .fromString("tb1pqqqqp399et2xygdj5xreqhjjvcmzhxw4aywxecjdzew6hylgvsesf3hn0c")
         .scriptPubKey == WitnessScriptPubKey.fromAsmHex(
         "5120000000c4a5cad46221b2a187905e5266362b99d5e91c6ce24d165dab93e86433"))
     assert(
       Bech32mAddress
-        .fromString(
-          "bc1p0xlxvlhemja6c4dqv22uapctqupfhlxm9h8z3k2e72q4k9hcz7vqzk5jj0")
+        .fromString("bc1p0xlxvlhemja6c4dqv22uapctqupfhlxm9h8z3k2e72q4k9hcz7vqzk5jj0")
         .scriptPubKey == WitnessScriptPubKey.fromAsmHex(
         "512079be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798"))
   }
@@ -144,39 +134,32 @@ class Bech32mTest extends BitcoinSUnitTest {
   it must "fail to read invalid bech32m addresses" in {
     assert(
       Bech32mAddress
-        .fromStringT(
-          "tc1p0xlxvlhemja6c4dqv22uapctqupfhlxm9h8z3k2e72q4k9hcz7vq5zuyut")
+        .fromStringT("tc1p0xlxvlhemja6c4dqv22uapctqupfhlxm9h8z3k2e72q4k9hcz7vq5zuyut")
         .isFailure)
     assert(
       Bech32mAddress
-        .fromStringT(
-          "bc1p0xlxvlhemja6c4dqv22uapctqupfhlxm9h8z3k2e72q4k9hcz7vqh2y7hd")
+        .fromStringT("bc1p0xlxvlhemja6c4dqv22uapctqupfhlxm9h8z3k2e72q4k9hcz7vqh2y7hd")
         .isFailure)
     assert(
       Bech32mAddress
-        .fromStringT(
-          "tb1z0xlxvlhemja6c4dqv22uapctqupfhlxm9h8z3k2e72q4k9hcz7vqglt7rf")
+        .fromStringT("tb1z0xlxvlhemja6c4dqv22uapctqupfhlxm9h8z3k2e72q4k9hcz7vqglt7rf")
         .isFailure)
     assert(
       Bech32mAddress
-        .fromStringT(
-          "BC1S0XLXVLHEMJA6C4DQV22UAPCTQUPFHLXM9H8Z3K2E72Q4K9HCZ7VQ54WELL")
+        .fromStringT("BC1S0XLXVLHEMJA6C4DQV22UAPCTQUPFHLXM9H8Z3K2E72Q4K9HCZ7VQ54WELL")
         .isFailure)
     assert(
       Bech32mAddress
-        .fromStringT(
-          "bc1p38j9r5y49hruaue7wxjce0updqjuyyx0kh56v8s25huc6995vvpql3jow4")
+        .fromStringT("bc1p38j9r5y49hruaue7wxjce0updqjuyyx0kh56v8s25huc6995vvpql3jow4")
         .isFailure)
     assert(
       Bech32mAddress
-        .fromStringT(
-          "BC130XLXVLHEMJA6C4DQV22UAPCTQUPFHLXM9H8Z3K2E72Q4K9HCZ7VQ7ZWS8R")
+        .fromStringT("BC130XLXVLHEMJA6C4DQV22UAPCTQUPFHLXM9H8Z3K2E72Q4K9HCZ7VQ7ZWS8R")
         .isFailure)
     assert(Bech32mAddress.fromStringT("bc1pw5dgrnzv").isFailure)
     assert(
       Bech32mAddress
-        .fromStringT(
-          "bc1p0xlxvlhemja6c4dqv22uapctqupfhlxm9h8z3k2e72q4k9hcz7v8n0nx0muaewav253zgeav")
+        .fromStringT("bc1p0xlxvlhemja6c4dqv22uapctqupfhlxm9h8z3k2e72q4k9hcz7v8n0nx0muaewav253zgeav")
         .isFailure)
     assert(
       Bech32mAddress
@@ -184,8 +167,7 @@ class Bech32mTest extends BitcoinSUnitTest {
         .isFailure)
     assert(
       Bech32mAddress
-        .fromStringT(
-          "tb1p0xlxvlhemja6c4dqv22uapctqupfhlxm9h8z3k2e72q4k9hcz7vq47Zagq")
+        .fromStringT("tb1p0xlxvlhemja6c4dqv22uapctqupfhlxm9h8z3k2e72q4k9hcz7vq47Zagq")
         .isFailure)
     assert(Bech32mAddress.fromStringT("bc1gmk9yu").isFailure)
   }
@@ -198,8 +180,7 @@ class Bech32mTest extends BitcoinSUnitTest {
   }
 
   it must "fail to read a segwitV0 spk as a bech32m address" in {
-    forAll(ScriptGenerators.witnessScriptPubKeyV0,
-           ChainParamsGenerator.networkParams) { case (witSpkV0, np) =>
+    forAll(ScriptGenerators.witnessScriptPubKeyV0, ChainParamsGenerator.networkParams) { case (witSpkV0, np) =>
       assert(Bech32mAddress.fromScriptPubKeyT(witSpkV0._1, np).isFailure)
     }
   }

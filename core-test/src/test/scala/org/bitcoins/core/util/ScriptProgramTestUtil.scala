@@ -22,13 +22,11 @@ trait ScriptProgramTestUtil {
     }
 
   /** Matches a [[StartedScriptProgram]] to a [[ExecutionInProgressScriptProgram]] or else throws an exception. */
-  def toExecutionInProgressScriptProgram(
-      p: StartedScriptProgram): ExecutionInProgressScriptProgram =
+  def toExecutionInProgressScriptProgram(p: StartedScriptProgram): ExecutionInProgressScriptProgram =
     p match {
       case e: ExecutionInProgressScriptProgram => e
       case _: PreExecutionScriptProgram | _: ExecutedScriptProgram =>
-        throw new RuntimeException(
-          "Must be an execution in progress script program")
+        throw new RuntimeException("Must be an execution in progress script program")
     }
 }
 

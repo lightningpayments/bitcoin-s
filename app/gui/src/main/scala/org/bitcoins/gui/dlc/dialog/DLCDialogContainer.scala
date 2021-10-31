@@ -63,8 +63,7 @@ class DLCDialogContainer[T <: CliCommand](
 
   val toFileButton = new Button("Save to File...") {
     disable <== returnValue.isEmpty
-    onAction = _ =>
-      GUIUtil.showSaveDialog(filename, Some(returnValue.value), None)
+    onAction = _ => GUIUtil.showSaveDialog(filename, Some(returnValue.value), None)
   }
 
   private val buttonFirstRow = new HBox {

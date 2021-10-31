@@ -8,8 +8,7 @@ import org.bitcoins.testkitcore.util.BitcoinSUnitTest
   */
 class TransactionOutPointTest extends BitcoinSUnitTest {
   "TransactionOutPoint" must "define an empty transaction outpoint" in {
-    EmptyTransactionOutPoint.txId.hex must be(
-      "0000000000000000000000000000000000000000000000000000000000000000")
+    EmptyTransactionOutPoint.txId.hex must be("0000000000000000000000000000000000000000000000000000000000000000")
     EmptyTransactionOutPoint.vout must be(UInt32.max)
   }
 

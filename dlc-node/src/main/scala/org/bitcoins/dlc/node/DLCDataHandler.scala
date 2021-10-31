@@ -7,9 +7,7 @@ import org.bitcoins.core.protocol.tlv._
 
 import scala.concurrent._
 
-class DLCDataHandler(dlcWalletApi: DLCWalletApi, connectionHandler: ActorRef)
-    extends Actor
-    with ActorLogging {
+class DLCDataHandler(dlcWalletApi: DLCWalletApi, connectionHandler: ActorRef) extends Actor with ActorLogging {
   implicit val ec: ExecutionContextExecutor = context.system.dispatcher
 
   override def preStart(): Unit = {
@@ -20,8 +18,7 @@ class DLCDataHandler(dlcWalletApi: DLCWalletApi, connectionHandler: ActorRef)
     case lnMessage: LnMessage[TLV] =>
       log.info(s"Received LnMessage ${lnMessage.typeName}")
       val f: Future[Unit] = handleTLVMessage(lnMessage)
-      f.failed.foreach(err =>
-        log.error(s"Failed to process lnMessage=${lnMessage}", err))
+      f.failed.foreach(err => log.error(s"Failed to process lnMessage=${lnMessage}", err))
     case DLCConnectionHandler.WriteFailed(_) =>
       log.error("Write failed")
     case Terminated(actor) if actor == connectionHandler =>
@@ -75,10 +72,7 @@ object DLCDataHandler {
   case class Received(tlv: TLV) extends Command
   case class Send(tlv: TLV) extends Command
 
-  def defaultFactory(
-      dlcWalletApi: DLCWalletApi,
-      context: ActorContext,
-      connectionHandler: ActorRef): ActorRef = {
+  def defaultFactory(dlcWalletApi: DLCWalletApi, context: ActorContext, connectionHandler: ActorRef): ActorRef = {
     context.actorOf(props(dlcWalletApi, connectionHandler))
   }
 

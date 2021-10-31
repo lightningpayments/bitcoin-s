@@ -153,10 +153,9 @@ object DLCStatusBuilder {
         )
         refund
       case oracleOutcomeState: DLCState.ClosedViaOracleOutcomeState =>
-        val (oracleOutcome, sigs) = getOracleOutcomeAndSigs(
-          announcementIds = announcementIds,
-          announcementsWithId = announcementsWithId,
-          nonceDbs = nonceDbs)
+        val (oracleOutcome, sigs) = getOracleOutcomeAndSigs(announcementIds = announcementIds,
+                                                            announcementsWithId = announcementsWithId,
+                                                            nonceDbs = nonceDbs)
 
         oracleOutcomeState match {
           case DLCState.Claimed =>
@@ -208,9 +207,7 @@ object DLCStatusBuilder {
   def getOracleOutcomeAndSigs(
       announcementIds: Vector[DLCAnnouncementDb],
       announcementsWithId: Vector[(OracleAnnouncementV0TLV, Long)],
-      nonceDbs: Vector[OracleNonceDb]): (
-      OracleOutcome,
-      Vector[SchnorrDigitalSignature]) = {
+      nonceDbs: Vector[OracleNonceDb]): (OracleOutcome, Vector[SchnorrDigitalSignature]) = {
     val noncesByAnnouncement =
       nonceDbs.sortBy(_.index).groupBy(_.announcementId)
     val oracleOutcome = {
@@ -224,12 +221,10 @@ object DLCStatusBuilder {
           val oracleInfos = usedOracles.map(t => EnumSingleOracleInfo(t._1))
           val outcomes = usedOracles.map { case (_, id) =>
             val nonces = noncesByAnnouncement(id)
-            require(nonces.size == 1,
-                    s"Only 1 outcome for enum, got ${nonces.size}")
+            require(nonces.size == 1, s"Only 1 outcome for enum, got ${nonces.size}")
             EnumOutcome(nonces.head.outcomeOpt.get)
           }
-          require(outcomes.distinct.size == 1,
-                  s"Should only be one outcome for enum, got $outcomes")
+          require(outcomes.distinct.size == 1, s"Should only be one outcome for enum, got $outcomes")
           EnumOracleOutcome(oracleInfos, outcomes.head)
         case _: UnsignedDigitDecompositionEventDescriptor =>
           val oraclesAndOutcomes = usedOracles.map { case (announcement, id) =>

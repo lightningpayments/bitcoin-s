@@ -13,9 +13,7 @@ trait BitcoinSActorTest
     with BeforeAndAfterAll
     with ImplicitSender
 
-trait BitcoinSActorFixtureWithDLCWallet
-    extends BitcoinSActorTest
-    with BitcoinSWalletTest {
+trait BitcoinSActorFixtureWithDLCWallet extends BitcoinSActorTest with BitcoinSWalletTest {
 
   override def afterAll(): Unit = {
     super[BitcoinSWalletTest].afterAll()

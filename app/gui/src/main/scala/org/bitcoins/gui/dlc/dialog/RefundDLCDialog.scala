@@ -6,14 +6,12 @@ import scalafx.scene.control.TextField
 import scodec.bits.ByteVector
 
 class RefundDLCDialog
-    extends DLCDialog[ExecuteDLCRefund](
-      "DLC Refund",
-      "Enter DLC contract ID",
-      Vector(DLCDialog.dlcContractIdStr -> new TextField())) {
+    extends DLCDialog[ExecuteDLCRefund]("DLC Refund",
+                                        "Enter DLC contract ID",
+                                        Vector(DLCDialog.dlcContractIdStr -> new TextField())) {
   import DLCDialog._
 
-  override def constructFromInput(
-      inputs: Map[String, Node]): ExecuteDLCRefund = {
+  override def constructFromInput(inputs: Map[String, Node]): ExecuteDLCRefund = {
     val hex = readStringFromNode(inputs(dlcContractIdStr))
 
     val contractId = ByteVector.fromValidHex(hex)

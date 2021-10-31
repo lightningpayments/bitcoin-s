@@ -22,8 +22,7 @@ class RawScriptSignatureParserTest extends BitcoinSUnitTest {
   }
 
   it must "read an EmptyScriptSignature" in {
-    assert(
-      RawScriptSignatureParser.read(ByteVector.empty) == EmptyScriptSignature)
+    assert(RawScriptSignatureParser.read(ByteVector.empty) == EmptyScriptSignature)
   }
 
   it must "read then write a raw script sig" in {
@@ -97,8 +96,7 @@ class RawScriptSignatureParserTest extends BitcoinSUnitTest {
         "30440220048e15422cf62349dc586ffb8c749d40280781edd5064ff27a5910ff5cf" +
           "225a802206a82685dbc2cf195d158c29309939d5a3cd41a889db6f766f3809fff3572230501"),
       BytesToPushOntoStack(33),
-      ScriptConstant(
-        "03dcfc9882c1b3ae4e03fb6cac08bdb39e284e81d70c7aa8b27612457b2774509b")
+      ScriptConstant("03dcfc9882c1b3ae4e03fb6cac08bdb39e284e81d70c7aa8b27612457b2774509b")
     )
 
     scriptSig.asm.head must be(expectedAsm.head)

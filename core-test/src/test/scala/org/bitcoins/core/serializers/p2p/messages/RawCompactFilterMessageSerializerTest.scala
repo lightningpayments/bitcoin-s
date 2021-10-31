@@ -35,18 +35,15 @@ class RawCompactFilterMessageSerializerTest extends BitcoinSUnitTest {
 
     assert(message.bytes == bytes)
 
-    val blockHash = DoubleSha256Digest.fromHex(
-      "6fe28c0ab6f1b372c1a6a246ae63f74f931e8365e15a089c68d6190000000000")
+    val blockHash = DoubleSha256Digest.fromHex("6fe28c0ab6f1b372c1a6a246ae63f74f931e8365e15a089c68d6190000000000")
     val fromFilter =
-      CompactFilterMessage(blockHash,
-                           BlockFilter.fromBytes(hex"017fa880", blockHash))
+      CompactFilterMessage(blockHash, BlockFilter.fromBytes(hex"017fa880", blockHash))
 
     assert(message.bytes == fromFilter.bytes)
 
     val biggerMessage = CompactFilterMessage(
       filterType = FilterType.Basic,
-      blockHash = DoubleSha256Digest.fromHex(
-        "0000000000000000000000000000000000000000000000000000000000000001"),
+      blockHash = DoubleSha256Digest.fromHex("0000000000000000000000000000000000000000000000000000000000000001"),
       filterBytes = ByteVector.fill(100000)(0xaa)
     )
 

@@ -56,8 +56,8 @@ trait CoinSelector {
       walletUtxos: Vector[SpendingInfoDb],
       outputs: Vector[TransactionOutput],
       feeRate: FeeUnit): Vector[SpendingInfoDb] = {
-    val totalValue = outputs.foldLeft(CurrencyUnits.zero) {
-      case (totVal, output) => totVal + output.value
+    val totalValue = outputs.foldLeft(CurrencyUnits.zero) { case (totVal, output) =>
+      totVal + output.value
     }
 
     @tailrec
@@ -82,10 +82,7 @@ trait CoinSelector {
           val newValue = valueSoFar + nextUtxo.output.value
           val approxUtxoSize = CoinSelector.approximateUtxoSize(nextUtxo)
 
-          addUtxos(newAdded,
-                   newValue,
-                   bytesSoFar + approxUtxoSize,
-                   utxosLeft.tail)
+          addUtxos(newAdded, newValue, bytesSoFar + approxUtxoSize, utxosLeft.tail)
         }
       }
     }
@@ -98,9 +95,7 @@ trait CoinSelector {
     feeRate * approxUtxoSize
   }
 
-  def calcEffectiveValue(
-      utxo: SpendingInfoDb,
-      feeRate: FeeUnit): CurrencyUnit = {
+  def calcEffectiveValue(utxo: SpendingInfoDb, feeRate: FeeUnit): CurrencyUnit = {
     val utxoFee = calculateUtxoFee(utxo, feeRate)
     utxo.output.value - utxoFee
   }
@@ -143,8 +138,7 @@ object CoinSelector extends CoinSelector {
           case Some(longTermFeeRate) =>
             selectByLeastWaste(walletUtxos, outputs, feeRate, longTermFeeRate)
           case None =>
-            throw new IllegalArgumentException(
-              "longTermFeeRateOpt must be defined for LeastWaste")
+            throw new IllegalArgumentException("longTermFeeRateOpt must be defined for LeastWaste")
         }
     }
 
@@ -153,8 +147,7 @@ object CoinSelector extends CoinSelector {
       totalSpent: CurrencyUnit,
       selection: Vector[SpendingInfoDb])
 
-  implicit
-  private val coinSelectionResultsOrder: Ordering[CoinSelectionResults] = {
+  implicit private val coinSelectionResultsOrder: Ordering[CoinSelectionResults] = {
     case (a: CoinSelectionResults, b: CoinSelectionResults) =>
       if (a.waste == b.waste) {
         a.selection.size.compare(b.selection.size)
@@ -172,30 +165,20 @@ object CoinSelector extends CoinSelector {
       // Skip failed selection attempts
       Try {
         val selection =
-          selectByAlgo(algo,
-                       walletUtxos,
-                       outputs,
-                       feeRate,
-                       Some(longTermFeeRate))
+          selectByAlgo(algo, walletUtxos, outputs, feeRate, Some(longTermFeeRate))
 
         // todo for now just use 1 sat, when we have more complex selection algos
         // that just don't result in change (Branch and Bound), this will need to be calculated
         val changeCostOpt = Some(Satoshis.one)
 
-        val waste = calculateSelectionWaste(selection,
-                                            changeCostOpt,
-                                            target,
-                                            feeRate,
-                                            longTermFeeRate)
+        val waste = calculateSelectionWaste(selection, changeCostOpt, target, feeRate, longTermFeeRate)
 
         val totalSpent = selection.map(_.output.value).sum
         CoinSelectionResults(waste, totalSpent, selection)
       }.toOption
     }
 
-    require(
-      results.nonEmpty,
-      s"Not enough value in given outputs to make transaction spending $target plus fees")
+    require(results.nonEmpty, s"Not enough value in given outputs to make transaction spending $target plus fees")
 
     results.min.selection
   }
@@ -222,30 +205,27 @@ object CoinSelector extends CoinSelector {
       target: CurrencyUnit,
       feeRate: FeeUnit,
       longTermFeeRate: FeeUnit): CurrencyUnit = {
-    require(
-      utxos.nonEmpty,
-      "This function should not be called with empty inputs as that would mean the selection failed")
+    require(utxos.nonEmpty,
+            "This function should not be called with empty inputs as that would mean the selection failed")
 
     val (waste, selectedEffectiveValue) =
-      utxos.foldLeft((CurrencyUnits.zero, CurrencyUnits.zero)) {
-        case ((waste, selectedEffectiveValue), utxo) =>
-          val fee = calculateUtxoFee(utxo, feeRate)
-          val longTermFee = calculateUtxoFee(utxo, longTermFeeRate)
-          val effectiveValue = calcEffectiveValue(utxo, feeRate)
+      utxos.foldLeft((CurrencyUnits.zero, CurrencyUnits.zero)) { case ((waste, selectedEffectiveValue), utxo) =>
+        val fee = calculateUtxoFee(utxo, feeRate)
+        val longTermFee = calculateUtxoFee(utxo, longTermFeeRate)
+        val effectiveValue = calcEffectiveValue(utxo, feeRate)
 
-          val newWaste = waste + fee - longTermFee
-          val newSelectedEffectiveValue =
-            selectedEffectiveValue + effectiveValue
+        val newWaste = waste + fee - longTermFee
+        val newSelectedEffectiveValue =
+          selectedEffectiveValue + effectiveValue
 
-          (newWaste, newSelectedEffectiveValue)
+        (newWaste, newSelectedEffectiveValue)
       }
 
     changeCostOpt match {
       case Some(changeCost) =>
         // Consider the cost of making change and spending it in the future
         // If we aren't making change, the caller should've set changeCost to 0
-        require(changeCost > Satoshis.zero,
-                "Cannot have a change cost less than 1")
+        require(changeCost > Satoshis.zero, "Cannot have a change cost less than 1")
         waste + changeCost
       case None =>
         // When we are not making change (changeCost == 0), consider the excess we are throwing away to fees

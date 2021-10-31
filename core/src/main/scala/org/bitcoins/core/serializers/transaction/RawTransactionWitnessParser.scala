@@ -20,10 +20,7 @@ sealed abstract class RawTransactionWitnessParser {
     */
   def read(bytes: ByteVector, numInputs: Int): TransactionWitness = {
     @tailrec
-    def loop(
-        remainingBytes: ByteVector,
-        remainingInputs: Int,
-        accum: Vector[ScriptWitness]): Vector[ScriptWitness] = {
+    def loop(remainingBytes: ByteVector, remainingInputs: Int, accum: Vector[ScriptWitness]): Vector[ScriptWitness] = {
       if (remainingInputs != 0) {
         val w = RawScriptWitnessParser.read(remainingBytes)
         val (_, newRemainingBytes) = remainingBytes.splitAt(w.bytes.size)

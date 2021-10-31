@@ -3,10 +3,7 @@ package org.bitcoins.core.protocol.ln.routing
 import org.bitcoins.core.number.UInt32
 import org.bitcoins.core.protocol.ln.channel.ShortChannelId
 import org.bitcoins.core.protocol.ln.currency.MilliSatoshis
-import org.bitcoins.core.protocol.ln.fee.{
-  FeeBaseMSat,
-  FeeProportionalMillionths
-}
+import org.bitcoins.core.protocol.ln.fee.{FeeBaseMSat, FeeProportionalMillionths}
 import org.bitcoins.core.util.BytesUtil
 import org.bitcoins.crypto.{ECPublicKey, NetworkElement}
 import scodec.bits.ByteVector
@@ -52,9 +49,7 @@ object LnRoute {
       FEE_PROPORTIONAL_LEN +
       CLTV_EXPIRTY_DELTA_LEN
 
-    require(
-      bytes.length >= TOTAL_LEN,
-      s"ByteVector must at least of length $TOTAL_LEN, got ${bytes.length}")
+    require(bytes.length >= TOTAL_LEN, s"ByteVector must at least of length $TOTAL_LEN, got ${bytes.length}")
 
     val (pubKeyBytes, rest0) = bytes.splitAt(PUBKEY_LEN)
     val pubKey = ECPublicKey.fromBytes(pubKeyBytes)
@@ -79,10 +74,6 @@ object LnRoute {
     val cltvExpiryDelta =
       new BigInteger(cltvExpiryDeltaBytes.toArray).shortValue()
 
-    LnRoute(pubKey,
-            shortChannelId,
-            feeBaseMSat,
-            feeProportionalMillionths,
-            cltvExpiryDelta)
+    LnRoute(pubKey, shortChannelId, feeBaseMSat, feeProportionalMillionths, cltvExpiryDelta)
   }
 }

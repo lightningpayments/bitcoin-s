@@ -8,7 +8,7 @@ import scodec.bits.ByteVector
 import zio.Task
 
 import java.sql.SQLException
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 final case class ExtPublicKeyDTO(
     version: ExtKeyPubVersion,
@@ -26,9 +26,7 @@ final case class ExtPublicKeyDTO(
 }
 
 /** The primary key type is the public key associated with the extended public key [[ExtPublicKey.key]] */
-case class MasterXPubDAO()(implicit
-    ec: ExecutionContext,
-    appConfig: DbAppConfig)
+final case class MasterXPubDAO()(implicit appConfig: DbAppConfig)
     extends CRUD[ExtPublicKeyDTO, ECPublicKey]
     with SlickUtil[ExtPublicKeyDTO, ECPublicKey] {
   import profile.api._
@@ -37,44 +35,35 @@ case class MasterXPubDAO()(implicit
 
   override val table: TableQuery[MasterXpubTable] = TableQuery[MasterXpubTable]
 
-  def create(
-      extPublicKey: ExtPublicKey,
-      name: Option[String] = None): Task[ExtPublicKeyDTO] = {
+  def create(extPublicKey: ExtPublicKey, name: Option[String] = None): Task[ExtPublicKeyDTO] = {
     val dto = createDTO(extPublicKey, name)
     create(dto)
   }
 
-  override def create(t: ExtPublicKeyDTO): Task[ExtPublicKeyDTO] = {
-    val recordCount = table.size.result
-
-    val action = recordCount.flatMap {
-      case 0 =>
-        table += t
-      case count @ _ =>
-        DBIO.failed(
-          new SQLException(s"Only 1 master xpub should be stored, got=$count"))
+  override def create(t: ExtPublicKeyDTO): Task[ExtPublicKeyDTO] =
+    Task.fromFuture { implicit ec =>
+      val recordCount = table.size.result
+      lazy val action = recordCount.flatMap {
+        case 0 =>
+          table += t
+        case count @ _ =>
+          DBIO.failed(new SQLException(s"Only 1 master xpub should be stored, got=$count"))
+      }
+      database.run(action.transactionally).map(_ => t)
     }
 
-    Task.fromFuture(_ => database.run(action.transactionally).map(_ => t))
-  }
-
-  override def createAll(
-      extKeys: Vector[ExtPublicKeyDTO]): Task[Vector[ExtPublicKeyDTO]] =
+  override def createAll(extKeys: Vector[ExtPublicKeyDTO]): Task[Vector[ExtPublicKeyDTO]] =
     if (extKeys.size != 1)
-      Task.fail(
-        new SQLException(
-          s"Only 1 master xpub should be stored, got=${extKeys.size}"))
+      Task.fail(new SQLException(s"Only 1 master xpub should be stored, got=${extKeys.size}"))
     else create(extKeys.head).map(Vector(_))
 
-  override protected def findByPrimaryKeys(
-      pubkeys: Vector[ECPublicKey]): profile.api.Query[
+  override protected def findByPrimaryKeys(pubkeys: Vector[ECPublicKey]): profile.api.Query[
     profile.api.Table[ExtPublicKeyDTO],
     ExtPublicKeyDTO,
     Seq
   ] = table.filter(_.key.inSet(pubkeys))
 
-  override protected def findAll(
-      ts: Vector[ExtPublicKeyDTO]): profile.api.Query[
+  override protected def findAll(ts: Vector[ExtPublicKeyDTO]): profile.api.Query[
     profile.api.Table[_],
     ExtPublicKeyDTO,
     Seq
@@ -85,11 +74,9 @@ case class MasterXPubDAO()(implicit
     */
   def validate(xpub: ExtPublicKey): Task[Unit] = {
     findAll().map { xpubs =>
-      require(xpubs.length == 1,
-              s"Only 1 master xpub should be stored, got=${xpubs.length}")
+      require(xpubs.length == 1, s"Only 1 master xpub should be stored, got=${xpubs.length}")
       if (xpub != xpubs.head.toExtPublicKey) {
-        sys.error(
-          s"Keymanager xpub and stored xpub are different, stored=${xpubs.head}, keymanager=${xpub}")
+        sys.error(s"Keymanager xpub and stored xpub are different, stored=${xpubs.head}, keymanager=${xpub}")
       }
     }
   }
@@ -100,28 +87,24 @@ case class MasterXPubDAO()(implicit
 
   def findXPub(): Task[ExtPublicKeyDTO] = {
     findAll().map { xpubs =>
-      require(xpubs.length == 1,
-              s"Only 1 master xpub should be stored, got=${xpubs.length}")
+      require(xpubs.length == 1, s"Only 1 master xpub should be stored, got=${xpubs.length}")
       xpubs.head
     }
   }
 
-  def updateName(name: String): Task[Unit] = {
-    val recordCount = table.size.result
-
-    val action = recordCount.flatMap {
-      case 1 =>
-        table.map(_.name).update(Option(name))
-      case count @ _ =>
-        DBIO.failed(
-          new SQLException(s"Only 1 master xpub should be stored, got=$count"))
+  def updateName(name: String): Task[Unit] =
+    Task.fromFuture { implicit ec =>
+      val recordCount = table.size.result
+      lazy val action = recordCount.flatMap {
+        case 1 =>
+          table.map(_.name).update(Option(name))
+        case count @ _ =>
+          DBIO.failed(new SQLException(s"Only 1 master xpub should be stored, got=$count"))
+      }
+      database.run(action.transactionally).map(_ => ())
     }
 
-    Task.fromFuture(_ => database.run(action.transactionally).map(_ => ()))
-  }
-
-  class MasterXpubTable(tag: Tag)
-      extends Table[ExtPublicKeyDTO](tag, schemaName, "master_xpub") {
+  class MasterXpubTable(tag: Tag) extends Table[ExtPublicKeyDTO](tag, schemaName, "master_xpub") {
 
     def version = column[ExtKeyPubVersion]("extpubkey_version")
 
@@ -138,15 +121,11 @@ case class MasterXPubDAO()(implicit
     def name = column[Option[String]]("name")
 
     def * = {
-      (version, depth, fingerprint, childNum, chaincode, key, name).<>(
-        ExtPublicKeyDTO.tupled,
-        ExtPublicKeyDTO.unapply)
+      (version, depth, fingerprint, childNum, chaincode, key, name).<>(ExtPublicKeyDTO.tupled, ExtPublicKeyDTO.unapply)
     }
   }
 
-  private def createDTO(
-      epk: ExtPublicKey,
-      name: Option[String]): ExtPublicKeyDTO =
+  private def createDTO(epk: ExtPublicKey, name: Option[String]): ExtPublicKeyDTO =
     ExtPublicKeyDTO(
       version = epk.version,
       depth = epk.depth,

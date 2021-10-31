@@ -11,10 +11,7 @@ import org.bitcoins.server.routes.ServerCommand
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.wordspec.AnyWordSpec
 
-class DLCRoutesSpec
-    extends AnyWordSpec
-    with ScalatestRouteTest
-    with MockFactory {
+class DLCRoutesSpec extends AnyWordSpec with ScalatestRouteTest with MockFactory {
 
   val dlcApi = mock[DLCNodeApi]
 
@@ -59,8 +56,7 @@ class DLCRoutesSpec
 
       Post() ~> route ~> check {
         assert(contentType == ContentTypes.`application/json`)
-        assert(responseAs[
-          String] == s"""{"result":"${expectedContractInfo.hex}","error":null}""")
+        assert(responseAs[String] == s"""{"result":"${expectedContractInfo.hex}","error":null}""")
       }
     }
 
@@ -122,8 +118,7 @@ class DLCRoutesSpec
 
       Post() ~> route ~> check {
         assert(contentType == ContentTypes.`application/json`)
-        assert(responseAs[
-          String] == s"""{"result":"${expectedNumericContractInfo.hex}","error":null}""")
+        assert(responseAs[String] == s"""{"result":"${expectedNumericContractInfo.hex}","error":null}""")
       }
     }
   }

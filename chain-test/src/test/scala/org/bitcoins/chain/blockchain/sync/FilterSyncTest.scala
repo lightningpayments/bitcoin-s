@@ -5,10 +5,7 @@ import org.bitcoins.core.api.chain.ChainApi
 import org.bitcoins.core.gcs.FilterType
 import org.bitcoins.core.protocol.blockchain.BlockHeader
 import org.bitcoins.testkit.chain.SyncUtil
-import org.bitcoins.testkit.chain.fixture.{
-  BitcoindV19ChainHandler,
-  ChainWithBitcoindV19CachedUnitTest
-}
+import org.bitcoins.testkit.chain.fixture.{BitcoindV19ChainHandler, ChainWithBitcoindV19CachedUnitTest}
 
 import scala.concurrent.Future
 
@@ -54,58 +51,54 @@ class FilterSyncTest extends ChainWithBitcoindV19CachedUnitTest {
     } yield assert(filterCount == bitcoindFilterCount)
   }
 
-  it must "sync a bunch of filter headers from an external data source" in {
-    fixture =>
-      val BitcoindV19ChainHandler(bitcoind, _) = fixture
+  it must "sync a bunch of filter headers from an external data source" in { fixture =>
+    val BitcoindV19ChainHandler(bitcoind, _) = fixture
 
-      val numBlocks = 100
-      val generatedBlocksF = for {
-        addr <- bitcoind.getNewAddress
-        hashes <- bitcoind.generateToAddress(numBlocks, addr)
-      } yield hashes
+    val numBlocks = 100
+    val generatedBlocksF = for {
+      addr <- bitcoind.getNewAddress
+      hashes <- bitcoind.generateToAddress(numBlocks, addr)
+    } yield hashes
 
-      val syncedF = generatedBlocksF.flatMap { _ =>
-        syncHelper(fixture)
-      }
+    val syncedF = generatedBlocksF.flatMap { _ =>
+      syncHelper(fixture)
+    }
 
-      for {
-        syncedChainApi <- syncedF
-        bitcoindFilterCount <- bitcoind.getFilterCount()
-        filterHeaderCount <- syncedChainApi.getFilterHeaderCount()
-        _ = assert(filterHeaderCount == bitcoindFilterCount)
-        filterCount <- syncedChainApi.getFilterCount()
-      } yield assert(filterCount == bitcoindFilterCount)
+    for {
+      syncedChainApi <- syncedF
+      bitcoindFilterCount <- bitcoind.getFilterCount()
+      filterHeaderCount <- syncedChainApi.getFilterHeaderCount()
+      _ = assert(filterHeaderCount == bitcoindFilterCount)
+      filterCount <- syncedChainApi.getFilterCount()
+    } yield assert(filterCount == bitcoindFilterCount)
   }
 
-  it must "be able to call filterSync() and not fail when nothing has happened" in {
-    fixture =>
-      val BitcoindV19ChainHandler(bitcoind, _) = fixture
+  it must "be able to call filterSync() and not fail when nothing has happened" in { fixture =>
+    val BitcoindV19ChainHandler(bitcoind, _) = fixture
 
-      val generated1BlockF = for {
-        addr <- bitcoind.getNewAddress
-        hashes <- bitcoind.generateToAddress(1, addr)
-      } yield hashes
+    val generated1BlockF = for {
+      addr <- bitcoind.getNewAddress
+      hashes <- bitcoind.generateToAddress(1, addr)
+    } yield hashes
 
-      val synced1F = generated1BlockF.flatMap { _ =>
-        syncHelper(fixture)
-      }
+    val synced1F = generated1BlockF.flatMap { _ =>
+      syncHelper(fixture)
+    }
 
-      val sync2F = synced1F.flatMap { chainApi =>
-        syncHelper(
-          fixture.copy(chainHandler = chainApi.asInstanceOf[ChainHandler]))
-      }
+    val sync2F = synced1F.flatMap { chainApi =>
+      syncHelper(fixture.copy(chainHandler = chainApi.asInstanceOf[ChainHandler]))
+    }
 
-      for {
-        syncedChainApi <- sync2F
-        bitcoindFilterCount <- bitcoind.getFilterCount()
-        filterHeaderCount <- syncedChainApi.getFilterHeaderCount()
-        _ = assert(filterHeaderCount == bitcoindFilterCount)
-        filterCount <- syncedChainApi.getFilterCount()
-      } yield assert(filterCount == bitcoindFilterCount)
+    for {
+      syncedChainApi <- sync2F
+      bitcoindFilterCount <- bitcoind.getFilterCount()
+      filterHeaderCount <- syncedChainApi.getFilterHeaderCount()
+      _ = assert(filterHeaderCount == bitcoindFilterCount)
+      filterCount <- syncedChainApi.getFilterCount()
+    } yield assert(filterCount == bitcoindFilterCount)
   }
 
-  private def syncHelper(
-      bitcoindV19ChainHandler: BitcoindV19ChainHandler): Future[ChainApi] = {
+  private def syncHelper(bitcoindV19ChainHandler: BitcoindV19ChainHandler): Future[ChainApi] = {
     val filterType = FilterType.Basic
     val BitcoindV19ChainHandler(bitcoind, chainHandler) =
       bitcoindV19ChainHandler
@@ -116,10 +109,9 @@ class FilterSyncTest extends ChainWithBitcoindV19CachedUnitTest {
       SyncUtil.getFilterFunc(bitcoind, filterType)
 
     //first sync the chain
-    val syncedHeadersF: Future[ChainApi] = ChainSync.sync(
-      chainHandler = chainHandler,
-      getBlockHeaderFunc = getBlockHeaderFunc,
-      getBestBlockHashFunc = getBestBlockHashFunc)
+    val syncedHeadersF: Future[ChainApi] = ChainSync.sync(chainHandler = chainHandler,
+                                                          getBlockHeaderFunc = getBlockHeaderFunc,
+                                                          getBestBlockHashFunc = getBestBlockHashFunc)
 
     //now sync filters
     syncedHeadersF.flatMap { syncedChainHandler =>

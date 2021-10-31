@@ -68,8 +68,7 @@ class GolombFilterTest extends BitcoinSUnitTest {
       val hashesNotInData: Vector[UInt64] =
         randHashes.filterNot(hashes.contains)
 
-      assert(
-        hashesNotInData.forall(hash => !binarySearchMatcher.matchesHash(hash)))
+      assert(hashesNotInData.forall(hash => !binarySearchMatcher.matchesHash(hash)))
     }
   }
 
@@ -95,23 +94,20 @@ class GolombFilterTest extends BitcoinSUnitTest {
         hex"f1379b148aaac2097c20a3ca6b5c8b2ad7c1ea693986a0cb12110dc0f19294a0ebc718f36d37b720d78decd72cd4bf7d617c" ++
         hex"38ab2411d13f90d8a1dc0a283adb014680"
 
-    val blockHash = DoubleSha256Digest.fromHex(
-      "73668ce5489ca6e42ec893ad406cc7853110ab2d63b52accf700000000000000")
+    val blockHash = DoubleSha256Digest.fromHex("73668ce5489ca6e42ec893ad406cc7853110ab2d63b52accf700000000000000")
 
     BlockFilter.fromBytes(filterBytes, blockHash).bytes must be(filterBytes)
   }
 
   it must "create filer header for a Golomb filter" in {
     val filterBytes = hex"017fa880"
-    val blockHash = DoubleSha256Digest.fromHex(
-      "73668ce5489ca6e42ec893ad406cc7853110ab2d63b52accf700000000000000")
+    val blockHash = DoubleSha256Digest.fromHex("73668ce5489ca6e42ec893ad406cc7853110ab2d63b52accf700000000000000")
     val filter = BlockFilter.fromBytes(filterBytes, blockHash)
     filter.bytes must be(filterBytes)
 
-    val prevHeader = FilterHeader(
-      DoubleSha256Digest.fromHex(
-        "c03705b2d6fb76a59664f1d63fe8fdbb2dc076d18175fdc51d11c43afaf78a4c"),
-      DoubleSha256Digest.empty)
+    val prevHeader =
+      FilterHeader(DoubleSha256Digest.fromHex("c03705b2d6fb76a59664f1d63fe8fdbb2dc076d18175fdc51d11c43afaf78a4c"),
+                   DoubleSha256Digest.empty)
 
     val header = filter.getHeader(prevHeader = prevHeader)
 

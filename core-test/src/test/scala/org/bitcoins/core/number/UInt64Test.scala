@@ -48,16 +48,7 @@ class UInt64Test extends BitcoinSUnitTest {
 
   it must "throw an exception if we try and create a number larger than 8 bytes" in {
     intercept[IllegalArgumentException] {
-      UInt64(
-        ByteVector(1.toByte,
-                   0.toByte,
-                   0.toByte,
-                   0.toByte,
-                   0.toByte,
-                   0.toByte,
-                   0.toByte,
-                   0.toByte,
-                   0.toByte))
+      UInt64(ByteVector(1.toByte, 0.toByte, 0.toByte, 0.toByte, 0.toByte, 0.toByte, 0.toByte, 0.toByte, 0.toByte))
     }
   }
 

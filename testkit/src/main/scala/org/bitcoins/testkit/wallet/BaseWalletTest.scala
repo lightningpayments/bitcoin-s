@@ -37,8 +37,8 @@ trait BaseWalletTest extends EmbeddedPg { _: Suite with BitcoinSAkkaAsyncTest =>
     ConfigFactory.parseString("bitcoin-s.wallet.defaultAccountType = segwit")
 
   // This is a random block on testnet
-  val testBlockHash: DoubleSha256DigestBE = DoubleSha256DigestBE.fromHex(
-    "00000000496dcc754fabd97f3e2df0a7337eab417d75537fecf97a7ebb0e7c75")
+  val testBlockHash: DoubleSha256DigestBE =
+    DoubleSha256DigestBE.fromHex("00000000496dcc754fabd97f3e2df0a7337eab417d75537fecf97a7ebb0e7c75")
 
   /** Wallet config with data directory set to user temp directory */
   protected def getFreshConfig: BitcoinSAppConfig =
@@ -55,8 +55,7 @@ trait BaseWalletTest extends EmbeddedPg { _: Suite with BitcoinSAkkaAsyncTest =>
     new ChainQueryApi {
 
       /** Gets the height of the given block */
-      override def getBlockHeight(
-          blockHash: DoubleSha256DigestBE): Future[Option[Int]] =
+      override def getBlockHeight(blockHash: DoubleSha256DigestBE): Future[Option[Int]] =
         if (blockHash == testBlockHash)
           Future.successful(Some(1))
         else FutureUtil.none
@@ -66,8 +65,7 @@ trait BaseWalletTest extends EmbeddedPg { _: Suite with BitcoinSAkkaAsyncTest =>
         Future.successful(testBlockHash)
 
       /** Gets number of confirmations for the given block hash */
-      override def getNumberOfConfirmations(
-          blockHash: DoubleSha256DigestBE): Future[Option[Int]] =
+      override def getNumberOfConfirmations(blockHash: DoubleSha256DigestBE): Future[Option[Int]] =
         if (blockHash == testBlockHash)
           Future.successful(Some(6))
         else FutureUtil.none
@@ -79,9 +77,7 @@ trait BaseWalletTest extends EmbeddedPg { _: Suite with BitcoinSAkkaAsyncTest =>
       override def getHeightByBlockStamp(blockStamp: BlockStamp): Future[Int] =
         Future.successful(1)
 
-      override def getFiltersBetweenHeights(
-          startHeight: Int,
-          endHeight: Int): Future[Vector[FilterResponse]] =
+      override def getFiltersBetweenHeights(startHeight: Int, endHeight: Int): Future[Vector[FilterResponse]] =
         Future.successful {
           import scodec.bits._
 
@@ -128,14 +124,13 @@ trait BaseWalletTest extends EmbeddedPg { _: Suite with BitcoinSAkkaAsyncTest =>
 
 object BaseWalletTest {
 
-  def getFreshConfig(pgUrl: () => Option[String], config: Vector[Config])(
-      implicit system: ActorSystem): BitcoinSAppConfig = {
+  def getFreshConfig(pgUrl: () => Option[String], config: Vector[Config])(implicit
+      system: ActorSystem): BitcoinSAppConfig = {
     BitcoinSTestAppConfig.getSpvWithEmbeddedDbTestConfig(pgUrl, config)
   }
 
-  def getFreshWalletAppConfig(
-      pgUrl: () => Option[String],
-      config: Vector[Config])(implicit system: ActorSystem): WalletAppConfig = {
+  def getFreshWalletAppConfig(pgUrl: () => Option[String], config: Vector[Config])(implicit
+      system: ActorSystem): WalletAppConfig = {
     getFreshConfig(pgUrl, config).walletConf
   }
 

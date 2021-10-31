@@ -16,8 +16,7 @@ class CLightningJsonModelParsingTest extends BitcoinSUnitTest {
       case JsSuccess(result, _) =>
         assert(result.error.isDefined)
       case JsError(errors) =>
-        fail(
-          s"Failed to parse ListFundsResult, errors: ${errors.mkString("\n")}")
+        fail(s"Failed to parse ListFundsResult, errors: ${errors.mkString("\n")}")
     }
   }
 
@@ -31,8 +30,7 @@ class CLightningJsonModelParsingTest extends BitcoinSUnitTest {
         assert(result.outputs.size == 1)
         assert(result.channels.size == 1)
       case JsError(errors) =>
-        fail(
-          s"Failed to parse ListFundsResult, errors: ${errors.mkString("\n")}")
+        fail(s"Failed to parse ListFundsResult, errors: ${errors.mkString("\n")}")
     }
   }
 }

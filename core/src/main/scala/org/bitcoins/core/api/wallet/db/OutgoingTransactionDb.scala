@@ -30,12 +30,10 @@ object OutgoingTransactionDb {
       sentAmount: CurrencyUnit,
       expectedFee: CurrencyUnit): OutgoingTransactionDb = {
     val totalOutput = tx.outputs.map(_.value).sum
-    require(
-      sentAmount <= totalOutput,
-      s"sentAmount ($sentAmount) cannot be greater than the transaction's total output ($totalOutput)")
-    require(
-      sentAmount <= inputAmount,
-      s"sentAmount ($sentAmount) cannot be greater than the amount the wallet input ($inputAmount)")
+    require(sentAmount <= totalOutput,
+            s"sentAmount ($sentAmount) cannot be greater than the transaction's total output ($totalOutput)")
+    require(sentAmount <= inputAmount,
+            s"sentAmount ($sentAmount) cannot be greater than the amount the wallet input ($inputAmount)")
 
     val feePaid = inputAmount - totalOutput
     val feeRate = SatoshisPerByte.calc(inputAmount, tx)

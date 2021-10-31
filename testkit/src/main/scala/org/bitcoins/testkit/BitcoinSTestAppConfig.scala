@@ -38,8 +38,7 @@ object BitcoinSTestAppConfig {
     * 1) Data directory is set to user temp directory
     * 2) Logging is turned down to WARN
     */
-  def getSpvTestConfig(config: Config*)(implicit
-      system: ActorSystem): BitcoinSAppConfig = {
+  def getSpvTestConfig(config: Config*)(implicit system: ActorSystem): BitcoinSAppConfig = {
     val overrideConf = ConfigFactory.parseString {
       s"""
          |bitcoin-s {
@@ -56,9 +55,7 @@ object BitcoinSTestAppConfig {
     BitcoinSAppConfig(tmpDir(), (overrideConf +: config): _*)
   }
 
-  def getSpvWithEmbeddedDbTestConfig(
-      pgUrl: () => Option[String],
-      config: Vector[Config])(implicit
+  def getSpvWithEmbeddedDbTestConfig(pgUrl: () => Option[String], config: Vector[Config])(implicit
       system: ActorSystem): BitcoinSAppConfig = {
     val overrideConf = ConfigFactory
       .parseString {
@@ -75,14 +72,10 @@ object BitcoinSTestAppConfig {
       }
       .withFallback(genWalletNameConf)
 
-    BitcoinSAppConfig(
-      tmpDir(),
-      (overrideConf +: configWithEmbeddedDb(project = None,
-                                            pgUrl) +: config): _*)
+    BitcoinSAppConfig(tmpDir(), (overrideConf +: configWithEmbeddedDb(project = None, pgUrl) +: config): _*)
   }
 
-  def getNeutrinoTestConfig(config: Config*)(implicit
-      system: ActorSystem): BitcoinSAppConfig = {
+  def getNeutrinoTestConfig(config: Config*)(implicit system: ActorSystem): BitcoinSAppConfig = {
     val overrideConf = ConfigFactory.parseString {
       s"""
          |bitcoin-s {
@@ -100,9 +93,8 @@ object BitcoinSTestAppConfig {
     BitcoinSAppConfig(tmpDir(), (overrideConf +: config): _*)
   }
 
-  def getNeutrinoWithEmbeddedDbTestConfig(
-      pgUrl: () => Option[String],
-      config: Config*)(implicit system: ActorSystem): BitcoinSAppConfig = {
+  def getNeutrinoWithEmbeddedDbTestConfig(pgUrl: () => Option[String], config: Config*)(implicit
+      system: ActorSystem): BitcoinSAppConfig = {
     val overrideConf = ConfigFactory
       .parseString {
         s"""
@@ -119,14 +111,10 @@ object BitcoinSTestAppConfig {
       }
       .withFallback(genWalletNameConf)
 
-    BitcoinSAppConfig(
-      tmpDir(),
-      (overrideConf +: configWithEmbeddedDb(project = None,
-                                            pgUrl) +: config): _*)
+    BitcoinSAppConfig(tmpDir(), (overrideConf +: configWithEmbeddedDb(project = None, pgUrl) +: config): _*)
   }
 
-  def getDLCOracleAppConfig(config: Config*)(implicit
-      ec: ExecutionContext): DLCOracleAppConfig = {
+  def getDLCOracleAppConfig(config: Config*)(implicit ec: ExecutionContext): DLCOracleAppConfig = {
     val overrideConf = KeyManagerTestUtil.aesPasswordOpt match {
       case Some(value) =>
         ConfigFactory.parseString {
@@ -141,9 +129,8 @@ object BitcoinSTestAppConfig {
     DLCOracleAppConfig(tmpDir(), overrideConf +: config: _*)
   }
 
-  def getDLCOracleWithEmbeddedDbTestConfig(
-      pgUrl: () => Option[String],
-      config: Config*)(implicit ec: ExecutionContext): DLCOracleAppConfig = {
+  def getDLCOracleWithEmbeddedDbTestConfig(pgUrl: () => Option[String], config: Config*)(implicit
+      ec: ExecutionContext): DLCOracleAppConfig = {
     val overrideConf = KeyManagerTestUtil.aesPasswordOpt match {
       case Some(value) =>
         ConfigFactory.parseString {
@@ -155,9 +142,7 @@ object BitcoinSTestAppConfig {
         ConfigFactory.empty()
     }
 
-    DLCOracleAppConfig(
-      tmpDir(),
-      overrideConf +: configWithEmbeddedDb(project = None, pgUrl) +: config: _*)
+    DLCOracleAppConfig(tmpDir(), overrideConf +: configWithEmbeddedDb(project = None, pgUrl) +: config: _*)
   }
 
   sealed trait ProjectType
@@ -178,17 +163,13 @@ object BitcoinSTestAppConfig {
     * project is given). This configuration can then be
     * given as a override to other configs.
     */
-  def configWithEmbeddedDb(
-      project: Option[ProjectType],
-      pgUrl: () => Option[String]): Config = {
+  def configWithEmbeddedDb(project: Option[ProjectType], pgUrl: () => Option[String]): Config = {
 
     def pgConfigForProject(project: ProjectType): String = {
       val name = project.toString.toLowerCase()
-      val url = pgUrl().getOrElse(
-        throw new RuntimeException(s"Cannot get db url for $project"))
+      val url = pgUrl().getOrElse(throw new RuntimeException(s"Cannot get db url for $project"))
       val parts = url.split(":")
-      require(parts.size >= 3 && parts(0) == "jdbc",
-              s"`$url` must be a valid JDBC URL")
+      require(parts.size >= 3 && parts(0) == "jdbc", s"`$url` must be a valid JDBC URL")
       val str = parts(3)
       val endOfPortStr = str.indexOf('/')
       val (port, _) = str.splitAt(endOfPortStr)

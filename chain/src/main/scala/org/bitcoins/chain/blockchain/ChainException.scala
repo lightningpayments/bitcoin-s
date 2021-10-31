@@ -1,8 +1,7 @@
 package org.bitcoins.chain.blockchain
 
 /** A base class for various types of block chain exceptions */
-sealed abstract class ChainException(message: String)
-    extends RuntimeException(message)
+sealed abstract class ChainException(message: String) extends RuntimeException(message)
 
 /** [[org.bitcoins.chain.blockchain.ChainHandler]] cannot find a compact
   * filter or header by its filter hash

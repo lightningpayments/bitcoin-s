@@ -25,13 +25,10 @@ trait UTXORpc { self: Client =>
   def listUnspent(walletName: String): Future[Vector[UnspentOutput]] =
     listUnspent(addresses = None, walletNameOpt = Some(walletName))
 
-  def listUnspent(
-      minConfirmations: Int,
-      maxConfirmations: Int): Future[Vector[UnspentOutput]] =
+  def listUnspent(minConfirmations: Int, maxConfirmations: Int): Future[Vector[UnspentOutput]] =
     listUnspent(minConfirmations, maxConfirmations, None)
 
-  def listUnspent(
-      addresses: Vector[BitcoinAddress]): Future[Vector[UnspentOutput]] =
+  def listUnspent(addresses: Vector[BitcoinAddress]): Future[Vector[UnspentOutput]] =
     listUnspent(addresses = addresses)
 
   def listUnspent(
@@ -48,17 +45,11 @@ trait UTXORpc { self: Client =>
     val params =
       List(JsNumber(minConfirmations), JsNumber(maxConfirmations)) ++
         addresses.map(Json.toJson(_)).toList
-    bitcoindCall[Vector[UnspentOutput]]("listunspent",
-                                        params,
-                                        uriExtensionOpt =
-                                          walletNameOpt.map(walletExtension))
+    bitcoindCall[Vector[UnspentOutput]]("listunspent", params, uriExtensionOpt = walletNameOpt.map(walletExtension))
   }
 
-  def lockUnspent(
-      unlock: Boolean,
-      outputs: Vector[RpcOpts.LockUnspentOutputParameter]): Future[Boolean] = {
-    bitcoindCall[Boolean]("lockunspent",
-                          List(JsBoolean(unlock), Json.toJson(outputs)))
+  def lockUnspent(unlock: Boolean, outputs: Vector[RpcOpts.LockUnspentOutputParameter]): Future[Boolean] = {
+    bitcoindCall[Boolean]("lockunspent", List(JsBoolean(unlock), Json.toJson(outputs)))
   }
 
 }

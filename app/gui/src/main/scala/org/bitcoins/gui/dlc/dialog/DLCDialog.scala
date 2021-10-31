@@ -30,22 +30,17 @@ abstract class DLCDialog[T <: CliCommand](
           case textInput: TextInputControl =>
             textInput.text = value
           case node: Node =>
-            throw new IllegalArgumentException(
-              s"Control at $key is not a text input control, got $node")
+            throw new IllegalArgumentException(s"Control at $key is not a text input control, got $node")
         }
       }
   }
 
   readCachedValue(DLCDialog.dlcContractIdStr, GlobalDLCData.lastContractId)
   readCachedValue(DLCDialog.dlcOracleSigStr, GlobalDLCData.lastOracleSig)
-  readCachedValue(DLCDialog.oracleAnnouncementsStr,
-                  GlobalDLCData.lastOracleAnnouncement)
+  readCachedValue(DLCDialog.oracleAnnouncementsStr, GlobalDLCData.lastOracleAnnouncement)
   readCachedValue(DLCDialog.contractInfoStr, GlobalDLCData.lastContractInfo)
 
-  private def writeCachedValue(
-      key: String,
-      inputs: Vector[(String, String)],
-      setter: String => Unit): Unit = {
+  private def writeCachedValue(key: String, inputs: Vector[(String, String)], setter: String => Unit): Unit = {
     inputs
       .find(_._1 == key)
       .foreach(pair => if (pair._2.nonEmpty) setter(pair._2))
@@ -109,22 +104,14 @@ abstract class DLCDialog[T <: CliCommand](
     // When the OK button is clicked, convert the result to a T.
     dialog.resultConverter = dialogButton =>
       if (dialogButton == ButtonType.OK) {
-        val textInputs = fields.collect {
-          case (key: String, input: TextInputControl) => (key, input.text())
+        val textInputs = fields.collect { case (key: String, input: TextInputControl) =>
+          (key, input.text())
         }
 
-        writeCachedValue(DLCDialog.dlcContractIdStr,
-                         textInputs,
-                         GlobalDLCData.lastContractId = _)
-        writeCachedValue(DLCDialog.dlcOracleSigStr,
-                         textInputs,
-                         GlobalDLCData.lastOracleSig = _)
-        writeCachedValue(DLCDialog.oracleAnnouncementsStr,
-                         textInputs,
-                         GlobalDLCData.lastOracleAnnouncement = _)
-        writeCachedValue(DLCDialog.contractInfoStr,
-                         textInputs,
-                         GlobalDLCData.lastContractInfo = _)
+        writeCachedValue(DLCDialog.dlcContractIdStr, textInputs, GlobalDLCData.lastContractId = _)
+        writeCachedValue(DLCDialog.dlcOracleSigStr, textInputs, GlobalDLCData.lastOracleSig = _)
+        writeCachedValue(DLCDialog.oracleAnnouncementsStr, textInputs, GlobalDLCData.lastOracleAnnouncement = _)
+        writeCachedValue(DLCDialog.contractInfoStr, textInputs, GlobalDLCData.lastContractInfo = _)
 
         Some(constructFromInput(fields.toMap))
       } else None

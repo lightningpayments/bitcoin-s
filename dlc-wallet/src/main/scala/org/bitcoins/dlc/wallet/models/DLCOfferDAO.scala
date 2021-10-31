@@ -11,9 +11,7 @@ import slick.lifted.{ForeignKeyQuery, ProvenShape}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-case class DLCOfferDAO()(implicit
-    val ec: ExecutionContext,
-    override val appConfig: DLCAppConfig)
+case class DLCOfferDAO()(implicit val ec: ExecutionContext, override val appConfig: DLCAppConfig)
     extends CRUD[DLCOfferDb, Sha256Digest]
     with SlickUtil[DLCOfferDb, Sha256Digest] {
   private val mappers = new org.bitcoins.db.DbCommonsColumnMappers(profile)
@@ -29,18 +27,15 @@ case class DLCOfferDAO()(implicit
   override def createAll(ts: Vector[DLCOfferDb]): Future[Vector[DLCOfferDb]] =
     createAllNoAutoInc(ts, safeDatabase)
 
-  override protected def findByPrimaryKeys(
-      ids: Vector[Sha256Digest]): Query[DLCOfferTable, DLCOfferDb, Seq] =
+  override protected def findByPrimaryKeys(ids: Vector[Sha256Digest]): Query[DLCOfferTable, DLCOfferDb, Seq] =
     table.filter(_.dlcId.inSet(ids))
 
-  override def findByPrimaryKey(
-      id: Sha256Digest): Query[DLCOfferTable, DLCOfferDb, Seq] = {
+  override def findByPrimaryKey(id: Sha256Digest): Query[DLCOfferTable, DLCOfferDb, Seq] = {
     table
       .filter(_.dlcId === id)
   }
 
-  override def findAll(
-      dlcs: Vector[DLCOfferDb]): Query[DLCOfferTable, DLCOfferDb, Seq] =
+  override def findAll(dlcs: Vector[DLCOfferDb]): Query[DLCOfferTable, DLCOfferDb, Seq] =
     findByPrimaryKeys(dlcs.map(_.dlcId))
 
   def deleteByDLCId(dlcId: Sha256Digest): Future[Int] = {
@@ -57,13 +52,11 @@ case class DLCOfferDAO()(implicit
       case Vector() =>
         None
       case dlcs: Vector[DLCOfferDb] =>
-        throw new RuntimeException(
-          s"More than one DLCOffer per dlcId ($dlcId), got: $dlcs")
+        throw new RuntimeException(s"More than one DLCOffer per dlcId ($dlcId), got: $dlcs")
     }
   }
 
-  class DLCOfferTable(tag: Tag)
-      extends Table[DLCOfferDb](tag, schemaName, "offer_dlc_data") {
+  class DLCOfferTable(tag: Tag) extends Table[DLCOfferDb](tag, schemaName, "offer_dlc_data") {
 
     def dlcId: Rep[Sha256Digest] = column("dlc_id", O.PrimaryKey)
 
@@ -80,17 +73,11 @@ case class DLCOfferDAO()(implicit
     def changeSerialId: Rep[UInt64] = column("change_serial_id")
 
     def * : ProvenShape[DLCOfferDb] =
-      (dlcId,
-       fundingPubKey,
-       payoutAddress,
-       payoutSerialId,
-       collateral,
-       changeAddress,
-       changeSerialId).<>(DLCOfferDb.tupled, DLCOfferDb.unapply)
+      (dlcId, fundingPubKey, payoutAddress, payoutSerialId, collateral, changeAddress, changeSerialId).<>(
+        DLCOfferDb.tupled,
+        DLCOfferDb.unapply)
 
     def fk: ForeignKeyQuery[_, DLCDb] =
-      foreignKey("fk_dlc_id",
-                 sourceColumns = dlcId,
-                 targetTableQuery = dlcTable)(_.dlcId)
+      foreignKey("fk_dlc_id", sourceColumns = dlcId, targetTableQuery = dlcTable)(_.dlcId)
   }
 }

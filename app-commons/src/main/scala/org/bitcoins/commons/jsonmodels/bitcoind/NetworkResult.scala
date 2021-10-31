@@ -10,19 +10,12 @@ import scala.concurrent.duration.FiniteDuration
 
 sealed abstract class NetworkResult
 
-case class Node(
-    addednode: URI,
-    connected: Option[Boolean],
-    addresses: Option[Vector[NodeAddress]])
+case class Node(addednode: URI, connected: Option[Boolean], addresses: Option[Vector[NodeAddress]])
     extends NetworkResult
 
 case class NodeAddress(address: URI, connected: String) extends NetworkResult
 
-case class GetNetTotalsResult(
-    totalbytesrecv: Int,
-    totalbytessent: Int,
-    timemillis: UInt64,
-    uploadtarget: NetTarget)
+case class GetNetTotalsResult(totalbytesrecv: Int, totalbytessent: Int, timemillis: UInt64, uploadtarget: NetTarget)
     extends NetworkResult
 
 case class NetTarget(
@@ -95,8 +88,7 @@ case class Network(
     proxy_randomize_credentials: Boolean)
     extends NetworkResult
 
-case class NetworkAddress(address: String, port: Int, score: Int)
-    extends NetworkResult
+case class NetworkAddress(address: String, port: Int, score: Int) extends NetworkResult
 
 sealed trait Peer extends NetworkResult {
   def id: Int
@@ -231,18 +223,9 @@ trait NodeBan extends NetworkResult {
   def ban_created: UInt32
 }
 
-case class NodeBanPreV20(
-    address: URI,
-    banned_until: UInt32,
-    ban_created: UInt32,
-    ban_reason: String)
-    extends NodeBan
+case class NodeBanPreV20(address: URI, banned_until: UInt32, ban_created: UInt32, ban_reason: String) extends NodeBan
 
-case class NodeBanPostV20(
-    address: URI,
-    banned_until: UInt32,
-    ban_created: UInt32)
-    extends NodeBan
+case class NodeBanPostV20(address: URI, banned_until: UInt32, ban_created: UInt32) extends NodeBan
 
 final case class GetNodeAddressesResult(
     time: FiniteDuration,

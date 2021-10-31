@@ -26,8 +26,7 @@ object BlockStamp extends StringFactory[BlockStamp] {
   val height0: BlockHeight = BlockHeight(0)
   val height0Opt: Option[BlockHeight] = Some(height0)
 
-  case class InvalidBlockStamp(blockStamp: String)
-      extends RuntimeException(s"Invalid blockstamp: $blockStamp")
+  case class InvalidBlockStamp(blockStamp: String) extends RuntimeException(s"Invalid blockstamp: $blockStamp")
 
   case class BlockHash(hash: DoubleSha256DigestBE) extends BlockStamp {
     override def mkString: String = hash.hex

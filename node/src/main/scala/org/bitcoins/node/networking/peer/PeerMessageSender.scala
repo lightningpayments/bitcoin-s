@@ -7,11 +7,7 @@ import org.bitcoins.core.bloom.BloomFilter
 import org.bitcoins.core.number.Int32
 import org.bitcoins.core.p2p._
 import org.bitcoins.core.protocol.transaction.Transaction
-import org.bitcoins.crypto.{
-  DoubleSha256Digest,
-  DoubleSha256DigestBE,
-  HashDigest
-}
+import org.bitcoins.crypto.{DoubleSha256Digest, DoubleSha256DigestBE, HashDigest}
 import org.bitcoins.node.P2PLogger
 import org.bitcoins.node.config.NodeAppConfig
 import org.bitcoins.node.constant.NodeConstants
@@ -20,8 +16,7 @@ import org.bitcoins.node.networking.P2PClient
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future}
 
-case class PeerMessageSender(client: P2PClient)(implicit conf: NodeAppConfig)
-    extends P2PLogger {
+case class PeerMessageSender(client: P2PClient)(implicit conf: NodeAppConfig) extends P2PLogger {
   private val socket = client.peer.socket
   implicit private val timeout = Timeout(30.seconds)
 
@@ -61,17 +56,15 @@ case class PeerMessageSender(client: P2PClient)(implicit conf: NodeAppConfig)
   /** Sends a [[org.bitcoins.core.p2p.VersionMessage VersionMessage]] to our peer */
   def sendVersionMessage(): Future[Unit] = {
     val local = java.net.InetAddress.getLocalHost
-    val versionMsg = VersionMessage(
-      conf.network,
-      InetAddress(client.peer.socket.getAddress.getAddress),
-      InetAddress(local.getAddress),
-      relay = conf.relay)
+    val versionMsg = VersionMessage(conf.network,
+                                    InetAddress(client.peer.socket.getAddress.getAddress),
+                                    InetAddress(local.getAddress),
+                                    relay = conf.relay)
     logger.trace(s"Sending versionMsg=$versionMsg to peer=${client.peer}")
     sendMsg(versionMsg)
   }
 
-  def sendVersionMessage(chainApi: ChainApi)(implicit
-      ec: ExecutionContext): Future[Unit] = {
+  def sendVersionMessage(chainApi: ChainApi)(implicit ec: ExecutionContext): Future[Unit] = {
     chainApi.getBestHashBlockHeight().flatMap { height =>
       val localhost = java.net.InetAddress.getLocalHost
       val versionMsg =
@@ -109,8 +102,7 @@ case class PeerMessageSender(client: P2PClient)(implicit conf: NodeAppConfig)
     sendMsg(headersMsg)
   }
 
-  def sendGetHeadersMessage(
-      hashes: Vector[DoubleSha256Digest]): Future[Unit] = {
+  def sendGetHeadersMessage(hashes: Vector[DoubleSha256Digest]): Future[Unit] = {
     // GetHeadersMessage has a max of 101 hashes
     val headersMsg = GetHeadersMessage(hashes.distinct.take(101))
     logger.trace(s"Sending getheaders=$headersMsg to peer=${client.peer}")
@@ -155,9 +147,7 @@ case class PeerMessageSender(client: P2PClient)(implicit conf: NodeAppConfig)
   }
 
   /** Sends a request for filtered blocks matching the given headers */
-  def sendGetDataMessage(
-      typeIdentifier: TypeIdentifier,
-      hashes: DoubleSha256Digest*): Future[Unit] = {
+  def sendGetDataMessage(typeIdentifier: TypeIdentifier, hashes: DoubleSha256Digest*): Future[Unit] = {
     val inventories =
       hashes.map(hash => Inventory(typeIdentifier, hash))
     val message = GetDataMessage(inventories)
@@ -165,8 +155,7 @@ case class PeerMessageSender(client: P2PClient)(implicit conf: NodeAppConfig)
     sendMsg(message)
   }
 
-  def sendGetCompactFiltersMessage(
-      filterSyncMarker: FilterSyncMarker): Future[Unit] = {
+  def sendGetCompactFiltersMessage(filterSyncMarker: FilterSyncMarker): Future[Unit] = {
     val message =
       GetCompactFiltersMessage(if (filterSyncMarker.startHeight < 0) 0
                                else filterSyncMarker.startHeight,
@@ -175,8 +164,7 @@ case class PeerMessageSender(client: P2PClient)(implicit conf: NodeAppConfig)
     sendMsg(message)
   }
 
-  def sendGetCompactFilterHeadersMessage(
-      filterSyncMarker: FilterSyncMarker): Future[Unit] = {
+  def sendGetCompactFilterHeadersMessage(filterSyncMarker: FilterSyncMarker): Future[Unit] = {
     val message =
       GetCompactFilterHeadersMessage(if (filterSyncMarker.startHeight < 0) 0
                                      else filterSyncMarker.startHeight,
@@ -185,17 +173,14 @@ case class PeerMessageSender(client: P2PClient)(implicit conf: NodeAppConfig)
     sendMsg(message)
   }
 
-  def sendGetCompactFilterCheckPointMessage(
-      stopHash: DoubleSha256Digest): Future[Unit] = {
+  def sendGetCompactFilterCheckPointMessage(stopHash: DoubleSha256Digest): Future[Unit] = {
     val message = GetCompactFilterCheckPointMessage(stopHash)
     logger.debug(s"Sending getcfcheckpt=$message to peer ${client.peer}")
     sendMsg(message)
   }
 
-  private[node] def sendNextGetCompactFilterCommand(
-      chainApi: ChainApi,
-      filterBatchSize: Int,
-      startHeight: Int)(implicit ec: ExecutionContext): Future[Boolean] = {
+  private[node] def sendNextGetCompactFilterCommand(chainApi: ChainApi, filterBatchSize: Int, startHeight: Int)(implicit
+      ec: ExecutionContext): Future[Boolean] = {
     for {
       filterSyncMarkerOpt <-
         chainApi.nextFilterHeaderBatchRange(startHeight, filterBatchSize)
@@ -214,16 +199,13 @@ case class PeerMessageSender(client: P2PClient)(implicit conf: NodeAppConfig)
   private[node] def sendNextGetCompactFilterHeadersCommand(
       chainApi: ChainApi,
       filterHeaderBatchSize: Int,
-      prevStopHash: DoubleSha256DigestBE)(implicit
-      ec: ExecutionContext): Future[Boolean] = {
+      prevStopHash: DoubleSha256DigestBE)(implicit ec: ExecutionContext): Future[Boolean] = {
     for {
-      filterSyncMarkerOpt <- chainApi.nextBlockHeaderBatchRange(
-        prevStopHash = prevStopHash,
-        batchSize = filterHeaderBatchSize)
+      filterSyncMarkerOpt <- chainApi.nextBlockHeaderBatchRange(prevStopHash = prevStopHash,
+                                                                batchSize = filterHeaderBatchSize)
       res <- filterSyncMarkerOpt match {
         case Some(filterSyncMarker) =>
-          logger.info(
-            s"Requesting next compact filter headers from $filterSyncMarker")
+          logger.info(s"Requesting next compact filter headers from $filterSyncMarker")
           sendGetCompactFilterHeadersMessage(filterSyncMarker)
             .map(_ => true)
         case None =>
@@ -258,8 +240,6 @@ object PeerMessageSender {
     * and caches a peer handler actor so we can send a [[HandshakeFinished]]
     * message back to the actor when we are fully connected
     */
-  case class MessageAccumulator(
-      networkMsgs: Vector[(ActorRef, NetworkMessage)],
-      peerHandler: ActorRef)
+  case class MessageAccumulator(networkMsgs: Vector[(ActorRef, NetworkMessage)], peerHandler: ActorRef)
 
 }

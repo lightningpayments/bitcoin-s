@@ -54,9 +54,8 @@ trait FundTransactionHandling extends WalletLogger { self: Wallet =>
       fromAccount: AccountDb,
       coinSelectionAlgo: CoinSelectionAlgo = CoinSelectionAlgo.LeastWaste,
       fromTagOpt: Option[AddressTag],
-      markAsReserved: Boolean = false): Future[(
-      RawTxBuilderWithFinalizer[ShufflingNonInteractiveFinalizer],
-      Vector[ScriptSignatureParams[InputInfo]])] = {
+      markAsReserved: Boolean = false): Future[
+    (RawTxBuilderWithFinalizer[ShufflingNonInteractiveFinalizer], Vector[ScriptSignatureParams[InputInfo]])] = {
     def utxosF: Future[Vector[(SpendingInfoDb, Transaction)]] =
       for {
         utxos <- fromTagOpt match {
@@ -73,10 +72,8 @@ trait FundTransactionHandling extends WalletLogger { self: Wallet =>
         }
 
         // Need to remove immature coinbase inputs
-        immatureCoinbases = utxoWithTxs.filter(
-          _._1.state == TxoState.ImmatureCoinbase)
-      } yield utxoWithTxs.filter(utxo =>
-        !immatureCoinbases.exists(_._1 == utxo._1))
+        immatureCoinbases = utxoWithTxs.filter(_._1.state == TxoState.ImmatureCoinbase)
+      } yield utxoWithTxs.filter(utxo => !immatureCoinbases.exists(_._1 == utxo._1))
 
     val selectedUtxosF: Future[Vector[(SpendingInfoDb, Transaction)]] =
       for {
@@ -117,11 +114,8 @@ trait FundTransactionHandling extends WalletLogger { self: Wallet =>
         logger.info(s"UTXO $index details: ${utxo.output}")
       }
 
-      val txBuilder = ShufflingNonInteractiveFinalizer.txBuilderFrom(
-        destinations,
-        utxoSpendingInfos,
-        feeRate,
-        change.scriptPubKey)
+      val txBuilder =
+        ShufflingNonInteractiveFinalizer.txBuilderFrom(destinations, utxoSpendingInfos, feeRate, change.scriptPubKey)
 
       (txBuilder, utxoSpendingInfos)
     }

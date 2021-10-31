@@ -3,15 +3,8 @@ package org.bitcoins.rpc.common
 import org.bitcoins.commons.jsonmodels.bitcoind.RpcOpts
 import org.bitcoins.core.currency.Bitcoins
 import org.bitcoins.core.number.UInt32
-import org.bitcoins.core.protocol.script.{
-  P2SHScriptSignature,
-  ScriptPubKey,
-  ScriptSignature
-}
-import org.bitcoins.core.protocol.transaction.{
-  TransactionInput,
-  TransactionOutPoint
-}
+import org.bitcoins.core.protocol.script.{P2SHScriptSignature, ScriptPubKey, ScriptSignature}
+import org.bitcoins.core.protocol.transaction.{TransactionInput, TransactionOutPoint}
 import org.bitcoins.rpc.BitcoindException.InvalidAddressOrKey
 import org.bitcoins.rpc.client.common.BitcoindRpcClient
 import org.bitcoins.testkit.rpc.BitcoindRpcTestUtil
@@ -101,14 +94,11 @@ class RawTransactionRpcTest extends BitcoindRpcTest {
 
       address <- otherClient.getNewAddress
 
-      input0 = TransactionOutPoint(transaction0.txid.flip,
-                                   UInt32(transaction0.blockindex.get))
-      input1 = TransactionOutPoint(transaction1.txid.flip,
-                                   UInt32(transaction1.blockindex.get))
+      input0 = TransactionOutPoint(transaction0.txid.flip, UInt32(transaction0.blockindex.get))
+      input1 = TransactionOutPoint(transaction1.txid.flip, UInt32(transaction1.blockindex.get))
       transaction <- {
         val sig: ScriptSignature = ScriptSignature.empty
-        val inputs = Vector(TransactionInput(input0, sig, UInt32(1)),
-                            TransactionInput(input1, sig, UInt32(2)))
+        val inputs = Vector(TransactionInput(input0, sig, UInt32(1)), TransactionInput(input1, sig, UInt32(2)))
         val outputs = Map(address -> Bitcoins(1))
         client.createRawTransaction(inputs, outputs)
       }
@@ -146,10 +136,7 @@ class RawTransactionRpcTest extends BitcoindRpcTest {
           .addMultiSigAddress(1, Vector(Left(pubkey.get)))
       txid <-
         BitcoindRpcTestUtil
-          .fundBlockChainTransaction(client,
-                                     server,
-                                     multisig.address,
-                                     Bitcoins(1.2))
+          .fundBlockChainTransaction(client, server, multisig.address, Bitcoins(1.2))
       rawTx <- client.getTransaction(txid)
 
       tx <- client.decodeRawTransaction(rawTx.hex)
@@ -170,12 +157,11 @@ class RawTransactionRpcTest extends BitcoindRpcTest {
 
       result <- {
         val utxoDeps = Vector(
-          RpcOpts.SignRawTransactionOutputParameter(
-            txid,
-            output.n,
-            ScriptPubKey.fromAsmHex(output.scriptPubKey.hex),
-            Some(multisig.redeemScript),
-            amount = Some(Bitcoins(1.2))))
+          RpcOpts.SignRawTransactionOutputParameter(txid,
+                                                    output.n,
+                                                    ScriptPubKey.fromAsmHex(output.scriptPubKey.hex),
+                                                    Some(multisig.redeemScript),
+                                                    amount = Some(Bitcoins(1.2))))
         BitcoindRpcTestUtil.signRawTransaction(
           client,
           rawCreatedTx,
@@ -198,10 +184,7 @@ class RawTransactionRpcTest extends BitcoindRpcTest {
 
       _ <- otherClient.addMultiSigAddress(2, keys)
 
-      txid <- BitcoindRpcTestUtil.fundBlockChainTransaction(client,
-                                                            otherClient,
-                                                            multisig.address,
-                                                            Bitcoins(1.2))
+      txid <- BitcoindRpcTestUtil.fundBlockChainTransaction(client, otherClient, multisig.address, Bitcoins(1.2))
 
       rawTx <- client.getTransaction(txid)
       tx <- client.decodeRawTransaction(rawTx.hex)
@@ -230,8 +213,7 @@ class RawTransactionRpcTest extends BitcoindRpcTest {
                                                     output.n,
                                                     scriptPubKey,
                                                     Some(multisig.redeemScript),
-                                                    amount =
-                                                      Some(Bitcoins(1.2)))
+                                                    amount = Some(Bitcoins(1.2)))
         Vector(utxoDep)
       }
 
@@ -262,8 +244,7 @@ class RawTransactionRpcTest extends BitcoindRpcTest {
         client
           .createRawTransaction(Vector(), Map(address -> Bitcoins(1)))
           .flatMap { tx =>
-            recoverToSucceededIf[InvalidAddressOrKey](
-              client.abandonTransaction(tx.txId))
+            recoverToSucceededIf[InvalidAddressOrKey](client.abandonTransaction(tx.txId))
           }
       }
     }

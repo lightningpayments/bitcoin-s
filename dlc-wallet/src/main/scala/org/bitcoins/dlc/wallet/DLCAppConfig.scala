@@ -19,8 +19,8 @@ import scala.concurrent.{ExecutionContext, Future}
   * @param directory The data directory of the wallet
   * @param conf Optional sequence of configuration overrides
   */
-case class DLCAppConfig(private val directory: Path, private val conf: Config*)(
-    implicit override val ec: ExecutionContext)
+case class DLCAppConfig(private val directory: Path, private val conf: Config*)(implicit
+    override val ec: ExecutionContext)
     extends DbAppConfig
     with DLCDbManagement
     with JdbcProfileComponent[DLCAppConfig] {
@@ -28,8 +28,7 @@ case class DLCAppConfig(private val directory: Path, private val conf: Config*)(
   override protected[bitcoins] def moduleName: String = "dlc"
   override protected[bitcoins] type ConfigType = DLCAppConfig
 
-  override protected[bitcoins] def newConfigOfType(
-      configs: Seq[Config]): DLCAppConfig =
+  override protected[bitcoins] def newConfigOfType(configs: Seq[Config]): DLCAppConfig =
     DLCAppConfig(directory, configs: _*)
 
   protected[bitcoins] def baseDatadir: Path = directory
@@ -81,15 +80,12 @@ case class DLCAppConfig(private val directory: Path, private val conf: Config*)(
     }
   }
 
-  def createDLCWallet(
-      nodeApi: NodeApi,
-      chainQueryApi: ChainQueryApi,
-      feeRateApi: FeeRateApi)(implicit
+  def createDLCWallet(nodeApi: NodeApi, chainQueryApi: ChainQueryApi, feeRateApi: FeeRateApi)(implicit
       walletConf: WalletAppConfig,
       ec: ExecutionContext): Future[DLCWallet] = {
-    DLCAppConfig.createDLCWallet(nodeApi = nodeApi,
-                                 chainQueryApi = chainQueryApi,
-                                 feeRateApi = feeRateApi)(walletConf, this, ec)
+    DLCAppConfig.createDLCWallet(nodeApi = nodeApi, chainQueryApi = chainQueryApi, feeRateApi = feeRateApi)(walletConf,
+                                                                                                            this,
+                                                                                                            ec)
   }
 }
 
@@ -100,15 +96,11 @@ object DLCAppConfig extends AppConfigFactory[DLCAppConfig] with WalletLogger {
   /** Constructs a wallet configuration from the default Bitcoin-S
     * data directory and given list of configuration overrides.
     */
-  override def fromDatadir(datadir: Path, confs: Vector[Config])(implicit
-      ec: ExecutionContext): DLCAppConfig =
+  override def fromDatadir(datadir: Path, confs: Vector[Config])(implicit ec: ExecutionContext): DLCAppConfig =
     DLCAppConfig(datadir, confs: _*)
 
   /** Creates a wallet based on the given [[WalletAppConfig]] */
-  def createDLCWallet(
-      nodeApi: NodeApi,
-      chainQueryApi: ChainQueryApi,
-      feeRateApi: FeeRateApi)(implicit
+  def createDLCWallet(nodeApi: NodeApi, chainQueryApi: ChainQueryApi, feeRateApi: FeeRateApi)(implicit
       walletConf: WalletAppConfig,
       dlcConf: DLCAppConfig,
       ec: ExecutionContext): Future[DLCWallet] = {
@@ -125,8 +117,7 @@ object DLCAppConfig extends AppConfigFactory[DLCAppConfig] with WalletLogger {
           DLCWallet(nodeApi, chainQueryApi, feeRateApi)
 
         Wallet
-          .initialize(wallet = unInitializedWallet,
-                      bip39PasswordOpt = bip39PasswordOpt)
+          .initialize(wallet = unInitializedWallet, bip39PasswordOpt = bip39PasswordOpt)
           .map(_.asInstanceOf[DLCWallet])
       }
     }

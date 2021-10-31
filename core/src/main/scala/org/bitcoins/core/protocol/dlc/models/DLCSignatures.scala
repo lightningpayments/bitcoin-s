@@ -9,13 +9,11 @@ import org.bitcoins.crypto.{ECAdaptorSignature, ECPublicKey}
 
 sealed trait DLCSignatures
 
-case class FundingSignatures(
-    sigs: Vector[(TransactionOutPoint, ScriptWitnessV0)])
+case class FundingSignatures(sigs: Vector[(TransactionOutPoint, ScriptWitnessV0)])
     extends SeqWrapper[(TransactionOutPoint, ScriptWitnessV0)]
     with DLCSignatures {
 
-  override protected def wrapped: Vector[
-    (TransactionOutPoint, ScriptWitnessV0)] = sigs
+  override protected def wrapped: Vector[(TransactionOutPoint, ScriptWitnessV0)] = sigs
 
   def get(outPoint: TransactionOutPoint): Option[ScriptWitnessV0] = {
     sigs.find(_._1 == outPoint).map(_._2)
@@ -34,9 +32,7 @@ case class FundingSignatures(
   }
 }
 
-case class CETSignatures(
-    outcomeSigs: Vector[(ECPublicKey, ECAdaptorSignature)],
-    refundSig: PartialSignature)
+case class CETSignatures(outcomeSigs: Vector[(ECPublicKey, ECAdaptorSignature)], refundSig: PartialSignature)
     extends DLCSignatures {
   lazy val keys: Vector[ECPublicKey] = outcomeSigs.map(_._1)
   lazy val adaptorSigs: Vector[ECAdaptorSignature] = outcomeSigs.map(_._2)
@@ -51,7 +47,6 @@ case class CETSignatures(
     outcomeSigs
       .find(_._1 == key)
       .map(_._2)
-      .getOrElse(
-        throw new IllegalArgumentException(s"No signature found for $key"))
+      .getOrElse(throw new IllegalArgumentException(s"No signature found for $key"))
   }
 }

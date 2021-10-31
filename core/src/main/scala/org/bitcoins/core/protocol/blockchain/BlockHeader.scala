@@ -140,12 +140,7 @@ object BlockHeader extends Factory[BlockHeader] {
       time: UInt32,
       nBits: UInt32,
       nonce: UInt32): BlockHeader = {
-    BlockHeaderImpl(version,
-                    previousBlockHash,
-                    merkleRootHash,
-                    time,
-                    nBits,
-                    nonce)
+    BlockHeaderImpl(version, previousBlockHash, merkleRootHash, time, nBits, nonce)
   }
 
   def fromBytes(bytes: ByteVector): BlockHeader =
@@ -159,8 +154,5 @@ object BlockHeader extends Factory[BlockHeader] {
     * @param isNegative
     * @param isOverflow
     */
-  case class TargetDifficultyHelper(
-      difficulty: BigInt,
-      isNegative: Boolean,
-      isOverflow: Boolean)
+  case class TargetDifficultyHelper(difficulty: BigInt, isNegative: Boolean, isOverflow: Boolean)
 }

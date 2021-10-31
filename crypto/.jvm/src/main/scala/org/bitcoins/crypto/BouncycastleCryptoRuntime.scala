@@ -57,17 +57,14 @@ trait BouncycastleCryptoRuntime extends CryptoRuntime {
     } else if (bytes.length == 33 && bytes.head == 0.toByte) {
       bytes.tail
     } else {
-      throw new IllegalArgumentException(
-        s"Field element cannot have more than 32 bytes, got $bytes from $x")
+      throw new IllegalArgumentException(s"Field element cannot have more than 32 bytes, got $bytes from $x")
     }
 
     (BouncyCastleUtil.decodePoint(ECPublicKey(0x02.toByte +: bytes32)),
      BouncyCastleUtil.decodePoint(ECPublicKey(0x03.toByte +: bytes32)))
   }
 
-  override def recoverPublicKey(
-      signature: ECDigitalSignature,
-      message: ByteVector): (ECPublicKey, ECPublicKey) = {
+  override def recoverPublicKey(signature: ECDigitalSignature, message: ByteVector): (ECPublicKey, ECPublicKey) = {
 
     val curve = BouncyCastleCryptoParams.curve
     val (r, s) = (signature.r.bigInteger, signature.s.bigInteger)
@@ -132,16 +129,11 @@ trait BouncycastleCryptoRuntime extends CryptoRuntime {
     BouncyCastleUtil.computePublicKey(privateKey)
   }
 
-  override def sign(
-      privateKey: ECPrivateKey,
-      dataToSign: ByteVector): ECDigitalSignature = {
+  override def sign(privateKey: ECPrivateKey, dataToSign: ByteVector): ECDigitalSignature = {
     BouncyCastleUtil.sign(dataToSign, privateKey)
   }
 
-  override def signWithEntropy(
-      privateKey: ECPrivateKey,
-      bytes: ByteVector,
-      entropy: ByteVector): ECDigitalSignature =
+  override def signWithEntropy(privateKey: ECPrivateKey, bytes: ByteVector, entropy: ByteVector): ECDigitalSignature =
     BouncyCastleUtil.signWithEntropy(bytes, privateKey, entropy)
 
   override def secKeyVerify(privateKeyBytes: ByteVector): Boolean = {
@@ -152,18 +144,13 @@ trait BouncycastleCryptoRuntime extends CryptoRuntime {
     num != BigInteger.ZERO
   }
 
-  override def verify(
-      publicKey: PublicKey,
-      data: ByteVector,
-      signature: ECDigitalSignature): Boolean =
+  override def verify(publicKey: PublicKey, data: ByteVector, signature: ECDigitalSignature): Boolean =
     BouncyCastleUtil.verifyDigitalSignature(data, publicKey, signature)
 
   override def publicKey(privateKey: ECPrivateKey): ECPublicKey =
     BouncyCastleUtil.computePublicKey(privateKey)
 
-  override def tweakMultiply(
-      publicKey: ECPublicKey,
-      tweak: FieldElement): ECPublicKey =
+  override def tweakMultiply(publicKey: ECPublicKey, tweak: FieldElement): ECPublicKey =
     BouncyCastleUtil.pubKeyTweakMul(publicKey, tweak.bytes)
 
   override def add(pk1: ECPublicKey, pk2: ECPublicKey): ECPublicKey = {
@@ -173,9 +160,7 @@ trait BouncycastleCryptoRuntime extends CryptoRuntime {
     BouncyCastleUtil.decodePubKey(sumPoint)
   }
 
-  def pubKeyTweakAdd(
-      pubkey: ECPublicKey,
-      privkey: ECPrivateKey): ECPublicKey = {
+  def pubKeyTweakAdd(pubkey: ECPublicKey, privkey: ECPrivateKey): ECPublicKey = {
     val tweak = privkey.publicKey
     pubkey.add(tweak)
   }
@@ -203,8 +188,7 @@ trait BouncycastleCryptoRuntime extends CryptoRuntime {
     if (decoded.isInfinity)
       SecpPointInfinity
     else
-      SecpPoint(decoded.getRawXCoord.getEncoded,
-                decoded.getRawYCoord.getEncoded)
+      SecpPoint(decoded.getRawXCoord.getEncoded, decoded.getRawYCoord.getEncoded)
   }
 
   override def pbkdf2WithSha512(

@@ -14,17 +14,14 @@ import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
 
 /** A trait that helps start bitcoind/eclair when it is started via bitcoin-s */
-class TorClient()(implicit
-    val executionContext: ExecutionContext,
-    conf: TorAppConfig)
+class TorClient()(implicit val executionContext: ExecutionContext, conf: TorAppConfig)
     extends NativeProcessFactory
     with Logging {
 
   lazy val socks5ProxyParams: Socks5ProxyParams = conf.socks5ProxyParams match {
     case Some(params) => params
     case None =>
-      val addr = new InetSocketAddress(InetAddress.getLoopbackAddress,
-                                       Socks5ProxyParams.DefaultPort)
+      val addr = new InetSocketAddress(InetAddress.getLoopbackAddress, Socks5ProxyParams.DefaultPort)
       Socks5ProxyParams(
         address = addr,
         credentialsOpt = None,
@@ -35,8 +32,7 @@ class TorClient()(implicit
   lazy val torParams: TorParams = conf.torParams match {
     case Some(params) => params
     case None =>
-      val control = new InetSocketAddress(InetAddress.getLoopbackAddress,
-                                          TorParams.DefaultControlPort)
+      val control = new InetSocketAddress(InetAddress.getLoopbackAddress, TorParams.DefaultControlPort)
 
       val auth = SafeCookie()
       val privKeyPath = conf.datadir.resolve("tor_priv_key")
@@ -104,16 +100,13 @@ object TorClient extends Logging {
 
     val executableFileName = datadir.resolve(torBundle.primaryExecutable).toFile
 
-    logger.info(
-      s"Using prepackaged Tor from bitcoin-s resources, $executableFileName")
+    logger.info(s"Using prepackaged Tor from bitcoin-s resources, $executableFileName")
 
     if (existsAndIsExecutable(datadir, torBundle)) {
-      logger.info(
-        s"Using tor daemon already written to datadir=${datadir.toAbsolutePath}")
+      logger.info(s"Using tor daemon already written to datadir=${datadir.toAbsolutePath}")
       executableFileName
     } else {
-      logger.info(
-        s"Tor executable is not written to datadir $datadir, creating...")
+      logger.info(s"Tor executable is not written to datadir $datadir, creating...")
 
       torBundle.allFilesNames.foreach { fileName =>
         val writePath = datadir.resolve(fileName)
@@ -140,16 +133,13 @@ object TorClient extends Logging {
       // write version file
       Files.write(datadir.resolve(versionFileName), TOR_VERSION.getBytes)
 
-      logger.info(
-        s"Using prepackaged Tor from bitcoin-s resources, $executableFileName")
+      logger.info(s"Using prepackaged Tor from bitcoin-s resources, $executableFileName")
 
       executableFileName
     }
   }
 
-  private def writeFileFromResource(
-      resourceName: String,
-      writePath: Path): Long = {
+  private def writeFileFromResource(resourceName: String, writePath: Path): Long = {
     val stream =
       Try(getClass.getResource("/" + resourceName).openStream()) match {
         case Failure(_)      => throw new FileNotFoundException(resourceName)
@@ -163,9 +153,7 @@ object TorClient extends Logging {
     * @param executables the files that need to be set to executable
     * @param fileList shared object files or library files for tor to operate
     */
-  private case class TorFileBundle(
-      executables: Vector[String],
-      fileList: Vector[String]) {
+  private case class TorFileBundle(executables: Vector[String], fileList: Vector[String]) {
     val allFilesNames: Vector[String] = executables ++ fileList
 
     /** By convention, make the primary executable the first element passed into executables
@@ -216,9 +204,7 @@ object TorClient extends Logging {
   }
 
   /** Checks if the executable files exists in the given datadir and are executable */
-  private def existsAndIsExecutable(
-      datadir: Path,
-      bundle: TorFileBundle): Boolean = {
+  private def existsAndIsExecutable(datadir: Path, bundle: TorFileBundle): Boolean = {
 
     val versionFile = datadir.resolve(versionFileName)
 

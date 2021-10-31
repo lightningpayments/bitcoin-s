@@ -15,9 +15,7 @@ import zio.Task
 import java.sql.SQLException
 import scala.concurrent.{ExecutionContext, Future}
 
-case class SpendingInfoDAO()(implicit
-    val ec: ExecutionContext,
-    override val appConfig: WalletAppConfig)
+case class SpendingInfoDAO()(implicit val ec: ExecutionContext, override val appConfig: WalletAppConfig)
     extends CRUDAutoInc[UTXORecord] {
   import profile.api._
   private val mappers = new org.bitcoins.db.DbCommonsColumnMappers(profile)
@@ -27,23 +25,19 @@ case class SpendingInfoDAO()(implicit
   override val table: profile.api.TableQuery[SpendingInfoTable] =
     profile.api.TableQuery[SpendingInfoTable]
 
-  private lazy val addrTable: profile.api.TableQuery[
-    AddressDAO#AddressTable] = {
+  private lazy val addrTable: profile.api.TableQuery[AddressDAO#AddressTable] = {
     AddressDAO()(ec, appConfig).table
   }
 
-  private lazy val txTable: profile.api.TableQuery[
-    IncomingTransactionDAO#IncomingTransactionTable] = {
+  private lazy val txTable: profile.api.TableQuery[IncomingTransactionDAO#IncomingTransactionTable] = {
     IncomingTransactionDAO().table
   }
 
-  private lazy val tagTable: profile.api.TableQuery[
-    AddressTagDAO#AddressTagTable] = {
+  private lazy val tagTable: profile.api.TableQuery[AddressTagDAO#AddressTagTable] = {
     AddressTagDAO().table
   }
 
-  private lazy val spkTable: profile.api.TableQuery[
-    ScriptPubKeyDAO#ScriptPubKeyTable] = {
+  private lazy val spkTable: profile.api.TableQuery[ScriptPubKeyDAO#ScriptPubKeyTable] = {
     ScriptPubKeyDAO().table
   }
 
@@ -64,8 +58,7 @@ case class SpendingInfoDAO()(implicit
         case None =>
           (for {
             newSpkId <-
-              (spkTable returning spkTable.map(_.id)) += (ScriptPubKeyDb(
-                si.output.scriptPubKey))
+              (spkTable returning spkTable.map(_.id)) += (ScriptPubKeyDb(si.output.scriptPubKey))
           } yield {
             val utxo = UTXORecord.fromSpendingInfoDb(si, newSpkId)
             query += utxo
@@ -83,21 +76,16 @@ case class SpendingInfoDAO()(implicit
       .map {
         case (utxo, Some(spk)) => utxo.toSpendingInfoDb(spk.scriptPubKey)
         case _ =>
-          throw new SQLException(
-            s"Unexpected result: Cannot create either a UTXO or a SPK record for $si")
+          throw new SQLException(s"Unexpected result: Cannot create either a UTXO or a SPK record for $si")
       }
   }
 
-  def upsertAllSpendingInfoDb(
-      ts: Vector[SpendingInfoDb]): Future[Vector[SpendingInfoDb]] = {
-    FutureUtil.foldLeftAsync(Vector.empty[SpendingInfoDb], ts)((acc, si) =>
-      upsert(si).map(res => acc :+ res))
+  def upsertAllSpendingInfoDb(ts: Vector[SpendingInfoDb]): Future[Vector[SpendingInfoDb]] = {
+    FutureUtil.foldLeftAsync(Vector.empty[SpendingInfoDb], ts)((acc, si) => upsert(si).map(res => acc :+ res))
   }
 
-  def updateAllSpendingInfoDb(
-      ts: Vector[SpendingInfoDb]): Future[Vector[SpendingInfoDb]] = {
-    FutureUtil.foldLeftAsync(Vector.empty[SpendingInfoDb], ts)((acc, si) =>
-      update(si).map(res => acc :+ res))
+  def updateAllSpendingInfoDb(ts: Vector[SpendingInfoDb]): Future[Vector[SpendingInfoDb]] = {
+    FutureUtil.foldLeftAsync(Vector.empty[SpendingInfoDb], ts)((acc, si) => update(si).map(res => acc :+ res))
   }
 
   def update(si: SpendingInfoDb): Future[SpendingInfoDb] = {
@@ -114,8 +102,7 @@ case class SpendingInfoDAO()(implicit
         case None =>
           (for {
             newSpkId <-
-              (spkTable returning spkTable.map(_.id)) += ScriptPubKeyDb(
-                si.output.scriptPubKey)
+              (spkTable returning spkTable.map(_.id)) += ScriptPubKeyDb(si.output.scriptPubKey)
           } yield {
             val utxo = UTXORecord.fromSpendingInfoDb(si, newSpkId)
             table.filter(_.id === utxo.id).update(utxo)
@@ -133,8 +120,7 @@ case class SpendingInfoDAO()(implicit
       .map {
         case (Some(utxo), Some(spk)) => utxo.toSpendingInfoDb(spk.scriptPubKey)
         case _ =>
-          throw new SQLException(
-            s"Unexpected result: Cannot update either a UTXO or a SPK record for $si")
+          throw new SQLException(s"Unexpected result: Cannot update either a UTXO or a SPK record for $si")
       }
   }
 
@@ -147,15 +133,12 @@ case class SpendingInfoDAO()(implicit
           .headOption
       _ <- spkOpt match {
         case Some(foundSpk) =>
-          table.insertOrUpdate(
-            UTXORecord.fromSpendingInfoDb(si, foundSpk.id.get))
+          table.insertOrUpdate(UTXORecord.fromSpendingInfoDb(si, foundSpk.id.get))
         case None =>
           (for {
             newSpkId <-
-              (spkTable returning spkTable.map(_.id)) += ScriptPubKeyDb(
-                si.output.scriptPubKey)
-          } yield table.insertOrUpdate(
-            UTXORecord.fromSpendingInfoDb(si, newSpkId))).flatten
+              (spkTable returning spkTable.map(_.id)) += ScriptPubKeyDb(si.output.scriptPubKey)
+          } yield table.insertOrUpdate(UTXORecord.fromSpendingInfoDb(si, newSpkId))).flatten
       }
       utxo <- table.filter(_.outPoint === si.outPoint).result.headOption
       spk <-
@@ -169,8 +152,7 @@ case class SpendingInfoDAO()(implicit
       .map {
         case (Some(utxo), Some(spk)) => utxo.toSpendingInfoDb(spk.scriptPubKey)
         case _ =>
-          throw new SQLException(
-            s"Unexpected result: Cannot upsert either a UTXO or a SPK record for $si")
+          throw new SQLException(s"Unexpected result: Cannot upsert either a UTXO or a SPK record for $si")
       }
   }
 
@@ -196,8 +178,7 @@ case class SpendingInfoDAO()(implicit
     findOutputsReceived(txs.map(_.txIdBE))
   }
 
-  private def _findOutputsBeingSpent(
-      txs: Vector[Transaction]): Future[Vector[UTXORecord]] = {
+  private def _findOutputsBeingSpent(txs: Vector[Transaction]): Future[Vector[UTXORecord]] = {
     val outPoints = txs
       .flatMap(_.inputs)
       .map(_.previousOutput)
@@ -217,21 +198,18 @@ case class SpendingInfoDAO()(implicit
     findOutputsBeingSpent(Vector(tx))
   }
 
-  def findOutputsBeingSpent(
-      txs: Vector[Transaction]): Future[Vector[SpendingInfoDb]] = {
+  def findOutputsBeingSpent(txs: Vector[Transaction]): Future[Vector[SpendingInfoDb]] = {
     for {
       utxos <- _findOutputsBeingSpent(txs)
       spks <- findScriptPubKeysByUtxos(utxos)
     } yield {
-      utxos.map(utxo =>
-        utxo.toSpendingInfoDb(spks(utxo.scriptPubKeyId).scriptPubKey))
+      utxos.map(utxo => utxo.toSpendingInfoDb(spks(utxo.scriptPubKeyId).scriptPubKey))
     }
   }
 
   /** Given a TXID, fetches all incoming TXOs and the address the TXO pays to
     */
-  def withAddress(txid: DoubleSha256DigestBE): Future[
-    Vector[(SpendingInfoDb, AddressDb)]] = {
+  def withAddress(txid: DoubleSha256DigestBE): Future[Vector[(SpendingInfoDb, AddressDb)]] = {
     def _withAddress: Future[Vector[(UTXORecord, AddressRecord)]] = {
       val query = {
         val filtered = table.filter(_.txid === txid)
@@ -269,8 +247,7 @@ case class SpendingInfoDAO()(implicit
   /** Fetches all the incoming TXOs in our DB that are in
     * the transaction with the given TXID
     */
-  def findOutputsReceived(
-      txids: Vector[DoubleSha256DigestBE]): Task[Vector[SpendingInfoDb]] =
+  def findOutputsReceived(txids: Vector[DoubleSha256DigestBE]): Task[Vector[SpendingInfoDb]] =
     safeDatabase
       .runVec(spkJoinQuery.filter(_._1.txid.inSet(txids)).result)
       .map(res =>
@@ -278,8 +255,7 @@ case class SpendingInfoDAO()(implicit
           utxoRec.toSpendingInfoDb(spkRec.scriptPubKey)
         })
 
-  def findByScriptPubKey(
-      scriptPubKey: ScriptPubKey): Future[Vector[SpendingInfoDb]] = {
+  def findByScriptPubKey(scriptPubKey: ScriptPubKey): Future[Vector[SpendingInfoDb]] = {
     val filtered = spkJoinQuery.filter(_._2.scriptPubKey === scriptPubKey)
     safeDatabase
       .runVec(filtered.result)
@@ -306,14 +282,12 @@ case class SpendingInfoDAO()(implicit
   def utxoToInfo(utxos: Vector[UTXORecord]): Future[Vector[SpendingInfoDb]] =
     for {
       spks <- findScriptPubKeysByUtxos(utxos)
-    } yield utxos.map(utxo =>
-      utxo.toSpendingInfoDb(spks(utxo.scriptPubKeyId).scriptPubKey))
+    } yield utxos.map(utxo => utxo.toSpendingInfoDb(spks(utxo.scriptPubKeyId).scriptPubKey))
 
   def infoToUtxo(infos: Vector[SpendingInfoDb]): Future[Vector[UTXORecord]] =
     for {
       spks <- findPublicKeyScriptsBySpendingInfoDb(infos)
-    } yield infos.map(utxo =>
-      UTXORecord.fromSpendingInfoDb(utxo, spks(utxo.output.scriptPubKey)))
+    } yield infos.map(utxo => UTXORecord.fromSpendingInfoDb(utxo, spks(utxo.output.scriptPubKey)))
 
   def findAllUnspent(): Future[Vector[SpendingInfoDb]] = {
     for {
@@ -322,23 +296,17 @@ case class SpendingInfoDAO()(implicit
     } yield infos
   }
 
-  private def filterUtxosByAccount(
-      utxos: Vector[SpendingInfoDb],
-      hdAccount: HDAccount): Vector[SpendingInfoDb] = {
-    utxos.filter(utxo =>
-      HDAccount.isSameAccount(bip32Path = utxo.privKeyPath,
-                              account = hdAccount))
+  private def filterUtxosByAccount(utxos: Vector[SpendingInfoDb], hdAccount: HDAccount): Vector[SpendingInfoDb] = {
+    utxos.filter(utxo => HDAccount.isSameAccount(bip32Path = utxo.privKeyPath, account = hdAccount))
   }
 
   /** Finds all utxos for a given account */
-  def findAllUnspentForAccount(
-      hdAccount: HDAccount): Future[Vector[SpendingInfoDb]] = {
+  def findAllUnspentForAccount(hdAccount: HDAccount): Future[Vector[SpendingInfoDb]] = {
     val allUtxosF = findAllUnspent()
     allUtxosF.map(filterUtxosByAccount(_, hdAccount))
   }
 
-  def findAllForAccount(
-      hdAccount: HDAccount): Future[Vector[SpendingInfoDb]] = {
+  def findAllForAccount(hdAccount: HDAccount): Future[Vector[SpendingInfoDb]] = {
     findAllSpendingInfos().map(filterUtxosByAccount(_, hdAccount))
   }
 
@@ -397,8 +365,7 @@ case class SpendingInfoDAO()(implicit
   }
 
   /** Enumerates all TX outpoints in the wallet */
-  def findByOutPoints(outPoints: Vector[TransactionOutPoint]): Future[
-    Vector[SpendingInfoDb]] = {
+  def findByOutPoints(outPoints: Vector[TransactionOutPoint]): Future[Vector[SpendingInfoDb]] = {
     val query = table
       .join(spkTable)
       .on(_.scriptPubKeyId === _.id)
@@ -430,14 +397,12 @@ case class SpendingInfoDAO()(implicit
       })
   }
 
-  private def findScriptPubKeys(
-      ids: Seq[Long]): Future[Map[Long, ScriptPubKeyDb]] = {
+  private def findScriptPubKeys(ids: Seq[Long]): Future[Map[Long, ScriptPubKeyDb]] = {
     val query = spkTable.filter(t => t.id.inSet(ids))
     safeDatabase.runVec(query.result).map(_.map(spk => (spk.id.get, spk)).toMap)
   }
 
-  private def findScriptPubKeysByUtxos(
-      utxos: Vector[UTXORecord]): Future[Map[Long, ScriptPubKeyDb]] = {
+  private def findScriptPubKeysByUtxos(utxos: Vector[UTXORecord]): Future[Map[Long, ScriptPubKeyDb]] = {
     val ids = utxos.map(_.scriptPubKeyId)
     findScriptPubKeys(ids)
   }
@@ -457,8 +422,7 @@ case class SpendingInfoDAO()(implicit
     * or not it is spent (i.e. if it is a UTXO or not) and the
     * TXID of the transaction that created this output.
     */
-  case class SpendingInfoTable(tag: Tag)
-      extends TableAutoInc[UTXORecord](tag, schemaName, "txo_spending_info") {
+  case class SpendingInfoTable(tag: Tag) extends TableAutoInc[UTXORecord](tag, schemaName, "txo_spending_info") {
 
     def outPoint: Rep[TransactionOutPoint] =
       column("tx_outpoint", O.Unique)
@@ -478,24 +442,17 @@ case class SpendingInfoDAO()(implicit
 
     def scriptWitnessOpt: Rep[Option[ScriptWitness]] = column("script_witness")
 
-    def spendingTxIdOpt: Rep[Option[DoubleSha256DigestBE]] = column(
-      "spending_txid")
+    def spendingTxIdOpt: Rep[Option[DoubleSha256DigestBE]] = column("spending_txid")
 
     /** All UTXOs must have a SPK in the wallet that gets spent to */
     def fk_scriptPubKeyId: slick.lifted.ForeignKeyQuery[_, ScriptPubKeyDb] = {
       val scriptPubKeyTable = spkTable
-      foreignKey("fk_scriptPubKeyId",
-                 sourceColumns = scriptPubKeyId,
-                 targetTableQuery = scriptPubKeyTable)(_.id)
+      foreignKey("fk_scriptPubKeyId", sourceColumns = scriptPubKeyId, targetTableQuery = scriptPubKeyTable)(_.id)
     }
 
     /** All UTXOs must have a corresponding transaction in the wallet */
-    def fk_incoming_txId: slick.lifted.ForeignKeyQuery[
-      _,
-      IncomingTransactionDb] = {
-      foreignKey("fk_incoming_txId",
-                 sourceColumns = txid,
-                 targetTableQuery = txTable)(_.txIdBE)
+    def fk_incoming_txId: slick.lifted.ForeignKeyQuery[_, IncomingTransactionDb] = {
+      foreignKey("fk_incoming_txId", sourceColumns = txid, targetTableQuery = txTable)(_.txIdBE)
     }
 
     def * =

@@ -13,18 +13,15 @@ import upickle.{default => up}
 
 import scala.concurrent.Future
 
-case class Server(
-    conf: AppConfig,
-    handlers: Seq[ServerRoute],
-    rpcbindOpt: Option[String],
-    rpcport: Int)(implicit system: ActorSystem)
+case class Server(conf: AppConfig, handlers: Seq[ServerRoute], rpcbindOpt: Option[String], rpcport: Int)(implicit
+    system: ActorSystem)
     extends HttpLogger {
 
   import system.dispatcher
 
   /** Handles all server commands by throwing a MethodNotFound */
-  private val catchAllHandler: PartialFunction[ServerCommand, StandardRoute] = {
-    case ServerCommand(name, _) => throw HttpError.MethodNotFound(name)
+  private val catchAllHandler: PartialFunction[ServerCommand, StandardRoute] = { case ServerCommand(name, _) =>
+    throw HttpError.MethodNotFound(name)
   }
 
   /** HTTP directive that handles both exceptions and rejections */
@@ -35,18 +32,15 @@ case class Server(
         .newBuilder()
         .handleNotFound {
           complete {
-            Server.httpError(
-              """Resource not found. Hint: all RPC calls are made against root ('/')""",
-              StatusCodes.BadRequest)
+            Server.httpError("""Resource not found. Hint: all RPC calls are made against root ('/')""",
+                             StatusCodes.BadRequest)
           }
         }
         .result()
 
     val exceptionHandler = ExceptionHandler {
       case HttpError.MethodNotFound(method) =>
-        complete(
-          Server.httpError(s"'$method' is not a valid method",
-                           StatusCodes.BadRequest))
+        complete(Server.httpError(s"'$method' is not a valid method", StatusCodes.BadRequest))
       case err: Throwable =>
         logger.info(s"Unhandled error in server:", err)
         complete(Server.httpError(s"Request failed: ${err.getMessage}"))
@@ -61,8 +55,7 @@ case class Server(
 
   val route: Route =
     // TODO implement better logging
-    DebuggingDirectives.logRequestResult(
-      ("http-rpc-server", Logging.InfoLevel)) {
+    DebuggingDirectives.logRequestResult(("http-rpc-server", Logging.InfoLevel)) {
       withErrorHandling {
         pathSingleSlash {
           post {
@@ -93,9 +86,7 @@ case class Server(
 object Server {
 
   // TODO id parameter
-  case class Response(
-      result: Option[ujson.Value] = None,
-      error: Option[String] = None) {
+  case class Response(result: Option[ujson.Value] = None, error: Option[String] = None) {
 
     def toJsonMap: Map[String, ujson.Value] = {
       Map(
@@ -112,8 +103,7 @@ object Server {
   }
 
   /** Creates a HTTP response with the given body as a JSON response */
-  def httpSuccess[T](body: T)(implicit
-      writer: up.Writer[T]): HttpEntity.Strict = {
+  def httpSuccess[T](body: T)(implicit writer: up.Writer[T]): HttpEntity.Strict = {
     val response = Response(result = Some(up.writeJs(body)))
     HttpEntity(
       ContentTypes.`application/json`,
@@ -121,8 +111,7 @@ object Server {
     )
   }
 
-  def httpSuccessOption[T](bodyOpt: Option[T])(implicit
-      writer: up.Writer[T]): HttpEntity.Strict = {
+  def httpSuccessOption[T](bodyOpt: Option[T])(implicit writer: up.Writer[T]): HttpEntity.Strict = {
     val response = Response(result = bodyOpt.map(body => up.writeJs(body)))
     HttpEntity(
       ContentTypes.`application/json`,
@@ -130,9 +119,7 @@ object Server {
     )
   }
 
-  def httpError(
-      msg: String,
-      status: StatusCode = StatusCodes.InternalServerError): HttpResponse = {
+  def httpError(msg: String, status: StatusCode = StatusCodes.InternalServerError): HttpResponse = {
 
     val entity = {
       val response = Response(error = Some(msg))
