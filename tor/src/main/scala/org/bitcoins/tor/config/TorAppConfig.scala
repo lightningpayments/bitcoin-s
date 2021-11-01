@@ -13,8 +13,8 @@ import java.io.File
 import java.net.{InetAddress, InetSocketAddress}
 import java.nio.file.{Files, Path}
 import java.util.concurrent.atomic.AtomicBoolean
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.DurationInt
-import scala.concurrent.{Await, ExecutionContext, Future}
 
 /** Configuration for the Bitcoin-S node
   * @param directory The data directory of the node
@@ -105,47 +105,46 @@ final case class TorAppConfig(
   /** Ensures correct tables and other required information is in
     * place for our node.
     */
-  override def start(): Task[Unit] = {
+  override def start(): Task[Unit] =
     if (torProvided) {
       Task.unit
     } else {
       lazy val torRunning = checkIfTorAlreadyRunning
       if (enabled && !isStarted.get && !torRunning) {
-        isStarted.set(true)
-        logger.info(s"Starting Tor daemon")
-        val start = System.currentTimeMillis()
-        //remove old tor log file so we accurately tell when
-        //the binary is started, if we don't remove this
-        //we could have that log line appear from previous runs
-        if (torLogFile.toFile.exists()) {
-          torLogFile.toFile.delete()
-        }
-        val client = createClient
         for {
+          _ <- Task(isStarted.set(true)) <* Task(logger.info(s"Starting Tor daemon"))
+          start <- Task(System.currentTimeMillis())
+          //remove old tor log file so we accurately tell when
+          //the binary is started, if we don't remove this
+          //we could have that log line appear from previous runs
+          client = createClient
           _ <- client.startBinary()
+          _ <- Task {
+            if (torLogFile.toFile.exists()) {
+              torLogFile.toFile.delete()
+            }
+          }
           _ = Runtime.getRuntime.addShutdownHook(new Thread() {
             override def run(): Unit = {
               // don't forget to stop the daemon on exit
-              Await.result(client.stopBinary(), 30.seconds)
+              // impure method !!!
+              zio.Runtime.default.unsafeRun(client.stopBinary())
             }
           })
-          _ <- isBinaryFullyStarted()
+          _ <- isBinaryFullyStarted
         } yield {
           logger.info(s"Tor daemon is fully started, it took=${System.currentTimeMillis() - start}ms")
         }
       } else if (isStarted.get) {
-        logger.debug(s"Tor daemon already started")
-        Future.unit
+        Task(logger.debug(s"Tor daemon already started"))
       } else if (torRunning) {
-        logger.warn(s"Tor daemon was requested to start, but it is already running. Not starting tor")
-        Future.unit
-      } else {
-        logger.warn(
-          s"Tor daemon was requested to start, but it is disabled in the configuration file. Not starting tor")
-        Future.unit
-      }
+        Task(logger.warn(s"Tor daemon was requested to start, but it is already running. Not starting tor"))
+      } else
+        Task {
+          logger.warn(
+            s"Tor daemon was requested to start, but it is disabled in the configuration file. Not starting tor")
+        }
     }
-  }
 
   override def stop(): Task[Unit] = {
     if (torProvided) Task.unit
@@ -159,11 +158,10 @@ final case class TorAppConfig(
     *     Bootstrapped 100% (done): Done
     *  }}}
     */
-  private def isBinaryFullyStarted(): Future[Unit] = {
+  private def isBinaryFullyStarted: Task[Unit] =
     //tor can take at least 25 seconds to start at times
     //see: https://github.com/bitcoin-s/bitcoin-s/pull/3558#issuecomment-899819698
-    AsyncUtil.retryUntilSatisfied(checkIfLogExists, 1.second, 60)
-  }
+    Task.fromFuture(_ => AsyncUtil.retryUntilSatisfied(checkIfLogExists, 1.second, 60))
 
   /** Checks it the [[isBootstrappedLogLine]] exists in the tor log file */
   private def checkIfLogExists: Boolean = {

@@ -191,8 +191,8 @@ trait Client extends Logging with StartStopAsync[BitcoindRpcClient] with NativeP
           // as both the logs and conf file most likely contain sensitive
           // information
           instance match {
-            case remote: BitcoindInstanceRemote => Task.fail(exc)
-            case local: BitcoindInstanceLocal =>
+            case _: BitcoindInstanceRemote => Task.fail(exc)
+            case _: BitcoindInstanceLocal =>
               ZIO.when(network != MainNet) {
                 Task {
                   val tempfile = Files.createTempFile("bitcoind-log-", ".dump")

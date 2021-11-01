@@ -20,7 +20,7 @@ trait NativeProcessFactory extends Logging {
 
   /** Starts the binary by spinning up a new process */
   def startBinary(): Task[Unit] =
-    processOpt.flatMap(_.get).map {
+    processOpt.flatMap(_.get).flatMap {
       case Some(_) =>
         //don't do anything as it is already started
         Task(logger.debug(s"Binary was already started!"))
@@ -35,7 +35,7 @@ trait NativeProcessFactory extends Logging {
     * this method is a no-op
     */
   def stopBinary(): Task[Unit] =
-    processOpt.flatMap(_.get).map {
+    processOpt.flatMap(_.get).flatMap {
       case Some(process) =>
         ZIO.when(process.isAlive())(Task(process.destroy())) *> processOpt.map(_.set(None)).as(())
       case None =>
