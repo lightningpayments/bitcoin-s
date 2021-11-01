@@ -30,7 +30,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 import scala.concurrent._
 import scala.concurrent.duration.DurationInt
 import scala.util.control.NonFatal
-import scala.util.{Failure, Success}
 
 /** This is the base trait for Bitcoin Core
   * RPC clients. It defines no RPC calls
@@ -173,7 +172,8 @@ trait Client extends Logging with StartStopAsync[BitcoindRpcClient] with NativeP
         } yield this.asInstanceOf[BitcoindRpcClient]
     }
 
-    ZIO.ifM(isStartedF)(onFalse = onFalse, onTrue = onTrue).foldM[Any, Throwable, Unit](
+    ZIO.ifM(isStartedF)(onFalse = onFalse, onTrue = onTrue).foldM[Any, Throwable, BitcoindRpcClient](
+      success = client => Task(logger.debug(s"started bitcoind")) *> Task(client),
       failure = exc => {
         logger.info(s"Could not start bitcoind instance! Message: ${exc.getMessage}")
         // When we're unable to start bitcoind that's most likely
@@ -184,10 +184,9 @@ trait Client extends Logging with StartStopAsync[BitcoindRpcClient] with NativeP
         // of our instances. We don't want to do this on mainnet,
         // as both the logs and conf file most likely contain sensitive
         // information
-
         instance match {
-          case _: BitcoindInstanceRemote => Task.unit
-          case _: BitcoindInstanceLocal =>
+          case remote: BitcoindInstanceRemote => Task.fail(exc)
+          case local: BitcoindInstanceLocal =>
             ZIO.when(network != MainNet) {
               Task {
                 val tempfile = Files.createTempFile("bitcoind-log-", ".dump")
@@ -200,10 +199,9 @@ trait Client extends Logging with StartStopAsync[BitcoindRpcClient] with NativeP
                 Files.write(otherTempfile, conffile)
                 logger.info(s"Dumped bitcoin.conf to $otherTempfile")
               }
-            }.orElse(Task.unit)
+            } *> Task.fail(exc)
         }
-      },
-      success = _ => Task(logger.debug(s"started bitcoind"))
+      }
     )
   }
 
