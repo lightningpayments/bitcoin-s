@@ -6,7 +6,6 @@ import org.bitcoins.core.util.TaskUtil
 import org.bitcoins.db.DatabaseDriver._
 import org.flywaydb.core.Flyway
 import org.flywaydb.core.api.{FlywayException, MigrationInfoService}
-import slick.dbio.Effect
 import slick.dbio.Effect.Schema
 import slick.sql.FixedSqlAction
 import zio.Task

@@ -7,7 +7,6 @@ import slick.lifted.AbstractTable
 import zio.{Task, ZIO}
 
 import java.sql.SQLException
-import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
 
 /** Created by chris on 9/8/16.
@@ -21,6 +20,7 @@ abstract class CRUD[T, PrimaryKeyType](implicit override val appConfig: DbAppCon
     extends JdbcProfileComponent[DbAppConfig] {
 
   import profile.api._
+
   import scala.language.implicitConversions
 
   val schemaName: Option[String] = appConfig.schemaName

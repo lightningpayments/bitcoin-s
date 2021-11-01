@@ -15,6 +15,7 @@ import org.bitcoins.core.util.{FutureUtil, StartStopAsync}
 import org.bitcoins.core.wallet.fee.FeeUnit
 import org.bitcoins.core.wallet.utxo.{AddressTag, AddressTagType, TxoState}
 import org.bitcoins.crypto.DoubleSha256DigestBE
+import zio.Task
 
 import java.nio.file.Path
 import java.time.Instant
@@ -39,9 +40,9 @@ trait WalletApi extends StartStopAsync[WalletApi] {
 
   def getFeeRate: Future[FeeUnit] = feeRateApi.getFeeRate
 
-  def start(): Future[WalletApi]
+  def start(): Task[WalletApi]
 
-  def stop(): Future[WalletApi]
+  def stop(): Task[WalletApi]
 
   /** Processes the given transaction, updating our DB state if it's relevant to us.
     * @param transaction The transaction we're processing

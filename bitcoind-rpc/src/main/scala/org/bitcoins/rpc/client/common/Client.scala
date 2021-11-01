@@ -19,14 +19,10 @@ import org.bitcoins.core.util.StartStopAsync
 import org.bitcoins.crypto.{ECPrivateKey, ECPrivateKeyBytes}
 import org.bitcoins.rpc.BitcoindException
 import org.bitcoins.rpc.config.BitcoindAuthCredentials.{CookieBased, PasswordBased}
-import org.bitcoins.rpc.config.{
-  BitcoindAuthCredentials,
-  BitcoindInstance,
-  BitcoindInstanceLocal,
-  BitcoindInstanceRemote
-}
+import org.bitcoins.rpc.config.{BitcoindAuthCredentials, BitcoindInstance, BitcoindInstanceLocal, BitcoindInstanceRemote}
 import org.bitcoins.tor.Socks5ClientTransport
 import play.api.libs.json._
+import zio.{Task, ZIO}
 
 import java.nio.file.{Files, Path}
 import java.util.UUID
@@ -44,7 +40,7 @@ import scala.util.{Failure, Success}
   * and whether or not the client is started.
   */
 trait Client extends Logging with StartStopAsync[BitcoindRpcClient] with NativeProcessFactory {
-  def version: Future[BitcoindVersion]
+  def version: Task[BitcoindVersion]
   protected val instance: BitcoindInstance
 
   protected def walletExtension(walletName: String): String =
@@ -87,8 +83,6 @@ trait Client extends Logging with StartStopAsync[BitcoindRpcClient] with NativeP
 
   implicit protected val system: ActorSystem
 
-  implicit override protected val executionContext: ExecutionContext =
-    system.getDispatcher
   implicit protected val network: NetworkParameters = instance.network
 
   /** This is here (and not in JsonWrriters)
@@ -147,61 +141,40 @@ trait Client extends Logging with StartStopAsync[BitcoindRpcClient] with NativeP
     *         This future times out after 60 seconds if the client
     *         cannot be started
     */
-  override def start(): Future[BitcoindRpcClient] = {
+  override def start(): Task[BitcoindRpcClient] = {
+    val onTrue: Task[BitcoindRpcClient] =
+      for {
+        _ <- awaitCookie(instance.authCredentials)
+        _ = isStartedFlag.set(true)
+      } yield this.asInstanceOf[BitcoindRpcClient]
 
-    // if we're doing cookie based authentication, we might attempt
-    // to read the cookie file before it's written. this ensures
-    // we avoid that
-    val awaitCookie: BitcoindAuthCredentials => Future[Unit] = {
-      case cookie: CookieBased =>
-        val cookieExistsF =
-          AsyncUtil.retryUntilSatisfied(Files.exists(cookie.cookiePath))
-        cookieExistsF.onComplete {
-          case Failure(exception) =>
-            logger.error(s"Cookie filed was never created! $exception")
-          case _: Success[_] =>
-        }
-        cookieExistsF
-      case _: PasswordBased => Future.successful(())
+    val onFalse: Task[BitcoindRpcClient] = instance match {
+      case _: BitcoindInstanceRemote =>
+        sys.error(s"Cannot start a remote instance, it needs to be started on the remote host machine")
 
-    }
-    val isAlreadyStarted: Future[Boolean] = isStartedF
-
-    val started: Future[Future[BitcoindRpcClient]] = isAlreadyStarted.map {
-      case false =>
-        instance match {
-          case _: BitcoindInstanceRemote =>
-            sys.error(s"Cannot start a remote instance, it needs to be started on the remote host machine")
-          case local: BitcoindInstanceLocal =>
-            val versionCheckF = version.map { v =>
-              if (v != BitcoindVersion.Unknown) {
-                val foundVersion = local.getVersion
-                if (foundVersion != v) {
-                  throw new RuntimeException(
-                    s"Wrong version for bitcoind RPC client! Expected $version, got $foundVersion")
-                }
-              }
+      case local: BitcoindInstanceLocal =>
+        val versionCheckF = version.map { v =>
+          if (v != BitcoindVersion.Unknown) {
+            val foundVersion = local.getVersion
+            if (foundVersion != v) {
+              throw new RuntimeException(
+                s"Wrong version for bitcoind RPC client! Expected $version, got $foundVersion")
             }
-
-            val startedF = versionCheckF.flatMap(_ => startBinary())
-
-            for {
-              _ <- startedF
-              _ <- awaitCookie(instance.authCredentials)
-              _ = isStartedFlag.set(true)
-              _ <- AsyncUtil.retryUntilSatisfiedF(() => isStartedF, interval = 1.seconds, maxTries = 120)
-            } yield this.asInstanceOf[BitcoindRpcClient]
+          }
         }
-      case true =>
+
         for {
-          _ <- awaitCookie(instance.authCredentials)
-          _ = isStartedFlag.set(true)
+          _         <- versionCheckF.flatMap(_ => startBinary())
+          _         <- awaitCookie(instance.authCredentials)
+          _          = isStartedFlag.set(true)
+          isStarted <- isStartedF
+          _         <- Task.fromFuture(implicit ec =>
+            AsyncUtil.retryUntilSatisfiedF(() => Future.successful(isStarted), interval = 1.seconds, maxTries = 120))
         } yield this.asInstanceOf[BitcoindRpcClient]
     }
 
-    started.onComplete {
-      case Success(_) => logger.debug(s"started bitcoind")
-      case Failure(exc) =>
+    ZIO.ifM(isStartedF)(onFalse = onFalse, onTrue = onTrue).foldM[Any, Throwable, Unit](
+      failure = exc => {
         logger.info(s"Could not start bitcoind instance! Message: ${exc.getMessage}")
         // When we're unable to start bitcoind that's most likely
         // either a configuration error or bug in Bitcoin-S. In either
@@ -213,62 +186,66 @@ trait Client extends Logging with StartStopAsync[BitcoindRpcClient] with NativeP
         // information
 
         instance match {
-          case _: BitcoindInstanceRemote =>
-            ()
+          case _: BitcoindInstanceRemote => Task.unit
           case _: BitcoindInstanceLocal =>
-            if (network != MainNet) {
-              val tempfile = Files.createTempFile("bitcoind-log-", ".dump")
-              val logfile = Files.readAllBytes(logFileOpt.get)
-              Files.write(tempfile, logfile)
-              logger.info(s"Dumped debug.log to $tempfile")
+            ZIO.when(network != MainNet) {
+              Task {
+                val tempfile = Files.createTempFile("bitcoind-log-", ".dump")
+                val logfile = Files.readAllBytes(logFileOpt.get)
+                Files.write(tempfile, logfile)
+                logger.info(s"Dumped debug.log to $tempfile")
 
-              val otherTempfile = Files.createTempFile("bitcoin-conf-", ".dump")
-              val conffile = Files.readAllBytes(confFileOpt.get)
-              Files.write(otherTempfile, conffile)
-              logger.info(s"Dumped bitcoin.conf to $otherTempfile")
-            }
+                val otherTempfile = Files.createTempFile("bitcoin-conf-", ".dump")
+                val conffile = Files.readAllBytes(confFileOpt.get)
+                Files.write(otherTempfile, conffile)
+                logger.info(s"Dumped bitcoin.conf to $otherTempfile")
+              }
+            }.orElse(Task.unit)
         }
-
-    }
-
-    started.flatten
+      },
+      success = _ => Task(logger.debug(s"started bitcoind"))
+    )
   }
 
-  private def tryPing(): Future[Boolean] = {
-    val request = buildRequest(instance, "ping", JsArray.empty)
-    val responseF = sendRequest(request)
+  // if we're doing cookie based authentication, we might attempt
+  // to read the cookie file before it's written. this ensures
+  // we avoid that
+  private val awaitCookie: BitcoindAuthCredentials => Task[Unit] = {
+    case cookie: CookieBased =>
+      Task
+        .fromFuture(implicit ec => AsyncUtil.retryUntilSatisfied(Files.exists(cookie.cookiePath)))
+        .fold(ex => logger.error(s"Cookie filed was never created! $ex"), identity)
+    case _: PasswordBased =>
+      Task.unit
+  }
 
-    val payloadF: Future[JsValue] =
-      responseF.flatMap(getPayload(_))
-
-    // Ping successful if no error can be parsed from the payload
-    val parsedF = payloadF.map { payload =>
-      (payload \ errorKey).validate[BitcoindException] match {
-        case _: JsSuccess[BitcoindException] => false
-        case _: JsError                      => true
-      }
-    }
-
-    parsedF.recover {
+  private def tryPing(): Task[Boolean] =
+    (for {
+      request  <- Task.succeed(buildRequest(instance, "ping", JsArray.empty))
+      response <- Task.fromFuture(_ => sendRequest(request))
+      payload  <- getPayload(response)
+    } yield (payload \ errorKey).validate[BitcoindException] match {
+      case _: JsSuccess[BitcoindException] => false
+      case _: JsError                      => true
+    }).catchAll {
       case exc: StreamTcpException if exc.getMessage.contains("Connection refused") =>
-        false
+        Task.succeed(false)
       case _: JsonParseException =>
         //see https://github.com/bitcoin-s/bitcoin-s/issues/527
-        false
+        Task.succeed(false)
     }
-  }
 
   private val isStartedFlag: AtomicBoolean = new AtomicBoolean(false)
 
   /** Checks whether the underlying bitcoind daemon is running
     */
-  def isStartedF: Future[Boolean] = {
+  def isStartedF: Task[Boolean] = {
 
     instance.authCredentials match {
       case cookie: CookieBased if Files.notExists(cookie.cookiePath) =>
         // if the cookie file doesn't exist we're not started
-        Future.successful(false)
-      case (CookieBased(_, _) | PasswordBased(_, _)) =>
+        Task.succeed(false)
+      case CookieBased(_, _) | PasswordBased(_, _) =>
         instance match {
           case _: BitcoindInstanceRemote =>
             //we cannot check locally if it has been started
@@ -280,7 +257,7 @@ trait Client extends Logging with StartStopAsync[BitcoindRpcClient] with NativeP
             if (isStartedFlag.get) {
               tryPing()
             } else {
-              Future.successful(false)
+              Task.succeed(false)
             }
         }
 
@@ -290,75 +267,51 @@ trait Client extends Logging with StartStopAsync[BitcoindRpcClient] with NativeP
   /** Stop method for BitcoindRpcClient that is stopped, inherits from the StartStop trait
     * @return A future stopped bitcoindRPC client
     */
-  def stop(): Future[BitcoindRpcClient] = {
+  def stop(): Task[BitcoindRpcClient] =
     for {
       _ <- bitcoindCall[String]("stop")
-      _ = isStartedFlag.set(false)
+      _  = isStartedFlag.set(false)
       //do we want to call this right away?
       //i think bitcoind stops asynchronously
       //so it returns fast from the 'stop' rpc command
       _ <- stopBinary()
-      _ <- {
-        if (system.name == BitcoindRpcClient.ActorSystemName) {
-          system.terminate()
-        } else Future.unit
-      }
+      _ <- ZIO.when(system.name == BitcoindRpcClient.ActorSystemName)(Task.fromFuture(_ => system.terminate()))
     } yield this.asInstanceOf[BitcoindRpcClient]
-  }
 
   /** Checks whether the underlyind bitcoind daemon is stopped
     * @return A future boolean which represents isstopped or not
     */
-  def isStoppedF: Future[Boolean] = {
-    isStartedF.map(started => !started)
-  }
+  def isStoppedF: Task[Boolean] = isStartedF.map(started => !started)
 
   // This RPC call is here to avoid circular trait depedency
-  def ping(): Future[Unit] = {
-    bitcoindCall[Unit]("ping")
-  }
+  def ping(): Task[Unit] = bitcoindCall[Unit]("ping")
 
   protected def bitcoindCall[T](
       command: String,
       parameters: List[JsValue] = List.empty,
       printError: Boolean = true,
       uriExtensionOpt: Option[String] = None
-  )(implicit reader: Reads[T]): Future[T] = {
-
-    val request =
-      buildRequest(instance, command, JsArray(parameters), uriExtensionOpt)
-    val responseF = sendRequest(request)
-
-    val payloadF: Future[JsValue] =
-      responseF.flatMap(getPayload(_))
-
-    payloadF.map { payload =>
-      /** These lines are handy if you want to inspect what's being sent to and
-        * returned from bitcoind before it's parsed into a Scala type. However,
-        * there will sensitive material in some of those calls (private keys,
-        * XPUBs, balances, etc). It's therefore not a good idea to enable
-        * this logging in production.
-        */
-      // logger.info(
-      // s"Command: $command ${parameters.map(_.toString).mkString(" ")}")
-      // logger.info(s"Payload: \n${Json.prettyPrint(payload)}")
-      parseResult(result = (payload \ resultKey).validate[T],
-                  json = payload,
-                  printError = printError,
-                  command = command)
-    }
-  }
+  )(implicit reader: Reads[T]): Task[T] =
+    for {
+      request  <- Task.succeed(buildRequest(instance, command, JsArray(parameters), uriExtensionOpt))
+      response <- Task.fromFuture(_ => sendRequest(request))
+      payload  <- getPayload(response)
+      result    = parseResult(
+        result     = (payload \ resultKey).validate[T],
+        json       = payload,
+        printError = printError,
+        command    = command)
+    } yield result
 
   protected def buildRequest(
       instance: BitcoindInstance,
       methodName: String,
       params: JsArray,
-      uriExtensionOpt: Option[String] = None): HttpRequest = {
+      uriExtensionOpt: Option[String] = None
+  ): HttpRequest = {
     val uuid = UUID.randomUUID().toString
     val m: Map[String, JsValue] = Map("method" -> JsString(methodName), "params" -> params, "id" -> JsString(uuid))
-
     val jsObject = JsObject(m)
-
     val uriExtension = uriExtensionOpt.getOrElse("")
 
     // Would toString work?
@@ -393,16 +346,13 @@ trait Client extends Logging with StartStopAsync[BitcoindRpcClient] with NativeP
     * The command, parameters and request are given as debug parameters,
     * and only used for printing diagnostics if things go belly-up.
     */
-  protected def getPayload(response: HttpResponse): Future[JsValue] = {
-    try {
-      Unmarshal(response).to[String].map { data =>
-        Json.parse(data)
+  protected def getPayload(response: HttpResponse): Task[JsValue] =
+    Task
+      .fromFuture(implicit ec => Unmarshal(response).to[String].map(Json.parse))
+      .catchAll {
+        case NonFatal(ex) =>
+          Task.fail(ex)
       }
-    } catch {
-      case NonFatal(exn) =>
-        Future.failed(exn)
-    }
-  }
 
   // Should both logging and throwing be happening?
   private def parseResult[T](

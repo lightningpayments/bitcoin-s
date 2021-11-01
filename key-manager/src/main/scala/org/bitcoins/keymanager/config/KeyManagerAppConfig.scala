@@ -15,6 +15,7 @@ import zio.{Task, ZIO}
 import java.nio.file.{Files, Path}
 import java.time.Instant
 import scala.concurrent.ExecutionContext
+import scala.util.Try
 
 final case class KeyManagerAppConfig(private val directory: Path, private val confs: Config*)(implicit
     val ec: ExecutionContext)
@@ -76,42 +77,44 @@ final case class KeyManagerAppConfig(private val directory: Path, private val co
 
   private def getOldSeedPath(): Path = baseDatadir.resolve(seedFileName)
 
-  // TODO
   override def start(): Task[Unit] = {
     val oldDefaultFile = getOldSeedPath()
     val newDefaultFile = seedPath
 
-    
-
     if (!Files.exists(newDefaultFile) && Files.exists(oldDefaultFile)) {
-      // Copy key manager file to new location
-      logger.info(s"Copying seed file to seeds folder $newDefaultFile")
-      // Create directory
-      Files.createDirectories(newDefaultFile.getParent)
-      Files.copy(oldDefaultFile, newDefaultFile)
-      logger.info(s"Migrated keymanager seed from=${oldDefaultFile.toAbsolutePath} to=${newDefaultFile.toAbsolutePath}")
-      Task.unit
+      Task.fromTry(Try {
+        // Copy key manager file to new location
+        logger.info(s"Copying seed file to seeds folder $newDefaultFile")
+        // Create directory
+        Files.createDirectories(newDefaultFile.getParent)
+        Files.copy(oldDefaultFile, newDefaultFile)
+        logger.info(
+          s"Migrated keymanager seed from=${oldDefaultFile.toAbsolutePath} to=${newDefaultFile.toAbsolutePath}")
+      })
     } else if (!Files.exists(newDefaultFile)) {
-      logger.info(s"No seed file found at=${newDefaultFile.toAbsolutePath}")
-      initializeKeyManager()
+      Task(logger.info(s"No seed file found at=${newDefaultFile.toAbsolutePath}")) *> initializeKeyManager()
     } else if (externalEntropy.isDefined && seedExists()) {
-      //means we have a seed saved on disk and external entropy
-      //provided. We should make sure the entropy provided generates
-      //the seed on disk to prevent internal inconsistencies
-      val bitVec = BitVector.fromValidHex(externalEntropy.get)
-      //make sure external entropy provided to us is consistent
-      if (!CryptoUtil.checkEntropy(bitVec)) {
-        sys.error(s"The entropy used by bitcoin-s does not pass basic entropy sanity checks, got=${externalEntropy}")
-      }
-      val mnemonicEntropy = MnemonicCode.fromEntropy(entropy = bitVec)
-      val kmEntropy = BIP39KeyManager.fromMnemonic(mnemonicEntropy, kmParams, bip39PasswordOpt, Instant.now)
-      val kmRootXpub = toBip39KeyManager.getRootXPub
-      require(
-        kmEntropy.getRootXPub == kmRootXpub,
-        s"Xpubs were different, generated from entropy=${kmEntropy.getRootXPub} keymanager xpub on disk=$kmRootXpub")
-      Task(logger.info(s"Starting key manager with seedPath=${seedPath.toAbsolutePath}")) *> Task.unit
+      Task {
+        //means we have a seed saved on disk and external entropy
+        //provided. We should make sure the entropy provided generates
+        //the seed on disk to prevent internal inconsistencies
+        val bitVec = BitVector.fromValidHex(externalEntropy.get)
+        //make sure external entropy provided to us is consistent
+        if (!CryptoUtil.checkEntropy(bitVec)) {
+          sys.error(s"The entropy used by bitcoin-s does not pass basic entropy sanity checks, got=${externalEntropy}")
+        }
+        val mnemonicEntropy = MnemonicCode.fromEntropy(entropy = bitVec)
+        val kmEntropy = BIP39KeyManager.fromMnemonic(mnemonicEntropy, kmParams, bip39PasswordOpt, Instant.now)
+        val kmRootXpub = toBip39KeyManager.getRootXPub
+        require(
+          kmEntropy.getRootXPub == kmRootXpub,
+          s"Xpubs were different, generated from entropy=${kmEntropy.getRootXPub} keymanager xpub on disk=$kmRootXpub")
+      } *>
+        Task(logger.info(s"Starting key manager with seedPath=${seedPath.toAbsolutePath}")) *>
+        Task.unit
     } else {
-      Task(logger.info(s"Starting keymanager with seedPath=${seedPath.toAbsolutePath}")) *> Task.unit
+      Task(logger.info(s"Starting keymanager with seedPath=${seedPath.toAbsolutePath}")) *>
+        Task.unit
     }
   }
 

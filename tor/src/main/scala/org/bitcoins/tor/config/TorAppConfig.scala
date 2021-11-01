@@ -7,6 +7,7 @@ import org.bitcoins.core.util.NetworkUtil
 import org.bitcoins.tor.TorProtocolHandler.{Password, SafeCookie}
 import org.bitcoins.tor.client.TorClient
 import org.bitcoins.tor.{Socks5ProxyParams, TorParams}
+import zio.Task
 
 import java.io.File
 import java.net.{InetAddress, InetSocketAddress}
@@ -19,7 +20,7 @@ import scala.concurrent.{Await, ExecutionContext, Future}
   * @param directory The data directory of the node
   * @param confs Optional sequence of configuration overrides
   */
-case class TorAppConfig(
+final case class TorAppConfig(
     private val directory: Path,
     private val subModuleNameOpt: Option[String],
     private val confs: Config*)(implicit ec: ExecutionContext)
@@ -104,9 +105,9 @@ case class TorAppConfig(
   /** Ensures correct tables and other required information is in
     * place for our node.
     */
-  override def start(): Future[Unit] = {
+  override def start(): Task[Unit] = {
     if (torProvided) {
-      Future.unit
+      Task.unit
     } else {
       lazy val torRunning = checkIfTorAlreadyRunning
       if (enabled && !isStarted.get && !torRunning) {
@@ -146,12 +147,10 @@ case class TorAppConfig(
     }
   }
 
-  override def stop(): Future[Unit] = {
-    if (torProvided) {
-      Future.unit
-    } else {
-      createClient.stopBinary().map(_ => isStarted.set(false))
-    }
+  override def stop(): Task[Unit] = {
+    if (torProvided) Task.unit
+    else createClient.stopBinary().map(_ => isStarted.set(false))
+
   }
 
   /** Checks if the tor binary is started by looking for a log in the [[torLogFile]]

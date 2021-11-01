@@ -1,67 +1,46 @@
 package org.bitcoins.commons.util
 
 import grizzled.slf4j.Logging
+import zio.{Ref, Task, UIO, ZIO}
 
 import java.io.File
-import scala.concurrent.{ExecutionContext, Future}
 import scala.sys.process.{Process, ProcessBuilder}
 
 /** A trait that helps start bitcoind/eclair when it is started via bitcoin-s */
 trait NativeProcessFactory extends Logging {
-  implicit protected def executionContext: ExecutionContext
 
-  private[this] var processOpt: Option[Process] = None
+  private[this] val processOpt: UIO[Ref[Option[Process]]] = Ref.make(Option.empty[Process])
 
   private lazy val process: ProcessBuilder = scala.sys.process.Process(cmd)
 
   /** The command to start the daemon on the underlying OS */
   def cmd: String
 
-  def isAlive(): Boolean = {
-    processOpt match {
-      case Some(p) =>
-        p.isAlive()
-      case None =>
-        false
-    }
-  }
+  def isAlive: Task[Boolean] = processOpt.flatMap(_.get).map(_.fold(false)(_.isAlive()))
 
   /** Starts the binary by spinning up a new process */
-  def startBinary(): Future[Unit] = Future {
-    processOpt match {
+  def startBinary(): Task[Unit] =
+    processOpt.flatMap(_.get).map {
       case Some(_) =>
         //don't do anything as it is already started
-        logger.debug(s"Binary was already started!")
-        ()
+        Task(logger.debug(s"Binary was already started!"))
       case None =>
-        if (cmd.nonEmpty) {
-          val started = process.run()
-          processOpt = Some(started)
-        } else {
-          logger.warn("cmd not set, no binary started")
-        }
-        ()
+        if (cmd.nonEmpty) processOpt.map(_.set(Some(process.run()))).as(())
+        else Task(logger.warn("cmd not set, no binary started"))
     }
-  }
 
   /** Stops the binary by destroying the underlying operating system process
     *
     * If the client is a remote client (not started on the host operating system)
     * this method is a no-op
     */
-  def stopBinary(): Future[Unit] = Future {
-    processOpt match {
+  def stopBinary(): Task[Unit] =
+    processOpt.flatMap(_.get).map {
       case Some(process) =>
-        if (process.isAlive()) {
-          val _ = process.destroy()
-        }
-        processOpt = None
+        ZIO.when(process.isAlive())(Task(process.destroy())) *> processOpt.map(_.set(None)).as(())
       case None =>
-        logger.info(s"No process found, binary wasn't started!")
-        //no process running, nothing to do
-        ()
+        Task(logger.info(s"No process found, binary wasn't started!"))
     }
-  }
 
 }
 
@@ -73,4 +52,5 @@ object NativeProcessFactory {
       .split(File.pathSeparator)
       .map(directory => new File(directory, name))
       .find(file => file.isFile && file.canExecute)
+
 }

@@ -8,7 +8,6 @@ import scodec.bits.ByteVector
 import zio.Task
 
 import java.sql.SQLException
-import scala.concurrent.ExecutionContext
 
 final case class ExtPublicKeyDTO(
     version: ExtKeyPubVersion,

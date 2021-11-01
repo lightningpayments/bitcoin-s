@@ -11,12 +11,9 @@ abstract class AsyncUtil extends AsyncUtilApi {
   import AsyncUtil.DEFAULT_MAX_TRIES
 
   private def retryRunnable(condition: => Boolean, p: Promise[Boolean]): Runnable =
-    new Runnable {
-
-      override def run(): Unit = {
-        p.success(condition)
-        ()
-      }
+    () => {
+      p.success(condition)
+      ()
     }
 
   def retryUntilSatisfied(
